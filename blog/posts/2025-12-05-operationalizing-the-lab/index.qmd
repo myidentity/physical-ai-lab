@@ -1,79 +1,925 @@
 ---
-title: "Operationalizing the Physical AI Laboratory"
-description: "A Framework for Open Science, Technical Documentation, and Reproducible Infrastructure."
+title: "Setting Up Your Physical AI Laboratory"
+description: "A complete beginner's guide to NVIDIA Isaac Sim & Isaac Lab on Ubuntu 24.04 with Docker"
 author: "Rajesh"
 date: "2025-12-05"
-categories: [Infrastructure, Linux, Isaac Sim, Philosophy]
+categories: [Infrastructure, Docker, Isaac Sim, Isaac Lab, Tutorial]
+image: "thumbnail.png"
 format:
   html:
-    code-fold: true
+    code-fold: false
+    code-tools: true
+toc: true
+toc-depth: 3
 ---
 
-## 1. Introduction: The Convergence of Embodiment and Intelligence
+::: {.callout-tip}
+## 🎯 TL;DR - What You'll Build
 
-The current trajectory of artificial intelligence research is witnessing a profound bifurcation. While the dominant narrative focuses on Generative AI and Large Language Models (LLMs), a parallel revolution is occurring in **Physical AI**. Physical AI represents the integration of intelligence into embodied systems that must interact with, reason about, and manipulate the physical world.
+By the end of this guide, you will have:
 
-Unlike their purely digital counterparts, Physical AI agents, powered by Deep Reinforcement Learning (DRL), are constrained by the immutable laws of physics: gravity, friction, inertia, and contact dynamics.
+- **NVIDIA Isaac Sim 5.1.0** running in Docker (robotics simulator)
+- **NVIDIA Isaac Lab** for reinforcement learning experiments
+- **A launcher script** that makes everything one-click easy
+- **A reproducible setup** you can share with others
 
-### The "Expert Gap"
-For the emerging practitioner, entering this field presents a steep learning curve. The requisite knowledge stack encompasses high-fidelity physics simulation, real-time rendering, kernel-level Linux administration, and advanced stochastic optimization.
+**Time required:** ~2 hours (mostly waiting for downloads)
 
-This laboratory aims to bridge the **"Expert Gap"**—the cognitive disconnect where experts unconsciously omit steps they deem trivial (like setting environment variables or handling driver conflicts). By documenting the struggle, we create a "contextual bridge" that highly polished expert documentation cannot provide.
+**The Easy Path:** Download our launcher script and skip the manual setup!
+```bash
+wget https://raw.githubusercontent.com/myidentity/physical-ai-lab/main/scripts/auto_start.sh
+chmod +x auto_start.sh
+./auto_start.sh
+```
+:::
 
-## 2. The Hardware & OS Stack
+---
 
-The foundation of any Physical AI project is the compute environment.
+## 1. Introduction {#sec-intro}
 
-- **OS**: Ubuntu 22.04 LTS (Jammy Jellyfish)
-- **GPU**: NVIDIA RTX (12GB+ VRAM recommended)
-- **Driver**: NVIDIA 535+ (Production Branch)
+### What is Physical AI?
 
-### Automated Setup Scripts
+::: {.callout-note}
+## 📚 Concept - Skip if you know this
 
-I have operationalized the setup process into three reproducible bash scripts. These can be found in the `src/setup/` directory of this repository.
+**Physical AI** is about teaching robots to interact with the real world. Unlike ChatGPT which works with text, Physical AI systems need to understand:
 
-#### Part 1: System Prep & Drivers
+- **Physics**: Gravity, friction, collisions
+- **Perception**: Cameras, sensors, depth
+- **Control**: Moving motors, balancing, walking
 
-This script manages the "fresh install" state, adding the necessary PPAs and installing the specific NVIDIA driver branch required for Isaac Sim.
+**Why simulation?** Real robots are expensive and break. Simulators let us train robots millions of times without any hardware.
+:::
+
+### Why This Guide Exists
+
+When I started learning robotics simulation, I hit wall after wall:
+
+- Documentation assumed I knew things I didn't
+- Tutorials were outdated or incomplete
+- Small configuration mistakes wasted hours
+
+This guide documents **every step** - including the mistakes - so you don't have to struggle like I did.
+
+### What You'll Learn
+
+| Section | What You'll Do | Can Skip If... |
+|---------|---------------|----------------|
+| [2. Prerequisites](#sec-prerequisites) | Check your hardware | You know your GPU specs |
+| [3. Concepts](#sec-concepts) | Learn Docker basics | You know Docker |
+| [4. Docker Setup](#sec-docker-setup) | Install Docker & NVIDIA toolkit | Already have Docker |
+| [5. Isaac Sim](#sec-isaac-sim) | Set up the simulator | Already have Isaac Sim |
+| [6. Isaac Lab](#sec-isaac-lab) | Set up RL framework | Only need simulator |
+| [7. Launcher Script](#sec-launcher) | Get the easy button | Want manual control |
+| [8. Verification](#sec-verification) | Test everything works | Confident it works |
+| [9. Resources](#sec-resources) | Official NVIDIA docs | Know where to find docs |
+| [10. Troubleshooting](#sec-troubleshooting) | Fix common problems | Everything works |
+
+---
+
+## 2. Prerequisites {#sec-prerequisites}
+
+### Hardware Requirements
+
+::: {.callout-important}
+## ⚠️ Minimum Hardware
+
+- **GPU**: NVIDIA RTX series (RTX 2070 or better)
+- **VRAM**: 8GB minimum, 12GB+ recommended
+- **RAM**: 32GB recommended
+- **Storage**: 50GB+ free space (Docker images are large!)
+- **OS**: Ubuntu 22.04 or 24.04 LTS
+:::
+
+### Install NVIDIA Drivers (If Needed)
+
+First, check if drivers are already installed:
 
 ```bash
-# From src/setup/01_setup_drivers.sh
-sudo ./src/setup/01_setup_drivers.sh
+nvidia-smi
 ```
 
-#### Part 2: The Containerization Stack
+::: {.callout-tip}
+## What You Should See
 
-Reproducibility is a crisis in RL. We use Docker with the NVIDIA Container Toolkit to allow containers to access the host GPU.
+If drivers are installed, you'll see a table showing your GPU model, driver version, and CUDA version. If you see `command not found`, follow the steps below.
+:::
+
+**If `nvidia-smi` fails, install drivers with these steps:**
 
 ```bash
-# From src/setup/02_setup_docker.sh
-sudo ./src/setup/02_setup_docker.sh
+# Step 1: Update your system
+sudo apt update && sudo apt upgrade -y
+
+# Step 2: See which drivers are available for your GPU
+sudo ubuntu-drivers list --gpgpu
+
+# Step 3: Install the recommended driver automatically
+sudo ubuntu-drivers install --gpgpu
+
+# Step 4: Reboot (required!)
+sudo reboot
 ```
 
-#### Part 3: The Python Environment
-
-We avoid the system Python at all costs. This script sets up a dedicated Miniconda environment with Python 3.10 (the compatibility sweet spot for Isaac Sim 4.x).
+After reboot, verify the installation:
 
 ```bash
-# From src/setup/03_setup_python.sh
-./src/setup/03_setup_python.sh
+nvidia-smi
 ```
 
-## 3. The Simulation Ecosystem: NVIDIA Isaac Sim
+::: {.callout-note}
+## Why `--gpgpu`?
 
-We utilize **NVIDIA Isaac Sim** as our primary simulation testbed. It leverages the Omniverse platform and Universal Scene Description (USD) to provide photorealistic rendering and physically accurate dynamics.
+The `--gpgpu` flag installs server/compute drivers optimized for AI and simulation workloads (like Isaac Sim), rather than gaming drivers. Both work, but `--gpgpu` is recommended for our use case.
+:::
 
-### Configuration Note
-After installation, ensure your environment variables are set correctly to allow external Python scripts to interact with the simulator.
+::: {.callout-warning}
+## Secure Boot Users
+
+If your computer uses Secure Boot, you'll see extra steps:
+
+**During installation:**
+Ubuntu will ask you to create a temporary password (8+ characters). This is NOT your system password - it's a one-time password just for the next step. **Remember it!**
+
+**After reboot:**
+1. A blue "MOK Management" screen appears before Ubuntu loads
+2. Select **"Enroll MOK"**
+3. Select **"Continue"**
+4. Select **"Yes"** to enroll the key
+5. Enter the **same password you created during installation**
+6. Select **"Reboot"**
+
+If you miss this screen or enter the wrong password, the driver won't load. You'll need to reinstall: `sudo ubuntu-drivers install --gpgpu` and try again.
+:::
+
+[Learn more → Ubuntu NVIDIA Driver Documentation](https://documentation.ubuntu.com/server/how-to/graphics/install-nvidia-drivers/)
+
+### Verify Your System (Recommended)
+
+Before proceeding with the full setup, run NVIDIA's official compatibility check to ensure your system meets all requirements:
+
+1. **Download the launcher script** (if you haven't already):
+```bash
+wget https://raw.githubusercontent.com/myidentity/physical-ai-lab/main/scripts/auto_start.sh
+chmod +x auto_start.sh
+```
+
+2. **Run the script and select Option 3** (Compatibility Check):
+```bash
+./auto_start.sh
+```
+
+3. **Look for this message**:
+```
+System checking result: PASSED
+```
+
+::: {.callout-warning}
+## If the check fails
+
+The compatibility check verifies your GPU, driver version, and system configuration meet Isaac Sim's requirements. If it fails, check:
+
+- **NVIDIA driver version**: 535+ recommended
+- **CUDA compatibility**: Must match driver version
+- **Available VRAM**: 8GB minimum
+- **Display server**: X11 or Wayland with XWayland
+:::
+
+### Our Test System
+
+This guide was tested on:
+
+| Component | Specification |
+|-----------|--------------|
+| **OS** | Ubuntu 24.04.3 LTS |
+| **Kernel** | 6.14.0-36-generic |
+| **GPU** | NVIDIA GeForce RTX 5070 Ti |
+| **Driver** | 580.95.05 |
+| **Docker** | 28.2.2 |
+
+### Check Your System
+
+Run these commands to verify your setup:
 
 ```bash
-# Add to ~/.bashrc
-export ISAAC_SIM_PATH=~/.local/share/ov/pkg/isaac-sim-4.2.0
-alias isaac_python='$ISAAC_SIM_PATH/python.sh'
+# Check Ubuntu version
+lsb_release -a
+
+# Check GPU
+nvidia-smi
+
+# Check available disk space
+df -h /
 ```
 
-## 4. Conclusion
+::: {.callout-tip}
+## ✅ Expected Output
 
-Establishing a Physical AI laboratory is a significant undertaking. By automating the infrastructure setup and leveraging Quarto for reproducible publishing, we can effectively operationalize the learning journey.
+You should see:
+- Ubuntu 22.04 or 24.04
+- Your NVIDIA GPU listed with driver version
+- At least 50GB free space
+:::
 
-*The code for this laboratory is available in the [GitHub Repository](https://github.com/YOUR_USERNAME/physical-ai-lab).*
+---
+
+## 3. Core Concepts {#sec-concepts}
+
+::: {.callout-note}
+## 📚 Concept Section - Skip if you know Docker
+
+This section explains **what** things are. [Skip to Docker Setup](#sec-docker-setup) if you want to start installing.
+:::
+
+### What is Docker?
+
+Think of Docker as a **shipping container for software**:
+
+```
+┌─────────────────────────────────────────────────┐
+│                Your Computer                     │
+│  ┌─────────────────┐  ┌─────────────────┐       │
+│  │  Container 1    │  │  Container 2    │       │
+│  │  Isaac Sim      │  │  Isaac Lab      │       │
+│  │  Python 3.11    │  │  Python 3.11    │       │
+│  │  All deps       │  │  PyTorch, etc   │       │
+│  └─────────────────┘  └─────────────────┘       │
+│                                                  │
+│         Docker Engine (manages containers)       │
+└─────────────────────────────────────────────────┘
+```
+
+**Why use Docker?**
+
+1. **Reproducibility**: Same environment everywhere
+2. **Isolation**: Won't mess up your system Python
+3. **Easy cleanup**: Delete container, everything gone
+4. **NVIDIA support**: GPU access inside containers
+
+### What is Isaac Sim?
+
+**NVIDIA Isaac Sim** is a robotics simulator that:
+
+- Renders photorealistic environments
+- Simulates accurate physics
+- Supports many robot models (arms, drones, quadrupeds)
+- Runs on NVIDIA GPUs
+
+[Learn more →](https://docs.isaacsim.omniverse.nvidia.com/)
+
+### What is Isaac Lab?
+
+**Isaac Lab** is built on top of Isaac Sim and adds:
+
+- Reinforcement learning training
+- Pre-built robot environments
+- Training algorithms (PPO, SAC, etc.)
+- Parallel environment simulation
+
+[Learn more →](https://isaac-sim.github.io/IsaacLab/)
+
+### Key Terms Glossary
+
+| Term | Meaning |
+|------|---------|
+| **Container** | An isolated environment running an application |
+| **Image** | A template used to create containers |
+| **Volume** | Persistent storage that survives container restarts |
+| **NGC** | NVIDIA GPU Cloud - where NVIDIA hosts container images |
+| **USD** | Universal Scene Description - 3D scene format |
+
+---
+
+## 4. Docker Setup {#sec-docker-setup}
+
+::: {.callout-tip}
+## 🎯 Goal
+
+Install Docker and configure it to use your NVIDIA GPU.
+:::
+
+### Step 4.1: Install Docker
+
+```bash
+# Update package list
+sudo apt update
+
+# Install Docker
+sudo apt install -y docker.io docker-compose-v2
+
+# Add yourself to docker group (avoids needing sudo)
+sudo usermod -aG docker $USER
+```
+
+::: {.callout-warning}
+## ⚠️ Important!
+
+After adding yourself to the docker group, you must **log out and log back in** (or reboot) for it to take effect.
+
+Alternatively, run this to apply immediately (current terminal only):
+```bash
+newgrp docker
+```
+:::
+
+### Step 4.2: Verify Docker Works
+
+```bash
+docker run hello-world
+```
+
+::: {.callout-tip}
+## ✅ Expected Output
+
+```
+Hello from Docker!
+This message shows that your installation appears to be working correctly.
+...
+```
+:::
+
+### Step 4.3: Install NVIDIA Container Toolkit
+
+This lets Docker containers access your GPU. [Official docs →](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/)
+
+```bash
+# Add NVIDIA repository
+curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+
+curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
+  sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+  sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+
+# Install the toolkit
+sudo apt update
+sudo apt install -y nvidia-container-toolkit
+
+# Configure Docker to use NVIDIA runtime
+sudo nvidia-ctk runtime configure --runtime=docker
+sudo systemctl restart docker
+```
+
+### Step 4.4: Verify GPU Access in Docker
+
+```bash
+docker run --rm --gpus all nvidia/cuda:12.0-base nvidia-smi
+```
+
+::: {.callout-tip}
+## ✅ Expected Output
+
+You should see the same `nvidia-smi` output as on your host, showing your GPU inside the container.
+:::
+
+::: {.callout-warning}
+## ⚠️ Common Error: "could not select device driver"
+
+If you see this error, try:
+```bash
+sudo systemctl restart docker
+```
+
+Still not working? Reboot your computer.
+:::
+
+---
+
+## 5. Isaac Sim 5.1.0 Setup {#sec-isaac-sim}
+
+::: {.callout-tip}
+## 🎯 Goal
+
+Pull and run NVIDIA Isaac Sim in a Docker container.
+:::
+
+### Step 5.1: Login to NVIDIA NGC
+
+You need an NVIDIA account to download Isaac Sim:
+
+1. Go to [https://ngc.nvidia.com](https://ngc.nvidia.com)
+2. Create a free account (or sign in)
+3. Go to **Setup** → **API Key**
+4. Generate a new API key and copy it
+
+```bash
+# Login to NGC
+docker login nvcr.io
+```
+
+When prompted:
+- **Username**: `$oauthtoken` (literally type this)
+- **Password**: Your API key from NGC
+
+### Step 5.2: Create Directory Structure
+
+```bash
+# Create directories for Isaac Sim data
+mkdir -p ~/isaac-sim/{cache/kit,cache/ov,cache/pip,cache/glcache,cache/computecache,logs,data,documents}
+```
+
+### Step 5.3: Pull Isaac Sim Image
+
+This downloads ~15GB, so it takes a while:
+
+```bash
+docker pull nvcr.io/nvidia/isaac-sim:5.1.0
+```
+
+::: {.callout-note}
+## ☕ Time for Coffee
+
+This download can take 15-30 minutes depending on your internet speed.
+:::
+
+### Step 5.4: Run Compatibility Check
+
+Before running the full simulator, verify your system is compatible:
+
+```bash
+xhost +local:
+docker run --rm --gpus all \
+    -e DISPLAY \
+    -v $HOME/.Xauthority:/root/.Xauthority \
+    --network=host \
+    nvcr.io/nvidia/isaac-sim:5.1.0 \
+    ./isaac-sim.compatibility_check.sh
+```
+
+::: {.callout-tip}
+## ✅ Expected Output
+
+You should see all checks passing with green checkmarks.
+:::
+
+### Step 5.5: Run Isaac Sim (GUI Mode)
+
+```bash
+xhost +local:
+docker run --rm -it --gpus all \
+    -e DISPLAY \
+    -e PRIVACY_CONSENT=Y \
+    -v $HOME/.Xauthority:/root/.Xauthority \
+    -v ~/isaac-sim/cache/kit:/isaac-sim/kit/cache:rw \
+    -v ~/isaac-sim/cache/ov:/root/.cache/ov:rw \
+    -v ~/isaac-sim/cache/pip:/root/.cache/pip:rw \
+    -v ~/isaac-sim/cache/glcache:/root/.cache/nvidia/GLCache:rw \
+    -v ~/isaac-sim/cache/computecache:/root/.nv/ComputeCache:rw \
+    -v ~/isaac-sim/logs:/root/.nvidia-omniverse/logs:rw \
+    -v ~/isaac-sim/data:/root/.local/share/ov/data:rw \
+    -v ~/isaac-sim/documents:/root/Documents:rw \
+    --network=host \
+    nvcr.io/nvidia/isaac-sim:5.1.0
+```
+
+::: {.callout-important}
+## ⚠️ First Run is Slow!
+
+The first time Isaac Sim starts, it compiles shaders. This can take **10-20 minutes**. Subsequent runs are much faster because shaders are cached.
+:::
+
+### Step 5.6: Running Python Scripts
+
+To run standalone Python scripts with Isaac Sim:
+
+```bash
+# Inside the container
+./python.sh path/to/your_script.py
+```
+
+**Example - Run a built-in demo:**
+```bash
+./python.sh standalone_examples/api/omni.isaac.core/add_cubes.py
+```
+
+::: {.callout-note}
+## Why `./python.sh`?
+
+Isaac Sim uses its own Python environment with pre-configured paths. Using `./python.sh` ensures all Isaac Sim modules are available to your script.
+:::
+
+---
+
+## 6. Isaac Lab Setup {#sec-isaac-lab}
+
+::: {.callout-tip}
+## 🎯 Goal
+
+Set up Isaac Lab for reinforcement learning experiments.
+:::
+
+### Step 6.1: Clone Isaac Lab Repository
+
+```bash
+mkdir -p ~/docker/isaac-lab
+cd ~/docker/isaac-lab
+git clone https://github.com/isaac-sim/IsaacLab.git
+cd IsaacLab
+```
+
+### Step 6.2: Build and Start Container
+
+Isaac Lab has its own container management script:
+
+```bash
+# Build and start the container
+python3 docker/container.py start
+```
+
+::: {.callout-note}
+## ☕ First Build Takes Time
+
+The first build downloads base images and compiles Isaac Lab. This can take 20-40 minutes.
+:::
+
+### Step 6.3: Enter the Container
+
+```bash
+python3 docker/container.py enter
+```
+
+You're now inside the Isaac Lab container!
+
+### Step 6.4: Verify Installation
+
+Inside the container, run:
+
+```bash
+# List available environments
+./isaaclab.sh -p scripts/environments/list_envs.py
+```
+
+::: {.callout-tip}
+## ✅ Expected Output
+
+You should see a list of available reinforcement learning environments like:
+- Isaac-Cartpole-v0
+- Isaac-Ant-v0
+- Isaac-Humanoid-v0
+- And many more...
+:::
+
+### Step 6.5: Run Your First Training
+
+Let's train a simple Cartpole agent to verify everything works:
+
+```bash
+# Inside the Isaac Lab container
+./isaaclab.sh -p scripts/rsl_rl/train.py --task Isaac-Cartpole-v0 --num_envs 64
+```
+
+::: {.callout-tip}
+## ✅ Expected Output
+
+You should see:
+- Isaac Sim window opens with 64 cartpoles
+- Training logs showing episode rewards increasing
+- After ~100 iterations, the poles should stay balanced
+
+Press `Ctrl+C` to stop training early.
+:::
+
+::: {.callout-note}
+## 📊 Monitor Training with TensorBoard
+
+Training logs are saved automatically. View them with:
+```bash
+# In a new terminal, enter the container
+python3 docker/container.py enter
+
+# Start TensorBoard
+tensorboard --logdir logs/rsl_rl
+```
+Then open http://localhost:6006 in your browser.
+:::
+
+### Understanding Isaac Lab Data Persistence
+
+::: {.callout-note}
+## 📚 How Your Data is Saved
+
+Isaac Lab uses **Docker volumes** to persist your data:
+
+| Volume | Contains |
+|--------|----------|
+| `isaac-lab-data` | Your experiment data |
+| `isaac-lab-logs` | Training logs |
+| `isaac-cache-pip` | Installed Python packages |
+
+**Key point**: When you stop the container, it's removed. But your data stays in these volumes. Next time you start, a new container mounts the same volumes with all your data.
+:::
+
+### Step 6.5: Stop the Container
+
+When you're done:
+
+```bash
+# Exit the container first
+exit
+
+# Then stop it
+python3 docker/container.py stop
+```
+
+---
+
+## 7. The Launcher Script {#sec-launcher}
+
+::: {.callout-tip}
+## 🎯 The Easy Way
+
+Instead of typing long Docker commands, use our launcher script!
+:::
+
+### Download the Launcher
+
+```bash
+cd ~
+wget https://raw.githubusercontent.com/myidentity/physical-ai-lab/main/scripts/auto_start.sh
+chmod +x auto_start.sh
+```
+
+### Run the Launcher
+
+```bash
+./auto_start.sh
+```
+
+You'll see a menu like this:
+
+```
+═══════════════════════════════════════════════════════
+         Isaac Sim 5.1.0 & Isaac Lab Launcher
+           (Official NVIDIA Commands)
+═══════════════════════════════════════════════════════
+
+0) Toggle Display Driver (Dummy ↔ NVIDIA)
+
+─────────── ISAAC SIM (Simulation Only) ───────────────
+1) Isaac Sim: Start with GUI
+2) Isaac Sim: Start Headless
+3) Isaac Sim: Run Compatibility Check
+4) Isaac Sim: Setup/Reset Directories
+5) Isaac Sim: System Information
+6) Isaac Sim: Check Prerequisites
+7) Isaac Sim: Save Changes (Commit Image)
+
+─────────── ISAAC LAB (RL Training) ────────────────────
+8) Isaac Lab: Start/Build Container
+9) Isaac Lab: Quick Access (if running)
+a) Isaac Lab: Stop Container
+
+─────────── UTILITIES ──────────────────────────────────
+b) Python Package Management Guide
+
+x/q) Exit
+```
+
+### Complete Menu Reference
+
+#### Display Configuration
+
+| Option | Name | Description |
+|--------|------|-------------|
+| **0** | Toggle Display Driver | Switch between NVIDIA (hardware display) and Dummy (headless) drivers. Use Dummy for remote access without a monitor; use NVIDIA when a physical display is connected. |
+
+::: {.callout-note}
+## Understanding the Dummy Driver (Remote Access with NoMachine)
+
+When working remotely on your Physical AI workstation using **NoMachine** (or similar remote desktop software), you may encounter display issues if no physical monitor is connected.
+
+**The Problem:**
+- Linux expects a display to be connected to initialize the GPU's display output
+- Without a monitor, X11/display server may fail to start properly
+- Isaac Sim's GUI won't render correctly
+
+**The Solution - Dummy Driver:**
+The **Dummy driver** creates a virtual display, allowing:
+
+- ✅ **NoMachine remote access** without a physical monitor
+- ✅ **Isaac Sim GUI** renders correctly over remote desktop
+- ✅ **Full GPU acceleration** still available for simulation
+
+**When to use each mode:**
+
+| Scenario | Driver Mode |
+|----------|-------------|
+| Remote access via NoMachine, **no monitor** connected | **Dummy** |
+| Working locally with **monitor connected** | **NVIDIA** |
+| Remote access via NoMachine, **monitor connected** | **NVIDIA** (either works) |
+| SSH-only access (no GUI needed) | Either (use headless Isaac Sim) |
+
+**How it works:**
+The script creates/removes `/usr/share/X11/xorg.conf.d/20-dummy.conf` which tells X11 to use a virtual display instead of waiting for a real one. This setting persists across reboots.
+:::
+
+#### Isaac Sim Options
+
+| Option | Name | Description |
+|--------|------|-------------|
+| **1** | Start with GUI | Launch Isaac Sim with full graphical interface. Opens an interactive bash shell in the container - run `./runapp.sh` to start the simulator. |
+| **2** | Start Headless | Launch Isaac Sim without display for server/remote environments. Useful for running simulations on cloud instances or via SSH. |
+| **3** | Run Compatibility Check | Run NVIDIA's official system check to verify GPU, drivers, and system meet Isaac Sim requirements. Look for "System checking result: PASSED". |
+| **4** | Setup/Reset Directories | Create or reset the directory structure for Isaac Sim caches, logs, and data. Sets proper ownership (UID 1234) required by the container. |
+| **5** | System Information | Display GPU info, Docker images, storage usage, and current configuration. |
+| **6** | Check Prerequisites | Verify Docker is installed, GPU is accessible, and Isaac Sim image is available. |
+| **7** | Save Changes (Commit Image) | Save your current container state (including installed Python packages) to a custom Docker image. Container must be running. |
+
+#### Isaac Lab Options
+
+| Option | Name | Description |
+|--------|------|-------------|
+| **8** | Start/Build Container | Clone Isaac Lab (if needed), build the container, and start it. First build takes 10-15 minutes. |
+| **9** | Quick Access | Enter a running Isaac Lab container. Use this to resume work without rebuilding. |
+| **a** | Stop Container | Stop the Isaac Lab container. Your data persists in Docker volumes. |
+
+#### Utilities
+
+| Option | Name | Description |
+|--------|------|-------------|
+| **b** | Package Management Guide | Show instructions for installing Python packages in Isaac Sim and making them permanent. |
+| **x/q** | Exit | Close the launcher. |
+
+::: {.callout-note}
+## Status Indicators
+
+The menu shows real-time status:
+- **Display Mode**: NVIDIA (HDMI active) or DUMMY (Headless)
+- **Isaac Sim**: OFFICIAL image (packages temporary) or CUSTOM (packages saved)
+- **Container Status**: RUNNING or STOPPED for both Isaac Sim and Isaac Lab
+:::
+
+---
+
+## 8. Verification & Next Steps {#sec-verification}
+
+### Quick Verification Checklist
+
+Run these checks to verify everything works:
+
+```bash
+# 1. Check Docker
+docker --version
+
+# 2. Check GPU in Docker
+docker run --rm --gpus all nvidia/cuda:12.0-base nvidia-smi
+
+# 3. Check Isaac Sim image exists
+docker images | grep isaac-sim
+
+# 4. Check Isaac Lab directory
+ls ~/docker/isaac-lab/IsaacLab
+
+# 5. Run the launcher
+./auto_start.sh
+```
+
+### Your First Simulation
+
+Once Isaac Sim is running:
+
+1. Click **File** → **Open**
+2. Navigate to **NVIDIA** → **Isaac** → **Samples**
+3. Try opening **Robots** → **Franka**
+4. Click the **Play** button to start simulation
+
+### Next Steps
+
+Now that your lab is set up:
+
+1. **Explore Isaac Sim tutorials**: `/isaac-sim/standalone_examples/`
+2. **Try Isaac Lab environments**: `./isaaclab.sh -p scripts/tutorials/`
+3. **Read the official docs**: [Isaac Lab Documentation](https://isaac-sim.github.io/IsaacLab/)
+4. **Join the community**: NVIDIA Developer Forums
+
+---
+
+## 9. Official Resources {#sec-resources}
+
+For deeper learning, refer to NVIDIA's official documentation:
+
+| Resource | Description |
+|----------|-------------|
+| [Isaac Sim Documentation](https://docs.isaacsim.omniverse.nvidia.com/) | Complete Isaac Sim user guide, API reference, tutorials |
+| [Isaac Lab Documentation](https://isaac-sim.github.io/IsaacLab/) | RL environments, training guides, extending Isaac Lab |
+| [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/) | Docker GPU support reference |
+| [NGC Catalog](https://catalog.ngc.nvidia.com/orgs/nvidia/containers/isaac-sim) | Official container images and release notes |
+| [NVIDIA Developer Forums](https://forums.developer.nvidia.com/c/omniverse/simulation/69) | Community support and discussions |
+
+::: {.callout-tip}
+## 📚 Recommended Learning Path
+
+1. **Start here**: Isaac Sim → Tutorials → Core Tutorials
+2. **Then**: Isaac Lab → Tutorials → 01-Creating an Environment
+3. **Advanced**: Isaac Lab → Workflows → Training with RL
+:::
+
+---
+
+## 10. Troubleshooting {#sec-troubleshooting}
+
+### GPU Not Detected
+
+**Symptom**: `nvidia-smi` works on host but not in container
+
+**Solutions**:
+```bash
+# Restart Docker
+sudo systemctl restart docker
+
+# Verify NVIDIA runtime is configured
+cat /etc/docker/daemon.json
+# Should contain "nvidia" runtime
+
+# Reboot if still not working
+sudo reboot
+```
+
+### Display Errors
+
+**Symptom**: "Cannot open display" or blank window
+
+**Solutions**:
+```bash
+# Allow local connections to X server
+xhost +local:
+
+# Check DISPLAY variable
+echo $DISPLAY
+# Should output something like ":0" or ":1"
+```
+
+### Permission Denied
+
+**Symptom**: "Permission denied" when running Docker
+
+**Solutions**:
+```bash
+# Add yourself to docker group
+sudo usermod -aG docker $USER
+
+# Log out and log back in, or:
+newgrp docker
+```
+
+### Isaac Sim Won't Start
+
+**Symptom**: Container exits immediately
+
+**Solutions**:
+```bash
+# Check Docker logs
+docker logs <container_id>
+
+# Run with verbose output
+docker run --rm -it --gpus all nvcr.io/nvidia/isaac-sim:5.1.0 bash
+# Then inside container:
+./isaac-sim.sh --verbose
+```
+
+### Out of Disk Space
+
+**Symptom**: Downloads fail or containers won't start
+
+**Solutions**:
+```bash
+# Check disk space
+df -h
+
+# Clean up Docker
+docker system prune -a
+# WARNING: This removes ALL unused images and containers
+```
+
+---
+
+## Contributing
+
+This guide is open source! If you find errors or have improvements:
+
+1. Fork the repository
+2. Make your changes
+3. Submit a pull request
+
+GitHub: [https://github.com/myidentity/physical-ai-lab](https://github.com/myidentity/physical-ai-lab)
+
+---
+
+## Conclusion
+
+You now have a fully functional Physical AI laboratory! 🎉
+
+**What you've accomplished**:
+
+- ✅ Docker with GPU support
+- ✅ Isaac Sim 5.1.0 for robotics simulation
+- ✅ Isaac Lab for reinforcement learning
+- ✅ A launcher script for easy access
+
+**Remember**:
+
+- Use `./auto_start.sh` for easy access to everything
+- Your Isaac Lab data persists in Docker volumes
+- The first run of anything is slow (shader compilation, downloads)
+- Check the troubleshooting section if things go wrong
+
+Happy simulating! 🤖

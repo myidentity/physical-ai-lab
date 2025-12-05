@@ -1,0 +1,660 @@
+/* ═══════════════════════════════════════════════════════════════
+   Physical AI Laboratory - Mistral-Inspired Light Theme
+   Cream/Beige background with warm orange accents
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Mistral-inspired LIGHT color palette */
+  --bg-cream: #FAF7F2;
+  --bg-cream-dark: #F5F0E8;
+  --bg-white: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --text-primary: #1a1a1a;
+  --text-secondary: #333333;  /* Darker for better contrast (was #4a4a4a) */
+  --text-muted: #555555;      /* Darker for better contrast (was #6b6b6b) */
+  --accent-orange: #D46A00;   /* Darker orange for better contrast (was #FF8205) */
+  --accent-orange-hover: #B35800;  /* Even darker for hover states */
+  --accent-yellow: #B39700;   /* Darker yellow for text use */
+  --accent-red: #C00400;      /* Slightly darker red */
+  --accent-gradient: linear-gradient(90deg, #B39700, #D46A00, #E04510, #C00400);
+  --code-bg: #1a1a1a;
+  --code-text: #f8f8f2;
+  --border-color: #e5e0d8;
+  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Base Styles
+   ═══════════════════════════════════════════════════════════════ */
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  line-height: 1.7;
+  background-color: var(--bg-cream) !important;
+  color: var(--text-primary) !important;
+}
+
+.page-layout-full .page-columns {
+  background-color: var(--bg-cream);
+}
+
+main {
+  background-color: var(--bg-cream) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Typography
+   ═══════════════════════════════════════════════════════════════ */
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+h1 {
+  color: var(--text-primary);
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+h2 {
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--bg-cream-dark);
+  padding-bottom: 0.5rem;
+  margin-top: 2.5rem;
+}
+
+p, li {
+  color: var(--text-secondary);
+}
+
+/* Links - underlined for accessibility (not relying on color alone) */
+a {
+  color: var(--accent-orange);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--accent-orange-hover);
+  text-decoration-thickness: 2px;
+}
+
+a:focus {
+  outline: 2px solid var(--accent-orange);
+  outline-offset: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Code Blocks - Keep dark for readability
+   ═══════════════════════════════════════════════════════════════ */
+
+pre {
+  background-color: var(--code-bg) !important;
+  color: var(--code-text) !important;
+  border: none;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: var(--shadow-medium);
+  overflow-x: auto;
+}
+
+pre code {
+  background-color: transparent !important;
+  color: var(--code-text) !important;
+}
+
+code {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.9em;
+}
+
+/* Inline code */
+p code, li code, td code {
+  background-color: var(--bg-cream-dark);
+  color: var(--accent-orange);
+  padding: 0.2em 0.5em;
+  border-radius: 6px;
+  font-size: 0.85em;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Callout Boxes - Warm, inviting style
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Base callout styling */
+.callout {
+  background: var(--bg-white);
+  border-radius: 12px;
+  box-shadow: var(--shadow-soft);
+  margin: 1.5rem 0;
+  border: 1px solid var(--border-color);
+}
+
+/* TL;DR Box & Expected Output - Strong contrast */
+.callout-tip {
+  background: linear-gradient(135deg, #FFF5E6 0%, #FFEDD5 100%);
+  border-left: 4px solid var(--accent-orange);
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border: 1px solid #E8D5C4;
+  border-left: 4px solid var(--accent-orange);
+}
+
+.callout-tip .callout-title {
+  color: #B35800;
+  font-weight: 700;
+}
+
+.callout-tip .callout-body {
+  color: var(--text-primary);
+}
+
+/* Concept Box - Subtle, skippable */
+.callout-note {
+  background: linear-gradient(135deg, #F8F8F8 0%, #F5F5F5 100%);
+  border-left: 4px solid var(--text-muted);
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.callout-note .callout-title {
+  color: var(--text-secondary);  /* Darker for better contrast */
+}
+
+/* Warning Box */
+.callout-warning {
+  background: linear-gradient(135deg, #FFF8F5 0%, #FFF5F0 100%);
+  border-left: 4px solid var(--accent-red);
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.callout-warning .callout-title {
+  color: var(--accent-red);
+}
+
+/* Important Box */
+.callout-important {
+  background: linear-gradient(135deg, #FFFCF0 0%, #FFF9E6 100%);
+  border-left: 4px solid var(--accent-yellow);
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.callout-important .callout-title {
+  color: #8B6914;  /* Darker gold for better contrast */
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Navigation & Layout
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Navbar - Glass effect with sticky position */
+.navbar {
+  background: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.navbar-brand {
+  font-weight: 700;
+  color: var(--text-primary) !important;
+}
+
+.navbar-nav .nav-link {
+  color: var(--text-secondary) !important;
+}
+
+.navbar-nav .nav-link:hover {
+  color: var(--accent-orange) !important;
+}
+
+/* Icon links - ensure minimum touch target and accessible names */
+.navbar .nav-link.nav-item,
+.navbar a[href*="github"] {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Remove underline from nav links */
+.navbar a,
+.sidebar a {
+  text-decoration: none;
+}
+
+/* Sidebar */
+.sidebar {
+  background: var(--bg-white) !important;
+  border-right: 1px solid var(--border-color);
+}
+
+.sidebar-title {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.sidebar-item .sidebar-link {
+  color: var(--text-secondary);
+}
+
+.sidebar-item .sidebar-link:hover,
+.sidebar-item .sidebar-link.active {
+  color: var(--accent-orange);
+  background: var(--bg-cream-dark);
+}
+
+/* Footer */
+.page-footer {
+  background: var(--bg-cream-dark) !important;
+  border-top: 1px solid var(--border-color);
+  color: var(--text-muted);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Tables - Clean, readable
+   ═══════════════════════════════════════════════════════════════ */
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1.5rem 0;
+  background: var(--bg-white);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-soft);
+}
+
+th {
+  background: var(--bg-cream-dark);
+  color: var(--text-primary);
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid var(--border-color);
+}
+
+td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tr:hover {
+  background: var(--bg-cream);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Cards & Content Blocks
+   ═══════════════════════════════════════════════════════════════ */
+
+.card {
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: var(--shadow-soft);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-medium);
+  transform: translateY(-2px);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Buttons
+   ═══════════════════════════════════════════════════════════════ */
+
+.btn-primary, button.primary {
+  background: var(--accent-gradient);
+  border: none;
+  color: white;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 130, 5, 0.3);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TOC (Table of Contents)
+   ═══════════════════════════════════════════════════════════════ */
+
+.toc-actions {
+  background: var(--bg-white);
+}
+
+#TOC {
+  background: var(--bg-white);
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+}
+
+#TOC a {
+  color: var(--text-secondary);
+}
+
+#TOC a:hover,
+#TOC a.active {
+  color: var(--accent-orange);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Blog Listing
+   ═══════════════════════════════════════════════════════════════ */
+
+.quarto-listing {
+  background: var(--bg-cream);
+}
+
+.quarto-listing-default .listing-item {
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow-soft);
+}
+
+.quarto-listing-default .listing-item:hover {
+  box-shadow: var(--shadow-medium);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ALL Code Blocks - Consistent dark background for readability
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Force ALL pre blocks to have dark background */
+pre,
+pre:has(code),
+pre:has(code:not([class*="language-"])),
+.sourceCode pre,
+pre.sourceCode {
+  background-color: #1a1a1a !important;
+  color: #f8f8f2 !important;
+  border: none !important;
+}
+
+/* Ensure code inside pre also has correct colors */
+pre code,
+pre code:not([class*="language-"]) {
+  background-color: transparent !important;
+  color: #f8f8f2 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Syntax Highlighting - High contrast colors for readability
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Base code text - bright white */
+pre code span,
+.sourceCode span {
+  color: #f8f8f2 !important;
+}
+
+/* Comments - muted but readable */
+pre code .co,
+.sourceCode .co {
+  color: #8b949e !important;
+  font-style: italic;
+}
+
+/* Strings - bright green */
+pre code .st,
+.sourceCode .st {
+  color: #a5d6ff !important;
+}
+
+/* Functions/Commands - bright cyan */
+pre code .fu,
+.sourceCode .fu {
+  color: #79c0ff !important;
+}
+
+/* Keywords - bright purple */
+pre code .kw,
+.sourceCode .kw {
+  color: #ff7b72 !important;
+}
+
+/* Variables - bright orange */
+pre code .va,
+.sourceCode .va {
+  color: #ffa657 !important;
+}
+
+/* External commands - bright yellow */
+pre code .ex,
+.sourceCode .ex {
+  color: #e3b341 !important;
+}
+
+/* Attributes/Flags - light blue */
+pre code .at,
+.sourceCode .at {
+  color: #a5d6ff !important;
+}
+
+/* Numbers - bright magenta */
+pre code .dv, pre code .fl,
+.sourceCode .dv, .sourceCode .fl {
+  color: #f2cc60 !important;
+}
+
+/* Operators */
+pre code .op,
+.sourceCode .op {
+  color: #ff7b72 !important;
+}
+
+/* Built-in functions */
+pre code .bu,
+.sourceCode .bu {
+  color: #79c0ff !important;
+}
+
+/* Control flow */
+pre code .cf,
+.sourceCode .cf {
+  color: #ff7b72 !important;
+}
+
+/* Ensure URLs and plain text in code blocks are visible */
+pre code a,
+.sourceCode a {
+  color: #58a6ff !important;
+  text-decoration: none !important;
+}
+
+/* Line numbers if present */
+pre code .ln,
+.sourceCode .ln {
+  color: #6e7681 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Category Badges - Glass effect pills
+   ═══════════════════════════════════════════════════════════════ */
+
+.quarto-category,
+.quarto-categories .quarto-category {
+  background: linear-gradient(135deg, rgba(42, 42, 42, 0.92) 0%, rgba(26, 26, 26, 0.96) 100%) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #ffffff !important;
+  padding: 0.5em 1.2em;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  outline: none !important;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  text-decoration: none !important;
+  font-size: 0.85em;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+
+.quarto-category:hover,
+.quarto-categories .quarto-category:hover {
+  background: linear-gradient(135deg, rgba(212, 106, 0, 0.95) 0%, rgba(179, 88, 0, 0.95) 100%) !important;
+  color: #ffffff !important;
+  transform: translateY(-2px);
+  box-shadow:
+    0 6px 16px rgba(212, 106, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 180, 100, 0.2) !important;
+}
+
+/* Remove any link styling inside categories */
+.quarto-category a {
+  color: inherit !important;
+  text-decoration: none !important;
+  border: none !important;
+  outline: none !important;
+}
+
+/* Code Tools Button - Glass effect */
+.code-tools-button,
+#quarto-code-tools-source,
+#quarto-code-tools-menu {
+  background: linear-gradient(135deg, rgba(42, 42, 42, 0.9) 0%, rgba(26, 26, 26, 0.95) 100%) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  padding: 0.5em 1em;
+  border-radius: 8px;
+  font-weight: 500;
+  min-height: 40px;
+  min-width: 44px;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.25s ease;
+}
+
+.code-tools-button:hover {
+  background: linear-gradient(135deg, rgba(212, 106, 0, 0.95) 0%, rgba(179, 88, 0, 0.95) 100%) !important;
+  transform: translateY(-1px);
+  box-shadow:
+    0 4px 12px rgba(212, 106, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Search Input - Accessible label */
+.search-container input[type="search"],
+input[type="search"] {
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+}
+
+/* Minimum touch targets */
+.sidebar-item a,
+.toc-actions a,
+button,
+[role="button"],
+input[type="button"],
+input[type="submit"] {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.5rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Author/Date Metadata - Professional Layout
+   ═══════════════════════════════════════════════════════════════ */
+
+.quarto-title-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-top: 1rem;
+  padding: 1rem 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.quarto-title-meta-heading {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #666;
+  margin-bottom: 0.25rem;
+}
+
+.quarto-title-meta-contents {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+/* Make author and date inline */
+.quarto-title-meta > div {
+  flex: 0 0 auto;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Responsive
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  h1 {
+    font-size: 1.8rem;
+  }
+
+  pre {
+    font-size: 0.8em;
+    padding: 1rem;
+  }
+
+  table {
+    font-size: 0.9em;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Print Styles
+   ═══════════════════════════════════════════════════════════════ */
+
+@media print {
+  body {
+    background: white;
+  }
+
+  h1 {
+    -webkit-text-fill-color: var(--text-primary);
+    background: none;
+    color: var(--text-primary);
+  }
+
+  .callout {
+    border: 1px solid #ccc;
+    box-shadow: none;
+  }
+}
