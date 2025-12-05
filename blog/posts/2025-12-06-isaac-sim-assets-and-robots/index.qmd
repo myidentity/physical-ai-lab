@@ -1,5 +1,5 @@
 ---
-title: "Isaac Sim Assets & Robots: A Beginner's Guide"
+title: "Isaac Sim Assets & Robots"
 description: "How to find, load, and use robots, environments, and 3D assets in NVIDIA Isaac Sim"
 author: "Rajesh"
 date: "2025-12-06"
