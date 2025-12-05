@@ -1,0 +1,79 @@
+---
+title: "Operationalizing the Physical AI Laboratory"
+description: "A Framework for Open Science, Technical Documentation, and Reproducible Infrastructure."
+author: "Rajesh"
+date: "2025-12-05"
+categories: [Infrastructure, Linux, Isaac Sim, Philosophy]
+format:
+  html:
+    code-fold: true
+---
+
+## 1. Introduction: The Convergence of Embodiment and Intelligence
+
+The current trajectory of artificial intelligence research is witnessing a profound bifurcation. While the dominant narrative focuses on Generative AI and Large Language Models (LLMs), a parallel revolution is occurring in **Physical AI**. Physical AI represents the integration of intelligence into embodied systems that must interact with, reason about, and manipulate the physical world.
+
+Unlike their purely digital counterparts, Physical AI agents, powered by Deep Reinforcement Learning (DRL), are constrained by the immutable laws of physics: gravity, friction, inertia, and contact dynamics.
+
+### The "Expert Gap"
+For the emerging practitioner, entering this field presents a steep learning curve. The requisite knowledge stack encompasses high-fidelity physics simulation, real-time rendering, kernel-level Linux administration, and advanced stochastic optimization.
+
+This laboratory aims to bridge the **"Expert Gap"**—the cognitive disconnect where experts unconsciously omit steps they deem trivial (like setting environment variables or handling driver conflicts). By documenting the struggle, we create a "contextual bridge" that highly polished expert documentation cannot provide.
+
+## 2. The Hardware & OS Stack
+
+The foundation of any Physical AI project is the compute environment.
+
+- **OS**: Ubuntu 22.04 LTS (Jammy Jellyfish)
+- **GPU**: NVIDIA RTX (12GB+ VRAM recommended)
+- **Driver**: NVIDIA 535+ (Production Branch)
+
+### Automated Setup Scripts
+
+I have operationalized the setup process into three reproducible bash scripts. These can be found in the `src/setup/` directory of this repository.
+
+#### Part 1: System Prep & Drivers
+
+This script manages the "fresh install" state, adding the necessary PPAs and installing the specific NVIDIA driver branch required for Isaac Sim.
+
+```bash
+# From src/setup/01_setup_drivers.sh
+sudo ./src/setup/01_setup_drivers.sh
+```
+
+#### Part 2: The Containerization Stack
+
+Reproducibility is a crisis in RL. We use Docker with the NVIDIA Container Toolkit to allow containers to access the host GPU.
+
+```bash
+# From src/setup/02_setup_docker.sh
+sudo ./src/setup/02_setup_docker.sh
+```
+
+#### Part 3: The Python Environment
+
+We avoid the system Python at all costs. This script sets up a dedicated Miniconda environment with Python 3.10 (the compatibility sweet spot for Isaac Sim 4.x).
+
+```bash
+# From src/setup/03_setup_python.sh
+./src/setup/03_setup_python.sh
+```
+
+## 3. The Simulation Ecosystem: NVIDIA Isaac Sim
+
+We utilize **NVIDIA Isaac Sim** as our primary simulation testbed. It leverages the Omniverse platform and Universal Scene Description (USD) to provide photorealistic rendering and physically accurate dynamics.
+
+### Configuration Note
+After installation, ensure your environment variables are set correctly to allow external Python scripts to interact with the simulator.
+
+```bash
+# Add to ~/.bashrc
+export ISAAC_SIM_PATH=~/.local/share/ov/pkg/isaac-sim-4.2.0
+alias isaac_python='$ISAAC_SIM_PATH/python.sh'
+```
+
+## 4. Conclusion
+
+Establishing a Physical AI laboratory is a significant undertaking. By automating the infrastructure setup and leveraging Quarto for reproducible publishing, we can effectively operationalize the learning journey.
+
+*The code for this laboratory is available in the [GitHub Repository](https://github.com/YOUR_USERNAME/physical-ai-lab).*
