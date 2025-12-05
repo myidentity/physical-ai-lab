@@ -4,7 +4,7 @@ A comprehensive open-science repository for Physical Artificial Intelligence, fo
 
 ## Repository Structure
 
-- **`blog/`**: The Quarto-based documentation website. Contains executable notebooks and markdown posts.
+- **`blog/`**: Documentation website source. Contains tutorials and guides.
 - **`src/`**: The source code for RL agents, custom environments, and utilities.
 - **`models/`**: (Ignored) Local storage for trained model checkpoints.
 - **`logs/`**: (Ignored) Local storage for TensorBoard/WandB logs.
@@ -19,13 +19,9 @@ conda env create -f environment.yml
 conda activate physical_ai
 ```
 
-### 2. Running the Blog Locally
-This requires [Quarto](https://quarto.org/docs/get-started/) to be installed.
+### 2. Documentation
 
-```bash
-cd blog
-quarto preview
-```
+Visit the live documentation at: **https://myidentity.github.io/physical-ai-lab/**
 
 ### 3. Training an Agent
 Scripts are located in `src/`.
