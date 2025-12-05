@@ -1,9 +1,19 @@
+# Secrets & Credentials - NEVER COMMIT
+.env
+.env.*
+*.key
+*.pem
+*credentials*
+*secret*
+.netrc
+.npmrc
+.pypirc
+
 # Python & Conda
 __pycache__/
 *.py[cod]
 *$py.class
 .ipynb_checkpoints/
-.env
 .venv
 env/
 venv/
