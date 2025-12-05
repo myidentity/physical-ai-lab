@@ -1,0 +1,28 @@
+project:
+  type: website
+  output-dir: ../_site
+
+website:
+  title: "Physical AI Laboratory"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - href: about.qmd
+        text: About
+    right:
+      - icon: github
+        href: https://github.com/YOUR_USERNAME/physical-ai-lab
+  
+  sidebar:
+    style: "docked"
+    search: true
+    contents:
+      - section: "Blog"
+        contents: posts
+
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: true

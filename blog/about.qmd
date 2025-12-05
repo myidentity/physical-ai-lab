@@ -1,0 +1,17 @@
+---
+title: "About"
+about:
+  template: jolla
+  links:
+    - icon: github
+      text: Github
+      href: https://github.com
+---
+
+## The Mission
+
+The Physical AI Laboratory aims to bridge the gap between digital intelligence and physical embodiment. We focus on:
+
+- **High-Fidelity Simulation**: Leveraging NVIDIA Isaac Sim to create photorealistic training environments.
+- **Sim-to-Real Transfer**: Robustifying policies for deployment on real hardware.
+- **Open Science**: Documenting the "unsexy" parts of engineering—drivers, kernels, and dependency hell.

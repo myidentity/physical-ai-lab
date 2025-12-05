@@ -1,0 +1,38 @@
+# Python & Conda
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+.env
+.venv
+env/
+venv/
+
+# Quarto
+/_site/
+/.quarto/
+
+# Project Specific - Large Files
+models/*
+!models/.gitkeep
+logs/*
+!logs/.gitkeep
+*.pt
+*.pth
+*.onnx
+*.zip
+
+# Isaac Sim / Nvidia
+*.usd
+*.usda
+*.usdc
+ov/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db

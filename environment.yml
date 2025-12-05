@@ -1,0 +1,24 @@
+name: physical_ai
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pytorch
+  - torchvision
+  - torchaudio
+  - pytorch-cuda=12.1
+  - jupyter
+  - matplotlib
+  - pandas
+  - numpy
+  - pip
+  - pip:
+    - stable-baselines3[extra]
+    - gymnasium[all]
+    - wandb
+    - quarto
+    - shimmy
+    - tensorboard
