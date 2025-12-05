@@ -27,7 +27,7 @@ By the end of this guide, you will have:
 
 **The Easy Path:** Download our launcher script and skip the manual setup!
 ```bash
-wget https://raw.githubusercontent.com/myidentity/physical-ai-lab/main/scripts/auto_start.sh
+wget https://raw.githubusercontent.com/myidentity/physical-ai-lab/master/scripts/auto_start.sh
 chmod +x auto_start.sh
 ./auto_start.sh
 ```
@@ -160,7 +160,7 @@ Before proceeding with the full setup, run NVIDIA's official compatibility check
 
 1. **Download the launcher script** (if you haven't already):
 ```bash
-wget https://raw.githubusercontent.com/myidentity/physical-ai-lab/main/scripts/auto_start.sh
+wget https://raw.githubusercontent.com/myidentity/physical-ai-lab/master/scripts/auto_start.sh
 chmod +x auto_start.sh
 ```
 
@@ -634,7 +634,7 @@ Instead of typing long Docker commands, use our launcher script!
 
 ```bash
 cd ~
-wget https://raw.githubusercontent.com/myidentity/physical-ai-lab/main/scripts/auto_start.sh
+wget https://raw.githubusercontent.com/myidentity/physical-ai-lab/master/scripts/auto_start.sh
 chmod +x auto_start.sh
 ```
 
