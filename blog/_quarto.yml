@@ -27,7 +27,7 @@ website:
         contents: posts
 
   page-footer:
-    left: "Built with [Quarto](https://quarto.org/) | Open Source"
+    left: "Physical AI Laboratory | Open Source"
     right:
       - icon: github
         href: https://github.com/myidentity/physical-ai-lab
