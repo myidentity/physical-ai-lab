@@ -23,7 +23,7 @@ By the end of this guide, you will know:
 - **How to download** additional assets from NVIDIA
 - **How to import** your own robots (URDF/MJCF)
 
-**Prerequisites:** Isaac Sim running ([see our setup guide](../2025-12-05-operationalizing-the-lab/index.qmd))
+**Prerequisites:** Isaac Sim running ([see our setup guide](../2025-12-12-operationalizing-the-lab/index.qmd))
 :::
 
 ---
@@ -43,7 +43,7 @@ To run Python scripts inside the container:
 ./python.sh your_script.py
 ```
 
-See our [setup guide](../2025-12-05-operationalizing-the-lab/index.qmd) if you haven't installed Isaac Sim yet.
+See our [setup guide](../2025-12-12-operationalizing-the-lab/index.qmd) if you haven't installed Isaac Sim yet.
 
 ---
 
@@ -249,7 +249,7 @@ from omni.isaac.lab_assets.anymal import ANYMAL_D_CFG
 ::: {.callout-note}
 ## Isaac Lab Context Required
 
-Isaac Lab robots are designed to work within Isaac Lab training environments. See our [setup guide's training example](../2025-12-05-operationalizing-the-lab/index.qmd#sec-first-training) for how to run a complete Isaac Lab workflow with these robots.
+Isaac Lab robots are designed to work within Isaac Lab training environments. See our [setup guide's training example](../2025-12-12-operationalizing-the-lab/index.qmd#sec-first-training) for how to run a complete Isaac Lab workflow with these robots.
 :::
 
 ### Common Isaac Lab Robots

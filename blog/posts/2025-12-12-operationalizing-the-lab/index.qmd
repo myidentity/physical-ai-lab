@@ -2,7 +2,7 @@
 title: "Setting Up Your Physical AI Laboratory"
 description: "A complete beginner's guide to NVIDIA Isaac Sim & Isaac Lab on Ubuntu 24.04 with Docker"
 author: "Rajesh"
-date: "2025-12-05"
+date: "2025-12-12"
 categories: [Infrastructure, Docker, Isaac Sim, Isaac Lab, Tutorial]
 image: "thumbnail.png"
 format:
@@ -20,17 +20,18 @@ By the end of this guide, you will have:
 
 - **NVIDIA Isaac Sim 5.1.0** running in Docker (robotics simulator)
 - **NVIDIA Isaac Lab** for reinforcement learning experiments
-- **A launcher script** that makes everything one-click easy
+- **A launcher script** that handles everything - NGC login, image downloads, setup
 - **A reproducible setup** you can share with others
 
 **Time required:** ~2 hours (mostly waiting for downloads)
 
-**The Easy Path:** Download our launcher script and skip the manual setup!
+**The Easy Path:** Download our launcher script - it handles everything!
 ```bash
 wget https://raw.githubusercontent.com/myidentity/physical-ai-lab/main/scripts/auto_start.sh
 chmod +x auto_start.sh
 ./auto_start.sh
 ```
+The script will guide you through NGC login, image download, and setup - no manual steps needed!
 :::
 
 ---
@@ -394,6 +395,11 @@ Pull and run NVIDIA Isaac Sim in a Docker container.
 
 ### Step 5.1: Login to NVIDIA NGC
 
+::: {.callout-tip}
+## 🚀 Using the Launcher Script?
+If you're using `auto_start.sh`, select option **'s'** (NGC Login) - it will guide you through this process!
+:::
+
 You need an NVIDIA account to download Isaac Sim:
 
 1. Go to [https://ngc.nvidia.com](https://ngc.nvidia.com)
@@ -418,6 +424,11 @@ mkdir -p ~/isaac-sim/{cache/kit,cache/ov,cache/pip,cache/glcache,cache/computeca
 ```
 
 ### Step 5.3: Pull Isaac Sim Image
+
+::: {.callout-tip}
+## 🚀 Using the Launcher Script?
+If you're using `auto_start.sh`, select option **'p'** (Pull Isaac Sim Image) - it handles this automatically!
+:::
 
 This downloads ~15GB, so it takes a while:
 
@@ -508,6 +519,11 @@ Set up Isaac Lab for reinforcement learning experiments.
 :::
 
 ### Step 6.1: Clone Isaac Lab Repository
+
+::: {.callout-tip}
+## 🚀 Using the Launcher Script?
+If you're using `auto_start.sh`, select option **'c'** (Clone Isaac Lab) - it handles this automatically!
+:::
 
 ```bash
 mkdir -p ~/docker/isaac-lab
@@ -652,6 +668,15 @@ You'll see a menu like this:
            (Official NVIDIA Commands)
 ═══════════════════════════════════════════════════════
 
+✓ Display Mode: NVIDIA (Hardware) - HDMI active
+ℹ Isaac Sim: Container STOPPED
+ℹ Isaac Lab: Container not created yet
+
+─────────── SETUP (First Time) ─────────────────────────
+s) NGC Login (for pulling images)        [manual check]
+p) Pull Isaac Sim 5.1.0 Image (~15GB)    [NOT FOUND]
+c) Clone Isaac Lab Repository            [NOT FOUND]
+
 0) Toggle Display Driver (Dummy ↔ NVIDIA)
 
 ─────────── ISAAC SIM (Simulation Only) ───────────────
@@ -674,7 +699,20 @@ b) Python Package Management Guide
 x/q) Exit
 ```
 
+::: {.callout-note}
+## First Time Setup
+On first run, the SETUP section shows `[NOT FOUND]` for missing components. After you pull the image and clone Isaac Lab, these will show `[FOUND]` in green.
+:::
+
 ### Complete Menu Reference
+
+#### Setup Options (First Time)
+
+| Option | Name | Description |
+|--------|------|-------------|
+| **s** | NGC Login | Login to NVIDIA GPU Cloud (required to pull images). Opens interactive prompt for username (`$oauthtoken`) and API key. |
+| **p** | Pull Isaac Sim Image | Download the Isaac Sim 5.1.0 Docker image (~15GB). Shows `[FOUND]` or `[NOT FOUND]` status. |
+| **c** | Clone Isaac Lab | Clone the Isaac Lab repository to `~/docker/isaac-lab/IsaacLab`. Shows `[FOUND]` or `[NOT FOUND]` status. |
 
 #### Display Configuration
 

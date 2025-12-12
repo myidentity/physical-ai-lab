@@ -46,3 +46,7 @@ ov/
 # OS
 .DS_Store
 Thumbs.db
+# Local files - do not commit
+local/
+*_recording.sh
+*_prototype.sh

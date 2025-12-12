@@ -18,6 +18,10 @@ CUSTOM_IMAGE="isaac-sim-custom:latest"
 OFFICIAL_IMAGE="nvcr.io/nvidia/isaac-sim:5.1.0"
 CONTAINER_NAME="isaac-sim"
 
+# Status flags (set by check_prerequisites)
+IMAGE_AVAILABLE=false
+ISAAC_LAB_AVAILABLE=false
+
 # Check which image to use
 if docker images | grep -q "isaac-sim-custom.*latest"; then
     ISAAC_IMAGE="${CUSTOM_IMAGE}"
@@ -158,16 +162,26 @@ check_prerequisites() {
     fi
     print_success "GPU access verified"
 
-    # Check for custom image
+    # Check for custom image (don't exit if missing - user can pull from menu)
     if [ "$USING_CUSTOM" = true ]; then
         print_success "Using custom image: ${CUSTOM_IMAGE}"
+        IMAGE_AVAILABLE=true
     else
-        if ! docker images | grep -q "isaac-sim.*5.1.0"; then
-            print_error "Isaac Sim 5.1.0 image not found"
-            print_info "Pull the image with: docker pull nvcr.io/nvidia/isaac-sim:5.1.0"
-            exit 1
+        if docker images | grep -q "isaac-sim.*5.1.0"; then
+            print_success "Using official image: ${OFFICIAL_IMAGE}"
+            IMAGE_AVAILABLE=true
+        else
+            print_warning "Isaac Sim 5.1.0 image not found"
+            print_info "Use menu option 'p' to pull the image"
+            IMAGE_AVAILABLE=false
         fi
-        print_success "Using official image: ${OFFICIAL_IMAGE}"
+    fi
+
+    # Check for Isaac Lab
+    if [ -d "${HOME}/docker/isaac-lab/IsaacLab" ]; then
+        ISAAC_LAB_AVAILABLE=true
+    else
+        ISAAC_LAB_AVAILABLE=false
     fi
 
     echo ""
@@ -314,6 +328,154 @@ manage_packages() {
     read -p "Press Enter to continue..."
 }
 
+# ============ SETUP FUNCTIONS (First Time) ============
+
+# Function to login to NGC
+ngc_login() {
+    clear
+    echo "═══════════════════════════════════════════════════════"
+    echo "              NGC Login (NVIDIA GPU Cloud)"
+    echo "═══════════════════════════════════════════════════════"
+    echo ""
+    print_info "NGC login is required to pull NVIDIA container images"
+    echo ""
+    echo "📋 STEPS TO GET YOUR API KEY:"
+    echo ""
+    echo "  1. Go to: https://ngc.nvidia.com"
+    echo "  2. Create a free account (or sign in)"
+    echo "  3. Click your username (top right) → Setup"
+    echo "  4. Click 'Generate API Key'"
+    echo "  5. Copy the key (starts with 'nvapi-...')"
+    echo ""
+    echo "═══════════════════════════════════════════════════════"
+    echo ""
+    read -p "Press Enter when you have your API key ready..."
+    echo ""
+    print_important "When prompted:"
+    echo "  Username: \$oauthtoken  (type this literally)"
+    echo "  Password: <paste your API key>"
+    echo ""
+
+    docker login nvcr.io
+
+    if [ $? -eq 0 ]; then
+        echo ""
+        print_success "NGC login successful!"
+    else
+        echo ""
+        print_error "NGC login failed. Please try again."
+    fi
+    echo ""
+    read -p "Press Enter to continue..."
+}
+
+# Function to pull Isaac Sim image
+pull_isaac_sim_image() {
+    clear
+    echo "═══════════════════════════════════════════════════════"
+    echo "         Pull Isaac Sim 5.1.0 Docker Image"
+    echo "═══════════════════════════════════════════════════════"
+    echo ""
+
+    # Check if already exists
+    if docker images | grep -q "isaac-sim.*5.1.0"; then
+        print_success "Isaac Sim 5.1.0 image already exists!"
+        echo ""
+        docker images | grep isaac-sim
+        echo ""
+        read -p "Press Enter to continue..."
+        return
+    fi
+
+    print_warning "This will download ~15GB. Make sure you have:"
+    echo "  • Logged into NGC (Option s)"
+    echo "  • Stable internet connection"
+    echo "  • ~20GB free disk space"
+    echo ""
+
+    read -p "Continue with download? (y/N): " confirm
+    if [ "$confirm" != "y" ] && [ "$confirm" != "Y" ]; then
+        print_info "Download cancelled"
+        read -p "Press Enter to continue..."
+        return
+    fi
+
+    echo ""
+    print_info "Pulling Isaac Sim 5.1.0..."
+    print_info "This will take 15-30 minutes depending on your connection"
+    echo ""
+
+    docker pull nvcr.io/nvidia/isaac-sim:5.1.0
+
+    if [ $? -eq 0 ]; then
+        echo ""
+        print_success "Isaac Sim 5.1.0 downloaded successfully!"
+        IMAGE_AVAILABLE=true
+
+        # Update ISAAC_IMAGE variable
+        ISAAC_IMAGE="${OFFICIAL_IMAGE}"
+    else
+        echo ""
+        print_error "Download failed. Check your NGC login and try again."
+    fi
+    echo ""
+    read -p "Press Enter to continue..."
+}
+
+# Function to clone Isaac Lab
+clone_isaac_lab() {
+    clear
+    echo "═══════════════════════════════════════════════════════"
+    echo "            Clone Isaac Lab Repository"
+    echo "═══════════════════════════════════════════════════════"
+    echo ""
+
+    # Check if already exists
+    if [ -d "${HOME}/docker/isaac-lab/IsaacLab" ]; then
+        print_success "Isaac Lab already exists at:"
+        echo "  ~/docker/isaac-lab/IsaacLab"
+        echo ""
+        ISAAC_LAB_AVAILABLE=true
+        read -p "Press Enter to continue..."
+        return
+    fi
+
+    print_info "This will clone Isaac Lab from GitHub"
+    echo "  Repository: https://github.com/isaac-sim/IsaacLab.git"
+    echo "  Location:   ~/docker/isaac-lab/IsaacLab"
+    echo ""
+
+    read -p "Continue? (y/N): " confirm
+    if [ "$confirm" != "y" ] && [ "$confirm" != "Y" ]; then
+        print_info "Clone cancelled"
+        read -p "Press Enter to continue..."
+        return
+    fi
+
+    echo ""
+    print_info "Cloning Isaac Lab..."
+
+    mkdir -p ~/docker/isaac-lab
+    cd ~/docker/isaac-lab
+
+    git clone https://github.com/isaac-sim/IsaacLab.git
+
+    if [ $? -eq 0 ]; then
+        echo ""
+        print_success "Isaac Lab cloned successfully!"
+        ISAAC_LAB_AVAILABLE=true
+    else
+        echo ""
+        print_error "Clone failed. Check your internet connection."
+    fi
+
+    cd - > /dev/null
+    echo ""
+    read -p "Press Enter to continue..."
+}
+
+# ============ END SETUP FUNCTIONS ============
+
 # Function to run with GUI
 run_with_gui() {
     clear
@@ -321,6 +483,17 @@ run_with_gui() {
     echo "     Isaac Sim 5.1.0 - GUI Mode (Official NVIDIA)"
     echo "═══════════════════════════════════════════════════════"
     echo ""
+
+    # Check if image is available
+    if [ "$IMAGE_AVAILABLE" != true ]; then
+        print_error "Isaac Sim image not found!"
+        echo ""
+        print_info "Please use option 'p' to pull the image first"
+        print_info "You may also need to login to NGC first (option 's')"
+        echo ""
+        read -p "Press Enter to continue..."
+        return
+    fi
 
     # Check if directories exist AND if container_helper.sh is properly created as a file
     if [ ! -d "${ISAAC_HOME}" ] || [ ! -f "${ISAAC_HOME}/container_helper.sh" ]; then
@@ -383,6 +556,17 @@ run_headless() {
     echo "═══════════════════════════════════════════════════════"
     echo ""
 
+    # Check if image is available
+    if [ "$IMAGE_AVAILABLE" != true ]; then
+        print_error "Isaac Sim image not found!"
+        echo ""
+        print_info "Please use option 'p' to pull the image first"
+        print_info "You may also need to login to NGC first (option 's')"
+        echo ""
+        read -p "Press Enter to continue..."
+        return
+    fi
+
     # Check if directories exist AND if container_helper.sh is properly created as a file
     if [ ! -d "${ISAAC_HOME}" ] || [ ! -f "${ISAAC_HOME}/container_helper.sh" ]; then
         setup_directories
@@ -426,10 +610,7 @@ run_isaac_lab_official() {
     if [ ! -d "${HOME}/docker/isaac-lab/IsaacLab" ]; then
         print_error "Isaac Lab not found at ~/docker/isaac-lab/IsaacLab"
         echo ""
-        print_info "Clone Isaac Lab repository first:"
-        echo "  mkdir -p ~/docker/isaac-lab"
-        echo "  cd ~/docker/isaac-lab"
-        echo "  git clone https://github.com/isaac-sim/IsaacLab.git"
+        print_info "Please use option 'c' from the main menu to clone Isaac Lab"
         echo ""
         read -p "Press Enter to continue..."
         return
@@ -491,6 +672,17 @@ run_compatibility_check() {
     echo "      Isaac Sim 5.1.0 - Compatibility Check"
     echo "═══════════════════════════════════════════════════════"
     echo ""
+
+    # Check if image is available
+    if [ "$IMAGE_AVAILABLE" != true ]; then
+        print_error "Isaac Sim image not found!"
+        echo ""
+        print_info "Please use option 'p' to pull the image first"
+        print_info "You may also need to login to NGC first (option 's')"
+        echo ""
+        read -p "Press Enter to continue..."
+        return
+    fi
 
     print_info "Configuring X11 access..."
     xhost +local: > /dev/null 2>&1
@@ -767,6 +959,26 @@ main_menu() {
         fi
         echo ""
 
+        # Show setup section if things are missing
+        echo "─────────── SETUP (First Time) ─────────────────────────"
+        echo -n "s) NGC Login (for pulling images)        "
+        echo -e "${YELLOW}[manual check]${NC}"
+
+        echo -n "p) Pull Isaac Sim 5.1.0 Image (~15GB)    "
+        if [ "$IMAGE_AVAILABLE" = true ]; then
+            echo -e "${GREEN}[FOUND]${NC}"
+        else
+            echo -e "${RED}[NOT FOUND]${NC}"
+        fi
+
+        echo -n "c) Clone Isaac Lab Repository            "
+        if [ "$ISAAC_LAB_AVAILABLE" = true ]; then
+            echo -e "${GREEN}[FOUND]${NC}"
+        else
+            echo -e "${RED}[NOT FOUND]${NC}"
+        fi
+        echo ""
+
         echo "0) Toggle Display Driver (Dummy ↔ NVIDIA)"
         echo ""
         echo "─────────── ISAAC SIM (Simulation Only) ───────────────"
@@ -818,9 +1030,18 @@ main_menu() {
         echo ""
         echo "═══════════════════════════════════════════════════════"
         echo ""
-        read -p "Select option [0-9,a,b,x,q]: " choice
+        read -p "Select option [s,p,c,0-9,a,b,x,q]: " choice
 
         case $choice in
+            s|S)
+                ngc_login
+                ;;
+            p|P)
+                pull_isaac_sim_image
+                ;;
+            c|C)
+                clone_isaac_lab
+                ;;
             0)
                 toggle_display_driver
                 ;;
