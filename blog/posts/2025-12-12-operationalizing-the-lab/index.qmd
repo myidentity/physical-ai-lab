@@ -14,7 +14,7 @@ toc-depth: 3
 ---
 
 ::: {.callout-tip}
-## TL;DR - What You'll Build
+## TL;DR - What You'll Build {.unlisted}
 
 By the end of this guide, you will have:
 
@@ -66,7 +66,7 @@ This guide documents **every step** - including the mistakes - so you don't have
 ### Hardware Requirements
 
 ::: {.callout-important}
-## Minimum Hardware
+## Minimum Hardware {.unlisted}
 
 - **GPU**: NVIDIA RTX series (RTX 2070 or better)
 - **VRAM**: 8GB minimum, 12GB+ recommended
@@ -84,7 +84,7 @@ nvidia-smi
 ```
 
 ::: {.callout-tip}
-## What You Should See
+## What You Should See {.unlisted}
 
 If drivers are installed, you'll see a table showing your GPU model, driver version, and CUDA version. If you see `command not found`, follow the steps below.
 :::
@@ -112,7 +112,7 @@ nvidia-smi
 ```
 
 ::: {.callout-warning}
-## Secure Boot Users
+## Secure Boot Users {.unlisted}
 
 If your computer uses Secure Boot, you'll see extra steps during installation. Ubuntu will ask you to create a temporary password. After reboot, a blue "MOK Management" screen appears - select "Enroll MOK", enter the password, and reboot.
 
@@ -136,7 +136,7 @@ This guide was tested on:
 ## 3. Docker Setup {#sec-docker-setup}
 
 ::: {.callout-tip}
-## Goal
+## Goal {.unlisted}
 
 Install Docker and configure it to use your NVIDIA GPU. This is required before using the launcher script.
 :::
@@ -155,7 +155,7 @@ sudo usermod -aG docker $USER
 ```
 
 ::: {.callout-warning}
-## Important!
+## Important! {.unlisted}
 
 After adding yourself to the docker group, you must **log out and log back in** (or reboot) for it to take effect.
 
@@ -203,7 +203,7 @@ docker run --rm --gpus all nvidia/cuda:12.0-base nvidia-smi
 You should see the same `nvidia-smi` output as on your host.
 
 ::: {.callout-warning}
-## Common Error: "could not select device driver"
+## Common Error: "could not select device driver" {.unlisted}
 
 If you see this error:
 ```bash
@@ -217,7 +217,7 @@ Still not working? Reboot your computer.
 ## 4. Quick Start with Launcher Script {#sec-quickstart}
 
 ::: {.callout-tip}
-## The Easy Way
+## The Easy Way {.unlisted}
 
 Now that Docker is set up, use our launcher script to handle everything else: NGC login, downloading Isaac Sim, cloning Isaac Lab, and running containers.
 :::
@@ -285,7 +285,7 @@ When prompted:
 ![Image pull starting](images/04_image_pull_start.png)
 
 ::: {.callout-note}
-## Coffee Time
+## Coffee Time {.unlisted}
 
 This download takes 15-30 minutes depending on your internet speed.
 :::
@@ -332,7 +332,7 @@ This download takes 15-30 minutes depending on your internet speed.
 | **a** | Stop Container | Stop the Isaac Lab container |
 
 ::: {.callout-note}
-## Isaac Lab vs Isaac Sim
+## Isaac Lab vs Isaac Sim {.unlisted}
 
 - **Isaac Sim** (Options 1-4): The base simulator for rendering and physics
 - **Isaac Lab** (Options 8-a): Reinforcement learning framework built on Isaac Sim
@@ -361,7 +361,7 @@ Inside the container, run `./runapp.sh` to start the simulator:
 ![Isaac Sim GUI running](images/12_isaac_sim_gui.png)
 
 ::: {.callout-note}
-## First-Time Startup
+## First-Time Startup {.unlisted}
 
 The first time you run Isaac Sim, it compiles shaders for your GPU. This can take **5-10 minutes**. Subsequent starts are much faster.
 :::
@@ -397,7 +397,7 @@ Select **Option 8** from the launcher to build and start the Isaac Lab container
 ```
 
 ::: {.callout-note}
-## First-Time Build
+## First-Time Build {.unlisted}
 
 The first time you run Option 8, Isaac Lab will build its Docker container. This takes **10-15 minutes** as it installs all RL dependencies (PyTorch, RSL-RL, etc.). Subsequent starts are instant.
 :::
@@ -432,7 +432,7 @@ You should see 64 cartpoles training simultaneously - each one learning to balan
 ![Isaac Lab running Cartpole training with 64 parallel environments](images/16_isaac_lab_cartpole.png)
 
 ::: {.callout-tip}
-## What You're Seeing
+## What You're Seeing {.unlisted}
 
 - **64 parallel environments**: The GPU simulates all 64 cartpoles simultaneously
 - **Real-time learning**: Watch the poles start wobbly and gradually stabilize
@@ -554,7 +554,7 @@ Happy simulating!
 ## Appendix A: Manual Installation {#sec-manual}
 
 ::: {.callout-note}
-## When to Use This
+## When to Use This {.unlisted}
 
 These manual steps are an **alternative** to using the launcher script. Use this if you prefer full control or need to customize the setup.
 :::
@@ -622,7 +622,7 @@ python3 docker/container.py enter
 ## Appendix B: Core Concepts {#sec-concepts}
 
 ::: {.callout-note}
-## Optional Reading
+## Optional Reading {.unlisted}
 
 This section explains Docker and Isaac Sim concepts. Skip if you're already familiar.
 :::
