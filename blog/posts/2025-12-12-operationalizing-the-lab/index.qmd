@@ -377,10 +377,14 @@ To train a reinforcement learning agent:
 ```bash
 # Start Isaac Lab container (Option 8 in launcher)
 # Then inside the container:
-./isaaclab.sh -p scripts/rsl_rl/train.py --task Isaac-Cartpole-v0 --num_envs 64
+./isaaclab.sh -p scripts/reinforcement_learning/rsl_rl/train.py --task Isaac-Cartpole-v0 --num_envs 64
 ```
 
-You should see 64 cartpoles training simultaneously!
+You should see 64 cartpoles training simultaneously - each one learning to balance the pole through reinforcement learning!
+
+![Isaac Lab running Cartpole training with 64 parallel environments](images/16_isaac_lab_cartpole.png)
+
+🎉 **Congratulations!** You now have a fully working Physical AI Laboratory with both Isaac Sim and Isaac Lab!
 
 ---
 
