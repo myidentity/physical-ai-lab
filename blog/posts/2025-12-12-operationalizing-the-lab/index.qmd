@@ -327,9 +327,16 @@ This download takes 15-30 minutes depending on your internet speed.
 
 | Option | Name | Description |
 |--------|------|-------------|
-| **8** | Start/Build Container | Build and start Isaac Lab |
-| **9** | Quick Access | Enter running container |
-| **a** | Stop Container | Stop Isaac Lab container |
+| **8** | Start/Build Container | Build the Isaac Lab Docker container and start it |
+| **9** | Quick Access | Enter a running Isaac Lab container |
+| **a** | Stop Container | Stop the Isaac Lab container |
+
+::: {.callout-note}
+## Isaac Lab vs Isaac Sim
+
+- **Isaac Sim** (Options 1-4): The base simulator for rendering and physics
+- **Isaac Lab** (Options 8-a): Reinforcement learning framework built on Isaac Sim
+:::
 
 ---
 
@@ -370,19 +377,80 @@ Once Isaac Sim is running:
 
 ![Franka robot loaded in Isaac Sim](images/13_isaac_sim_franka.png)
 
-### Using Isaac Lab
+### Start Isaac Lab
 
-To train a reinforcement learning agent:
+Now let's verify Isaac Lab works by training a reinforcement learning agent!
 
-```bash
-# Start Isaac Lab container (Option 8 in launcher)
-# Then inside the container:
-./isaaclab.sh -p scripts/reinforcement_learning/rsl_rl/train.py --task Isaac-Cartpole-v0 --num_envs 64
+**Step 1: Start Isaac Lab Container**
+
+Select **Option 8** from the launcher to build and start the Isaac Lab container:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│        Isaac Sim 5.1.0 & Isaac Lab Launcher                     │
+├─────────────────────────────────────────────────────────────────┤
+│  ISAAC LAB OPTIONS                                              │
+│  8) Start/Build Container    [Run Isaac Lab]                    │
+│  9) Quick Access                                                │
+│  a) Stop Container                                              │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-You should see 64 cartpoles training simultaneously - each one learning to balance the pole through reinforcement learning!
+::: {.callout-note}
+## First-Time Build
+
+The first time you run Option 8, Isaac Lab will build its Docker container. This takes **10-15 minutes** as it installs all RL dependencies (PyTorch, RSL-RL, etc.). Subsequent starts are instant.
+:::
+
+**Step 2: Run Cartpole Training**
+
+Once inside the Isaac Lab container, you'll see the workspace prompt:
+
+```bash
+root@physical-ai-lab:/workspace/isaaclab#
+```
+
+Run the Cartpole training with 64 parallel environments:
+
+```bash
+./isaaclab.sh -p scripts/reinforcement_learning/rsl_rl/train.py --task=Isaac-Cartpole-v0 --num_envs=64
+```
+
+**What the command does:**
+
+| Part | Meaning |
+|------|---------|
+| `./isaaclab.sh -p` | Run a Python script through Isaac Lab |
+| `scripts/reinforcement_learning/rsl_rl/train.py` | The RSL-RL training script |
+| `--task=Isaac-Cartpole-v0` | The Cartpole balancing task |
+| `--num_envs=64` | Run 64 environments in parallel |
+
+**Step 3: Watch the Training!**
+
+You should see 64 cartpoles training simultaneously - each one learning to balance the pole through trial and error!
 
 ![Isaac Lab running Cartpole training with 64 parallel environments](images/16_isaac_lab_cartpole.png)
+
+::: {.callout-tip}
+## What You're Seeing
+
+- **64 parallel environments**: The GPU simulates all 64 cartpoles simultaneously
+- **Real-time learning**: Watch the poles start wobbly and gradually stabilize
+- **Training metrics**: The terminal shows reward values increasing as learning progresses
+:::
+
+### Other Isaac Lab Commands
+
+```bash
+# List all available environments
+./isaaclab.sh -p scripts/environments/list_envs.py
+
+# Train a different task (Humanoid)
+./isaaclab.sh -p scripts/reinforcement_learning/rsl_rl/train.py --task=Isaac-Humanoid-v0 --num_envs=64
+
+# Train with more environments (if you have VRAM)
+./isaaclab.sh -p scripts/reinforcement_learning/rsl_rl/train.py --task=Isaac-Cartpole-v0 --num_envs=256
+```
 
 🎉 **Congratulations!** You now have a fully working Physical AI Laboratory with both Isaac Sim and Isaac Lab!
 
