@@ -220,6 +220,18 @@ show_system_info() {
     fi
     echo ""
 
+    print_info "CPU Governor:"
+    GOVERNOR=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 2>/dev/null)
+    if [ -n "$GOVERNOR" ]; then
+        echo "  $GOVERNOR"
+        if [ "$GOVERNOR" = "powersave" ]; then
+            echo "  (Compatibility check may show a warning - safe to ignore on laptops)"
+        fi
+    else
+        echo "  Unable to detect"
+    fi
+    echo ""
+
     read -p "Press Enter to continue..."
 }
 

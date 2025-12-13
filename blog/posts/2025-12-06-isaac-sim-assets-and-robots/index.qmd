@@ -5,6 +5,7 @@ author: "Rajesh"
 date: "2025-12-06"
 categories: [Isaac Sim, Robots, Assets, Tutorial]
 image: "thumbnail.png"
+draft: true
 format:
   html:
     code-fold: false

@@ -24,7 +24,8 @@ website:
     background: light
     contents:
       - section: "Blog"
-        contents: posts
+        contents:
+          - posts/2025-12-12-operationalizing-the-lab/index.qmd
 
   page-footer:
     left: "Physical AI Laboratory | Open Source"
