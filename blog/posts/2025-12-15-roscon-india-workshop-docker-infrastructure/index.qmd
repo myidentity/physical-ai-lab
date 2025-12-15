@@ -26,10 +26,7 @@ We built a production-grade Docker infrastructure for ROSCon India 2025 workshop
 
 **Key Innovation:** Discovered TurtleBot3 uses deprecated Gazebo Classic (EOL Jan 2025) at Phase 7, pivoted to `ros-gz-sim-demos` before committing to 80GB of offline images. This saved the workshop from teaching deprecated technology.
 
-**Who This Is For:**
-- Workshop organizers at robotics conferences
-- ROS 2 developers setting up training environments
-- Anyone building reproducible robotics education infrastructure
+**Why I Built This:** As a workshop attendee, I wanted to arrive prepared—not scrambling to install dependencies while the instructor moves on. This setup gives me multiple environments ready to go, so I can focus on learning and experimenting rather than troubleshooting.
 
 ## The Problem
 
