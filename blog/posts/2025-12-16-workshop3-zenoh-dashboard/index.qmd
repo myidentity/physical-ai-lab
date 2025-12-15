@@ -517,4 +517,4 @@ web/
 
 **Total:** ~3,500 lines of Python + ~1,500 lines of JavaScript
 
-Find it at: [github.com/myidentity/docker-ros2/tree/main/workshop3/monitor](https://github.com/myidentity/docker-ros2/tree/main/workshop3/monitor)
+*Source code available upon request for workshop participants.*

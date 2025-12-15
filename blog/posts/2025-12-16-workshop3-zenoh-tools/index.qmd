@@ -360,6 +360,5 @@ See [Part 2: Performance Tuning](../2025-12-16-workshop3-zenoh-performance/) for
 
 ## Resources
 
-- **Source Code:** [workshop3/workshop_launcher.sh](https://github.com/myidentity/docker-ros2/blob/main/workshop3/workshop_launcher.sh)
-- **Exercises:** [workshop3/exercises/](https://github.com/myidentity/docker-ros2/tree/main/workshop3/exercises)
 - **ROSCon India 2025:** [rosconindia.in](https://rosconindia.in)
+- **Zenoh Documentation:** [zenoh.io](https://zenoh.io)
