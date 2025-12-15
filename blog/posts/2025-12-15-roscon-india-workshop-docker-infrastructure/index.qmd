@@ -51,34 +51,6 @@ Expected participants: 50-100 people with diverse hardware (Ubuntu 20.04, 22.04,
 
 **The Decision Point:** Pause Phase 8 (offline prep) to modernize, rather than commit to 80GB of deprecated software.
 
-## The Journey: From TurtleBot3 to ros-gz-sim-demos
-
-**Initial Plan (Phase 1-6):** Use TurtleBot3 (familiar, lots of tutorials, standard approach everyone uses).
-
-**Phase 7 Discovery:**
-
-```bash
-# Testing TurtleBot3
-ros2 launch turtlebot3_gazebo empty_world.launch.py
-
-# Output:
-[WARN] Gazebo Classic is end-of-life. Please migrate to new Gazebo.
-```
-
-**Research Findings:**
-- Gazebo Classic EOL: **January 31, 2025** (6 weeks after workshop!)
-- Alternative: `ros-gz-sim-demos` uses modern Gazebo Sim
-- Trade-off: Less familiar but future-proof
-
-**The Pivot (Phase 7.5):**
-- Removed all TurtleBot3 packages
-- Added `ros-gz-sim-demos` (19 official demos)
-- Completed Nav2 stack installation
-- Created migration guide for participants
-- Re-tested everything offline
-
-**Why This Matters:** Teaching deprecated technology would have required rework in 6 months. Pausing at Phase 7 saved weeks of future work.
-
 ## Architecture Overview
 
 ### Three-Tier Docker Image Strategy
