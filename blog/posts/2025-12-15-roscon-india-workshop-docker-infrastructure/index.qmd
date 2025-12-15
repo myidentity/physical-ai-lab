@@ -741,32 +741,6 @@ Enter selection (1-5), or [r]efresh / [s]tatus / [c]leanup / [q]uit:
 | Know which container | Check hostname hash | Colored prompt shows name |
 | Source ROS | Manual every terminal | Automatic via bashrc |
 
-## Quality Assurance: Multi-Role Certification
-
-**Process:** 8-role review before Phase 8 (offline prep)
-
-**Roles:**
-1. 🏗️ Software Architect
-2. 🔧 DevOps Engineer
-3. 🤖 ROS2 Developer
-4. 🧪 QA/Test Engineer
-5. 🔐 Security Analyst
-6. 📚 Technical Writer
-7. 📋 Project Manager
-8. 👤 End User
-
-**Round 1 Results:**
-- 2/8 fully certified
-- 4 CRITICAL blocking issues found
-- Verdict: ⚠️ CONDITIONALLY CERTIFIED
-
-**Round 2 Results (After Fixes):**
-- 8/8 fully certified ✅
-- All 4 CRITICAL issues resolved
-- Verdict: ✅ FULLY CERTIFIED - READY FOR PHASE 8
-
-**Process Value:** Caught offline failures and missing documentation before the workshop.
-
 ## Lessons Learned
 
 ### What Worked Well
