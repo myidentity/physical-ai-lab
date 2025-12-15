@@ -685,81 +685,49 @@ Enter selection (1-5), or [r]efresh / [s]tatus / [c]leanup / [q]uit:
 | Know which container | Check hostname hash | Colored prompt shows name |
 | Source ROS | Manual every terminal | Automatic via bashrc |
 
-## Lessons Learned
+## What I Learned
 
-### What Worked Well
+### Things That Paid Off
 
-1. **Three-Tier Strategy** - Clear separation, fast rebuilds, easy maintenance
-2. **Pause Before Phase 8** - Caught TurtleBot3 deprecation in time
-3. **Shared Cache Pattern** - 75% disk savings, applicable beyond Gazebo
-4. **Multi-Role Certification** - Caught missing offline tests
-5. **Documentation First** - Participants can self-serve
+1. **Three-tier Docker strategy** - Base images rebuild rarely, workshop images rebuild fast
+2. **Testing before committing to offline images** - Caught the Gazebo Classic EOL before baking 80GB of deprecated software
+3. **Shared caches** - 75% disk savings, and my containers stay in sync
+4. **Writing helper scripts** - `launch-container.sh` and `new-terminal.sh` save me from typing 15-flag docker commands
 
-### What We'd Do Differently
+### Things I'd Do Earlier Next Time
 
-1. **Check for EOL Earlier** - Research software lifecycles in Phase 1
-2. **Test Offline Sooner** - Don't wait until Phase 7.5
-3. **Document Naming Conventions** - `ign` vs `gz` caught us off guard
-4. **Use Agents from Phase 1** - Preserves context, faster execution
+1. **Check EOL dates first** - Would have avoided TurtleBot3 entirely
+2. **Test offline from day one** - Run `docker run --network none` early
+3. **Note the naming differences** - `ign` vs `gz` cost me debugging time
 
-### Unexpected Discoveries
+### Surprising Discoveries
 
-1. **Models Bundled in Package** - Eliminated Fuel dependency
-2. **Ignition vs Gazebo Naming** - Different cache paths, CLI commands
-3. **Nav2 Already Complete** - Had full stack, just needed verification
-4. **ROS_LOCALHOST_ONLY Discovery** - Environment variables override Dockerfile
-5. **HID Devices Need Special Permissions** - `device_cgroup_rules` pattern
-6. **Volume Mount Override Pattern** - Fix upstream bugs without rebuilding
-7. **RTX 5090 Forward Compatibility** - Driver supports Blackwell before docs
-8. **Network Bandwidth Debugging** - Created monitoring script for "stuck" downloads
+- **Models bundled in apt packages** - `ros-gz-sim-demos` includes everything, no Fuel downloads needed
+- **ROS_LOCALHOST_ONLY matters** - Without it, my containers couldn't see RealSense topics
+- **HID devices need special rules** - IMU access requires `device_cgroup_rules` in docker-compose
+- **Volume mounts can override installed files** - Fixed upstream launch file bugs without rebuilding
+- **RTX 5090 just works** - Driver forward compatibility handled Blackwell (Compute 12.0) even with CUDA 12.2 containers
 
-## Adapting for Your Workshop
+## If You Want to Do This Too
 
-**Generic Template Checklist:**
+Here's what I'd recommend:
 
-1. **Choose ROS 2 Distro** - Humble (LTS until 2027) or Jazzy (LTS until 2029)
-2. **Select Base Image** - GPU needed? NVIDIA Isaac ROS. CPU only? OSRF official
-3. **Middleware Decision** - WiFi? Zenoh or bridge. Wired? CycloneDDS/FastDDS
-4. **Simulation Platform** - Gazebo Sim (recommended), NOT Classic (EOL Jan 2025)
-5. **Offline Strategy** - Pre-install packages, shared caches, save images, test with `--network none`
-6. **Documentation** - README with quick start, troubleshooting guide, migration guides
-7. **Quality Gates** - Smoke tests, offline tests, multi-role review
+1. **Pick your ROS 2 distro** - Humble (LTS until 2027) or Jazzy (LTS until 2029)
+2. **Choose your base image** - Need GPU? Use NVIDIA Isaac ROS. CPU only? OSRF official images are smaller
+3. **Use modern Gazebo Sim** - NOT Classic (EOL Jan 2025)
+4. **Test offline early** - `docker run --network none` should work before you arrive at the venue
+5. **Write wrapper scripts** - Your future self will thank you
 
-**Timing:**
-- Start 4-6 weeks before workshop
-- Phase 1-6: 2-3 weeks (architecture + build)
-- Phase 7: 1 week (testing + fixes)
-- Phase 8: 3-5 days (offline prep)
-- Buffer: 1 week (unexpected issues)
+**Time investment:** I spent about a week on this, spread across evenings. Most of that was debugging the VSLAM namespace issues and waiting for Docker builds.
 
-## Conclusion
+## Wrapping Up
 
-We built a production-grade offline workshop infrastructure with 7 Docker images (150GB → 80-95GB compressed), modern Gazebo Sim (avoided EOL trap), GPU acceleration + Zenoh bridging, complete Nav2 stack, comprehensive documentation, and multi-role quality certification.
+I now have 7 Docker images ready (about 80GB compressed), covering both workshop tracks plus extras for experimentation. My RealSense D435i works, VSLAM runs on my RTX 5090, and everything launches with a single command.
 
-**Key Success Factors:**
-1. **Pause to Validate** - Catching TurtleBot3 EOL at Phase 7 saved weeks
-2. **User-Centric** - Scripts hide Docker complexity from participants
-3. **Offline-First** - Every decision considered "what if no internet?"
-4. **Documentation** - 3 guides (migration, troubleshooting, quick start)
-5. **Quality Gates** - Multi-role certification prevented workshop failures
+Was it overkill? Maybe. But when the workshop starts, I'll be following along instead of troubleshooting `apt-get` failures on conference WiFi.
 
-**Timeline:**
-- Dec 14: Phase 1-6 complete (architecture + build)
-- Dec 15 AM: Phase 7.5 modernization (TurtleBot3 → ros-gz-sim-demos)
-- Dec 15 AM: Multi-role certification (round 1 → round 2)
-- Dec 15 PM: Phase 7.6 RealSense D435i + VSLAM deployment (3 issues debugged)
-- Dec 15 PM: Phase 7.7 RTX 5090 hardware verification (Blackwell GPU confirmed)
-- Dec 16-17: Phase 8 offline prep (pending)
-- Dec 18-20: ROSCon India 2025 workshop
-
-**Reusability:** This infrastructure is NOT ROSCon India specific. The patterns apply to university robotics courses, corporate training, conference hands-on sessions, research lab onboarding, and open-source project demos.
-
-**Final Thought:** Building workshop infrastructure is like building a robot - you discover problems during testing, not during deployment. We caught TurtleBot3's EOL at Phase 7 because we paused to test. Multi-role certification caught offline failures before the workshop.
-
-**Pause. Test. Certify. Then deploy.**
+**The real lesson:** Test your setup with the network cable unplugged. If it works offline, it'll work anywhere.
 
 ---
 
-**Source Code:** Available at [GitHub](https://github.com/) (sanitized version for blog readers)
-
-**Questions?** Reach out via the blog comments or Twitter [@PhysicalAILab](https://twitter.com/).
+*This post documents my preparation for ROSCon India 2025 (Dec 18-20, COEP Pune). If you're doing something similar, feel free to reach out—happy to share configs.*
