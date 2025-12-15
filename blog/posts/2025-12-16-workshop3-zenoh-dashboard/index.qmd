@@ -11,6 +11,8 @@ code-fold: true
 code-summary: "Show code"
 ---
 
+![The complete ROS2/Zenoh Workshop 3 Dashboard - real-time camera feeds, IMU orientation, system metrics, and topic bandwidth monitoring running in a browser without any ROS2 installation on the client.](images/dashboard-screenshot.png){.preview-image fig-alt="Screenshot of the Workshop 3 Dashboard showing RGB and depth camera feeds, 3D IMU cube visualization, system resources, kernel parameters, DDS configuration, Zenoh bridge status, and ROS2 topic bandwidth table"}
+
 ## TL;DR
 
 - Built a **real-time web dashboard** for ROS2 sensor monitoring
