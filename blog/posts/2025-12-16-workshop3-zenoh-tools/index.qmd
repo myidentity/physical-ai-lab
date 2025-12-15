@@ -1,0 +1,365 @@
+---
+title: "Preparing for Zenoh: Interactive Tools and Workshop Exercises"
+subtitle: "Part 1 of 3: Building the tooling infrastructure for ROSCon India 2025 Workshop 3"
+author: "Rajesh"
+date: "2025-12-16"
+categories: [ros2, zenoh, docker, workshop, tools]
+image: "thumbnail.png"
+toc: true
+toc-depth: 3
+code-fold: true
+code-summary: "Show code"
+---
+
+## TL;DR
+
+- Built **interactive tools** for Workshop 3 (Zenoh networking at ROSCon India 2025)
+- Two-shell approach: `workshop_launcher.sh` (container, 1224 lines) + `host_monitor.sh` (host, 1020 lines)
+- **RealSense D435i** integration + fake sensor generators for data publishing
+- **5 progressive exercises** with documentation for hands-on learning
+- **Key insight:** Practice BEFORE the workshop, apply learnings to Go2 robot AFTER
+
+---
+
+## The Problem
+
+Workshop 3 at ROSCon India 2025 focuses on **Zenoh middleware bridging over WiFi**. The real challenge? Our Unitree Go2 robot publishes approximately **50 MB/s of sensor data** - way too much for reliable WiFi transmission.
+
+But here's the catch: we can't just jump into optimizing the robot's data. We need a way to:
+
+1. **Generate realistic sensor data** without the robot
+2. **Monitor bandwidth** in real-time
+3. **Experiment with configurations** safely
+4. **Learn progressively** through structured exercises
+
+This is the infrastructure story - how we built the tools that make Workshop 3 possible.
+
+---
+
+## Solution Architecture
+
+The solution uses a **two-shell approach**: one script runs inside the Docker container (where ROS2 lives), and another runs on the host (where we monitor everything).
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              HOST MACHINE                                    │
+│                                                                              │
+│   ┌─────────────────────────┐         ┌─────────────────────────────────┐  │
+│   │   host_monitor.sh       │         │     Docker Container             │  │
+│   │   ─────────────────     │         │     ──────────────────           │  │
+│   │                         │         │                                   │  │
+│   │   • Bandwidth monitor   │◄───────►│     workshop_launcher.sh         │  │
+│   │   • Topic discovery     │  docker │     ─────────────────────        │  │
+│   │   • System metrics      │   exec  │                                   │  │
+│   │   • No ROS2 needed!     │         │     • RealSense D435i control    │  │
+│   │                         │         │     • Fake sensor generators      │  │
+│   └─────────────────────────┘         │     • Zenoh bridge management    │  │
+│                                        │     • ROS2 environment           │  │
+│                                        │                                   │  │
+│                                        └─────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Why two scripts?** The host doesn't have ROS2 installed - and we don't want to require it. By using `docker exec`, the host monitor can query ROS2 topics inside the container without any ROS2 installation on the host.
+
+---
+
+## Tool 1: workshop_launcher.sh (1224 lines)
+
+The workshop launcher is the **command center** inside the container. It provides a 30-option interactive menu organized into 7 sections.
+
+### The Menu Structure
+
+```bash
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                 ZENOH W03 - Data Configurator & Launcher                       ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+┌─ REALSENSE D435i ─────────────────────────────────────────────────────────────┐
+│  1) Configure RealSense       2) Start RealSense        3) Stop RealSense     │
+└───────────────────────────────────────────────────────────────────────────────┘
+
+┌─ FAKE SENSORS ────────────────────────────────────────────────────────────────┐
+│  4) Start Fake LIDAR          5) Start Fake IMU         6) Start Fake Camera  │
+│  7) Start Multi-Sensor        8) Stop All Fakes                               │
+└───────────────────────────────────────────────────────────────────────────────┘
+
+┌─ ZENOH BRIDGE ────────────────────────────────────────────────────────────────┐
+│  9) Start Bridge (Router)    10) Start Bridge (Client) 11) Stop Bridge        │
+│ 12) Bridge Status            13) Configure Selective                          │
+└───────────────────────────────────────────────────────────────────────────────┘
+
+... (and more sections for monitoring, exercises, and utilities)
+```
+
+### Key Feature: RealSense D435i Configuration
+
+The launcher includes a dedicated configuration submenu for the Intel RealSense D435i camera:
+
+```bash
+┌─ REALSENSE CONFIGURATION ─────────────────────────────────────────────────────┐
+│                                                                               │
+│  Resolution:  [ ] 480p  [●] 720p  [ ] 1080p                                  │
+│  Frame Rate:  [ ] 15    [●] 30    [ ] 60                                     │
+│                                                                               │
+│  Streams:     [●] RGB   [●] Depth  [●] IMU                                   │
+│                                                                               │
+│  Estimated Bandwidth: ~60 MB/s                                               │
+│                                                                               │
+└───────────────────────────────────────────────────────────────────────────────┘
+```
+
+This matters because **bandwidth varies dramatically** with configuration:
+
+| Configuration | Bandwidth |
+|---------------|-----------|
+| 480p @ 15 FPS (RGB only) | ~10 MB/s |
+| 720p @ 30 FPS (RGB + Depth) | ~45 MB/s |
+| 1080p @ 30 FPS (RGB + Depth + IMU) | ~80 MB/s |
+
+::: {.callout-note collapse="true"}
+## Deep Dive: Process Management
+
+The launcher tracks all spawned processes using a PID file:
+
+```bash
+# PID tracking for clean shutdown
+PID_FILE="/tmp/workshop_pids"
+
+start_process() {
+    local name="$1"
+    shift
+    "$@" &
+    local pid=$!
+    echo "$name:$pid" >> "$PID_FILE"
+    echo "Started $name (PID: $pid)"
+}
+
+stop_all() {
+    if [[ -f "$PID_FILE" ]]; then
+        while IFS=':' read -r name pid; do
+            if kill -0 "$pid" 2>/dev/null; then
+                kill "$pid"
+                echo "Stopped $name (PID: $pid)"
+            fi
+        done < "$PID_FILE"
+        rm -f "$PID_FILE"
+    fi
+}
+
+# Trap for clean shutdown on Ctrl+C
+trap 'stop_all; exit 0' SIGINT SIGTERM
+```
+
+This ensures that when you exit the launcher, **all spawned processes are cleaned up** - no orphaned ROS2 nodes left behind.
+:::
+
+### Environment Auto-Detection
+
+On startup, the launcher automatically detects:
+
+```bash
+┌─ ENVIRONMENT ─────────────────────────────────────────────────────────────────┐
+│  ROS2:        Humble Hawksbill                                               │
+│  Middleware:  CycloneDDS (rmw_cyclonedds_cpp)                                │
+│  Domain ID:   31                                                              │
+│  RealSense:   D435i detected (/dev/video0)                                   │
+│  Zenoh:       Bridge not running                                             │
+└───────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Tool 2: host_monitor.sh (1020 lines)
+
+The host monitor is the **observation deck** - it runs on your laptop without needing ROS2.
+
+### The Innovation: ROS2 Without ROS2
+
+```bash
+# Query topics through docker exec - no local ROS2 needed!
+get_topics() {
+    docker exec workshop3-dds ros2 topic list 2>/dev/null
+}
+
+get_topic_hz() {
+    local topic="$1"
+    docker exec workshop3-dds timeout 3 ros2 topic hz "$topic" 2>/dev/null | head -5
+}
+```
+
+### Bandwidth Monitoring from /proc
+
+Instead of relying on external tools, the monitor reads directly from `/proc/net/dev`:
+
+```bash
+get_network_stats() {
+    local interface="$1"
+    local stats=$(cat /proc/net/dev | grep "$interface" | tr -s ' ')
+    local rx_bytes=$(echo "$stats" | cut -d' ' -f2)
+    local tx_bytes=$(echo "$stats" | cut -d' ' -f10)
+    echo "$rx_bytes $tx_bytes"
+}
+
+calculate_bandwidth() {
+    local prev_rx="$1" prev_tx="$2"
+    local curr_rx="$3" curr_tx="$4"
+    local interval="$5"
+
+    local rx_mbps=$(echo "scale=2; ($curr_rx - $prev_rx) * 8 / $interval / 1000000" | bc)
+    local tx_mbps=$(echo "scale=2; ($curr_tx - $prev_tx) * 8 / $interval / 1000000" | bc)
+
+    echo "RX: ${rx_mbps} Mbps | TX: ${tx_mbps} Mbps"
+}
+```
+
+**Why this matters:** No dependencies, no permissions issues, works on any Linux host.
+
+---
+
+## Data Generation Options
+
+Workshop participants need data to work with. We provide two paths:
+
+### Option A: Real Hardware (RealSense D435i)
+
+The Intel RealSense D435i is our reference sensor, publishing:
+
+| Stream | Topic | Bandwidth |
+|--------|-------|-----------|
+| RGB | `/camera/camera/color/image_raw` | ~27 MB/s @ 720p30 |
+| Depth | `/camera/camera/depth/image_rect_raw` | ~18 MB/s @ 720p30 |
+| IMU | `/camera/camera/imu` | ~100 KB/s @ 200 Hz |
+| **Total** | | **~45 MB/s** |
+
+### Option B: Fake Sensors (No Hardware Required)
+
+For participants without a RealSense, we built the `data_gen` package:
+
+```python
+# fake_camera_node.py - generates synthetic camera data
+class FakeCameraNode(Node):
+    def __init__(self):
+        super().__init__('fake_camera')
+        self.publisher = self.create_publisher(Image, '/camera/color/image_raw', 10)
+        self.timer = self.create_timer(1.0/30.0, self.publish_frame)  # 30 FPS
+
+    def publish_frame(self):
+        # Generate 720p synthetic frame with timestamp overlay
+        frame = self.generate_test_pattern()
+        msg = self.bridge.cv2_to_imgmsg(frame, encoding='bgr8')
+        self.publisher.publish(msg)
+```
+
+| Fake Sensor | Rate | Bandwidth |
+|-------------|------|-----------|
+| `fake_imu_node` | 200 Hz | ~100 KB/s |
+| `fake_lidar_node` | 20 Hz | ~2 MB/s |
+| `fake_camera_node` | 30 Hz | ~27 MB/s |
+| `multi_sensor_node` | Combined | ~50 MB/s |
+
+The `multi_sensor_node` is particularly useful - it simulates the Go2's full sensor suite.
+
+---
+
+## Workshop Exercises
+
+We created 5 progressive exercises, each building on the previous:
+
+### Exercise 1: DDS Baseline
+
+**Goal:** Establish baseline bandwidth measurements with pure DDS.
+
+```bash
+# In container:
+ros2 launch data_gen multi_sensor.launch.py
+
+# On host (separate terminal):
+./host_monitor.sh --bandwidth eth0
+```
+
+**Expected Result:** ~50 MB/s bandwidth consumption.
+
+### Exercise 2: Zenoh Comparison
+
+**Goal:** Compare DDS vs Zenoh efficiency.
+
+Students reconfigure the system to use Zenoh transport and measure the difference.
+
+### Exercise 3: Bridge Setup
+
+**Goal:** Configure DDS ↔ Zenoh bridging.
+
+This is the key workshop skill - bridging between middleware for WiFi optimization.
+
+### Exercise 4: Selective Subscription
+
+**Goal:** Use `--allow` and `--deny` patterns to filter topics.
+
+```bash
+# Only bridge essential topics
+zenoh-bridge-ros2dds --allow "/cmd_vel" --allow "/odom" --deny "/camera/*"
+```
+
+**Impact:** 50 MB/s → 100 KB/s (99.8% reduction!)
+
+### Exercise 5: QoS Experiments
+
+**Goal:** Experiment with Quality of Service settings.
+
+Understanding reliability vs best-effort, history depth, and deadline policies.
+
+::: {.callout-tip}
+## Exercise Documentation
+
+Each exercise has its own README with:
+- Learning objectives
+- Step-by-step instructions
+- Expected outputs
+- Troubleshooting tips
+
+Find them in `/workshop3/exercises/`
+:::
+
+---
+
+## What I Learned
+
+Building these tools taught me several lessons:
+
+### 1. Two-Shell Approach Works Well
+
+Separating the ROS2 environment (container) from monitoring (host) keeps things clean. The host never needs ROS2 installed.
+
+### 2. Process Management is Critical
+
+Orphaned ROS2 nodes cause mysterious issues. The PID tracking and trap-based cleanup solved this completely.
+
+### 3. Fake Sensors Enable Learning
+
+Not everyone has a RealSense. The fake sensor generators let participants experiment without hardware.
+
+### 4. Progressive Exercises Build Confidence
+
+Starting with baseline measurements and building to advanced filtering gives participants a clear learning path.
+
+---
+
+## What's Next
+
+In **Part 2**, we dive deep into **performance tuning**:
+- Linux kernel parameters for network buffers
+- Zenoh configuration strategies
+- How we achieved 99.8% bandwidth reduction
+
+In **Part 3**, we cover the **real-time web dashboard** that visualizes all this data in a browser - no ROS2 required on the client!
+
+See [Part 2: Performance Tuning](../2025-12-16-workshop3-zenoh-performance/) for the optimization deep dive.
+
+---
+
+## Resources
+
+- **Source Code:** [workshop3/workshop_launcher.sh](https://github.com/myidentity/docker-ros2/blob/main/workshop3/workshop_launcher.sh)
+- **Exercises:** [workshop3/exercises/](https://github.com/myidentity/docker-ros2/tree/main/workshop3/exercises)
+- **ROSCon India 2025:** [rosconindia.in](https://rosconindia.in)

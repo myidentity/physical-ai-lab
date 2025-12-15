@@ -1,0 +1,520 @@
+---
+title: "Preparing for Zenoh: Real-Time Web Dashboard for ROS2 Monitoring"
+subtitle: "Part 3 of 3: Building a 13-layer architecture from ROS2 callbacks to Canvas/SVG visualizations"
+author: "Rajesh"
+date: "2025-12-16"
+categories: [ros2, zenoh, dashboard, visualization, flask, sse]
+image: "thumbnail.png"
+toc: true
+toc-depth: 3
+code-fold: true
+code-summary: "Show code"
+---
+
+## TL;DR
+
+- Built a **real-time web dashboard** for ROS2 sensor monitoring
+- **No ROS2 on client** - pure browser access via HTTP/SSE
+- **20 Hz streaming**: Camera, IMU, LaserScan, Odometry, System metrics
+- **13-layer architecture** from ROS2 callbacks to Canvas/SVG visualizations
+- Singleton pattern + thread-safe queues bridge Flask ↔ ROS2 threading
+
+---
+
+## The Problem
+
+Traditional ROS2 visualization tools like **rviz2** and **rqt** require ROS2 installed on the viewing machine. For Workshop 3 at ROSCon India 2025, we needed:
+
+1. **Browser-based access** - any laptop, no ROS2 installation required
+2. **Real-time streaming** - 20 Hz sensor data updates
+3. **Multiple visualizations** - cameras, IMU orientation, LIDAR polar plot, odometry path
+4. **System monitoring** - CPU, memory, network bandwidth, topic statistics
+
+The solution? A Flask-based web server with Server-Sent Events (SSE) streaming and a multi-layer visualization architecture.
+
+---
+
+## Architecture Overview: 13 Layers
+
+The dashboard is built in 13 distinct layers, from ROS2 subscriptions to browser visualizations:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    ARCHITECTURE LAYERS                          │
+├─────────────────────────────────────────────────────────────────┤
+│ Layer 1:  Entry Point          combined_server.py              │
+│ Layer 2:  ROS2 Bridge          ros2_bridge.py (singleton)      │
+│ Layer 3:  Web Server           web_server.py (Flask + SSE)     │
+│ Layer 4:  System Metrics       metrics_collector.py (/proc)    │
+│ Layer 5:  System Info          system_info.py (kernel/DDS)     │
+│ Layer 6:  Zenoh Monitor        zenoh_monitor.py (process)      │
+│ Layer 7:  Image Processor      image_processor.py (JPEG)       │
+│ Layer 8:  HTML Template        dashboard.html (layout/CSS)     │
+│ Layer 9:  JS Controller        dashboard.js (SSE handler)      │
+│ Layer 10: IMU Visualization    imu-cube.js (CSS 3D)            │
+│ Layer 11: LaserScan Viz        polar-plot.js (Canvas)          │
+│ Layer 12: Odometry Viz         path-trace.js (SVG)             │
+│ Layer 13: Charts               charts.js (Chart.js)            │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+Let's dive into each layer.
+
+---
+
+## Backend Architecture
+
+### Layer 1: Entry Point (`combined_server.py`)
+
+The main challenge: **ROS2 and Flask both want to block the main thread**.
+
+- ROS2 needs `rclpy.spin()` to process callbacks
+- Flask needs `app.run()` to serve HTTP requests
+
+**Solution:** Run ROS2 in a daemon thread, Flask in the main thread.
+
+```python
+def main():
+    rclpy.init()
+    bridge = ROS2Bridge.get_instance()
+
+    # ROS2 spinning in background (daemon thread)
+    executor = SingleThreadedExecutor()
+    executor.add_node(bridge)
+    spin_thread = Thread(target=executor.spin, daemon=True)
+    spin_thread.start()
+
+    # Flask in main thread (blocking)
+    start_web_server(port=8085)
+```
+
+**Why daemon thread?** When Flask shuts down, the daemon thread automatically terminates. Clean shutdown without explicit thread management.
+
+---
+
+### Layer 2: ROS2 Bridge (`ros2_bridge.py`) - The Singleton
+
+Flask routes run in different threads. We need **guaranteed access to the same ROS2 node instance**.
+
+```python
+class ROS2Bridge(Node):
+    _instance = None
+    _lock = threading.Lock()
+
+    @classmethod
+    def get_instance(cls):
+        with cls._lock:
+            if cls._instance is None:
+                cls._instance = ROS2Bridge()
+            return cls._instance
+```
+
+**Subscriptions with Dual Paths:**
+
+The bridge subscribes to both fake sensor topics and RealSense topics:
+
+| Sensor | Fake Sensor Path | RealSense Path |
+|--------|------------------|----------------|
+| RGB | `/camera/color/image_raw` | `/camera/camera/color/image_raw` |
+| Depth | `/camera/depth/image_raw` | `/camera/camera/depth/image_rect_raw` |
+| IMU | `/imu/data` | `/camera/camera/imu` |
+
+This lets the dashboard work with either data source automatically.
+
+---
+
+### Layer 3: Web Server (`web_server.py`) - SSE Streaming
+
+We chose **Server-Sent Events (SSE)** over WebSocket:
+
+| Feature | SSE | WebSocket |
+|---------|-----|-----------|
+| Complexity | Simple (HTTP/1.1) | Complex (upgrade handshake) |
+| Browser support | Native (`EventSource`) | Requires library |
+| Auto-reconnect | Built-in | Manual implementation |
+| Direction | Server → Client only | Bidirectional |
+
+For a monitoring dashboard, we only need server-to-client. SSE is perfect.
+
+```python
+@app.route('/api/stream')
+def stream():
+    def generate():
+        while True:
+            data = {
+                'system': get_system_metrics(),
+                'network': get_network_stats(),
+                'imu': bridge.get_latest_imu(),
+                'laser': bridge.get_latest_laser(),
+                'odom': bridge.get_latest_odom(),
+                'topics': bridge.get_topic_bandwidth()
+            }
+            yield f"data: {json.dumps(data)}\n\n"
+            time.sleep(0.05)  # 20 Hz
+
+    return Response(generate(), mimetype='text/event-stream')
+```
+
+---
+
+### Layer 4-6: System Monitoring
+
+**Layer 4: Metrics Collector** - Reads directly from `/proc`:
+
+```python
+# /proc/net/dev for network stats (no external dependencies!)
+def get_network_stats():
+    with open('/proc/net/dev') as f:
+        for line in f:
+            if 'eth0' in line:
+                parts = line.split()
+                rx_bytes = int(parts[1])
+                tx_bytes = int(parts[9])
+                return {'rx_bytes': rx_bytes, 'tx_bytes': tx_bytes}
+```
+
+**Layer 5: System Info** - Kernel parameters and DDS configuration
+
+**Layer 6: Zenoh Monitor** - Process introspection via `/proc/[PID]`
+
+---
+
+### Layer 7: Image Processor - JPEG Encoding
+
+ROS2 Image messages need conversion to browser-friendly JPEG:
+
+```python
+def process_image(msg, encoding):
+    # Handle multiple encodings
+    if encoding == 'rgb8':
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+    elif encoding == '16UC1':  # Depth
+        # Normalize and apply colormap
+        img = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX)
+        img = cv2.applyColorMap(img.astype(np.uint8), cv2.COLORMAP_TURBO)
+
+    # JPEG encode
+    _, jpeg = cv2.imencode('.jpg', img, [cv2.IMWRITE_JPEG_QUALITY, 85])
+    return jpeg.tobytes()
+```
+
+---
+
+### Thread-Safe Handoff: Producer-Consumer Queues
+
+The ROS2 thread produces data, the Flask thread consumes it:
+
+```python
+# Three thread-safe queues
+self.color_queue = Queue(maxsize=2)   # MJPEG frames
+self.depth_queue = Queue(maxsize=2)   # MJPEG frames
+self.sensor_queue = Queue(maxsize=50)  # High-freq sensor data
+```
+
+**Why `maxsize=2`?** If the consumer is slow, we don't want to buffer old frames. Drop the oldest, keep the freshest.
+
+---
+
+## Frontend Architecture
+
+### Layer 8: HTML Template (`dashboard.html`)
+
+The dashboard uses a **responsive grid layout** with glassmorphism styling:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  Header: Title + Connection Status + Update Rate                │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌────────────────────────┐  ┌────────────────────────────────┐ │
+│  │     RGB Camera         │  │      Depth Camera              │ │
+│  │     (MJPEG Stream)     │  │      (Colorized MJPEG)         │ │
+│  └────────────────────────┘  └────────────────────────────────┘ │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌────────────────────────┐  ┌────────────────────────────────┐ │
+│  │     IMU 3D Cube        │  │    Acceleration + Gyro Charts  │ │
+│  │     (CSS 3D Transforms)│  │    (Chart.js Time Series)      │ │
+│  └────────────────────────┘  └────────────────────────────────┘ │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌────────────────────────┐  ┌────────────────────────────────┐ │
+│  │   LaserScan Polar Plot │  │    Odometry Path Trace         │ │
+│  │   (Canvas 2D)          │  │    (SVG Polyline)              │ │
+│  └────────────────────────┘  └────────────────────────────────┘ │
+├─────────────────────────────────────────────────────────────────┤
+│  System Gauges │ Kernel Params │ DDS Config │ Zenoh Status      │
+│  Topic Bandwidth Table (Full Width)                             │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Color scheme:** Dark theme (#1a1a2e) with cyan (#00d4ff) accent.
+
+---
+
+### Layer 9: JS Controller (`dashboard.js`)
+
+The main controller manages SSE connection with **exponential backoff reconnection**:
+
+```javascript
+class DashboardController {
+    constructor() {
+        this.reconnectDelay = 1000;  // Start at 1 second
+    }
+
+    connect() {
+        this.eventSource = new EventSource('/api/stream');
+
+        this.eventSource.onmessage = (e) => {
+            this.reconnectDelay = 1000;  // Reset on success
+            this.handleMessage(JSON.parse(e.data));
+        };
+
+        this.eventSource.onerror = () => {
+            this.eventSource.close();
+            this.reconnect();
+        };
+    }
+
+    reconnect() {
+        // Exponential backoff: 1s → 2s → 4s → 8s → ... → 30s max
+        setTimeout(() => {
+            this.connect();
+            this.reconnectDelay = Math.min(30000, this.reconnectDelay * 2);
+        }, this.reconnectDelay);
+    }
+}
+```
+
+---
+
+### Layer 10: IMU Cube (`imu-cube.js`) - CSS 3D
+
+Visualizing IMU orientation with a **CSS 3D cube**:
+
+```javascript
+updateCube(orientation) {
+    // Quaternion to Euler conversion
+    const euler = this.quaternionToEuler(orientation);
+
+    // Apply smoothing (10-sample median filter + exponential smoothing)
+    const smoothed = this.smooth(euler, 0.3);
+
+    // CSS 3D transform
+    this.cube.style.transform = `
+        rotateX(${smoothed.pitch}deg)
+        rotateY(${smoothed.yaw}deg)
+        rotateZ(${smoothed.roll}deg)
+    `;
+}
+```
+
+**Why CSS 3D instead of WebGL?**
+- No library dependencies
+- GPU-accelerated by default
+- Simpler code for a simple cube
+
+---
+
+### Layer 11: Polar Plot (`polar-plot.js`) - Canvas 2D
+
+LIDAR data visualized as a **radar-style polar plot**:
+
+```javascript
+draw(laserData) {
+    const ctx = this.canvas.getContext('2d');
+    const cx = this.canvas.width / 2;
+    const cy = this.canvas.height / 2;
+
+    // Draw range rings (2m intervals)
+    for (let r = 2; r <= this.maxRange; r += 2) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, r * this.scale, 0, 2 * Math.PI);
+        ctx.stroke();
+    }
+
+    // Draw laser points
+    ctx.fillStyle = '#00ff00';  // Green
+    laserData.ranges.forEach((range, i) => {
+        if (range < this.maxRange) {
+            const angle = laserData.angle_min + i * laserData.angle_increment;
+            const x = cx + range * Math.cos(angle) * this.scale;
+            const y = cy + range * Math.sin(angle) * this.scale;
+            ctx.fillRect(x, y, 2, 2);
+        }
+    });
+}
+```
+
+---
+
+### Layer 12: Path Trace (`path-trace.js`) - SVG
+
+Odometry trajectory using **SVG polyline**:
+
+```javascript
+update(odomData) {
+    const x = odomData.pose.position.x;
+    const y = odomData.pose.position.y;
+
+    // Add to path (max 500 points)
+    this.path.push({x, y});
+    if (this.path.length > 500) this.path.shift();
+
+    // Update SVG polyline
+    const points = this.path.map(p => `${p.x},${-p.y}`).join(' ');
+    this.polyline.setAttribute('points', points);
+}
+```
+
+**Why SVG instead of Canvas?**
+- Vector scaling (zoom without pixelation)
+- Easier coordinate system management
+- Built-in pan/zoom support
+
+---
+
+### Layer 13: Charts (`charts.js`) - Chart.js
+
+Time-series acceleration and gyroscope data:
+
+```javascript
+const accelChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: [],  // Timestamps
+        datasets: [
+            { label: 'X', data: [], borderColor: '#ff6384' },
+            { label: 'Y', data: [], borderColor: '#36a2eb' },
+            { label: 'Z', data: [], borderColor: '#4bc0c0' }
+        ]
+    },
+    options: {
+        animation: false,  // Disable for real-time performance
+        scales: { x: { display: false } }
+    }
+});
+```
+
+---
+
+## Performance Optimizations
+
+| Optimization | Implementation | Benefit |
+|--------------|----------------|---------|
+| **FPS Throttling** | 8 FPS for cameras | 75% bandwidth reduction |
+| **LaserScan Downsampling** | 720 → 180 points | 75% data reduction |
+| **JPEG Compression** | 85% quality | ~10x size reduction |
+| **Queue Size Limits** | maxsize=2 for images | Prevents memory bloat |
+| **Daemon Threads** | ROS2 spin thread | Clean shutdown |
+| **Animation Disabled** | Chart.js `animation: false` | Smooth 20 Hz updates |
+
+---
+
+## Data Flow Diagram
+
+```
+ROS2 Topics                    Python Backend                 Browser Frontend
+─────────────                  ──────────────                 ────────────────
+/camera/color ──┐
+/camera/depth ──┼──► ROS2Bridge ──► Queues ──► Flask ──► SSE ──► EventSource
+/imu/data ──────┤    (Singleton)    (Thread    (HTTP)   (20Hz)   (JavaScript)
+/scan ──────────┤                    Safe)
+/odom ──────────┘
+                                      │
+                                      ▼
+                              ┌───────────────┐
+                              │ Visualization │
+                              ├───────────────┤
+                              │ MJPEG Streams │
+                              │ CSS 3D Cube   │
+                              │ Canvas Polar  │
+                              │ SVG Path      │
+                              │ Chart.js      │
+                              │ Gauges/Tables │
+                              └───────────────┘
+```
+
+---
+
+## Deployment
+
+One command starts everything:
+
+```bash
+# In the container
+./start_dashboard.sh
+```
+
+This script:
+1. Sources ROS2 environment
+2. Sets ROS_DOMAIN_ID
+3. Starts Zenoh bridge (with retry)
+4. Starts RealSense camera
+5. Launches Flask dashboard on port 8085
+
+Then open `http://localhost:8085` in any browser.
+
+---
+
+## Design Patterns Used
+
+| Pattern | Where | Why |
+|---------|-------|-----|
+| **Singleton** | ROS2Bridge | Thread-safe instance sharing |
+| **Producer-Consumer** | Queues | Decouple ROS2 from Flask threads |
+| **Observer** | SSE | Push updates to all connected clients |
+| **Facade** | WebServer | Hide ROS2 complexity from browser |
+| **Strategy** | Visualizations | Different rendering backends (Canvas/SVG/CSS) |
+
+---
+
+## Graceful Degradation
+
+The dashboard handles missing components gracefully:
+
+- **ROS2 not available?** → Uses `MockROS2Bridge` with empty data
+- **Template missing?** → Serves inline HTML fallback
+- **SSE disconnected?** → Exponential backoff reconnection
+- **Queue full?** → Drops oldest frame (keeps latest)
+- **No sensor data?** → Hides the visualization card
+
+---
+
+## What's Next
+
+This completes the 3-part series on preparing for Zenoh at ROSCon India 2025:
+
+- **Part 1:** [Interactive Tools](../2025-12-16-workshop3-zenoh-tools/) - The shell scripts and menus
+- **Part 2:** [Performance Tuning](../2025-12-16-workshop3-zenoh-performance/) - 99.8% bandwidth reduction
+- **Part 3:** This post - Real-time web dashboard
+
+The workshop is ready. See you in Pune!
+
+---
+
+## Source Code
+
+The complete dashboard implementation:
+
+```
+workshop3/monitor/
+├── combined_server.py      (85 lines)
+├── ros2_bridge.py          (662 lines)
+├── web_server.py           (357 lines)
+├── metrics_collector.py    (236 lines)
+├── system_info.py          (187 lines)
+├── image_processor.py      (321 lines)
+├── zenoh_monitor.py        (364 lines)
+└── start_dashboard.sh      (83 lines)
+
+web/
+├── templates/dashboard.html (846 lines)
+└── static/js/
+    ├── dashboard.js        (200 lines)
+    ├── imu-cube.js         (80 lines)
+    ├── polar-plot.js       (150 lines)
+    ├── path-trace.js       (150 lines)
+    └── charts.js           (150 lines)
+```
+
+**Total:** ~3,500 lines of Python + ~1,500 lines of JavaScript
+
+Find it at: [github.com/myidentity/docker-ros2/tree/main/workshop3/monitor](https://github.com/myidentity/docker-ros2/tree/main/workshop3/monitor)
