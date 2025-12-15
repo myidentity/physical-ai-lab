@@ -35,18 +35,14 @@ We built a production-grade Docker infrastructure for ROSCon India 2025 workshop
 - **Workshop 3:** Zenoh Networking (DDS ↔ Zenoh bridging over WiFi)
 - **Workshop 4:** IMU Perception with Visual SLAM
 
-Expected participants: 50-100 people with diverse hardware (Ubuntu 20.04, 22.04, 24.04).
+**What I Wanted to Prepare For:**
 
-**The Challenges:**
-
-1. **Unreliable Internet:** Venue WiFi can't handle 100 concurrent apt updates
-2. **GPU Requirements:** VSLAM and NVBlox need NVIDIA acceleration
-3. **Middleware Diversity:** Need to demo both CycloneDDS AND Zenoh
-4. **Real Robot Integration:** Unitree Go2 quadruped with proprietary SDK
-5. **Version Hell:** Participants on mixed Ubuntu versions
-6. **Late Discovery:** TurtleBot3 uses EOL Gazebo Classic (found at Phase 7!)
-
-**The Decision Point:** Pause Phase 8 (offline prep) to modernize, rather than commit to 80GB of deprecated software.
+1. **No Internet Dependency:** I didn't want to be stuck downloading packages while the workshop moved on
+2. **GPU-Ready:** My RTX 5090 should be ready for VSLAM and NVBlox demos out of the box
+3. **Multiple Middleware Options:** Both CycloneDDS and Zenoh containers, so I can follow either track
+4. **Real Hardware Ready:** RealSense D435i camera and IMU working before I arrive
+5. **Experiment Freely:** Extra environments to try things without breaking the workshop setup
+6. **Modern Stack:** Discovered TurtleBot3 uses deprecated Gazebo Classic—pivoted to modern Gazebo Sim
 
 ## Architecture Overview
 
