@@ -1,3 +1,8 @@
+---
+title: "Plan: ROSCon India 2025 Workshop Infrastructure Blog Post"
+draft: true
+---
+
 # Plan: ROSCon India 2025 Workshop Infrastructure Blog Post (UPDATED)
 
 ## Overview
