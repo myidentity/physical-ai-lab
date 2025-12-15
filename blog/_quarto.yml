@@ -25,6 +25,7 @@ website:
     contents:
       - section: "Blog"
         contents:
+          - posts/2025-12-15-roscon-india-workshop-docker-infrastructure/index.qmd
           - posts/2025-12-15-linux-lid-close-delayed-shutdown/index.qmd
           - posts/2025-12-12-operationalizing-the-lab/index.qmd
 
