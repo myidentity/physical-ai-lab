@@ -93,74 +93,53 @@ TIER 3: Workshop Images (docker-compose)
 
 **Total Disk:** ~150GB uncompressed → ~80-95GB compressed (zstd -19)
 
-## Key Technical Innovations
+## Key Technical Details
 
-### Modern Gazebo Migration
+### Choosing Modern Gazebo Over TurtleBot3
 
-**The Problem:**
+While setting up TurtleBot3 (the standard tutorial robot), I noticed this warning:
 
 ```bash
-# OLD (deprecated)
 ros2 launch turtlebot3_gazebo empty_world.launch.py
-# Uses Gazebo Classic (EOL Jan 2025)
+# [WARN] Gazebo Classic is end-of-life. Please migrate to new Gazebo.
 ```
 
-**The Solution:**
+Gazebo Classic EOL is **January 31, 2025**—just 6 weeks after the workshop. I switched to `ros-gz-sim-demos` instead:
 
 ```bash
-# NEW (modern)
 ros2 launch ros_gz_sim_demos diff_drive.launch.py
-# Uses Gazebo Sim (Ignition Fortress in Humble, Gazebo Sim in Jazzy)
+# Uses modern Gazebo Sim - actively maintained
 ```
 
-**Benefits:**
-- 19 official demos vs 3 TurtleBot3 worlds
-- Two robots spawned by default (blue + green vehicles)
-- Active maintenance by Open Robotics
-- Future-proof for years
-
-**Discovery: Models Are Bundled!**
+**Bonus:** The models are bundled in the Debian package—no internet needed to download from Gazebo Fuel:
 
 ```bash
-# Models embedded in Debian package (no Fuel download needed!)
 /opt/ros/jazzy/share/ros_gz_sim_demos/models/vehicle/
 /opt/ros/jazzy/share/ros_gz_sim_demos/worlds/vehicle.sdf
 ```
 
-This eliminates internet dependency for workshop demos.
+### Sharing Gazebo Caches Across Containers
 
-### Shared Gazebo Fuel Cache Pattern
-
-**Initial Plan:** Bake models into Docker images (seemed logical but wasteful).
-
-**Problem:** 4 containers × 50MB models = 200MB duplicates
-
-**Innovation:** Shared volume caches
+I initially planned to bake Gazebo models into each Docker image. Then I realized: 4 containers × 50MB models = 200MB of duplicates. Instead, I share caches via Docker volumes:
 
 ```yaml
 # docker-compose.yml
 volumes:
-  - ./cache/ignition:/root/.ignition:rw  # Humble (ign command)
-  - ./cache/gz:/root/.gz:rw              # Jazzy (gz command)
+  - ./cache/ignition:/root/.ignition:rw  # Humble
+  - ./cache/gz:/root/.gz:rw              # Jazzy
 ```
 
-**Critical Discovery:** Humble uses `ign`, Jazzy uses `gz`
+**Gotcha:** Humble uses `ign` (pre-rebranding), Jazzy uses `gz` (post-rebranding). Different CLI, different cache paths:
 
 ```bash
-# Humble (Ignition Fortress - pre-rebranding)
+# Humble: ~/.ignition/fuel/
 ign fuel download -u "https://..."
-# Cache: ~/.ignition/fuel/
 
-# Jazzy (Gazebo Sim - post-rebranding)
+# Jazzy: ~/.gz/fuel/
 gz fuel download --url "https://..."
-# Cache: ~/.gz/fuel/
 ```
 
-**Benefits:**
-- Download once, share everywhere
-- Disk usage: 200MB → 50MB (75% reduction)
-- Build time: 32 min → 15 min (53% faster)
-- Consistency across containers
+This cut disk usage by 75% and build time from 32 to 15 minutes.
 
 ### DDS ↔ Zenoh Bridging Architecture
 
