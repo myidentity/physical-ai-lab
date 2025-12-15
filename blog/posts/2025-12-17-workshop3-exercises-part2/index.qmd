@@ -1,0 +1,372 @@
+---
+title: "Workshop 3 Preview: Remote Connectivity & Security (Exercises 4-5)"
+subtitle: "Part 2 of 3: Cloud Routers and mTLS for Secure Robot Communication"
+author: "Rajesh"
+date: "2025-12-17T10:00:00"
+categories: [ros2, zenoh, workshop, roscon-india, security, networking]
+image: "thumbnail.png"
+toc: true
+toc-depth: 3
+code-fold: true
+code-summary: "Show code"
+---
+
+## Series Overview
+
+This is Part 2 of the Workshop 3 exercise preview:
+
+| Part | Exercises | Focus |
+|------|-----------|-------|
+| Part 1 | 1-3 | Fundamentals: Pub/Sub, QoS, Shared Memory |
+| **Part 2 (This Post)** | 4-5 | Remote: Cloud Router, mTLS Security |
+| Part 3 | 6-8 | Advanced: Wireless, Congestion, NAT |
+
+---
+
+## Exercise 4: Remote Connectivity & Cloud Router
+
+### The Problem: Robots Behind NAT
+
+Most robots operate behind NAT (Network Address Translation) - they have private IP addresses that aren't directly reachable from the internet.
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    THE NAT PROBLEM                                       │
+│                                                                          │
+│    Robot (192.168.1.50)     NAT Router      Cloud Server                │
+│    ┌─────┐                  ┌──────┐        ┌─────────┐                 │
+│    │     │────outbound─────►│      │───────►│         │                 │
+│    │ Go2 │                  │ WiFi │        │ Monitor │                 │
+│    │     │◄───blocked───────│ AP   │◄───────│ Station │                 │
+│    └─────┘   (no inbound)   └──────┘        └─────────┘                 │
+│                                                                          │
+│    Robot CAN reach cloud, but cloud CANNOT reach robot directly!        │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+**DDS limitation**: Relies on direct peer-to-peer connections. If peers can't reach each other, no communication.
+
+### The Solution: Zenoh Cloud Router
+
+Zenoh routers can be deployed **anywhere** - including cloud servers. Robots connect **outbound** to the cloud router, establishing a bidirectional channel.
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    ZENOH CLOUD ROUTER SOLUTION                          │
+│                                                                          │
+│    Site A (Lab)              Cloud                Site B (Office)       │
+│    ┌─────────┐              ┌──────┐             ┌─────────┐           │
+│    │ Robot 1 │──outbound───►│Cloud │◄──outbound──│ Laptop  │           │
+│    │         │              │Router│             │         │           │
+│    │ Robot 2 │──outbound───►│      │             │ Monitor │           │
+│    └─────────┘              └──────┘             └─────────┘           │
+│                                                                          │
+│    All connections are OUTBOUND - works through any NAT!               │
+│    Cloud router relays messages between all connected clients          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Deployment Options
+
+| Option | Pros | Cons |
+|--------|------|------|
+| **Self-hosted VPS** | Full control, low cost | Requires setup/maintenance |
+| **Zenoh Cloud** | Managed, easy setup | Monthly cost |
+| **Peer router** | No cloud needed | Both peers must be reachable |
+
+### Cloud Router Configuration
+
+```json5
+// cloud_router.json5 (on cloud server)
+{
+  mode: "router",
+  listen: {
+    endpoints: [
+      "tcp/0.0.0.0:7447",    // Public TCP endpoint
+      "tls/0.0.0.0:7448"     // TLS endpoint (for mTLS)
+    ]
+  },
+  // Optional: Enable admin interface
+  plugins: {
+    rest: {
+      http_port: 8000
+    }
+  }
+}
+```
+
+```json5
+// client_config.json5 (on robot)
+{
+  mode: "client",
+  connect: {
+    endpoints: [
+      "tcp/your-cloud-server.com:7447"
+    ]
+  }
+}
+```
+
+### Router Federation
+
+Multiple routers can connect to each other, creating a **mesh network**:
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    ROUTER FEDERATION                                     │
+│                                                                          │
+│    US Region              EU Region              Asia Region            │
+│    ┌──────┐              ┌──────┐               ┌──────┐               │
+│    │Router│◄────────────►│Router│◄─────────────►│Router│               │
+│    │ (US) │              │ (EU) │               │(Asia)│               │
+│    └──┬───┘              └──┬───┘               └──┬───┘               │
+│       │                     │                      │                    │
+│    ┌──┴──┐               ┌──┴──┐                ┌──┴──┐                │
+│    │Robot│               │Robot│                │Robot│                │
+│    │ US  │               │ EU  │                │Asia │                │
+│    └─────┘               └─────┘                └─────┘                │
+│                                                                          │
+│    Robots connect to nearest router, messages route globally            │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Hands-On Commands
+
+```bash
+# On cloud server: Start router
+zenohd --config cloud_router.json5
+
+# On robot: Connect as client
+export ZENOH_CONFIG=/workshop3/configs/client_config.json5
+ros2 run demo_nodes_cpp talker
+
+# On laptop (different network): Subscribe via cloud
+export ZENOH_CONFIG=/workshop3/configs/client_config.json5
+ros2 run demo_nodes_cpp listener
+
+# Verify connectivity
+zenoh scout --config client_config.json5
+```
+
+---
+
+## Exercise 5: mTLS Security
+
+### Why Security Matters
+
+Once your robot is reachable over the internet, **anyone** can potentially:
+- Subscribe to your camera feeds
+- Send commands to your robot
+- Intercept sensitive data
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    SECURITY RISKS                                        │
+│                                                                          │
+│    Legitimate User         Cloud Router         Attacker                │
+│    ┌─────────┐            ┌──────┐            ┌─────────┐              │
+│    │ Control │────────────│      │────────────│ Eavesdrop│              │
+│    │ Station │            │zenohd│            │ & Inject │              │
+│    └─────────┘            └──────┘            └─────────┘              │
+│                                                                          │
+│    Without encryption: Attacker can see ALL messages                    │
+│    Without authentication: Attacker can pretend to be legitimate       │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### mTLS: Mutual TLS Authentication
+
+**mTLS** (mutual TLS) provides both **encryption** and **authentication**:
+
+| Feature | What It Does |
+|---------|--------------|
+| **Encryption** | All traffic encrypted with TLS |
+| **Server Auth** | Client verifies router's identity |
+| **Client Auth** | Router verifies client's identity |
+| **Certificate-based** | No passwords to manage |
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    mTLS HANDSHAKE                                        │
+│                                                                          │
+│    Client                                       Router                   │
+│    ┌─────┐                                     ┌──────┐                 │
+│    │     │────── 1. ClientHello ──────────────►│      │                 │
+│    │     │◄───── 2. ServerHello + Cert ────────│      │                 │
+│    │     │────── 3. Client Cert ──────────────►│      │                 │
+│    │     │◄───── 4. Verify + Establish ────────│      │                 │
+│    │     │══════ 5. Encrypted Channel ═════════│      │                 │
+│    └─────┘                                     └──────┘                 │
+│                                                                          │
+│    Both sides present certificates - mutual authentication!             │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Certificate Structure
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    PKI HIERARCHY                                         │
+│                                                                          │
+│                        ┌──────────────┐                                 │
+│                        │   Root CA    │                                 │
+│                        │  (offline)   │                                 │
+│                        └──────┬───────┘                                 │
+│                               │                                          │
+│              ┌────────────────┼────────────────┐                        │
+│              ▼                ▼                ▼                        │
+│       ┌──────────┐     ┌──────────┐     ┌──────────┐                   │
+│       │ Router   │     │ Robot    │     │ Operator │                   │
+│       │ Cert     │     │ Cert     │     │ Cert     │                   │
+│       └──────────┘     └──────────┘     └──────────┘                   │
+│                                                                          │
+│    All certs signed by same CA = mutual trust established              │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Generating Certificates
+
+```bash
+# 1. Generate CA (Certificate Authority)
+openssl genrsa -out ca.key 4096
+openssl req -x509 -new -nodes -key ca.key -sha256 -days 365 \
+    -out ca.crt -subj "/CN=Workshop CA"
+
+# 2. Generate Router certificate
+openssl genrsa -out router.key 2048
+openssl req -new -key router.key -out router.csr \
+    -subj "/CN=zenoh-router"
+openssl x509 -req -in router.csr -CA ca.crt -CAkey ca.key \
+    -CAcreateserial -out router.crt -days 365
+
+# 3. Generate Client certificate
+openssl genrsa -out client.key 2048
+openssl req -new -key client.key -out client.csr \
+    -subj "/CN=robot-client"
+openssl x509 -req -in client.csr -CA ca.crt -CAkey ca.key \
+    -CAcreateserial -out client.crt -days 365
+```
+
+### Zenoh TLS Configuration
+
+```json5
+// router_tls.json5
+{
+  mode: "router",
+  listen: {
+    endpoints: ["tls/0.0.0.0:7448"]
+  },
+  transport: {
+    link: {
+      tls: {
+        server_private_key: "/certs/router.key",
+        server_certificate: "/certs/router.crt",
+        root_ca_certificate: "/certs/ca.crt",
+        client_auth: true  // Require client certificates!
+      }
+    }
+  }
+}
+```
+
+```json5
+// client_tls.json5
+{
+  mode: "client",
+  connect: {
+    endpoints: ["tls/your-server.com:7448"]
+  },
+  transport: {
+    link: {
+      tls: {
+        client_private_key: "/certs/client.key",
+        client_certificate: "/certs/client.crt",
+        root_ca_certificate: "/certs/ca.crt"
+      }
+    }
+  }
+}
+```
+
+### Hands-On Commands
+
+```bash
+# Start router with TLS
+zenohd --config router_tls.json5
+
+# Connect client with certificate
+zenoh scout --config client_tls.json5
+
+# Verify TLS connection
+openssl s_client -connect your-server.com:7448 \
+    -cert client.crt -key client.key -CAfile ca.crt
+```
+
+### Security Best Practices
+
+| Practice | Why |
+|----------|-----|
+| **Rotate certificates** | Limit exposure if key is compromised |
+| **Use short-lived certs** | 30-90 days recommended |
+| **Separate CAs per environment** | Dev, staging, prod should have different trust |
+| **Never share private keys** | Each device gets unique key pair |
+| **Monitor certificate expiry** | Automate renewal with tools like cert-manager |
+
+::: {.callout-tip}
+## Workshop Tip
+The workshop provides pre-generated certificates for the exercises. In production, use a proper PKI or managed certificate service.
+:::
+
+---
+
+## Combining Remote + Security
+
+The real power comes from **combining** Exercises 4 and 5:
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    SECURE REMOTE ROBOT ACCESS                           │
+│                                                                          │
+│    Robot (Field)          Cloud (TLS)           Operator (Office)       │
+│    ┌─────────┐           ┌──────────┐          ┌─────────┐             │
+│    │  Go2    │═══mTLS═══►│  Router  │◄═══mTLS══│ Laptop  │             │
+│    │ Robot   │           │ (public) │          │         │             │
+│    └─────────┘           └──────────┘          └─────────┘             │
+│                                                                          │
+│    ✅ Works through NAT/firewalls                                       │
+│    ✅ All traffic encrypted                                             │
+│    ✅ Both sides authenticated                                          │
+│    ✅ No VPN required                                                   │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## What's Next
+
+In **Part 3**, we'll preview Exercises 6-8:
+- **Exercise 6**: Wireless Performance Tuning
+- **Exercise 7**: Congestion Handling
+- **Exercise 8**: NAT Traversal & Namespace Resolution
+
+These exercises tackle the **practical challenges** of real-world robot deployments over unreliable networks.
+
+---
+
+## Preparation Checklist
+
+Before Workshop 3, make sure you understand:
+
+- [ ] Why NAT blocks inbound connections
+- [ ] How Zenoh routers solve the NAT problem
+- [ ] What mTLS provides (encryption + mutual authentication)
+- [ ] Basic certificate generation with OpenSSL
+
+---
+
+## Resources
+
+- [Zenoh TLS Configuration](https://zenoh.io/docs/manual/tls/)
+- [mTLS Explained](https://www.cloudflare.com/learning/access-management/what-is-mutual-tls/)
+- [OpenSSL Certificate Guide](https://www.openssl.org/docs/man1.1.1/man1/openssl-req.html)
+- [Let's Encrypt for TLS](https://letsencrypt.org/) (server certificates only)

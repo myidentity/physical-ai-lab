@@ -1,0 +1,430 @@
+---
+title: "Workshop 3 Preview: Advanced Networking (Exercises 6-8)"
+subtitle: "Part 3 of 3: Wireless Tuning, Congestion Handling, and NAT Traversal"
+author: "Rajesh"
+date: "2025-12-17T11:00:00"
+categories: [ros2, zenoh, workshop, roscon-india, networking, performance]
+image: "thumbnail.png"
+toc: true
+toc-depth: 3
+code-fold: true
+code-summary: "Show code"
+---
+
+## Series Overview
+
+This is Part 3 (final) of the Workshop 3 exercise preview:
+
+| Part | Exercises | Focus |
+|------|-----------|-------|
+| Part 1 | 1-3 | Fundamentals: Pub/Sub, QoS, Shared Memory |
+| Part 2 | 4-5 | Remote: Cloud Router, mTLS Security |
+| **Part 3 (This Post)** | 6-8 | Advanced: Wireless, Congestion, NAT |
+
+---
+
+## Exercise 6: Wireless Performance Tuning
+
+### The WiFi Challenge
+
+WiFi introduces challenges that wired Ethernet doesn't have:
+
+| Challenge | Impact | Mitigation |
+|-----------|--------|------------|
+| **Variable latency** | 5-100ms jitter | Increase buffers |
+| **Packet loss** | 1-5% typical | Enable reliability |
+| **Half-duplex** | Can't TX and RX simultaneously | Reduce bandwidth |
+| **Interference** | Other devices, microwaves | Choose channels wisely |
+
+### Bandwidth Reality Check
+
+**Theoretical vs Real WiFi throughput:**
+
+| WiFi Standard | Theoretical | Real-World | With Interference |
+|---------------|-------------|------------|-------------------|
+| 802.11n (WiFi 4) | 300 Mbps | 100-150 Mbps | 50-80 Mbps |
+| 802.11ac (WiFi 5) | 867 Mbps | 300-500 Mbps | 150-250 Mbps |
+| 802.11ax (WiFi 6) | 1200 Mbps | 500-700 Mbps | 300-400 Mbps |
+
+**Robot sensor bandwidth:**
+
+| Sensor | Bandwidth |
+|--------|-----------|
+| 720p Camera @ 30 FPS | ~27 MB/s (216 Mbps) |
+| Depth Camera @ 30 FPS | ~18 MB/s (144 Mbps) |
+| LIDAR @ 20 Hz | ~2 MB/s (16 Mbps) |
+| **Total** | **~47 MB/s (376 Mbps)** |
+
+::: {.callout-warning}
+## The Math Doesn't Work
+A Go2 robot publishing full sensor data (~47 MB/s) **exceeds** typical WiFi 5 real-world throughput. Without optimization, you'll experience:
+- Packet loss
+- Latency spikes
+- Dropped connections
+:::
+
+### Linux Kernel Tuning
+
+```bash
+# Increase network buffer sizes
+sudo sysctl -w net.core.rmem_max=16777216
+sudo sysctl -w net.core.wmem_max=16777216
+sudo sysctl -w net.core.rmem_default=1048576
+sudo sysctl -w net.core.wmem_default=1048576
+
+# Use BBR congestion control (better for WiFi)
+sudo sysctl -w net.ipv4.tcp_congestion_control=bbr
+
+# Increase backlog for burst handling
+sudo sysctl -w net.core.netdev_max_backlog=10000
+```
+
+### Topic Filtering: The Biggest Win
+
+Instead of sending everything, **filter at the source**:
+
+```bash
+# Before: All 47 topics bridged = 50 MB/s
+zenoh-bridge-ros2dds
+
+# After: Only essential topics = 100 KB/s
+zenoh-bridge-ros2dds \
+    --allow "/cmd_vel" \
+    --allow "/odom" \
+    --allow "/battery_state" \
+    --deny ".*"
+```
+
+| Configuration | Bandwidth | Reduction |
+|---------------|-----------|-----------|
+| All topics | 50 MB/s | - |
+| Navigation only | 3 MB/s | 94% |
+| Telemetry only | 100 KB/s | **99.8%** |
+
+### Hands-On Commands
+
+```bash
+# Monitor network bandwidth
+iftop -i wlan0
+
+# Test link quality
+ping -c 100 robot_ip | grep loss
+
+# Apply kernel tuning
+sudo /workshop3/tools/apply_tuning.sh --apply
+
+# Start filtered bridge
+zenoh-bridge-ros2dds \
+    --allow "/odom" \
+    --allow "/cmd_vel" \
+    --deny "/camera/.*"
+```
+
+---
+
+## Exercise 7: Congestion Handling
+
+### Head-of-Line Blocking
+
+When a network is congested, messages queue up. If one stream blocks, **all streams** may be affected:
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    HEAD-OF-LINE BLOCKING                                │
+│                                                                          │
+│    Publishers              Queue              Network                   │
+│                                                                          │
+│    /camera ─────►  ┌─────────────┐                                      │
+│    (27 MB/s)       │ ███████████ │───slow────►  WiFi                    │
+│                    │ ███████████ │  (blocked)  (congested)              │
+│    /cmd_vel ────►  │ ░░░░░░░░░░░ │                                      │
+│    (tiny)          └─────────────┘                                      │
+│                          ▲                                               │
+│                          │                                               │
+│    /cmd_vel is BLOCKED behind /camera data!                            │
+│    Control commands delayed = dangerous for robot!                      │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Priority Queues
+
+Zenoh supports **priority levels** to ensure critical messages aren't blocked:
+
+| Priority | Use Case | Example Topics |
+|----------|----------|----------------|
+| **Real-time** | Emergency, safety | `/emergency_stop` |
+| **Interactive** | Control commands | `/cmd_vel`, `/arm_control` |
+| **Data** | Sensor streams | `/camera`, `/lidar` |
+| **Background** | Logs, diagnostics | `/rosout`, `/diagnostics` |
+
+### Zenoh Priority Configuration
+
+```json5
+// zenoh_priority.json5
+{
+  // Define priority mappings
+  qos: {
+    publication: {
+      // High priority for control
+      "rt/cmd_vel": { priority: "real_time" },
+      "rt/emergency_stop": { priority: "real_time" },
+
+      // Normal priority for sensors
+      "rt/camera/**": { priority: "data" },
+      "rt/lidar/**": { priority: "data" },
+
+      // Low priority for logs
+      "rt/rosout": { priority: "background" }
+    }
+  }
+}
+```
+
+### Flow Control Strategies
+
+| Strategy | Description | When to Use |
+|----------|-------------|-------------|
+| **Drop oldest** | Discard old messages when queue full | Camera streams |
+| **Drop newest** | Discard new messages when queue full | Rarely useful |
+| **Block sender** | Pause publisher until queue has space | Reliable data |
+| **Sample** | Only keep every Nth message | High-rate sensors |
+
+### Hands-On Commands
+
+```bash
+# Monitor message rates
+ros2 topic hz /camera/image_raw
+
+# Check for drops
+ros2 topic info -v /cmd_vel
+
+# Test under congestion (simulate bandwidth limit)
+sudo tc qdisc add dev wlan0 root tbf rate 10mbit burst 32kbit latency 400ms
+
+# Observe priority behavior
+zenoh sub --priority real_time 'rt/cmd_vel'
+```
+
+---
+
+## Exercise 8: NAT Traversal & Namespace Resolution
+
+### NAT Traversal Deep Dive
+
+While Exercise 4 introduced cloud routers, Exercise 8 explores **direct peer-to-peer** connections through NAT.
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    NAT TYPES                                             │
+│                                                                          │
+│    Full Cone NAT          Symmetric NAT          Port Restricted        │
+│    ┌──────────┐           ┌──────────┐          ┌──────────┐           │
+│    │ Any host │           │ Specific │          │ Specific │           │
+│    │ can reach│           │host:port │          │ port     │           │
+│    │ mapped   │           │ required │          │ required │           │
+│    │ port     │           │          │          │          │           │
+│    └──────────┘           └──────────┘          └──────────┘           │
+│    Easy to traverse       Hard to traverse      Medium difficulty      │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### STUN/TURN Concepts
+
+| Protocol | Purpose | How It Works |
+|----------|---------|--------------|
+| **STUN** | Discover public IP/port | Client asks STUN server "what's my public address?" |
+| **TURN** | Relay when direct fails | All traffic goes through TURN server |
+| **ICE** | Try all methods | STUN first, fall back to TURN |
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    ICE CONNECTION ESTABLISHMENT                         │
+│                                                                          │
+│    1. Both peers query STUN server for public address                   │
+│    2. Exchange addresses through signaling (Zenoh router)               │
+│    3. Try direct connection (STUN-discovered addresses)                 │
+│    4. If direct fails, use TURN relay                                   │
+│                                                                          │
+│    Robot ◄────── STUN ──────► Server ◄────── STUN ──────► Laptop       │
+│       │                                                      │          │
+│       └──────────────── Direct P2P (if possible) ───────────┘          │
+│                              or                                         │
+│       └─────────────── TURN Relay (fallback) ───────────────┘          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Namespace Resolution
+
+When multiple robots connect to the same router, **topic collisions** occur:
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    NAMESPACE COLLISION PROBLEM                          │
+│                                                                          │
+│    Robot 1 publishes: /odom                                             │
+│    Robot 2 publishes: /odom        ──►  Which /odom is which?!         │
+│    Robot 3 publishes: /odom                                             │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Solution: Namespace Prefixes
+
+```bash
+# Robot 1: Prefix all topics with /robot1
+ROS_NAMESPACE=/robot1 ros2 run my_robot driver
+
+# Robot 2: Prefix all topics with /robot2
+ROS_NAMESPACE=/robot2 ros2 run my_robot driver
+
+# Result:
+# /robot1/odom
+# /robot2/odom
+# /robot3/odom
+```
+
+### Zenoh Namespace Mapping
+
+```json5
+// zenoh_namespace.json5
+{
+  // Map robot-specific namespace to Zenoh key space
+  ros2dds: {
+    namespace: "/go2_alpha",
+
+    // Topic remapping
+    pub: {
+      "/odom": "fleet/go2_alpha/odom",
+      "/cmd_vel": "fleet/go2_alpha/cmd_vel"
+    }
+  }
+}
+```
+
+### Multi-Robot Fleet Topology
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    FLEET MANAGEMENT TOPOLOGY                            │
+│                                                                          │
+│                         ┌──────────────┐                                │
+│                         │ Fleet Router │                                │
+│                         │   (Cloud)    │                                │
+│                         └──────┬───────┘                                │
+│                                │                                         │
+│         ┌──────────────────────┼──────────────────────┐                 │
+│         │                      │                      │                 │
+│    ┌────┴────┐            ┌────┴────┐            ┌────┴────┐           │
+│    │ go2_001 │            │ go2_002 │            │ go2_003 │           │
+│    │ /odom   │            │ /odom   │            │ /odom   │           │
+│    └─────────┘            └─────────┘            └─────────┘           │
+│                                                                          │
+│    Zenoh Key Space:                                                     │
+│    fleet/go2_001/odom                                                   │
+│    fleet/go2_002/odom                                                   │
+│    fleet/go2_003/odom                                                   │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Hands-On Commands
+
+```bash
+# Set namespace for robot
+export ROS_NAMESPACE=/robot1
+ros2 run demo_nodes_cpp talker
+
+# Query all namespaced topics
+ros2 topic list | grep robot
+
+# Bridge with namespace mapping
+zenoh-bridge-ros2dds --namespace /go2_alpha
+
+# Subscribe to specific robot
+ros2 topic echo /robot1/chatter
+```
+
+---
+
+## Putting It All Together
+
+The final workshop challenge combines **all 8 exercises**:
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    COMPLETE WORKSHOP SCENARIO                           │
+│                                                                          │
+│    Exercise 1-3: Local robot running Zenoh + SHM                        │
+│    ┌─────────────────────────────────────────────────────────┐          │
+│    │  Robot (local)                                          │          │
+│    │  ├─ rmw_zenoh_cpp (Ex 1)                               │          │
+│    │  ├─ QoS configured (Ex 2)                              │          │
+│    │  └─ SHM enabled for cameras (Ex 3)                     │          │
+│    └─────────────────────────────────────────────────────────┘          │
+│                          │                                               │
+│                          │ WiFi (Ex 6 tuning)                           │
+│                          │ Priority queues (Ex 7)                       │
+│                          ▼                                               │
+│    Exercise 4-5: Secure cloud connectivity                              │
+│    ┌─────────────────────────────────────────────────────────┐          │
+│    │  Cloud Router                                           │          │
+│    │  ├─ TLS encrypted (Ex 5)                               │          │
+│    │  ├─ mTLS authenticated (Ex 5)                          │          │
+│    │  └─ NAT traversal (Ex 8)                               │          │
+│    └─────────────────────────────────────────────────────────┘          │
+│                          │                                               │
+│                          ▼                                               │
+│    Exercise 8: Multi-robot namespace                                    │
+│    ┌─────────────────────────────────────────────────────────┐          │
+│    │  Fleet Dashboard                                        │          │
+│    │  ├─ /go2_001/odom                                      │          │
+│    │  ├─ /go2_002/odom                                      │          │
+│    │  └─ /go2_003/odom                                      │          │
+│    └─────────────────────────────────────────────────────────┘          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Workshop Preparation Summary
+
+### What You'll Have Learned
+
+| Exercise | Key Skill |
+|----------|-----------|
+| 1 | Zenoh pub/sub and discovery |
+| 2 | QoS configuration and compatibility |
+| 3 | Shared memory for zero-copy |
+| 4 | Cloud router deployment |
+| 5 | mTLS security setup |
+| 6 | WiFi optimization and filtering |
+| 7 | Priority queues for congestion |
+| 8 | Multi-robot namespace management |
+
+### Final Checklist
+
+Before attending Workshop 3:
+
+- [ ] Docker environment working
+- [ ] Zenoh CLI tools installed (`zenohd`, `zenoh scout/sub/pub`)
+- [ ] Basic understanding of QoS profiles
+- [ ] Familiarity with Linux networking (`tc`, `sysctl`)
+- [ ] OpenSSL certificate generation basics
+- [ ] ROS 2 namespace concepts
+
+---
+
+## Resources
+
+- [Zenoh NAT Traversal](https://zenoh.io/blog/2021-03-23-nat/)
+- [ICE RFC 8445](https://datatracker.ietf.org/doc/html/rfc8445)
+- [Linux Traffic Control](https://tldp.org/HOWTO/Traffic-Control-HOWTO/)
+- [ROS 2 Namespaces](https://docs.ros.org/en/rolling/Tutorials/Beginner-CLI-Tools/Understanding-ROS2-Nodes/Understanding-ROS2-Nodes.html#remapping)
+- [Workshop Preparation Tools](../2025-12-16-workshop3-zenoh-tools/)
+
+---
+
+## See Also
+
+- [Part 1: Exercises 1-3 (Fundamentals)](../2025-12-17-workshop3-exercises-part1/)
+- [Part 2: Exercises 4-5 (Remote & Security)](../2025-12-17-workshop3-exercises-part2/)
+- [Our Preparation Tools](../2025-12-16-workshop3-zenoh-tools/)
+- [Performance Tuning Details](../2025-12-16-workshop3-zenoh-performance/)

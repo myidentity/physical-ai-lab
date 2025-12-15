@@ -658,3 +658,83 @@ input[type="submit"] {
     box-shadow: none;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Sidebar Thumbnails - Small preview images next to menu items
+
+   HOW TO ADD NEW POSTS:
+   1. Ensure your post has a thumbnail.png in its directory
+   2. Add your post's folder name to the selector list below
+   3. Add a new ::before rule with the background-image URL
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Universal styling for ALL sidebar post links */
+.sidebar-item a[href*="/posts/"] {
+  display: flex !important;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem !important;
+  min-height: auto !important;
+  line-height: 1.3;
+}
+
+/* Universal thumbnail pseudo-element for all posts */
+.sidebar-item a[href*="/posts/"]::before {
+  content: "";
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border-color);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Hover effect for all thumbnails */
+.sidebar-item a[href*="/posts/"]:hover::before {
+  transform: scale(1.08);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   Individual Post Thumbnails
+   Add new posts here as: .sidebar-item a[href*="POST-FOLDER"]::before
+   ───────────────────────────────────────────────────────────────── */
+
+/* Workshop 3 Exercise Preview Series (NEW) */
+.sidebar-item a[href*="workshop3-exercises-part1"]::before {
+  background-image: url('/posts/2025-12-17-workshop3-exercises-part1/thumbnail.png');
+}
+.sidebar-item a[href*="workshop3-exercises-part2"]::before {
+  background-image: url('/posts/2025-12-17-workshop3-exercises-part2/thumbnail.png');
+}
+.sidebar-item a[href*="workshop3-exercises-part3"]::before {
+  background-image: url('/posts/2025-12-17-workshop3-exercises-part3/thumbnail.png');
+}
+
+/* Preparing for Zenoh (Our Tools) Series */
+.sidebar-item a[href*="workshop3-zenoh-tools"]::before {
+  background-image: url('/posts/2025-12-16-workshop3-zenoh-tools/thumbnail.png');
+}
+.sidebar-item a[href*="workshop3-zenoh-performance"]::before {
+  background-image: url('/posts/2025-12-16-workshop3-zenoh-performance/thumbnail.png');
+}
+.sidebar-item a[href*="workshop3-zenoh-dashboard"]::before {
+  background-image: url('/posts/2025-12-16-workshop3-zenoh-dashboard/thumbnail.png');
+}
+
+/* Other Posts */
+.sidebar-item a[href*="roscon-india-workshop-docker-infrastructure"]::before {
+  background-image: url('/posts/2025-12-15-roscon-india-workshop-docker-infrastructure/thumbnail.png');
+}
+.sidebar-item a[href*="linux-lid-close-delayed-shutdown"]::before {
+  background-image: url('/posts/2025-12-15-linux-lid-close-delayed-shutdown/thumbnail.png');
+}
+.sidebar-item a[href*="operationalizing-the-lab"]::before {
+  background-image: url('/posts/2025-12-12-operationalizing-the-lab/thumbnail.png');
+}
+.sidebar-item a[href*="isaac-sim-assets-and-robots"]::before {
+  background-image: url('/posts/2025-12-06-isaac-sim-assets-and-robots/thumbnail.png');
+}
