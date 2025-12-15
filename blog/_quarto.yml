@@ -36,6 +36,18 @@ website:
         href: https://github.com/myidentity/physical-ai-lab
         aria-label: "View project on GitHub"
 
+comments:
+  giscus:
+    repo: myidentity/physical-ai-lab
+    repo-id: R_kgDOQjDj1Q
+    category: Announcements
+    category-id: DIC_kwDOQjDj1c4Cz0jJ
+    mapping: pathname
+    reactions-enabled: true
+    input-position: bottom
+    theme: light
+    loading: lazy
+
 format:
   html:
     theme: flatly
