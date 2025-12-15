@@ -677,6 +677,20 @@ docker run --rm -it --name roscon-workshop3-dds --hostname workshop3-dds \
 **Example Menu:**
 
 ```
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                                                                               ║
+║   ██████╗  ██████╗ ███████╗ ██████╗ ██████╗ ███╗   ██╗    ██╗███╗   ██╗      ║
+║   ██╔══██╗██╔═══██╗██╔════╝██╔════╝██╔═══██╗████╗  ██║    ██║████╗  ██║      ║
+║   ██████╔╝██║   ██║███████╗██║     ██║   ██║██╔██╗ ██║    ██║██╔██╗ ██║      ║
+║   ██╔══██╗██║   ██║╚════██║██║     ██║   ██║██║╚██╗██║    ██║██║╚██╗██║      ║
+║   ██║  ██║╚██████╔╝███████║╚██████╗╚██████╔╝██║ ╚████║    ██║██║ ╚████║      ║
+║   ╚═╝  ╚═╝ ╚═════╝ ╚══════╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝    ╚═╝╚═╝  ╚═══╝      ║
+║                                                                               ║
+║                    India 2025 Workshop - Container Launcher                   ║
+║                         December 18-20, COEP Pune                             ║
+║                                                                               ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
 Select a container to launch:
 
   1) ● workshop3-dds       [humble]     CycloneDDS + Zenoh Bridge
@@ -687,6 +701,14 @@ Select a container to launch:
 
   3) ○ workshop3-humble    [humble]     ROS 2 Humble + rmw_zenoh (partial)
      └─ workshop3-humble-zenoh:latest (not built)
+
+  4) ● workshop4-imu       [humble]     IMU tools + VSLAM
+     └─ workshop4-imu:latest (24.2GB)
+
+  5) ● robot-humble        [humble]     Jetson communication
+     └─ robot-humble:latest (24.1GB)
+
+Enter selection (1-5), or [r]efresh / [s]tatus / [c]leanup / [q]uit:
 ```
 
 ### new-terminal.sh: Simplicity Itself
