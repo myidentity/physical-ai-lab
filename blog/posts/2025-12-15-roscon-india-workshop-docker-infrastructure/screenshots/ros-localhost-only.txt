@@ -1,0 +1,7 @@
+      - ROS_LOCALHOST_ONLY=1  # Use localhost-only DDS (required for container topic discovery)
+    <<: *isaac-ros-volumes
+    devices:
+--
+      - ROS_LOCALHOST_ONLY=1  # Use localhost-only DDS (required for container topic discovery)
+    <<: *isaac-ros-volumes
+    devices:

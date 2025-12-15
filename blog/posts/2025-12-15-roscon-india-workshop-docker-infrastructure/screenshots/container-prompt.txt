@@ -1,0 +1,10 @@
+[workshop3-dds] /workspaces $ ros2 topic list
+/chatter
+/parameter_events
+/rosout
+
+[workshop3-dds] /workspaces $ ros2 launch ros_gz_sim_demos diff_drive.launch.py
+[INFO] [launch]: All log files can be found below /root/.ros/log/...
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [gz_sim-1]: process started with pid [42]
+[INFO] [robot_state_publisher-2]: process started with pid [43]

@@ -1,0 +1,32 @@
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                                                                               ║
+║   ██████╗  ██████╗ ███████╗ ██████╗ ██████╗ ███╗   ██╗    ██╗███╗   ██╗      ║
+║   ██╔══██╗██╔═══██╗██╔════╝██╔════╝██╔═══██╗████╗  ██║    ██║████╗  ██║      ║
+║   ██████╔╝██║   ██║███████╗██║     ██║   ██║██╔██╗ ██║    ██║██╔██╗ ██║      ║
+║   ██╔══██╗██║   ██║╚════██║██║     ██║   ██║██║╚██╗██║    ██║██║╚██╗██║      ║
+║   ██║  ██║╚██████╔╝███████║╚██████╗╚██████╔╝██║ ╚████║    ██║██║ ╚████║      ║
+║   ╚═╝  ╚═╝ ╚═════╝ ╚══════╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝    ╚═╝╚═╝  ╚═══╝      ║
+║                                                                               ║
+║                    India 2025 Workshop - Container Launcher                   ║
+║                         December 18-20, COEP Pune                             ║
+║                                                                               ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+Select a container to launch:
+
+  1) ● workshop3-dds       [humble]     CycloneDDS + Zenoh Bridge
+     └─ workshop3-humble-dds:latest (24.2GB)
+
+  2) ● workshop3-jazzy     [jazzy]      ROS 2 Jazzy + rmw_zenoh
+     └─ workshop3-jazzy-zenoh:latest (2.95GB)
+
+  3) ○ workshop3-humble    [humble]     ROS 2 Humble + rmw_zenoh (partial)
+     └─ workshop3-humble-zenoh:latest (not built)
+
+  4) ● workshop4-imu       [humble]     IMU tools + VSLAM
+     └─ workshop4-imu:latest (24.2GB)
+
+  5) ● robot-humble        [humble]     Jetson communication
+     └─ robot-humble:latest (24.1GB)
+
+Enter selection (1-5), or [r]efresh / [s]tatus / [c]leanup / [q]uit:

@@ -1,0 +1,24 @@
+$ docker run --rm --gpus all \
+  pytorch/pytorch:2.7.0-cuda12.8-cudnn9-runtime \
+  python -c "
+import torch
+print(f'PyTorch version: {torch.__version__}')
+print(f'CUDA available: {torch.cuda.is_available()}')
+print(f'CUDA version: {torch.version.cuda}')
+print(f'GPU count: {torch.cuda.device_count()}')
+print(f'GPU name: {torch.cuda.get_device_name(0)}')
+print(f'Compute capability: {torch.cuda.get_device_capability(0)}')
+
+# Create tensor on GPU (real workload)
+x = torch.randn(1000, 1000, device='cuda')
+y = torch.matmul(x, x.T)
+print(f'GPU computation: ✅ {y.shape}')
+"
+
+PyTorch version: 2.7.0
+CUDA available: True
+CUDA version: 12.8
+GPU count: 1
+GPU name: NVIDIA GeForce RTX 5090
+Compute capability: (12, 0)
+GPU computation: ✅ torch.Size([1000, 1000])

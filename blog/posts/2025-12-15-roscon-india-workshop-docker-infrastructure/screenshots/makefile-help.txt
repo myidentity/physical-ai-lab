@@ -1,0 +1,42 @@
+═══════════════════════════════════════════════════════════════════════════════
+ROSCon India 2025 Workshop - Build Automation
+═══════════════════════════════════════════════════════════════════════════════
+
+Available targets:
+
+  [36mall                 [0m 🏗️  Build everything (base + all workshop images)
+  [36mhelp                [0m 📖 Show this help message
+  [36mbase                [0m 🏗️  Build both base images (isaac + jazzy)
+  [36mbase-isaac          [0m 🏗️  Build isaac-ros-base:humble (~30-45 min, ~25-30GB)
+  [36mbase-jazzy          [0m 🏗️  Build jazzy-base:latest (~10-15 min, ~5GB)
+  [36mworkshop3           [0m 🧪 Build all 3 Workshop 3 images
+  [36mworkshop3-dds       [0m 🧪 Build workshop3-humble-dds (CycloneDDS + Zenoh bridge)
+  [36mworkshop3-jazzy     [0m 🧪 Build workshop3-jazzy-zenoh (rmw_zenoh via apt)
+  [36mworkshop3-humble    [0m 🧪 Build workshop3-humble-zenoh (rmw_zenoh from source)
+  [36mworkshop4           [0m 🧪 Build workshop4-imu (IMU sensor integration)
+  [36mrobot               [0m 🤖 Build robot-humble (Jetson communication)
+  [36mtest                [0m 🧪 Run smoke tests on all workshop images
+  [36mtest-dds            [0m 🧪 Test workshop3-dds image (ROS2 + Zenoh bridge)
+  [36mtest-jazzy          [0m 🧪 Test workshop3-jazzy image (ROS2 Jazzy + Zenoh)
+  [36mtest-imu            [0m 🧪 Test workshop4-imu image (IMU tools)
+  [36mtest-bridge         [0m 🧪 Print instructions for manual DDS↔Zenoh bridge test
+  [36moffline             [0m 💾 Alias for offline-save
+  [36moffline-save        [0m 💾 Save all images to compressed tar files (~125GB total)
+  [36moffline-load        [0m 📦 Load images from compressed tar files
+  [36mclean               [0m 🧹 Remove all built workshop images (keeps base images)
+  [36mclean-cache         [0m 🧹 Clean Docker build cache (frees disk space)
+  [36mstatus              [0m 📊 Show built images, sizes, and disk usage
+
+Build order:
+  1. make base          → Build base images first (TIER 2)
+  2. make workshop3     → Build workshop 3 images (TIER 3)
+  3. make workshop4     → Build workshop 4 image (TIER 3)
+  4. make robot         → Build robot image (TIER 3)
+  5. make test          → Verify all images work
+  6. make offline-save  → Prepare for offline use
+
+Quick commands:
+  make all              → Build everything
+  make status           → Show current images
+  make clean            → Remove built images
+

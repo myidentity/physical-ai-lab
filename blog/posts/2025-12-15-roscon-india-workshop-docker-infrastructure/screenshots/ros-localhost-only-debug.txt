@@ -1,0 +1,16 @@
+# Issue: workshop3-dds VSLAM worked, workshop4-imu and robot-humble didn't
+
+# docker-compose.yml comparison:
+
+# workshop3-dds Dockerfile:
+ENV ROS_LOCALHOST_ONLY=1  ✅ (discovery works)
+
+# workshop4-imu Dockerfile:
+ENV ROS_LOCALHOST_ONLY=0  ❌ (topics not discovered)
+
+# robot-humble Dockerfile:
+ENV ROS_LOCALHOST_ONLY=0  ❌ (topics not discovered)
+
+# Solution: Add to docker-compose.yml environment section
+environment:
+  - ROS_LOCALHOST_ONLY=1  # Use localhost-only DDS (required for topic discovery)
