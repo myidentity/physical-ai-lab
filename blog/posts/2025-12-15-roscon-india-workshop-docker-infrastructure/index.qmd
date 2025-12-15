@@ -32,7 +32,7 @@ format:
 
 ## TL;DR
 
-We built a production-grade Docker infrastructure for ROSCon India 2025 workshops (Dec 18-20, COEP Pune):
+We built a production-grade Docker infrastructure for [ROSCon India 2025 workshops](https://www.rosconindia.in/workshops) (Dec 18-20, COEP Pune):
 
 - **7 Docker images** for offline ROS 2 workshops
 - **Modern Gazebo Sim** (NOT Classic - avoided EOL trap!)
@@ -46,7 +46,7 @@ We built a production-grade Docker infrastructure for ROSCon India 2025 workshop
 
 ## The Problem
 
-**Context:** ROSCon India 2025 marks the first ROSCon in India, happening December 18-20 at COEP Pune. We're running two hands-on workshops:
+**Context:** [ROSCon India 2025](https://www.rosconindia.in/workshops) marks the first ROSCon in India, happening December 18-20 at COEP Pune. I'm attending two hands-on workshops:
 
 - **Workshop 3:** Zenoh Networking (DDS ↔ Zenoh bridging over WiFi)
 - **Workshop 4:** IMU Perception with Visual SLAM
