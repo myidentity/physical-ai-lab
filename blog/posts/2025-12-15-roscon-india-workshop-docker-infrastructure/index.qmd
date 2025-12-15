@@ -579,18 +579,15 @@ make status        # Show built images and sizes
 - workshop3-*: ~20 sec each
 - Total rebuild: ~7 min (vs ~60 min fresh)
 
-## User Experience Innovation: Making Docker Approachable
+## Making It Easy to Use
 
-**The Challenge:** Workshop participants range from Docker experts to complete beginners. Running containers with 15+ flags is intimidating.
+I didn't want to type 15-flag docker commands every time I launch a container. So I wrote two helper scripts.
 
-### Interactive Launch Script
+### launch-container.sh
 
-**File:** `scripts/launch-container.sh` (500 lines)
-
-**The Problem:**
+Instead of this:
 
 ```bash
-# What beginners would need to type:
 docker run --rm -it --name roscon-workshop3-dds --hostname workshop3-dds \
   --runtime nvidia --gpus all --network host --privileged \
   -e DISPLAY=$DISPLAY -e QT_X11_NO_MITSHM=1 -e NVIDIA_VISIBLE_DEVICES=all \
@@ -600,25 +597,15 @@ docker run --rm -it --name roscon-workshop3-dds --hostname workshop3-dds \
   -v $HOME/.Xauthority:/root/.Xauthority:rw \
   -v ./workspaces:/workspaces:rw -v ./configs:/config:ro \
   workshop3-humble-dds:latest bash
-# Overwhelming! 😰
 ```
 
-**What They Actually Type:**
+I just type:
 
 ```bash
 ./launch-container.sh 1
-# That's it! 😊
 ```
 
-**Script Features:**
-
-1. **Professional ASCII Art Banner** - Sets tone immediately
-2. **Color-Coded Status Indicators** - Green ● = ready, Red ○ = not built
-3. **Pre-flight Checks** - Docker, NVIDIA, Display, GPU verification
-4. **Helpful In-Container Tips** - Shows demo commands
-5. **Cross-Reference to new-terminal.sh** - Teaches multi-terminal workflow
-
-**Example Menu:**
+The script shows a menu with all available containers:
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════════════╗
@@ -655,35 +642,19 @@ Select a container to launch:
 Enter selection (1-5), or [r]efresh / [s]tatus / [c]leanup / [q]uit:
 ```
 
-### new-terminal.sh: Simplicity Itself
+Green dots (●) mean built and ready. Red circles (○) mean not built yet.
 
-**File:** `scripts/new-terminal.sh` (87 lines)
+### new-terminal.sh
 
-**Usage Patterns:**
+When I need another terminal in the same container:
 
 ```bash
-# Pattern 1: Interactive menu (no args needed)
-./scripts/new-terminal.sh
-
-# Pattern 2: Quick connect by number
-./scripts/new-terminal.sh 1      # workshop3-dds
-./scripts/new-terminal.sh 2      # workshop3-jazzy
-
-# Pattern 3: Fuzzy name matching
-./scripts/new-terminal.sh dds    # Matches "roscon-workshop3-dds"
-
-# Pattern 4: Auto-connect if only one running
-./scripts/new-terminal.sh        # Only one container? Connect immediately!
+./scripts/new-terminal.sh 1          # Connect to workshop3-dds
+./scripts/new-terminal.sh dds        # Fuzzy match works too
+./scripts/new-terminal.sh            # Auto-connects if only one running
 ```
 
-**User Experience Transformation:**
-
-| Aspect | Without Scripts | With Scripts |
-|--------|----------------|--------------|
-| Launch container | 15+ line docker command | `./launch-container.sh 1` |
-| New terminal | `docker ps`, copy ID, `exec` | `./new-terminal.sh 1` |
-| Know which container | Check hostname hash | Colored prompt shows name |
-| Source ROS | Manual every terminal | Automatic via bashrc |
+No more `docker ps` → copy container ID → `docker exec`. ROS is already sourced when the terminal opens.
 
 ## What I Learned
 
