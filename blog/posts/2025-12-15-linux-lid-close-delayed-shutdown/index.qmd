@@ -1,0 +1,463 @@
+---
+title: "Fixing Linux Laptop Suspend: A Delayed Shutdown Solution"
+description: "When s2idle fails you, build a custom lid-close handler that waits before shutting down - with dynamic configuration"
+author: "Rajesh"
+date: "2025-12-15"
+categories: [Linux, Power Management, systemd, Tutorial, NVIDIA]
+image: "thumbnail.png"
+format:
+  html:
+    code-fold: false
+    code-tools: true
+toc: true
+toc-depth: 3
+---
+
+::: {.callout-tip}
+## TL;DR - What You'll Build
+
+By the end of this guide, you will have:
+
+- **A custom lid-close handler** that waits 15 minutes before shutting down (on battery)
+- **Immediate screen lock** when on AC power
+- **Dynamic configuration** - change the delay without restarting services
+- **A one-command installer** to set everything up
+
+**The Problem:** Modern Linux laptops often use `s2idle` (Modern Standby) instead of S3 deep sleep, which is unreliable - especially with NVIDIA GPUs. Close your lid, come back hours later, and find your laptop rebooted with all your work gone.
+
+**The Solution:** Instead of fighting unreliable suspend, we build a delayed shutdown system.
+:::
+
+---
+
+## The Problem: Why Linux Suspend Fails
+
+I closed my laptop lid, expecting it to sleep. Five hours later, I opened it to find it booting fresh - all my windows, tabs, and unsaved work: **gone**.
+
+### What Happened?
+
+```bash
+# Check your sleep mode
+cat /sys/power/mem_sleep
+```
+
+If you see `[s2idle]` instead of `[deep]`, your laptop uses **Modern Standby** - a shallow sleep state that:
+
+- Relies heavily on driver support (NVIDIA's is notoriously buggy)
+- Can crash during extended sleep
+- Drains more battery than S3 deep sleep
+
+### The Evidence
+
+Checking the system logs revealed the truth:
+
+```bash
+journalctl -b -1 | grep -E "(suspend|resume|PM:)" | tail -20
+```
+
+```
+Dec 14 14:09:28 laptop kernel: PM: suspend entry (s2idle)
+# ... no resume logs ...
+# Next entry is a fresh boot 5 hours later
+Dec 14 18:58:50 laptop systemd[1]: Started ...
+```
+
+The system went into `s2idle` and **never woke up**. It crashed silently.
+
+::: {.callout-warning}
+## Common Culprits
+- **NVIDIA drivers** - Poor s2idle support on Linux
+- **ASUS laptops** - Known ACPI quirks (`The lid device is not compliant to SW_LID`)
+- **Modern Standby only** - Many 2020+ laptops don't support S3 at all
+:::
+
+---
+
+## The Solution: Delayed Shutdown
+
+Since suspend is unreliable, we take a different approach:
+
+| Scenario | Behavior |
+|----------|----------|
+| **Lid close + battery** | Wait 15 minutes, then shutdown cleanly |
+| **Lid close + AC power** | Lock screen, stay running |
+| **Open lid during countdown** | Cancel shutdown |
+| **Plug in AC during countdown** | Cancel shutdown |
+
+### Why This Works
+
+- **100% reliable** - Shutdown never fails
+- **No data loss** - You control when it happens
+- **Battery safe** - System is truly off, zero power draw
+- **Flexible** - Change the delay anytime without restart
+
+---
+
+## Architecture
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│                         SYSTEM ARCHITECTURE                          │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  ┌─────────────────────────────────────────────────────────────┐    │
+│  │                    systemd-logind                            │    │
+│  │  ┌─────────────────────────────────────────────────────┐    │    │
+│  │  │ HandleLidSwitch=ignore       (we handle it ourselves)    │    │
+│  │  │ HandleLidSwitchExternalPower=lock  (immediate lock)      │    │
+│  │  └─────────────────────────────────────────────────────┘    │    │
+│  └─────────────────────────────────────────────────────────────┘    │
+│                                                                      │
+│  ┌─────────────────────────────────────────────────────────────┐    │
+│  │              lid-delayed-shutdown.service                    │    │
+│  │                    (our custom daemon)                       │    │
+│  │                                                              │    │
+│  │   ┌────────────┐      ┌────────────┐      ┌────────────┐    │    │
+│  │   │  READ LID  │      │ READ POWER │      │   TIMER    │    │    │
+│  │   │   STATE    │      │   STATE    │      │   LOGIC    │    │    │
+│  │   └─────┬──────┘      └─────┬──────┘      └─────┬──────┘    │    │
+│  │         │                   │                   │           │    │
+│  │         ▼                   ▼                   ▼           │    │
+│  │   /proc/acpi/        /sys/class/          countdown        │    │
+│  │   button/lid/        power_supply/        management       │    │
+│  │   LID0/state         ACAD/online                           │    │
+│  │                                                              │    │
+│  └─────────────────────────────────────────────────────────────┘    │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+The daemon polls the lid and power state every 10 seconds. When conditions are met (lid closed + on battery), it starts a countdown. If conditions change before the timer expires, it cancels.
+
+---
+
+## Quick Install
+
+Download and run the installer:
+
+```bash
+# Download the installer
+curl -O https://raw.githubusercontent.com/myidentity/physical-ai-lab/main/scripts/setup-lid-delayed-shutdown.sh
+
+# Make executable and run
+chmod +x setup-lid-delayed-shutdown.sh
+sudo ./setup-lid-delayed-shutdown.sh
+```
+
+That's it! The system is now configured.
+
+---
+
+## Manual Installation
+
+If you prefer to understand each step:
+
+### Step 1: Create the Daemon Script
+
+```bash
+sudo tee /usr/local/bin/lid-delayed-shutdown.sh << 'EOF'
+#!/bin/bash
+#
+# Lid Delayed Shutdown Daemon
+# Monitors lid state and shuts down after configured delay on battery
+#
+
+CONFIG_FILE="/etc/lid-delayed-shutdown.conf"
+DEFAULT_DELAY_SECONDS=900  # 15 minutes
+POLL_INTERVAL=10           # Check every 10 seconds
+AC_SUPPLY="ACAD"           # Change this to match your system
+
+shutdown_scheduled=false
+shutdown_time=0
+prev_ac_state=""
+prev_lid_state=""
+
+log_msg() {
+    logger -t "lid-delayed-shutdown" "$1"
+}
+
+get_delay_seconds() {
+    if [ -f "$CONFIG_FILE" ]; then
+        local delay=$(grep -E "^DELAY_SECONDS=" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' ')
+        if [[ "$delay" =~ ^[0-9]+$ ]] && [ "$delay" -gt 0 ]; then
+            echo "$delay"
+            return
+        fi
+    fi
+    echo "$DEFAULT_DELAY_SECONDS"
+}
+
+get_lid_state() {
+    if [ -f /proc/acpi/button/lid/LID0/state ]; then
+        cat /proc/acpi/button/lid/LID0/state | awk '{print $2}'
+    else
+        echo "open"
+    fi
+}
+
+get_ac_state() {
+    local ac_file="/sys/class/power_supply/${AC_SUPPLY}/online"
+    if [ -f "$ac_file" ]; then
+        cat "$ac_file"
+    else
+        echo "1"
+    fi
+}
+
+current_delay=$(get_delay_seconds)
+log_msg "Daemon started (delay=${current_delay}s, poll=${POLL_INTERVAL}s, ac=${AC_SUPPLY})"
+
+while true; do
+    lid_state=$(get_lid_state)
+    ac_online=$(get_ac_state)
+
+    # Log power state changes
+    if [[ "$prev_ac_state" != "" && "$prev_ac_state" != "$ac_online" ]]; then
+        if [[ "$ac_online" == "1" ]]; then
+            log_msg "Power state changed: now on AC power"
+        else
+            log_msg "Power state changed: now on battery"
+        fi
+    fi
+    prev_ac_state="$ac_online"
+
+    # Log lid state changes
+    if [[ "$prev_lid_state" != "" && "$prev_lid_state" != "$lid_state" ]]; then
+        log_msg "Lid state changed: now ${lid_state}"
+    fi
+    prev_lid_state="$lid_state"
+
+    if [[ "$lid_state" == "closed" && "$ac_online" == "0" ]]; then
+        if [[ "$shutdown_scheduled" == false ]]; then
+            current_delay=$(get_delay_seconds)
+            shutdown_time=$(($(date +%s) + current_delay))
+            shutdown_scheduled=true
+            remaining=$((current_delay / 60))
+            log_msg "Lid closed on battery - shutdown scheduled in ${remaining}m"
+        else
+            now=$(date +%s)
+            if [[ $now -ge $shutdown_time ]]; then
+                log_msg "Timer elapsed - initiating shutdown"
+                systemctl poweroff
+                exit 0
+            fi
+        fi
+    else
+        if [[ "$shutdown_scheduled" == true ]]; then
+            if [[ "$lid_state" == "open" ]]; then
+                log_msg "Shutdown cancelled - lid opened"
+            else
+                log_msg "Shutdown cancelled - AC power connected"
+            fi
+            shutdown_scheduled=false
+        fi
+    fi
+
+    sleep $POLL_INTERVAL
+done
+EOF
+
+sudo chmod +x /usr/local/bin/lid-delayed-shutdown.sh
+```
+
+### Step 2: Create the Config File
+
+```bash
+sudo tee /etc/lid-delayed-shutdown.conf << 'EOF'
+# Lid Delayed Shutdown Configuration
+# Change DELAY_SECONDS and it takes effect on next lid close
+# No service restart needed!
+
+DELAY_SECONDS=900
+EOF
+```
+
+### Step 3: Create the Systemd Service
+
+```bash
+sudo tee /etc/systemd/system/lid-delayed-shutdown.service << 'EOF'
+[Unit]
+Description=Delayed shutdown on lid close (battery only)
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/lid-delayed-shutdown.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+```
+
+### Step 4: Configure systemd-logind
+
+```bash
+sudo mkdir -p /etc/systemd/logind.conf.d/
+sudo tee /etc/systemd/logind.conf.d/lid-shutdown.conf << 'EOF'
+[Login]
+HandleLidSwitch=ignore
+HandleLidSwitchExternalPower=lock
+EOF
+```
+
+### Step 5: Enable and Start
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable lid-delayed-shutdown.service
+sudo systemctl start lid-delayed-shutdown.service
+sudo systemctl kill -s HUP systemd-logind
+```
+
+---
+
+## Usage
+
+### Check Current Delay
+
+```bash
+lid-shutdown-delay
+# Output: Current delay: 900 seconds (15m 0s)
+```
+
+### Change Delay (No Restart Needed!)
+
+```bash
+# For testing (60 seconds)
+sudo lid-shutdown-delay 60
+
+# For normal use
+sudo lid-shutdown-delay 15m
+
+# Or edit directly
+sudo nano /etc/lid-delayed-shutdown.conf
+```
+
+### Monitor the Logs
+
+```bash
+# Live log stream
+journalctl -t lid-delayed-shutdown -f
+
+# Example output:
+# Dec 15 10:00:00 laptop lid-delayed-shutdown: Power state changed: now on battery
+# Dec 15 10:00:10 laptop lid-delayed-shutdown: Lid state changed: now closed
+# Dec 15 10:00:10 laptop lid-delayed-shutdown: Lid closed on battery - shutdown scheduled in 15m
+```
+
+---
+
+## How It Works
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    EVERY 10 SECONDS                             │
+└───────────────────────────┬─────────────────────────────────────┘
+                            │
+                            ▼
+                ┌───────────────────────┐
+                │ Read lid state        │
+                │ cat /proc/.../state   │──────► "open" or "closed"
+                └───────────┬───────────┘
+                            │
+                            ▼
+                ┌───────────────────────┐
+                │ Read power state      │
+                │ cat /sys/.../online   │──────► "1" (AC) or "0" (battery)
+                └───────────┬───────────┘
+                            │
+                            ▼
+              ┌─────────────────────────────┐
+              │  lid=closed AND power=0 ?   │
+              └─────────────┬───────────────┘
+                            │
+           ┌────────────────┴────────────────┐
+           │                                 │
+          YES                                NO
+           │                                 │
+           ▼                                 ▼
+   ┌───────────────────┐            ┌───────────────────┐
+   │ Timer running?    │            │ Timer running?    │
+   └────────┬──────────┘            └────────┬──────────┘
+            │                                │
+     ┌──────┴──────┐                  ┌──────┴──────┐
+     NO           YES                 YES           NO
+     │             │                   │             │
+     ▼             ▼                   ▼             ▼
+┌─────────┐  ┌──────────────┐   ┌──────────┐   ┌─────────┐
+│ START   │  │ Time up?     │   │ CANCEL   │   │ Do      │
+│ TIMER   │  │ → SHUTDOWN   │   │ timer    │   │ nothing │
+└─────────┘  └──────────────┘   └──────────┘   └─────────┘
+```
+
+---
+
+## Troubleshooting
+
+### Find Your AC Power Supply Name
+
+```bash
+ls /sys/class/power_supply/
+# Output: ACAD  BAT1  ucsi-source-psy-USBC000:001 ...
+
+# Find the one with type "Mains"
+for f in /sys/class/power_supply/*/type; do
+    echo "$(dirname $f | xargs basename): $(cat $f)"
+done
+```
+
+### Service Not Starting?
+
+```bash
+# Check status
+systemctl status lid-delayed-shutdown.service
+
+# Check for errors
+journalctl -u lid-delayed-shutdown.service -e
+```
+
+### Lid State Not Detected?
+
+```bash
+# Check if lid state file exists
+cat /proc/acpi/button/lid/LID0/state
+
+# If not, try finding it
+find /proc/acpi -name "*lid*" 2>/dev/null
+```
+
+---
+
+## Uninstall
+
+```bash
+sudo systemctl stop lid-delayed-shutdown.service
+sudo systemctl disable lid-delayed-shutdown.service
+sudo rm /usr/local/bin/lid-delayed-shutdown.sh
+sudo rm /usr/local/bin/lid-shutdown-delay
+sudo rm /etc/lid-delayed-shutdown.conf
+sudo rm /etc/systemd/system/lid-delayed-shutdown.service
+sudo rm /etc/systemd/logind.conf.d/lid-shutdown.conf
+sudo systemctl daemon-reload
+sudo systemctl kill -s HUP systemd-logind
+```
+
+---
+
+## Conclusion
+
+Sometimes the best solution isn't to fix the broken thing - it's to work around it elegantly. Modern Linux laptops with s2idle suspend and NVIDIA GPUs are a recipe for frustration. Rather than fighting kernel bugs and driver issues, this simple daemon gives you:
+
+- **Reliability** - Shutdown always works
+- **Flexibility** - Configurable delay without restarts
+- **Visibility** - Logs show exactly what's happening
+- **Simplicity** - Just a bash script and systemd service
+
+The code is available on [GitHub](https://github.com/myidentity/physical-ai-lab). Contributions welcome!
+
+::: {.callout-note}
+## Credits
+This solution was developed while debugging a frustrating suspend issue on an ASUS laptop with NVIDIA GPU running Ubuntu 24.04. Special thanks to Claude Code for the pair programming session that produced this solution.
+:::
