@@ -2,7 +2,7 @@
 title: "Preparing for Zenoh: Performance Tuning Deep Dive"
 subtitle: "Part 2 of 3: Achieving 99.8% bandwidth reduction for WiFi-based robotics"
 author: "Rajesh"
-date: "2025-12-16"
+date: "2025-12-16T10:00:00"
 categories: [ros2, zenoh, performance, networking, optimization]
 image: "thumbnail.png"
 toc: true

@@ -2,7 +2,7 @@
 title: "Preparing for Zenoh: Real-Time Web Dashboard for ROS2 Monitoring"
 subtitle: "Part 3 of 3: Building a 13-layer architecture from ROS2 callbacks to Canvas/SVG visualizations"
 author: "Rajesh"
-date: "2025-12-16"
+date: "2025-12-16T11:00:00"
 categories: [ros2, zenoh, dashboard, visualization, flask, sse]
 image: "thumbnail.png"
 toc: true

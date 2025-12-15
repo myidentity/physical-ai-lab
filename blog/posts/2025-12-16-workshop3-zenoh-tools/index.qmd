@@ -2,7 +2,7 @@
 title: "Preparing for Zenoh: Interactive Tools and Workshop Exercises"
 subtitle: "Part 1 of 3: Building the tooling infrastructure for ROSCon India 2025 Workshop 3"
 author: "Rajesh"
-date: "2025-12-16"
+date: "2025-12-16T09:00:00"
 categories: [ros2, zenoh, docker, workshop, tools]
 image: "thumbnail.png"
 toc: true
