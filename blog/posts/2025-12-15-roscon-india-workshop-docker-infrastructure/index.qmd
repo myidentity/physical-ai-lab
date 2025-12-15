@@ -732,19 +732,6 @@ Enter selection (1-5), or [r]efresh / [s]tatus / [c]leanup / [q]uit:
 ./scripts/new-terminal.sh        # Only one container? Connect immediately!
 ```
 
-**What It Replaces:**
-
-```bash
-# Old way:
-docker ps  # Find container ID
-docker exec -it roscon-workshop3-dds bash
-source /opt/ros/humble/setup.bash
-
-# New way:
-./scripts/new-terminal.sh 1
-# ROS already sourced, consistent prompt, ready to go!
-```
-
 **User Experience Transformation:**
 
 | Aspect | Without Scripts | With Scripts |
