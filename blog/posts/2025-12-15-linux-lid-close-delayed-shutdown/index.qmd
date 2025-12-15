@@ -456,8 +456,3 @@ Sometimes the best solution isn't to fix the broken thing - it's to work around 
 - **Simplicity** - Just a bash script and systemd service
 
 The code is available on [GitHub](https://github.com/myidentity/physical-ai-lab). Contributions welcome!
-
-::: {.callout-note}
-## Credits
-This solution was developed while debugging a frustrating suspend issue on an ASUS laptop with NVIDIA GPU running Ubuntu 24.04. Special thanks to Claude Code for the pair programming session that produced this solution.
-:::
