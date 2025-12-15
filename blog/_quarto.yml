@@ -23,7 +23,15 @@ website:
     search: true
     background: light
     contents:
-      - section: "Blog"
+      - section: "Preparing for Zenoh (3-Part Series)"
+        contents:
+          - text: "Part 1: Interactive Tools"
+            href: posts/2025-12-16-workshop3-zenoh-tools/index.qmd
+          - text: "Part 2: Performance Tuning"
+            href: posts/2025-12-16-workshop3-zenoh-performance/index.qmd
+          - text: "Part 3: Web Dashboard"
+            href: posts/2025-12-16-workshop3-zenoh-dashboard/index.qmd
+      - section: "Other Posts"
         contents:
           - posts/2025-12-15-roscon-india-workshop-docker-infrastructure/index.qmd
           - posts/2025-12-15-linux-lid-close-delayed-shutdown/index.qmd
