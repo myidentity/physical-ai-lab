@@ -42,6 +42,14 @@ The foundation of any middleware is how nodes **find each other** and **exchange
 
 ### DDS vs Zenoh Discovery
 
+::: {layout-ncol=2}
+![DDS Discovery - Multicast Problem](dds-discovery-problem.png){group="discovery"}
+
+![Zenoh Discovery - Router Solution](zenoh-router-solution.png){group="discovery"}
+:::
+
+::: {.callout-note collapse="true"}
+## ASCII Diagram (Click to Expand)
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                        DDS DISCOVERY                                     │
@@ -69,6 +77,7 @@ The foundation of any middleware is how nodes **find each other** and **exchange
 │    Solution: Router-based, works over any TCP connection                │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
+:::
 
 ### 🎯 The Eureka Moment: "Why Isn't My Listener Receiving?"
 
@@ -97,6 +106,10 @@ Have you started a router with `ros2 run rmw_zenoh_cpp rmw_zenohd`?
 
 ### The Correct Pattern: Router First!
 
+![Zenoh Startup Sequence - Router must start first](zenoh-startup-sequence.png){fig-alt="Step-by-step diagram showing rmw_zenohd starting first, then nodes connecting"}
+
+::: {.callout-note collapse="true"}
+## ASCII Diagram (Click to Expand)
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                   ZENOH STARTUP SEQUENCE                     │
@@ -120,6 +133,7 @@ Have you started a router with `ros2 run rmw_zenoh_cpp rmw_zenohd`?
 │   Now they discover each other via the router!              │
 └─────────────────────────────────────────────────────────────┘
 ```
+:::
 
 ### Hands-On Commands
 
@@ -281,6 +295,14 @@ For **high-bandwidth local communication**, copying data through the network sta
 
 ### Why Shared Memory?
 
+::: {layout-ncol=2}
+![Without Shared Memory - Multiple Copies](without-shared-memory.png){group="shm"}
+
+![With Shared Memory - Zero Copy](with-shared-memory.png){group="shm"}
+:::
+
+::: {.callout-note collapse="true"}
+## ASCII Diagram (Click to Expand)
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                    WITHOUT SHARED MEMORY                                 │
@@ -310,6 +332,7 @@ For **high-bandwidth local communication**, copying data through the network sta
 │    CPU overhead: MINIMAL                                                 │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
+:::
 
 ### Real Camera Test: Measuring Bandwidth
 
@@ -519,6 +542,14 @@ Real cameras output frames at hardware speed. The transport handles **83 MB/s** 
 
 ### Comparison: Synthetic vs Real Camera
 
+::: {layout-ncol=2}
+![Synthetic Camera - CPU Bottleneck](synthetic-camera-bottleneck.png){group="compare"}
+
+![Real Camera - No Bottleneck](real-camera-full-speed.png){group="compare"}
+:::
+
+::: {.callout-note collapse="true"}
+## ASCII Diagram (Click to Expand)
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                    SYNTHETIC CAMERA (cam2image)                          │
@@ -546,6 +577,7 @@ Real cameras output frames at hardware speed. The transport handles **83 MB/s** 
 │    Bottleneck: NONE - transport handles it easily!                      │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
+:::
 
 ### Testing SHM with Real Cameras
 
@@ -610,6 +642,8 @@ With SHM enabled, image data is passed via shared memory pointers instead of bei
 :::
 
 ### 🎯 Eureka Moment #7: Zenoh TCP Handles 188 MB/s - No SHM Needed!
+
+![Zenoh TCP Performance - 188 MB/s at 30 FPS](zenoh-tcp-188mbps.png){fig-alt="Hero infographic showing Zenoh TCP achieving 188 MB/s with zero frame drops"}
 
 We pushed the D435i to **1080p @ 30 FPS** to stress-test the transport:
 
