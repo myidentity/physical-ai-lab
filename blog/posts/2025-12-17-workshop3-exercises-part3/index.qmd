@@ -55,6 +55,8 @@ WiFi introduces challenges that wired Ethernet doesn't have:
 | LIDAR @ 20 Hz | ~2 MB/s (16 Mbps) |
 | **Total** | **~47 MB/s (376 Mbps)** |
 
+![Robot sensor bandwidth often exceeds real-world WiFi capacity](wifi-bandwidth-challenge.png){#fig-wifi-challenge}
+
 ::: {.callout-warning}
 ## The Math Doesn't Work
 A Go2 robot publishing full sensor data (~47 MB/s) **exceeds** typical WiFi 5 real-world throughput. Without optimization, you'll experience:
@@ -101,23 +103,70 @@ zenoh-bridge-ros2dds \
 | Navigation only | 3 MB/s | 94% |
 | Telemetry only | 100 KB/s | **99.8%** |
 
-### Hands-On Commands
+### Hands-On Testing: Simulating WiFi Congestion
+
+![Using Linux Traffic Control to simulate WiFi congestion](traffic-control-simulation.png){#fig-tc-simulation}
+
+We tested with a RealSense D435i camera (720p @ 30 FPS) using Linux Traffic Control to simulate WiFi congestion:
 
 ```bash
-# Monitor network bandwidth
-iftop -i wlan0
+# Baseline (no limits)
+ros2 topic bw /camera/camera/color/image_raw
+# Result: 84-86 MB/s, 30 FPS, 2.76 MB per frame
 
-# Test link quality
-ping -c 100 robot_ip | grep loss
+# Simulate congested WiFi (200 Mbps + 10ms jitter)
+tc qdisc add dev lo root netem delay 10ms 5ms rate 200mbit
 
-# Apply kernel tuning
-sudo /workshop3/tools/apply_tuning.sh --apply
+# Measure again
+ros2 topic hz /camera/camera/color/image_raw
+# Result: ~5 FPS (83% drop!)
+```
 
-# Start filtered bridge
-zenoh-bridge-ros2dds \
-    --allow "/odom" \
-    --allow "/cmd_vel" \
-    --deny "/camera/.*"
+::: {.callout-important}
+## Eureka Moment #1: 83% FPS Drop!
+With 200 Mbps bandwidth limit, our 720p camera dropped from **30 FPS to just 5 FPS**. Why? The camera produces 84 MB/s (672 Mbps), but we only had 200 Mbps available!
+:::
+
+### The Compression Solution
+
+The D435i publishes multiple formats via `image_transport`. Here's what we measured:
+
+| Topic | Size | FPS (Congested) | Compression |
+|-------|------|-----------------|-------------|
+| `/image_raw` | 2.76 MB | **~5 FPS** | 1x (baseline) |
+| `/image_raw/zstd` | 1.45 MB | ~12 FPS | 1.9x |
+| **`/image_raw/compressed`** | **0.23 MB** | **~30 FPS** | **12x smaller!** |
+| `/depth/image_rect_raw` | 0.81 MB | ~30 FPS | N/A |
+
+![Compression dramatically reduces bandwidth while maintaining frame rate](compression-bandwidth-comparison.png){#fig-compression}
+
+::: {.callout-tip}
+## Eureka Moment #2: JPEG Compression is the WiFi Solution!
+The JPEG compressed topic (0.23 MB) achieves **full 30 FPS** on the same congested network where raw (2.76 MB) only gets 5 FPS. That's a **12x size reduction** with no FPS loss!
+:::
+
+### Who Does the Compression?
+
+**The `image_transport` ROS 2 package does it automatically!** When you launch the camera, these topics appear:
+
+- `/image_raw` - Original uncompressed
+- `/image_raw/compressed` - JPEG compressed
+- `/image_raw/zstd` - ZSTD compressed
+- `/image_raw/theora` - Video codec
+
+**No extra configuration needed** - just subscribe to `/compressed` instead of `/image_raw`.
+
+### Traffic Control Quick Reference
+
+```bash
+# Add bandwidth limit with delay
+tc qdisc add dev lo root netem delay 10ms 5ms rate 200mbit
+
+# Remove all tc rules
+tc qdisc del dev lo root
+
+# Show current rules
+tc qdisc show dev lo
 ```
 
 ---
@@ -127,6 +176,8 @@ zenoh-bridge-ros2dds \
 ### Head-of-Line Blocking
 
 When a network is congested, messages queue up. If one stream blocks, **all streams** may be affected:
+
+![Head-of-line blocking: large camera frames block tiny control commands](head-of-line-blocking.png){#fig-hol-blocking}
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
@@ -189,21 +240,53 @@ Zenoh supports **priority levels** to ensure critical messages aren't blocked:
 | **Block sender** | Pause publisher until queue has space | Reliable data |
 | **Sample** | Only keep every Nth message | High-rate sensors |
 
-### Hands-On Commands
+### Hands-On Testing: cmd_vel Under Congestion
+
+We tested with camera (large images) and cmd_vel (tiny control commands) running simultaneously:
 
 ```bash
-# Monitor message rates
-ros2 topic hz /camera/image_raw
-
-# Check for drops
-ros2 topic info -v /cmd_vel
-
-# Test under congestion (simulate bandwidth limit)
-sudo tc qdisc add dev wlan0 root tbf rate 10mbit burst 32kbit latency 400ms
-
-# Observe priority behavior
-zenoh sub --priority real_time 'rt/cmd_vel'
+# Start cmd_vel publisher
+ros2 topic pub /cmd_vel geometry_msgs/msg/Twist \
+    "{linear: {x: 0.5}, angular: {z: 0.1}}" --rate 10
 ```
+
+**Baseline (No Congestion):**
+
+| Topic | Rate | Jitter (std dev) |
+|-------|------|------------------|
+| `/cmd_vel` | 10 Hz | 0.0003s |
+| `/camera/image_raw` | 30 FPS | 0.0005s |
+
+**Moderate Congestion (200 Mbps + 10ms delay):**
+
+| Topic | Rate | Jitter (std dev) |
+|-------|------|------------------|
+| `/cmd_vel` | 10 Hz | 0.0035s (**10x worse**) |
+| `/camera/image_raw` | ~5 FPS | 0.04s |
+
+**Severe Congestion (50 Mbps + 50ms delay):**
+
+| Topic | Rate | Jitter (std dev) | Interval Range |
+|-------|------|------------------|----------------|
+| `/cmd_vel` | 10 Hz | **0.022s** | 62-135ms (expected: 100ms) |
+
+![Small control messages slip through congestion but with increased jitter](congestion-jitter-diagram.png){#fig-congestion}
+
+::: {.callout-warning}
+## Eureka Moment #5: Zenoh Handles Small Packets Well!
+**Surprising finding**: cmd_vel (tiny messages) maintained 10 Hz rate even under severe congestion! Unlike classic "head-of-line blocking", small messages slip through in Zenoh.
+
+**BUT timing consistency degrades significantly:**
+- Jitter increased **73x** (0.0003s → 0.022s)
+- Interval variance: ±37ms instead of ±1ms
+
+**Impact on Robots:**
+- Jerky movement from inconsistent timing
+- Control loop instability
+- Path following errors
+:::
+
+**Lesson**: Priority queues help ensure **consistent timing**, not just delivery. For safety-critical systems, predictable timing matters as much as throughput.
 
 ---
 
@@ -235,6 +318,8 @@ While Exercise 4 introduced cloud routers, Exercise 8 explores **direct peer-to-
 | **STUN** | Discover public IP/port | Client asks STUN server "what's my public address?" |
 | **TURN** | Relay when direct fails | All traffic goes through TURN server |
 | **ICE** | Try all methods | STUN first, fall back to TURN |
+
+![ICE connection establishment: STUN for discovery, TURN as fallback relay](nat-traversal-ice.png){#fig-nat-ice}
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
@@ -271,16 +356,20 @@ When multiple robots connect to the same router, **topic collisions** occur:
 
 ```bash
 # Robot 1: Prefix all topics with /robot1
-ROS_NAMESPACE=/robot1 ros2 run my_robot driver
+ros2 run demo_nodes_cpp talker --ros-args --remap __ns:=/robot1
 
 # Robot 2: Prefix all topics with /robot2
-ROS_NAMESPACE=/robot2 ros2 run my_robot driver
+ros2 run demo_nodes_cpp talker --ros-args --remap __ns:=/robot2 --remap __node:=talker2
 
 # Result:
-# /robot1/odom
-# /robot2/odom
-# /robot3/odom
+# /robot1/chatter
+# /robot2/chatter
 ```
+
+::: {.callout-tip}
+## Pro Tip: Use --ros-args Instead of Environment Variables
+Using `--ros-args --remap __ns:=/robotX` is **more reliable** than the `ROS_NAMESPACE` environment variable, especially with rmw_zenoh_cpp.
+:::
 
 ### Zenoh Namespace Mapping
 
@@ -325,22 +414,50 @@ ROS_NAMESPACE=/robot2 ros2 run my_robot driver
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Hands-On Commands
+### Hands-On Testing: Multi-Robot Namespaces
+
+We tested namespace resolution with two simulated robots:
 
 ```bash
-# Set namespace for robot
-export ROS_NAMESPACE=/robot1
-ros2 run demo_nodes_cpp talker
+# Start two "robots" with different namespaces
+ros2 run demo_nodes_cpp talker --ros-args --remap __ns:=/robot1 &
+ros2 run demo_nodes_cpp talker --ros-args --remap __ns:=/robot2 --remap __node:=talker2 &
 
-# Query all namespaced topics
+# Check nodes
+ros2 node list
+# Output:
+# /robot1/talker
+# /robot2/talker2
+
+# Check topics
 ros2 topic list | grep robot
+# Output:
+# /robot1/chatter
+# /robot2/chatter
 
-# Bridge with namespace mapping
-zenoh-bridge-ros2dds --namespace /go2_alpha
+# Verify independent streams
+ros2 topic echo /robot1/chatter --once
+# data: 'Hello World: 27'
 
-# Subscribe to specific robot
-ros2 topic echo /robot1/chatter
+ros2 topic echo /robot2/chatter --once
+# data: 'Hello World: 29'
 ```
+
+![Multiple robots with unique namespaces avoid topic collisions](namespace-fleet-diagram.png){#fig-namespace}
+
+::: {.callout-note}
+## Eureka Moment #6: Namespace Resolution Prevents Chaos!
+
+| Robot | Node Name | Namespace | Topic |
+|-------|-----------|-----------|-------|
+| Robot 1 | `talker` | `/robot1` | `/robot1/chatter` |
+| Robot 2 | `talker2` | `/robot2` | `/robot2/chatter` |
+
+**Key Findings:**
+- **Namespaces prevent topic collisions** - essential for multi-robot fleets
+- **Each robot gets isolated topics**: `/robot1/odom`, `/robot2/odom`, etc.
+- **Fleet monitoring**: Subscribe to patterns like `/robot*/status`
+:::
 
 ---
 
