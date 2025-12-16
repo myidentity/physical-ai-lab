@@ -74,6 +74,45 @@ Zenoh routers can be deployed **anywhere** - including cloud servers. Robots con
 | **Zenoh Cloud** | Managed, easy setup | Monthly cost |
 | **Peer router** | No cloud needed | Both peers must be reachable |
 
+### Key Insight: The Three Pillars of Zenoh Configuration
+
+Understanding Zenoh configuration comes down to three essential pillars:
+
+| Pillar | Description | Options |
+|--------|-------------|---------|
+| **Mode** | Role in the network | `client`, `peer`, `router` |
+| **Connect/Listen** | How to find/accept connections | `tcp/127.0.0.1:7447`, `tcp/0.0.0.0:7447` |
+| **Transport** | How data is moved | SHM, TCP, TLS, QUIC |
+
+::: {.callout-important}
+## Eureka Moment #1: Router Relays ALL Traffic
+
+**Key Insight**: Unlike DDS where discovery leads to direct peer-to-peer connections, Zenoh router relays **ALL traffic** continuously.
+
+```
+DDS:    Discovery → Direct peer-to-peer (fails through NAT)
+Zenoh:  All traffic through router (works through ANY NAT)
+```
+
+**Why this matters**: Both client and server connect **OUTBOUND** to the router. Neither needs to accept incoming connections. This is why Zenoh works through NAT/firewalls!
+:::
+
+::: {.callout-tip}
+## Eureka Moment #2: One-Line Change for Remote
+
+Going from local to remote connectivity is literally a one-line change:
+
+```json5
+// LOCAL
+connect: { endpoints: ["tcp/127.0.0.1:7447"] }
+
+// REMOTE (just change the IP!)
+connect: { endpoints: ["tcp/cloud-server-ip:7447"] }
+```
+
+No VPN required. No firewall rules. No port forwarding. Just point to a cloud router!
+:::
+
 ### Cloud Router Configuration
 
 ```json5
@@ -224,30 +263,64 @@ Once your robot is reachable over the internet, **anyone** can potentially:
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Generating Certificates
+### Generating Certificates (X.509 v3 Required!)
+
+::: {.callout-warning}
+## Important: Zenoh Requires X.509 v3 Certificates
+Basic OpenSSL commands create v1 certificates which will fail with `UnsupportedCertVersion` error. You must use the `-extfile` option to create v3 certificates.
+:::
 
 ```bash
-# 1. Generate CA (Certificate Authority)
-openssl genrsa -out ca.key 4096
+# Create working directory
+mkdir -p /tmp/zenoh-certs && cd /tmp/zenoh-certs
+
+# Create v3 extension config (REQUIRED for Zenoh!)
+cat > v3.ext << 'EOF'
+authorityKeyIdentifier=keyid,issuer
+basicConstraints=CA:FALSE
+keyUsage = digitalSignature, keyEncipherment
+EOF
+
+# 1. Generate CA (Certificate Authority) with v3 extensions
+openssl genrsa -out ca.key 2048
 openssl req -x509 -new -nodes -key ca.key -sha256 -days 365 \
-    -out ca.crt -subj "/CN=Workshop CA"
+    -out ca.pem -subj "/CN=Zenoh-Workshop-CA" \
+    -addext "basicConstraints=critical,CA:TRUE"
 
-# 2. Generate Router certificate
-openssl genrsa -out router.key 2048
-openssl req -new -key router.key -out router.csr \
-    -subj "/CN=zenoh-router"
-openssl x509 -req -in router.csr -CA ca.crt -CAkey ca.key \
-    -CAcreateserial -out router.crt -days 365
+# 2. Generate Router certificate (v3)
+openssl genrsa -out server.key 2048
+openssl req -new -key server.key -out server.csr -subj "/CN=zenoh-router"
+openssl x509 -req -in server.csr -CA ca.pem -CAkey ca.key \
+    -CAcreateserial -out server.pem -days 365 -sha256 \
+    -extfile v3.ext
 
-# 3. Generate Client certificate
+# 3. Generate Client certificate (v3)
 openssl genrsa -out client.key 2048
-openssl req -new -key client.key -out client.csr \
-    -subj "/CN=robot-client"
-openssl x509 -req -in client.csr -CA ca.crt -CAkey ca.key \
-    -CAcreateserial -out client.crt -days 365
+openssl req -new -key client.key -out client.csr -subj "/CN=ros2-client"
+openssl x509 -req -in client.csr -CA ca.pem -CAkey ca.key \
+    -CAcreateserial -out client.pem -days 365 -sha256 \
+    -extfile v3.ext
+
+# 4. Verify certificate version is v3
+openssl x509 -in server.pem -text -noout | grep "Version"
+# Expected: Version: 3 (0x2)
 ```
 
 ### Zenoh TLS Configuration
+
+::: {.callout-warning}
+## Important: Zenoh 1.7.1 Config Field Names Changed!
+The field names in Zenoh 1.7.1 are different from older documentation. Using old field names will cause "unknown field" errors.
+
+| Old Name (wrong) | New Name (correct) |
+|------------------|-------------------|
+| `root_ca_certificate_file` | `root_ca_certificate` |
+| `server_private_key_file` | `listen_private_key` |
+| `server_certificate_file` | `listen_certificate` |
+| `client_private_key_file` | `connect_private_key` |
+| `client_certificate_file` | `connect_certificate` |
+| `client_auth: true` | `enable_mtls: true` |
+:::
 
 ```json5
 // router_tls.json5
@@ -259,10 +332,10 @@ openssl x509 -req -in client.csr -CA ca.crt -CAkey ca.key \
   transport: {
     link: {
       tls: {
-        server_private_key: "/certs/router.key",
-        server_certificate: "/certs/router.crt",
-        root_ca_certificate: "/certs/ca.crt",
-        client_auth: true  // Require client certificates!
+        root_ca_certificate: "/certs/ca.pem",
+        listen_private_key: "/certs/server.key",
+        listen_certificate: "/certs/server.pem",
+        enable_mtls: true  // Require client certificates!
       }
     }
   }
@@ -279,9 +352,9 @@ openssl x509 -req -in client.csr -CA ca.crt -CAkey ca.key \
   transport: {
     link: {
       tls: {
-        client_private_key: "/certs/client.key",
-        client_certificate: "/certs/client.crt",
-        root_ca_certificate: "/certs/ca.crt"
+        root_ca_certificate: "/certs/ca.pem",
+        connect_private_key: "/certs/client.key",
+        connect_certificate: "/certs/client.pem"
       }
     }
   }
@@ -290,17 +363,63 @@ openssl x509 -req -in client.csr -CA ca.crt -CAkey ca.key \
 
 ### Hands-On Commands
 
+::: {.callout-note}
+## Zenoh CLI Syntax
+Global flags (like `--config`) must come **BEFORE** the subcommand:
 ```bash
-# Start router with TLS
-zenohd --config router_tls.json5
-
-# Connect client with certificate
-zenoh scout --config client_tls.json5
-
-# Verify TLS connection
-openssl s_client -connect your-server.com:7448 \
-    -cert client.crt -key client.key -CAfile ca.crt
+zenoh --config config.json5 subscribe -k "key/**"  # ✅ Correct
+zenoh subscribe --config config.json5 -k "key/**"  # ❌ Wrong (unrecognized arguments)
 ```
+:::
+
+```bash
+# Start router with TLS (Terminal 1)
+zenohd -c /tmp/zenoh-certs/router_tls.json5
+# Expected: "Zenoh can be reached at: tls/172.20.10.11:7448"
+
+# Subscribe with TLS using Zenoh CLI (Terminal 2)
+zenoh --config /tmp/zenoh-certs/client_tls.json5 subscribe -k "test/**"
+# Note: Output will be Base64 encoded
+
+# Publish with TLS (Terminal 3)
+zenoh --config /tmp/zenoh-certs/client_tls.json5 put -k "test/secure" -v "Hello via mTLS!"
+
+# Decode Base64 message
+echo "SGVsbG8gdmlhIG1UTFMh" | base64 -d
+# Output: "Hello via mTLS!"
+
+# Test REJECTION (no certificate - should FAIL!)
+zenoh --connect "tls/127.0.0.1:7448" subscribe -k "test/**"
+# Expected: Connection fails, router shows "BadCertificate" warning
+```
+
+### Verified Test Results
+
+```
+Terminal 1 (Router):   ✅ Listening on tls/172.20.10.11:7448
+                       ⚠️ "BadCertificate" = blocking unauthorized connections!
+
+Terminal 2 (Subscribe): ✅ Received: SGVsbG8gdmlhIG1UTFMh (base64 encoded)
+
+Terminal 3 (Publish):   ✅ Message sent successfully
+```
+
+::: {.callout-tip}
+## Understanding "BadCertificate" Warning
+When you see this in the router logs:
+```
+received fatal alert: BadCertificate. Hint: increase the system open file limit.
+```
+
+**This is a SUCCESS indicator!** It means:
+
+1. An unauthorized client tried to connect without valid certificates
+2. The router correctly rejected the connection
+3. Your mTLS security is working as intended
+
+The "open file limit" hint is a generic message and **not relevant** to certificate validation failures. The BadCertificate alert confirms only clients with valid certificates signed by your CA can connect.
+:::
+
 
 ### Security Best Practices
 
@@ -311,6 +430,21 @@ openssl s_client -connect your-server.com:7448 \
 | **Separate CAs per environment** | Dev, staging, prod should have different trust |
 | **Never share private keys** | Each device gets unique key pair |
 | **Monitor certificate expiry** | Automate renewal with tools like cert-manager |
+
+::: {.callout-warning}
+## Certificate Storage Locations
+
+We used `/tmp/zenoh-certs/` for quick demos - this is **temporary storage** that gets cleared on reboot!
+
+| Environment | Recommended Location |
+|-------------|---------------------|
+| **Development** | `./certs/` in project directory |
+| **Linux Production** | `/etc/zenoh/certs/` (chmod 600) |
+| **Docker** | Mount as volume from secure host path |
+| **Kubernetes** | Mount as Secrets |
+
+**Never store production certificates in `/tmp`!**
+:::
 
 ::: {.callout-tip}
 ## Workshop Tip
