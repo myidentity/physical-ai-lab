@@ -29,20 +29,33 @@ This is Part 2 of the Workshop 3 exercise preview:
 
 Most robots operate behind NAT (Network Address Translation) - they have private IP addresses that aren't directly reachable from the internet.
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    THE NAT PROBLEM                                       │
-│                                                                          │
-│    Robot (192.168.1.50)     NAT Router      Cloud Server                │
-│    ┌─────┐                  ┌──────┐        ┌─────────┐                 │
-│    │     │────outbound─────►│      │───────►│         │                 │
-│    │ Go2 │                  │ WiFi │        │ Monitor │                 │
-│    │     │◄───blocked───────│ AP   │◄───────│ Station │                 │
-│    └─────┘   (no inbound)   └──────┘        └─────────┘                 │
-│                                                                          │
-│    Robot CAN reach cloud, but cloud CANNOT reach robot directly!        │
-└─────────────────────────────────────────────────────────────────────────┘
-```
+![The NAT Problem - Robots behind NAT cannot receive inbound connections from cloud servers](nat-problem.png){fig-alt="Diagram showing a robot with private IP behind NAT router, where outbound connections work but inbound connections are blocked"}
+
+::: {.callout-note}
+## Why Does NAT Block Inbound Connections?
+
+**The Short Answer**: NAT only knows how to route *replies* to connections your robot *initiated*. It has no idea where to send unsolicited incoming packets.
+
+**Step-by-Step Explanation**:
+
+1. **Your robot has a private IP** (e.g., `192.168.1.50`) - this address only works inside your local network
+
+2. **When robot sends data OUT**:
+   - Robot sends packet: `192.168.1.50:5000 → 8.8.8.8:80`
+   - NAT router rewrites it: `203.0.113.5:34567 → 8.8.8.8:80` (using router's public IP)
+   - NAT creates a **translation entry**: "replies to port 34567 go to 192.168.1.50:5000"
+
+3. **Replies come back successfully**:
+   - Server replies: `8.8.8.8:80 → 203.0.113.5:34567`
+   - NAT looks up port 34567, finds the entry, forwards to robot ✅
+
+4. **But unsolicited INBOUND fails**:
+   - Cloud server tries: `1.2.3.4:443 → 203.0.113.5:7447`
+   - NAT asks: "Port 7447? I have no translation entry for this!"
+   - Packet is **dropped** ❌
+
+**The Key Insight**: NAT is like a receptionist who only connects calls if someone inside asked to speak to that caller first. Cold calls get rejected!
+:::
 
 **DDS limitation**: Relies on direct peer-to-peer connections. If peers can't reach each other, no communication.
 
@@ -50,21 +63,44 @@ Most robots operate behind NAT (Network Address Translation) - they have private
 
 Zenoh routers can be deployed **anywhere** - including cloud servers. Robots connect **outbound** to the cloud router, establishing a bidirectional channel.
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    ZENOH CLOUD ROUTER SOLUTION                          │
-│                                                                          │
-│    Site A (Lab)              Cloud                Site B (Office)       │
-│    ┌─────────┐              ┌──────┐             ┌─────────┐           │
-│    │ Robot 1 │──outbound───►│Cloud │◄──outbound──│ Laptop  │           │
-│    │         │              │Router│             │         │           │
-│    │ Robot 2 │──outbound───►│      │             │ Monitor │           │
-│    └─────────┘              └──────┘             └─────────┘           │
-│                                                                          │
-│    All connections are OUTBOUND - works through any NAT!               │
-│    Cloud router relays messages between all connected clients          │
-└─────────────────────────────────────────────────────────────────────────┘
-```
+![Zenoh Cloud Router Solution - All connections are outbound, solving the NAT problem](cloud-router-solution.png){fig-alt="Diagram showing robots and operators both connecting outbound to a central cloud router, enabling communication through NAT"}
+
+::: {.callout-note}
+## How Does Zenoh Solve the NAT Problem?
+
+**The Short Answer**: Everyone connects OUTBOUND to a cloud router. Since all connections are outbound, NAT translation entries exist for everyone, and the router can relay messages between them.
+
+**Step-by-Step Explanation**:
+
+1. **Deploy a Zenoh router on a cloud server** with a public IP (e.g., `54.23.45.67`)
+   - This server has no NAT - it's directly reachable from anywhere
+
+2. **Robot connects OUTBOUND to router**:
+   - Robot initiates: `192.168.1.50:5000 → 54.23.45.67:7447`
+   - NAT creates translation entry ✅
+   - Connection stays open (bidirectional TCP channel)
+
+3. **Operator laptop ALSO connects OUTBOUND**:
+   - Laptop initiates: `10.0.0.25:6000 → 54.23.45.67:7447`
+   - Laptop's NAT creates translation entry ✅
+   - Another bidirectional channel established
+
+4. **Router relays messages between them**:
+   - Laptop publishes `/cmd_vel` → Router receives it
+   - Router forwards to Robot via the *already-open* channel
+   - NAT allows it because Robot initiated that connection! ✅
+
+**The Key Insight**: By having everyone connect OUT to a central point, we flip the problem. Instead of trying to reach robots (impossible through NAT), we let robots reach us and keep the channel open for bidirectional communication.
+:::
+
+**Why This Is Different From DDS**:
+
+| DDS | Zenoh Router |
+|-----|--------------|
+| Discovery finds peers, then direct P2P | All traffic flows through router |
+| Fails if either peer is behind NAT | Works as long as router is reachable |
+| Requires multicast or unicast discovery | Explicit connection to known endpoint |
+
 
 ### Deployment Options
 
@@ -150,24 +186,7 @@ No VPN required. No firewall rules. No port forwarding. Just point to a cloud ro
 
 Multiple routers can connect to each other, creating a **mesh network**:
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    ROUTER FEDERATION                                     │
-│                                                                          │
-│    US Region              EU Region              Asia Region            │
-│    ┌──────┐              ┌──────┐               ┌──────┐               │
-│    │Router│◄────────────►│Router│◄─────────────►│Router│               │
-│    │ (US) │              │ (EU) │               │(Asia)│               │
-│    └──┬───┘              └──┬───┘               └──┬───┘               │
-│       │                     │                      │                    │
-│    ┌──┴──┐               ┌──┴──┐                ┌──┴──┐                │
-│    │Robot│               │Robot│                │Robot│                │
-│    │ US  │               │ EU  │                │Asia │                │
-│    └─────┘               └─────┘                └─────┘                │
-│                                                                          │
-│    Robots connect to nearest router, messages route globally            │
-└─────────────────────────────────────────────────────────────────────────┘
-```
+![Router Federation - Global mesh network with routers in multiple regions](router-federation.png){fig-alt="World map showing Zenoh routers in US, EU, and Asia regions connected in a mesh, with robots connecting to their nearest router"}
 
 ### Hands-On Commands
 
@@ -224,46 +243,89 @@ Once your robot is reachable over the internet, **anyone** can potentially:
 | **Client Auth** | Router verifies client's identity |
 | **Certificate-based** | No passwords to manage |
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    mTLS HANDSHAKE                                        │
-│                                                                          │
-│    Client                                       Router                   │
-│    ┌─────┐                                     ┌──────┐                 │
-│    │     │────── 1. ClientHello ──────────────►│      │                 │
-│    │     │◄───── 2. ServerHello + Cert ────────│      │                 │
-│    │     │────── 3. Client Cert ──────────────►│      │                 │
-│    │     │◄───── 4. Verify + Establish ────────│      │                 │
-│    │     │══════ 5. Encrypted Channel ═════════│      │                 │
-│    └─────┘                                     └──────┘                 │
-│                                                                          │
-│    Both sides present certificates - mutual authentication!             │
-└─────────────────────────────────────────────────────────────────────────┘
-```
+![mTLS Handshake - Both client and server exchange and verify certificates](mtls-handshake.png){fig-alt="Diagram showing the 5-step mTLS handshake process where both client and server present certificates before establishing an encrypted tunnel"}
+
+::: {.callout-note}
+## What Does mTLS Actually Provide?
+
+**The Short Answer**: mTLS gives you encrypted communication where BOTH sides prove their identity using certificates - not just the server (like HTTPS), but the client too.
+
+**Understanding the "Mutual" in mTLS**:
+
+| Scenario | Server Proves Identity | Client Proves Identity | Example |
+|----------|:---------------------:|:----------------------:|---------|
+| **HTTP** (no TLS) | ❌ | ❌ | `http://example.com` |
+| **HTTPS** (TLS) | ✅ | ❌ | `https://amazon.com` - you verify it's really Amazon |
+| **mTLS** | ✅ | ✅ | Robot ↔ Router - both verify each other |
+
+**Why Do Robots Need mTLS (not just TLS)?**
+
+With regular TLS (like HTTPS):
+- Your robot connects to the cloud router
+- Robot verifies "yes, this is really my router" ✅
+- But router has NO IDEA who connected - could be anyone! ❌
+
+With mTLS:
+- Robot verifies "this is really my router" ✅
+- Router verifies "this is really my authorized robot" ✅
+- Attackers without valid certificates are **rejected**
+
+**What Certificates Prove**:
+
+1. **Identity**: "I am robot-042 from fleet XYZ" (encoded in certificate)
+2. **Authorization**: "I was issued this certificate by a trusted CA" (signature chain)
+3. **Integrity**: "This certificate hasn't been tampered with" (cryptographic signature)
+
+**Real-World Analogy**:
+- **TLS** = Checking the bouncer's ID badge before entering a club
+- **mTLS** = Bouncer checks YOUR ID too, and both IDs must be issued by the same trusted authority
+:::
+
 
 ### Certificate Structure
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    PKI HIERARCHY                                         │
-│                                                                          │
-│                        ┌──────────────┐                                 │
-│                        │   Root CA    │                                 │
-│                        │  (offline)   │                                 │
-│                        └──────┬───────┘                                 │
-│                               │                                          │
-│              ┌────────────────┼────────────────┐                        │
-│              ▼                ▼                ▼                        │
-│       ┌──────────┐     ┌──────────┐     ┌──────────┐                   │
-│       │ Router   │     │ Robot    │     │ Operator │                   │
-│       │ Cert     │     │ Cert     │     │ Cert     │                   │
-│       └──────────┘     └──────────┘     └──────────┘                   │
-│                                                                          │
-│    All certs signed by same CA = mutual trust established              │
-└─────────────────────────────────────────────────────────────────────────┘
-```
+![PKI Certificate Hierarchy - Root CA signs all device certificates](pki-hierarchy.png){fig-alt="Tree diagram showing Root CA at top with Router, Robot, and Operator certificates branching below, all signed by the same CA for mutual trust"}
 
 ### Generating Certificates (X.509 v3 Required!)
+
+::: {.callout-note}
+## Understanding Certificate Generation with OpenSSL
+
+**The Short Answer**: You need to create a Certificate Authority (CA), then use it to sign certificates for your router and clients. Think of it as creating your own "ID card issuing office" and then issuing ID cards to authorized devices.
+
+**The Three Files You Need Per Device**:
+
+| File | What It Is | Who Sees It |
+|------|-----------|-------------|
+| `*.key` | **Private Key** - The secret! Used to prove identity | ONLY the device owner |
+| `*.csr` | **Certificate Signing Request** - "Please sign my public key" | Sent to CA (temporary) |
+| `*.pem` | **Certificate** - Signed public key + identity info | Everyone (it's public) |
+
+**The Certificate Generation Flow**:
+
+```
+Step 1: Create CA (your "ID card office")
+┌─────────────────────────────────────────────────┐
+│  openssl genrsa → ca.key (CA's secret)          │
+│  openssl req -x509 → ca.pem (CA's certificate)  │
+└─────────────────────────────────────────────────┘
+         │
+         ▼
+Step 2: For each device (router, robot, operator):
+┌─────────────────────────────────────────────────┐
+│  openssl genrsa → device.key (device's secret)  │
+│  openssl req -new → device.csr (signing request)│
+│  openssl x509 -req + CA signs → device.pem      │
+└─────────────────────────────────────────────────┘
+```
+
+**Why Do We Need a CA?**
+
+Without a CA, devices would have to know about every other device's certificate individually. With a CA:
+- Devices only need to trust ONE certificate (the CA)
+- Any certificate signed by that CA is automatically trusted
+- Adding new devices = just sign a new certificate (no reconfiguration needed)
+:::
 
 ::: {.callout-warning}
 ## Important: Zenoh Requires X.509 v3 Certificates
@@ -457,22 +519,7 @@ The workshop provides pre-generated certificates for the exercises. In productio
 
 The real power comes from **combining** Exercises 4 and 5:
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    SECURE REMOTE ROBOT ACCESS                           │
-│                                                                          │
-│    Robot (Field)          Cloud (TLS)           Operator (Office)       │
-│    ┌─────────┐           ┌──────────┐          ┌─────────┐             │
-│    │  Go2    │═══mTLS═══►│  Router  │◄═══mTLS══│ Laptop  │             │
-│    │ Robot   │           │ (public) │          │         │             │
-│    └─────────┘           └──────────┘          └─────────┘             │
-│                                                                          │
-│    ✅ Works through NAT/firewalls                                       │
-│    ✅ All traffic encrypted                                             │
-│    ✅ Both sides authenticated                                          │
-│    ✅ No VPN required                                                   │
-└─────────────────────────────────────────────────────────────────────────┘
-```
+![Secure Remote Robot Access - Complete architecture combining cloud routing with mTLS](secure-remote-access.png){fig-alt="Architecture diagram showing field robot, cloud router with TLS, and operator laptop all connected with mTLS encryption, with checkmarks for NAT traversal, encryption, authentication, and no VPN required"}
 
 ---
 
