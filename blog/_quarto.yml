@@ -23,7 +23,17 @@ website:
     search: true
     background: light
     contents:
-      - section: "Workshop 3 Exercise Preview (NEW)"
+      - section: "Workshop 4 Exercise Preview (NEW)"
+        contents:
+          - text: "Part 1: IMU Alone (Experiments 1-7)"
+            href: posts/2025-12-17-workshop4-exercises-part1/index.qmd
+          - text: "Part 2: Vision Alone (Experiments 8-10)"
+            href: posts/2025-12-17-workshop4-exercises-part2/index.qmd
+          - text: "Part 3: Fusion VIO (Experiments 11-14)"
+            href: posts/2025-12-17-workshop4-exercises-part3/index.qmd
+          - text: "Part 4: Understanding yDx.M"
+            href: posts/2025-12-17-workshop4-exercises-part4/index.qmd
+      - section: "Workshop 3 Exercise Preview"
         contents:
           - text: "Part 1: Exercises 1-3 (Fundamentals)"
             href: posts/2025-12-17-workshop3-exercises-part1/index.qmd
