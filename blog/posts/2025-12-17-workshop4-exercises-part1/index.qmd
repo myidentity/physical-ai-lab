@@ -55,6 +55,8 @@ The Intel RealSense D435i combines a depth camera with a built-in **6-DOF IMU** 
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
+![Intel RealSense D435i internal components showing the Bosch BMI055 IMU chip](d435i-hardware.png){.lightbox fig-alt="D435i hardware diagram showing RGB camera, stereo depth, and 6-DOF IMU"}
+
 ---
 
 ## Experiment 1: Raw IMU Has No Orientation!
@@ -175,6 +177,8 @@ Many ROS 2 packages (like `robot_localization`, Nav2) expect IMU messages **with
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
+![Raw IMU outputs zeros for orientation - a filter like Madgwick computes valid quaternions](raw-vs-filtered.png){.lightbox fig-alt="Raw IMU vs Filtered IMU data flow diagram"}
+
 ### Eureka Moment #1
 
 ::: {.callout-tip}
@@ -269,6 +273,8 @@ rviz2
 │                 Filter balances both for stable orientation            │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
+
+![Madgwick filter combines gyroscope and accelerometer data to compute orientation quaternion](madgwick-filter.png){.lightbox fig-alt="Madgwick filter internals showing gyro and accelerometer inputs producing quaternion output"}
 
 ### Eureka Moment #2
 
@@ -383,6 +389,12 @@ At this rate: **~4.7°/minute = 280° drift per hour!**
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
+::: {layout-ncol=2}
+![Roll and Pitch are stable (gravity reference), but Yaw drifts without magnetometer](6dof-yaw-drift.png){.lightbox group="yaw-drift" fig-alt="6-DOF IMU showing stable roll/pitch but drifting yaw"}
+
+![The magnetometer problem: 360° rotation returns to wrong heading](yaw-drift-magnetometer.png){.lightbox group="yaw-drift" fig-alt="Yaw drift visualization showing accumulated error after rotation"}
+:::
+
 ### Eureka Moment #3
 
 ::: {.callout-tip}
@@ -485,6 +497,12 @@ Camera was STATIONARY but IMU thinks it moved 4385.9 meters!
 - Position drift: **4.4 KILOMETERS** in 30 seconds!
 - Velocity error: **280 m/s** (faster than a race car!)
 - This is completely unusable for navigation!
+
+::: {layout-ncol=2}
+![Dead reckoning error grows quadratically - matching our experimental results](dead-reckoning-graph.png){.lightbox group="dead-reckoning" fig-alt="Graph showing catastrophic position error growth to 4.4km in 30 seconds"}
+
+![Conceptual view: double integration amplifies every tiny error](dead-reckoning-disaster.png){.lightbox group="dead-reckoning" fig-alt="Dead reckoning integration disaster visualization"}
+:::
 
 ::: {.callout-important}
 ## Double Integration Amplifies Error
@@ -643,6 +661,8 @@ ros2 run imu_filter_madgwick imu_filter_madgwick_node --ros-args \
 │    → Navigation fails catastrophically!                                │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
+
+![ENU (ROS standard) vs NED (aviation) - using the wrong frame causes your robot to flip upside down!](enu-vs-ned.png){.lightbox fig-alt="ENU vs NED coordinate frame comparison showing correct ROS 2 frame"}
 
 ### Eureka Moment #6
 
