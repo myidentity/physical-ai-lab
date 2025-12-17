@@ -1,0 +1,730 @@
+---
+title: "Workshop 4 Preview: IMU Alone - Watching It Drift Away"
+subtitle: "Part 1 of 4: Why Raw IMU Data Isn't Enough for Robot Navigation"
+author: "Rajesh"
+date: "2025-12-17T12:00:00"
+categories: [ros2, imu, perception, workshop, roscon-india, realsense, d435i]
+image: "thumbnail.png"
+toc: true
+toc-depth: 3
+code-fold: true
+code-summary: "Show code"
+lightbox: true
+---
+
+## What This Series Covers
+
+ROSCon India 2025 Workshop 4 by **Yaanendriya Pvt. Ltd.** features hands-on exercises in **IMU-Centric Perception**. This 4-part preview series takes you through the complete problem domain using the Intel RealSense D435i.
+
+| Part | Stage | Focus | Key Learning |
+|------|-------|-------|--------------|
+| **Part 1 (This Post)** | IMU Only | Raw IMU problems | Why IMU alone isn't enough |
+| Part 2 | Vision Only | Visual odometry problems | Why vision alone fails |
+| Part 3 | Fusion (VIO) | Combining strengths | How fusion solves both |
+| Part 4 | Workshop Prep | yDx.M context | What Yaanendriya adds |
+
+::: {.callout-note}
+## The Learning Journey
+We'll experience the **exact problems** that motivated professional IMU solutions like Yaanendriya's yDx.M module. By struggling with these issues firsthand, we'll deeply appreciate the solutions the workshop will teach.
+:::
+
+---
+
+## The D435i: Our IMU Testing Platform
+
+The Intel RealSense D435i combines a depth camera with a built-in **6-DOF IMU** (Bosch BMI055). This makes it perfect for experiencing IMU problems before adding vision fusion.
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                      INTEL REALSENSE D435i                              │
+│                                                                         │
+│    ┌──────────────────────────────────────────────────────────────┐    │
+│    │                    Hardware Components                        │    │
+│    ├────────────────────┬────────────────────┬────────────────────┤    │
+│    │   RGB Camera       │   Stereo Depth     │   IMU (BMI055)     │    │
+│    │   1920×1080@30fps  │   1280×720@90fps   │   400 Hz           │    │
+│    └────────────────────┴────────────────────┴────────────────────┘    │
+│                                                                         │
+│    IMU Specs:                                                          │
+│    • Accelerometer: ±2/4/8/16G, 12-bit                                │
+│    • Gyroscope: ±2000°/s, 16-bit                                      │
+│    • Output Rate: Up to 400 Hz                                        │
+│    • ⚠️ NOT factory calibrated!                                       │
+│    • ⚠️ No magnetometer (6-DOF only)                                  │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Experiment 1: Raw IMU Has No Orientation!
+
+### What You'll Experience
+
+The first shock: **raw IMU data doesn't include orientation**. The sensor outputs acceleration and angular velocity, but not roll-pitch-yaw!
+
+### Launch the Container
+
+```bash
+# Launch Workshop 4 container
+./scripts/launch-container.sh 4
+
+# Inside container - start RealSense with IMU enabled
+ros2 launch realsense2_camera rs_launch.py \
+    enable_gyro:=true \
+    enable_accel:=true \
+    unite_imu_method:=2
+```
+
+### Check the IMU Topic
+
+```bash
+# List IMU topics
+ros2 topic list | grep -E "(imu|accel|gyro)"
+# Expected:
+# /camera/camera/imu
+# /camera/camera/accel/sample
+# /camera/camera/gyro/sample
+
+# Echo the combined IMU topic
+ros2 topic echo /camera/camera/imu --once
+```
+
+### The Shocking Result
+
+```yaml
+header:
+  stamp:
+    sec: 1734425312
+    nanosec: 892345678
+  frame_id: "camera_imu_optical_frame"
+orientation:
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 0.0   # ← All zeros! No orientation!
+orientation_covariance: [-1.0, 0.0, 0.0, ...]  # -1 means "not provided"
+angular_velocity:
+  x: -0.0123    # rad/s - we have this!
+  y: 0.0045
+  z: -0.0012
+linear_acceleration:
+  x: 0.142      # m/s² - we have this!
+  y: -0.087
+  z: 9.78       # ← Gravity! Pointing down.
+```
+
+::: {.callout-important}
+## The Problem: Raw IMU ≠ Orientation
+
+The RealSense driver publishes **raw sensor readings**:
+- ✅ `angular_velocity` - How fast we're rotating (rad/s)
+- ✅ `linear_acceleration` - Forces on the sensor (m/s²)
+- ❌ `orientation` - **All zeros!**
+
+The `orientation_covariance[0] = -1` tells ROS 2: *"orientation field is not provided"*
+:::
+
+### Why This Matters
+
+Many ROS 2 packages (like `robot_localization`, Nav2) expect IMU messages **with valid orientation**. They'll fail or behave incorrectly with zeros!
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                     RAW IMU vs FILTERED IMU                             │
+│                                                                         │
+│    RAW (from sensor)              FILTERED (after processing)          │
+│    ┌─────────────────┐            ┌─────────────────┐                  │
+│    │ angular_velocity│──────────► │ angular_velocity│                  │
+│    │ linear_accel    │  Filter    │ linear_accel    │                  │
+│    │ orientation: 0  │  (Madgwick)│ orientation: ✓  │                  │
+│    └─────────────────┘            └─────────────────┘                  │
+│                                                                         │
+│    Problem: Most ROS 2 packages need the filtered version!             │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Eureka Moment #1
+
+::: {.callout-tip}
+## Raw IMU sensors output rates, not states!
+
+**Accelerometer**: Measures **force** (including gravity) → Need to integrate for velocity
+**Gyroscope**: Measures **rotation rate** → Need to integrate for orientation
+
+A **filter** (like Madgwick) combines both to **compute orientation**. This is Exercise 2!
+:::
+
+---
+
+## Experiment 2: Running the Madgwick Filter
+
+### What You'll Learn
+
+The Madgwick filter is a popular AHRS (Attitude and Heading Reference System) algorithm that computes orientation from raw IMU data.
+
+### Install and Run
+
+```bash
+# The filter is pre-installed in workshop4-imu container
+# Terminal 1: RealSense with IMU
+ros2 launch realsense2_camera rs_launch.py \
+    enable_gyro:=true enable_accel:=true unite_imu_method:=2
+
+# Terminal 2: Run Madgwick filter
+ros2 run imu_filter_madgwick imu_filter_madgwick_node --ros-args \
+    -r imu/data_raw:=/camera/camera/imu \
+    -p use_mag:=false \
+    -p publish_tf:=true \
+    -p world_frame:=enu
+```
+
+### Check the Filtered Output
+
+```bash
+# Now check the filtered IMU topic
+ros2 topic echo /imu/data --field orientation
+```
+
+**Now we see real orientation!**
+
+```yaml
+orientation:
+  x: 0.0123
+  y: -0.0456
+  z: 0.7891
+  w: 0.6123   # ← Valid quaternion!
+```
+
+### Visualize in RViz2
+
+```bash
+rviz2
+# Add displays:
+# - TF (to see the imu frame)
+# - Axes (to visualize orientation)
+# Set fixed frame to: camera_link
+```
+
+### The Filter in Action
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    MADGWICK FILTER INTERNALS                            │
+│                                                                         │
+│    Gyroscope (ω)                                                       │
+│    ┌───────────┐                                                       │
+│    │ ωx, ωy, ωz│─────┐                                                 │
+│    └───────────┘     │      ┌──────────────────┐                       │
+│                      ├─────►│                  │     ┌──────────────┐  │
+│    Accelerometer (a) │      │ Madgwick Filter  │────►│ Orientation  │  │
+│    ┌───────────┐     │      │ (quaternion math)│     │ (q: w,x,y,z) │  │
+│    │ ax, ay, az│─────┘      └──────────────────┘     └──────────────┘  │
+│    └───────────┘                                                       │
+│                                                                         │
+│    Key insight: Accelerometer provides gravity reference (down)        │
+│                 Gyroscope integrates rotation over time                │
+│                 Filter balances both for stable orientation            │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Eureka Moment #2
+
+::: {.callout-tip}
+## The Filter Gives Us Orientation!
+
+- **Before Madgwick**: orientation = (0, 0, 0, 0)
+- **After Madgwick**: orientation = valid quaternion
+
+The filter uses:
+1. **Gyroscope** - integrates to get rotation
+2. **Accelerometer** - uses gravity as "down" reference
+3. **Sensor fusion** - balances fast gyro with stable accel
+
+But there's still a problem... (see Experiment 3!)
+:::
+
+---
+
+## Experiment 3: Yaw Drift Without Magnetometer
+
+### The Hidden Problem
+
+Rotate the camera **360° around the vertical axis** and return to the starting position. Watch what happens to yaw!
+
+### The Test
+
+```bash
+# Terminal 1: RealSense + Madgwick (same as above)
+# Terminal 2: Watch RPY (Roll-Pitch-Yaw)
+ros2 topic echo /imu/rpy/filtered
+```
+
+### Procedure
+
+1. Note the starting yaw value
+2. Slowly rotate the camera 360° horizontally
+3. Return to the exact starting position
+4. Check yaw again
+
+### What You'll See
+
+```yaml
+# Starting position
+roll: 0.02
+pitch: -0.01
+yaw: 0.15       # ← Starting yaw
+
+# After 360° rotation and return
+roll: 0.02      # ← Roll is fine!
+pitch: -0.01    # ← Pitch is fine!
+yaw: 0.87       # ← YAW DRIFTED! Should be ~0.15!
+```
+
+::: {.callout-warning}
+## Yaw Drift: The Magnetometer Problem
+
+**Roll** and **Pitch** are stable because gravity provides an absolute reference (accelerometer knows which way is down).
+
+**Yaw** has NO absolute reference! The D435i has no magnetometer to tell which way is north.
+
+- Every rotation accumulates small errors
+- Over time, yaw drifts unboundedly
+- 360° rotation might report 370°, 350°, or worse!
+:::
+
+### Why This Happens
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    YAW DRIFT PROBLEM (6-DOF IMU)                        │
+│                                                                         │
+│    Roll (rotation around X):                                           │
+│    ┌─────────┐     Gravity provides                                    │
+│    │ Stable! │ ◄── absolute "down" reference                           │
+│    └─────────┘                                                         │
+│                                                                         │
+│    Pitch (rotation around Y):                                          │
+│    ┌─────────┐     Gravity provides                                    │
+│    │ Stable! │ ◄── absolute "down" reference                           │
+│    └─────────┘                                                         │
+│                                                                         │
+│    Yaw (rotation around Z - vertical):                                 │
+│    ┌─────────┐     NO absolute reference!                              │
+│    │ DRIFTS! │ ◄── Gyro integration only = accumulated error           │
+│    └─────────┘                                                         │
+│                                                                         │
+│    Solution: Magnetometer (9-DOF) provides "north" reference           │
+│              → yDx.M offers 9/10-DOF configurations!                   │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Eureka Moment #3
+
+::: {.callout-tip}
+## 6-DOF vs 9-DOF: The Yaw Problem
+
+| IMU Type | Sensors | Yaw Reference | Drift |
+|----------|---------|---------------|-------|
+| **6-DOF** (D435i) | Accel + Gyro | None! | Unbounded |
+| **9-DOF** (with mag) | Accel + Gyro + Mag | Magnetic North | Bounded |
+
+The yDx.M module from Yaanendriya offers **9/10-DOF configurations** with magnetometer - solving this exact problem!
+:::
+
+---
+
+## Experiment 4: Dead-Reckoning Disaster
+
+### The Ultimate IMU Failure
+
+What if we try to track **position** by integrating acceleration? This is called "dead-reckoning."
+
+### The Math (In Theory)
+
+```
+Position = ∫∫ Acceleration dt²
+
+1. Measure acceleration (a)
+2. Integrate to get velocity: v = ∫ a dt
+3. Integrate again to get position: p = ∫ v dt
+```
+
+### The Reality
+
+```bash
+# We'll use robot_localization to fuse IMU → position
+# Create a minimal EKF config that uses ONLY IMU
+
+cat > /tmp/imu_only_ekf.yaml << 'EOF'
+ekf_filter_node:
+  ros__parameters:
+    frequency: 50.0
+    sensor_timeout: 0.1
+    two_d_mode: false
+
+    map_frame: map
+    odom_frame: odom
+    base_link_frame: base_link
+    world_frame: odom
+
+    # IMU only - fusing acceleration to get position
+    imu0: /imu/data
+    imu0_config: [false, false, false,   # Don't use position (IMU has none)
+                  true,  true,  true,    # Use orientation (roll, pitch, yaw)
+                  false, false, false,   # Don't use velocity directly
+                  true,  true,  true,    # Use angular velocity
+                  true,  true,  true]    # Use linear acceleration
+    imu0_differential: false
+    imu0_remove_gravitational_acceleration: true
+EOF
+
+# Run EKF
+ros2 run robot_localization ekf_node --ros-args \
+    --params-file /tmp/imu_only_ekf.yaml
+```
+
+### Watch Position Drift
+
+```bash
+# In another terminal - watch the odometry output
+ros2 topic echo /odometry/filtered --field pose.pose.position
+```
+
+### The Disaster Unfolds
+
+**With the camera sitting perfectly still:**
+
+```yaml
+# t = 0 seconds
+position: {x: 0.0, y: 0.0, z: 0.0}
+
+# t = 5 seconds
+position: {x: 0.12, y: -0.08, z: 0.03}  # ← Already drifting!
+
+# t = 30 seconds
+position: {x: 2.45, y: -1.87, z: 0.94}  # ← METERS of drift!
+
+# t = 60 seconds
+position: {x: 8.73, y: -4.21, z: 2.15}  # ← COMPLETELY WRONG!
+```
+
+::: {.callout-important}
+## Double Integration Amplifies Error
+
+The problem: **noise integrates!**
+
+1. Accelerometer has tiny bias: 0.01 m/s²
+2. After 1 second: velocity error = 0.01 m/s
+3. After 10 seconds: velocity error = 0.1 m/s
+4. Position error grows **quadratically** with time!
+
+```
+Error ∝ t²  (quadratic growth!)
+```
+
+After 60 seconds with 0.01 m/s² bias:
+- Velocity error: 0.6 m/s
+- Position error: ~18 meters! 🤯
+:::
+
+### Eureka Moment #4
+
+::: {.callout-tip}
+## Dead-Reckoning With IMU Alone = Disaster
+
+**Why IMU can't give position:**
+1. Tiny accelerometer bias → velocity drift
+2. Velocity drift → position drift (squared!)
+3. Within seconds: meters of error
+4. No way to correct without external reference
+
+**This is why we need sensor fusion** (Part 3) - visual odometry provides position corrections!
+:::
+
+---
+
+## Experiment 5: The Calibration Reality
+
+### Uncalibrated vs Calibrated
+
+The D435i IMU is **NOT factory calibrated**. Let's see the difference!
+
+### Measure Stationary Noise
+
+```bash
+# Place camera on flat, stable surface
+# Record 10 seconds of IMU data
+
+ros2 bag record /camera/camera/imu -o imu_stationary --duration 10
+
+# Analyze the variance
+ros2 bag play imu_stationary &
+ros2 topic echo /camera/camera/imu --field linear_acceleration | head -100
+```
+
+### What You'll See (Uncalibrated)
+
+```yaml
+# Should be [0, 0, 9.81] on flat surface
+linear_acceleration:
+  x: 0.142    # ← Should be ~0
+  y: -0.087   # ← Should be ~0
+  z: 9.73     # ← Should be ~9.81
+
+# This bias will cause drift!
+```
+
+### Run Intel Calibration
+
+```bash
+# Use the Intel RealSense Viewer
+realsense-viewer
+
+# Navigate to:
+# More → On-chip Calibration → Calibrate IMU
+# Follow the instructions (keep camera still, then rotate)
+```
+
+### After Calibration
+
+```yaml
+linear_acceleration:
+  x: 0.003    # ← Much better!
+  y: 0.002    # ← Much better!
+  z: 9.807    # ← Closer to 9.81!
+```
+
+### Eureka Moment #5
+
+::: {.callout-tip}
+## Calibration Reduces Bias (But Doesn't Eliminate It)
+
+| Metric | Before Cal | After Cal | Improvement |
+|--------|------------|-----------|-------------|
+| X bias | 0.142 m/s² | 0.003 m/s² | 47x better |
+| Y bias | 0.087 m/s² | 0.002 m/s² | 43x better |
+| Z error | 0.08 m/s² | 0.003 m/s² | 27x better |
+
+**yDx.M is factory calibrated** - one less thing to worry about at the workshop!
+:::
+
+---
+
+## Experiment 6: Coordinate Frame Confusion
+
+### ENU vs NED: The Silent Disaster
+
+ROS 2 uses **ENU** (East-North-Up) frame convention. Aviation uses **NED** (North-East-Down). Mixing them causes chaos!
+
+### The Test
+
+```bash
+# Check what frame the Madgwick filter outputs
+ros2 run imu_filter_madgwick imu_filter_madgwick_node --ros-args \
+    -r imu/data_raw:=/camera/camera/imu \
+    -p world_frame:=enu   # ROS standard
+
+# Compare with NED (wrong for ROS!)
+ros2 run imu_filter_madgwick imu_filter_madgwick_node --ros-args \
+    -r imu/data_raw:=/camera/camera/imu \
+    -p world_frame:=ned   # Aviation standard
+```
+
+### What Happens with Wrong Frame
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    COORDINATE FRAME MISMATCH                            │
+│                                                                         │
+│    ENU (ROS Standard)              NED (Aviation Standard)             │
+│    ┌─────────────────┐             ┌─────────────────┐                 │
+│    │     Y (North)   │             │     X (North)   │                 │
+│    │        ↑        │             │        ↑        │                 │
+│    │        │        │             │        │        │                 │
+│    │   ─────┼────► X │             │   ─────┼────► Y │                 │
+│    │    (East)       │             │    (East)       │                 │
+│    │    Z: Up ⊙      │             │    Z: Down ⊗    │                 │
+│    └─────────────────┘             └─────────────────┘                 │
+│                                                                         │
+│    If robot_localization expects ENU but receives NED:                 │
+│    → Robot appears UPSIDE DOWN in RViz!                                │
+│    → Position estimates are inverted!                                  │
+│    → Navigation fails catastrophically!                                │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Eureka Moment #6
+
+::: {.callout-tip}
+## Frame Conventions Matter!
+
+| Package | Expected Frame | Standard |
+|---------|----------------|----------|
+| `robot_localization` | ENU | REP-103 |
+| `Nav2` | ENU | REP-103 |
+| Most IMU drivers | Configurable | Check docs! |
+| Aviation software | NED | Not ROS! |
+
+Always verify:
+```bash
+ros2 param get /imu_filter_madgwick world_frame
+# Should return: "enu" for ROS 2 compatibility
+```
+:::
+
+---
+
+## Experiment 7: Understanding Covariance
+
+### Why Covariance Matrices Matter
+
+Every `sensor_msgs/Imu` message has three 3×3 covariance matrices. These tell filters how much to **trust** each measurement.
+
+### Check the Covariances
+
+```bash
+ros2 topic echo /imu/data --field orientation_covariance
+ros2 topic echo /imu/data --field angular_velocity_covariance
+ros2 topic echo /imu/data --field linear_acceleration_covariance
+```
+
+### What They Mean
+
+```
+Covariance Matrix (3x3, stored as 9 elements row-major):
+┌                   ┐
+│ σxx  σxy  σxz     │   σxx = variance of x measurement
+│ σyx  σyy  σyz     │   σyy = variance of y measurement
+│ σzx  σzy  σzz     │   σzz = variance of z measurement
+└                   ┘   Off-diagonal = correlation
+
+Small values (0.001) = High confidence, trust this data
+Large values (1.0)   = Low confidence, don't trust as much
+```
+
+### The Impact on Filtering
+
+```bash
+# With proper covariances - EKF works well
+imu0_config: [false, false, false,
+              true,  true,  true,    # orientation
+              false, false, false,
+              true,  true,  true,    # angular velocity
+              true,  true,  true]    # acceleration
+
+# Wrong covariances cause:
+# - Filter divergence (estimates explode)
+# - Sluggish response (overestimated covariance)
+# - Overconfident (underestimated covariance → crashes)
+```
+
+### Eureka Moment #7
+
+::: {.callout-tip}
+## Covariances Are Your Filter's Trust Settings
+
+| Covariance | Effect on Filter |
+|------------|------------------|
+| Too small | Filter trusts noisy data → oscillation |
+| Too large | Filter ignores good data → slow response |
+| Just right | Optimal sensor fusion |
+
+**yDx.M advantage**: Yaanendriya likely provides calibrated covariance values tuned for their hardware!
+:::
+
+---
+
+## Summary: 7 Problems With IMU Alone
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│              PART 1 SUMMARY: WHY IMU ALONE FAILS                        │
+│                                                                         │
+│   Problem #1: Raw IMU has no orientation (zeros!)                      │
+│   ───────────────────────────────────────────────                      │
+│   Solution: Use filter (Madgwick, complementary)                       │
+│                                                                         │
+│   Problem #2: Yaw drifts without magnetometer                          │
+│   ───────────────────────────────────────────────                      │
+│   Solution: 9-DOF IMU with magnetometer (yDx.M)                        │
+│                                                                         │
+│   Problem #3: Position drift from integration                          │
+│   ───────────────────────────────────────────────                      │
+│   Solution: Sensor fusion with visual odometry (Part 3!)               │
+│                                                                         │
+│   Problem #4: Uncalibrated sensors have bias                           │
+│   ───────────────────────────────────────────────                      │
+│   Solution: Run calibration OR use factory-calibrated IMU              │
+│                                                                         │
+│   Problem #5: Frame convention mismatches                              │
+│   ───────────────────────────────────────────────                      │
+│   Solution: Ensure ENU frame throughout ROS 2 pipeline                 │
+│                                                                         │
+│   Problem #6: Wrong covariances = bad fusion                           │
+│   ───────────────────────────────────────────────                      │
+│   Solution: Tune covariances or use manufacturer values                │
+│                                                                         │
+│   Problem #7: Single point of failure                                  │
+│   ───────────────────────────────────────────────                      │
+│   Solution: Distributed sensing (yDx.M network feature!)               │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## What's Next: The Cliffhanger
+
+We've seen that IMU alone has serious limitations:
+- No absolute yaw reference
+- Position drifts in seconds
+- Needs calibration and proper filtering
+
+**But wait - we have a camera too!**
+
+In **Part 2**, we'll try using **vision-only** approaches:
+- Visual odometry with RTAB-Map
+- What happens when we shake the camera?
+- What happens with textureless walls?
+
+Spoiler: Vision has its **own set of problems**... but they're *different* problems. This sets up Part 3 where we'll combine both for **robust Visual-Inertial Odometry (VIO)**!
+
+---
+
+## Preparation Checklist
+
+Before Workshop 4, make sure you can:
+
+- [ ] Launch RealSense with IMU: `enable_gyro:=true enable_accel:=true`
+- [ ] Run Madgwick filter and see orientation output
+- [ ] Understand why raw IMU has no orientation
+- [ ] Experience yaw drift during rotation
+- [ ] Know why position estimation fails with IMU alone
+- [ ] Understand ENU vs NED frame conventions
+- [ ] Verify IMU covariances in message
+
+---
+
+## About Yaanendriya's yDx.M
+
+The workshop will feature Yaanendriya's **yDx.M** module - here's how it addresses today's problems:
+
+| D435i Problem | yDx.M Solution |
+|---------------|----------------|
+| No orientation from raw IMU | Built-in AHRS |
+| Yaw drift (no magnetometer) | 9/10-DOF with magnetometer |
+| Manual calibration required | Factory calibrated |
+| Single sensor failure | Distributed sensor network |
+| Covariance tuning | Pre-tuned for hardware |
+
+We're building understanding of the problems - the workshop will show us the professional solutions!
+
+---
+
+## Resources
+
+- [REP-145: IMU Sensor Driver Conventions](https://www.ros.org/reps/rep-0145.html)
+- [imu_filter_madgwick](https://index.ros.org/p/imu_filter_madgwick/)
+- [D435i IMU Calibration](https://www.intelrealsense.com/wp-content/uploads/2019/07/Intel_RealSense_Depth_D435i_IMU_Calibration.pdf)
+- [robot_localization Documentation](http://docs.ros.org/en/melodic/api/robot_localization/html/)
