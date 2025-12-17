@@ -41,6 +41,8 @@ website:
             href: posts/2025-12-17-workshop3-exercises-part2/index.qmd
           - text: "Part 3: Exercises 6-8 (Advanced)"
             href: posts/2025-12-17-workshop3-exercises-part3/index.qmd
+          - text: "Part 4: Official Image Deep Dive"
+            href: posts/2025-12-17-workshop3-official-image/index.qmd
       - section: "Preparing for Zenoh (Our Tools)"
         contents:
           - text: "Part 1: Interactive Tools"

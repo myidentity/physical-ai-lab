@@ -727,6 +727,12 @@ input[type="submit"] {
 .sidebar-item a[href*="workshop3-exercises-part3"]::before {
   background-image: url('/posts/2025-12-17-workshop3-exercises-part3/thumbnail.png');
 }
+.sidebar-item a[href*="workshop3-official-image"]::before {
+  background-image: url('/posts/2025-12-17-workshop3-official-image/thumbnail.png');
+}
+.sidebar-item a[href*="workshop3-exercises-walkthrough"]::before {
+  background-image: url('/posts/2025-12-17-workshop3-exercises-walkthrough/thumbnail.png');
+}
 
 /* Preparing for Zenoh (Our Tools) Series */
 .sidebar-item a[href*="workshop3-zenoh-tools"]::before {
