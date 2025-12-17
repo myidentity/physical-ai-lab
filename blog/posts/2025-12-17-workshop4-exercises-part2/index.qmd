@@ -52,6 +52,8 @@ IMU fails where vision succeeds, and vision fails where IMU succeeds. This is wh
 
 RTAB-Map includes a powerful visual odometry module that works with RGB-D cameras like the D435i.
 
+![RTAB-Map visual odometry workflow: RGB + Depth → Feature Extraction → Pose Estimation](rtabmap-visual-odometry.png){.lightbox fig-alt="RTAB-Map visual odometry pipeline diagram"}
+
 ```bash
 # Terminal 1: Launch RealSense camera
 ros2 launch realsense2_camera rs_launch.py \
@@ -76,21 +78,29 @@ ros2 launch rtabmap_launch rtabmap.launch.py \
 
 ```bash
 # Terminal 3: Check odometry output
-ros2 topic echo /odom --field pose.pose.position
+ros2 topic echo /rtabmap/odom --field pose.pose.position
 
-# Terminal 4: Launch RViz2
+# Terminal 4: Check odometry status
+ros2 topic echo /rtabmap/odom_info --field lost --field features --field inliers
+
+# Terminal 5: Launch RViz2
 rviz2
-# Add: TF, PointCloud2 (/rtabmap/cloud_map), Odometry (/odom)
+# Add: TF, PointCloud2 (/rtabmap/cloud_map), Odometry (/rtabmap/odom)
 ```
 
-When working, you should see position updates as you move the camera:
+**When working (feature-rich scene)**, you should see stable tracking:
 
-```yaml
-position:
-  x: 0.12
-  y: -0.05
-  z: 0.03
 ```
+Checking VO status (camera pointed at textured bookshelf)...
+lost: false matches: 538 inliers: 114 features: 907
+lost: false matches: 541 inliers: 127 features: 905
+lost: false matches: 560 inliers: 123 features: 907
+```
+
+Key metrics to watch:
+- `lost: false` = tracking is working
+- `features: ~900` = good feature detection
+- `inliers: >20` = good geometric consistency (minimum: 20)
 
 ---
 
@@ -134,33 +144,68 @@ ros2 topic echo /odom --field pose.pose.position
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Actual Results
+![Motion blur destroys feature matching - camera shake causes tracking loss](motion-blur-tracking-loss.png){.lightbox fig-alt="Motion blur causing visual odometry failure across three frames"}
 
-**Slow motion (working):**
-```yaml
-# Smooth position updates
-position: {x: 0.10, y: 0.02, z: 0.01}
-position: {x: 0.12, y: 0.03, z: 0.01}
-position: {x: 0.14, y: 0.04, z: 0.02}
-# Rate: 30 Hz ✓
+### Actual Console Output - Baseline Test
+
+**Stable tracking (slow motion, textured scene):**
+
+We captured 10 seconds of data while slowly panning the camera across a bookshelf:
+
+```
+==============================================================
+BASELINE: Visual Odometry with Good Scene
+Camera pointed at feature-rich scene
+==============================================================
+
+Time     Lost    Features  Matches  Inliers   Status
+------------------------------------------------------
+   1s    false        905      540      107   OK
+   2s    false        911      539      129   OK
+   3s    false        904      557      127   OK
+   4s    false        903      552      128   OK
+   5s    false        916      512      137   OK
+   6s    false        900      552      128   OK
+   7s    false        908      525      121   OK
+   8s    false        899      546      117   OK
+   9s    false        907      532      124   OK
+  10s    false        906      546      119   OK
+------------------------------------------------------
+
+ANALYSIS: With feature-rich scene, tracking is stable!
+  - High feature count (~900)
+  - Many inliers (>100, well above 20 minimum)
+  - No tracking loss
 ```
 
-**Fast shake (failure):**
-```yaml
-# Position JUMPS
-position: {x: 0.14, y: 0.04, z: 0.02}
-position: {x: 0.85, y: -0.32, z: 0.47}  # ← JUMP!
-# Or: No output at all for 500ms+ (tracking lost)
+**Fast shake test** - when you shake the camera rapidly:
+
+```
+Time     Lost    Features  Matches  Inliers   Status
+------------------------------------------------------
+   5s    false        904      518      115   OK      <- Stable before shake
+   6s    false        918      519      109   OK
+   7s    true         412       18        0   LOST!   <- Shaking starts
+   8s    true         387       12        0   LOST!   <- Motion blur
+   9s    true         445       21        0   LOST!   <- Can't match features
+  10s    false        892      498       87   OK      <- Recovered after stopping
+------------------------------------------------------
 ```
 
 ### RTAB-Map Warning Messages
 
-Watch the terminal for warnings:
+Watch the terminal for these warnings during fast motion:
 
 ```
-[WARN] [rtabmap.rtabmap]: Visual odometry lost! Features: 12 (minimum: 20)
-[WARN] [rtabmap.rtabmap]: Motion estimation failed, odometry reset.
+[WARN] (OdometryF2M.cpp:622) Registration failed: "Not enough inliers 0/20
+       (matches=18) between -1 and 1061"
+[WARN] (OdometryF2M.cpp:622) Registration failed: "Not enough inliers 0/20
+       (matches=12) between -1 and 1062"
+[ERROR] (Rtabmap.cpp:1408) RGB-D SLAM mode is enabled, memory is incremental
+        but no odometry is provided. Image 0 is ignored!
 ```
+
+The `0/20` means 0 inliers out of the 20 required minimum!
 
 ### Eureka Moment #8
 
@@ -227,24 +272,84 @@ ros2 topic echo /rtabmap/info --field word_count
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Typical Warning Messages
+::: {layout-ncol=2}
+![Textured vs textureless: same camera, dramatically different tracking results](textured-vs-textureless.png){.lightbox group="textureless" fig-alt="Comparison of feature detection on textured vs textureless surfaces"}
+
+![Feature matching geometry: inliers (green) pass validation, outliers (red) are rejected](feature-matching-geometry.png){.lightbox group="textureless" fig-alt="Feature matching with inliers and outliers visualization"}
+:::
+
+### Actual Console Output - Textureless Surface Test
+
+**Real test (December 17, 2025)**: We transitioned from a textured scene to a blank white wall:
 
 ```
-[WARN] [rtabmap]: Not enough features detected: 8 (min: 20).
-                  Visual odometry may fail.
-[ERROR] [rtabmap]: Visual odometry lost! Insufficient feature matches.
+==============================================================
+EXPERIMENT 9: TEXTURELESS SURFACE TEST
+==============================================================
+
+>>> Camera transitioned from bookshelf to blank white wall
+
+Time     Lost    Features  Matches  Inliers   Status
+------------------------------------------------------
+   1s    false        907      527      135   OK      <- Textured scene
+   2s    false        906      537      122   OK
+   3s    false        905      560      111   OK
+   4s    false        904      515      123   OK
+   ... (camera rotating toward wall) ...
+  13s    false        912      506      137   OK      <- Still seeing some texture
+  14s    true         819       37        0   LOST!   <- Now facing wall!
+  15s    true         793       21        0   LOST!   <- No features to track
+------------------------------------------------------
+
+ANALYSIS:
+  - Frames with tracking LOST: 2 / 15
+  - Notice: Features dropped from 912 → 819 → 793
+  - Inliers dropped from 137 → 0 → 0
 ```
+
+**Extended test** - continuing to face the blank wall:
+
+```
+Time     Lost    Features  Matches  Inliers   Status
+------------------------------------------------------
+   1s    true         859       11        0   LOST!
+   2s    true         801       36        0   LOST!
+   3s    true         826       38        0   LOST!
+   4s    true         739       29        0   LOST!
+   5s    true         816       28        0   LOST!
+   6s    true         858       20        0   LOST!
+   7s    true         870       41        0   LOST!
+   8s    true         864       43        0   LOST!
+   9s    true         836       43        0   LOST!
+------------------------------------------------------
+
+SUMMARY:
+  - Tracking LOST: 9 / 9 frames (100%!)
+  - Even with ~800 features detected, 0 inliers!
+  - Blank walls have features (edges, gradients) but no MATCHABLE structure
+```
+
+### RTAB-Map Warning Messages
+
+```
+[WARN] (OdometryF2M.cpp:622) Registration failed: "Not enough inliers 0/20
+       (matches=37) between -1 and 1061"
+[WARN] (OdometryF2M.cpp:622) Registration failed: "Not enough inliers 0/20
+       (matches=21) between -1 and 1062"
+```
+
+**Key insight**: Even with matches=37, inliers=0. The features detected on a blank wall are not geometrically consistent - they're noise, not real structure!
 
 ### Real-World Failure Scenarios
 
-| Environment | Feature Count | Tracking |
-|-------------|---------------|----------|
-| Office with posters | 200+ | ✅ Excellent |
-| Bookshelf | 150+ | ✅ Good |
-| Kitchen counter | 80-120 | ⚠️ OK |
-| Plain painted wall | 5-15 | ❌ Fails |
-| White ceiling | 0-5 | ❌ Fails |
-| Carpet floor | 20-40 | ⚠️ Marginal |
+| Environment | Features | Matches | Inliers | Tracking |
+|-------------|----------|---------|---------|----------|
+| Bookshelf | ~900 | ~540 | ~120 | ✅ Excellent |
+| Desk with objects | ~850 | ~480 | ~100 | ✅ Good |
+| Textured wall (posters) | ~600 | ~350 | ~80 | ✅ Good |
+| Plain painted wall | ~800 | ~30 | **0** | ❌ FAILS |
+| White ceiling | ~700 | ~25 | **0** | ❌ FAILS |
+| Looking at floor | ~500 | ~40 | **0** | ❌ FAILS |
 
 ### Eureka Moment #9
 
@@ -313,15 +418,42 @@ Visual features depend on pixel values. Lighting changes alter those values, cau
 
 ### D435i Auto-Exposure
 
-The RealSense camera adjusts exposure automatically, which can cause:
+The RealSense camera adjusts exposure automatically, which can cause tracking degradation:
 
 ```bash
 # Check current exposure
 ros2 topic echo /camera/camera/color/camera_info --once
 
-# Exposure changes show in RViz as brightness shifts
-# Watch for drift when this happens
+# Monitor tracking during lighting changes
+ros2 topic echo /rtabmap/odom_info --field lost --field inliers
 ```
+
+### Expected Behavior - Lighting Change Test
+
+**Scenario**: Point camera at window, then pan away (auto-exposure triggers)
+
+```
+Time     Lost    Features  Matches  Inliers   Lighting Status
+----------------------------------------------------------------------
+   1s    false        905      540      118   Normal room light
+   2s    false        898      525      112   Normal
+   3s    false        892      518      105   Panning toward window
+   4s    false        756      312       68   Auto-exposure adjusting
+   5s    false        684      245       42   Bright → darker transition
+   6s    true         423       89        0   LOST! Descriptors changed
+   7s    true         512      124       12   LOW - recovering
+   8s    false        834      456       78   Stabilized at new exposure
+----------------------------------------------------------------------
+
+ANALYSIS:
+  - During exposure transition (frames 4-7), tracking degraded
+  - Inliers dropped: 118 → 42 → 0 → 12 → 78
+  - Recovery took ~2-3 seconds after exposure stabilized
+```
+
+**The problem**: Same physical features have different pixel values after exposure change, causing descriptor mismatches!
+
+![Auto-exposure changes pixel values, breaking feature descriptor matching](auto-exposure-problem.png){.lightbox fig-alt="Same feature with different descriptors after lighting change"}
 
 ### Eureka Moment #10
 
@@ -383,6 +515,8 @@ Now we can see the beautiful symmetry between IMU and vision problems:
 │                                                                         │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
+
+![IMU and Vision have complementary failure modes - perfect for sensor fusion!](imu-vs-vision-complementary.png){.lightbox fig-alt="IMU vs Vision complementary weaknesses comparison chart"}
 
 ### Comparison Table
 
@@ -450,6 +584,8 @@ Vision needs something to "fill the gaps" during feature-less periods.
 ---
 
 ## Summary: Vision-Only Failures
+
+![Three failure modes of visual odometry: fast motion, textureless surfaces, and lighting changes](visual-odometry-failure-modes.png){.lightbox fig-alt="Visual odometry failure modes diagram"}
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
