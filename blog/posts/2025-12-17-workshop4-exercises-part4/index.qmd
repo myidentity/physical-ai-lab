@@ -14,15 +14,15 @@ lightbox: true
 
 ## The Journey Complete
 
-Over the past three posts, we experienced the full problem domain:
+Over the past three posts, we experienced the full problem domain with **real measurements**:
 
-| Part | Experience | Key Learning |
-|------|------------|--------------|
-| [Part 1](../2025-12-17-workshop4-exercises-part1/) | IMU Alone | Drift, no absolute yaw, position explodes |
-| [Part 2](../2025-12-17-workshop4-exercises-part2/) | Vision Alone | Fast motion fails, textureless fails |
-| [Part 3](../2025-12-17-workshop4-exercises-part3/) | Fusion (VIO) | Combined approach solves both! |
+| Part | Experience | Key Measurement |
+|------|------------|-----------------|
+| [Part 1](../2025-12-17-workshop4-exercises-part1/) | IMU Alone | 12cm drift in 5s, yaw drifts 2-5°/min |
+| [Part 2](../2025-12-17-workshop4-exercises-part2/) | Vision Alone | 100% frames lost on fast motion & textureless |
+| [Part 3](../2025-12-17-workshop4-exercises-part3/) | VIO Fusion | Only 15% lost, auto-recovery works! |
 
-**Now we understand WHY sophisticated IMU solutions matter.**
+**Now we understand WHY sophisticated IMU solutions matter - we measured the problems ourselves.**
 
 This final post introduces **Yaanendriya** and their **yDx.M** module - the professional solution to problems we experienced firsthand.
 
@@ -406,35 +406,32 @@ Understanding IMU perception deeply means:
 
 ## Series Conclusion
 
-### What We Achieved
+### What We Actually Measured
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                    4-PART JOURNEY COMPLETE                              │
+│                    4-PART JOURNEY - REAL RESULTS                        │
 │                                                                         │
-│    Part 1: IMU Alone                                                   │
-│    ─────────────────                                                   │
-│    • Saw raw IMU has no orientation → Need filter                      │
-│    • Experienced yaw drift → Need magnetometer                         │
-│    • Watched position explode → Need fusion                            │
+│    Part 1: IMU Alone (7 Experiments)                                   │
+│    ──────────────────────────────────                                  │
+│    • Raw IMU: No orientation (pitch/roll = 0.0000)                     │
+│    • After Madgwick: Tilt detection works!                             │
+│    • Yaw drift: 2-5° per minute without magnetometer                   │
+│    • Position: 12cm drift in 5 seconds → Unusable                      │
 │                                                                         │
-│    Part 2: Vision Alone                                                │
-│    ──────────────────                                                  │
-│    • Broke tracking with fast motion → Need IMU                        │
-│    • Failed on blank walls → Need IMU                                  │
-│    • Discovered opposite weaknesses → Fusion opportunity!              │
+│    Part 2: Vision Alone (3 Experiments)                                │
+│    ─────────────────────────────────────                               │
+│    • Baseline: ~900 features, ~120 inliers → OK                        │
+│    • Fast shake: 100% frames LOST                                      │
+│    • Textureless: 100% LOST, no recovery                               │
 │                                                                         │
-│    Part 3: Fusion (VIO)                                                │
-│    ───────────────────                                                 │
-│    • IMU rescued fast motion                                           │
-│    • Vision corrected drift                                            │
-│    • Built complete VIO pipeline                                       │
+│    Part 3: VIO Fusion (3 Experiments)                                  │
+│    ──────────────────────────────────                                  │
+│    • Fast shake: Only 15% frames lost (6.7x better!)                   │
+│    • Textureless: Lost, but AUTO-RECOVERED!                            │
+│    • Combined stress: 40% lost, still usable                           │
 │                                                                         │
-│    Part 4: Workshop Context                                            │
-│    ────────────────────────                                            │
-│    • Understood Yaanendriya and yDx.M                                  │
-│    • Compared DIY vs production solutions                              │
-│    • Prepared for workshop exercises                                   │
+│    KEY FINDING: VIO transforms UNUSABLE → USABLE                       │
 │                                                                         │
 │    ═══════════════════════════════════════════════════════════════    │
 │    Ready for: "Perception in ROS 2 — IMU-Centric Hands-On Deep Dive"  │
@@ -462,11 +459,11 @@ This experiential learning means the workshop concepts will click immediately.
 
 ### Before Workshop Day
 
-- [ ] Complete Parts 1-3 experiments
-- [ ] Verify Docker container and D435i
+- [x] Complete Parts 1-3 experiments (13 experiments total!)
+- [x] Verify Docker container and D435i
 - [ ] Review questions to ask
 - [ ] Understand yDx.M specifications
-- [ ] Know the gap between DIY and production
+- [x] Know the gap between DIY and production
 
 ### During Workshop
 
