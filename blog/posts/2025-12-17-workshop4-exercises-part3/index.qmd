@@ -623,31 +623,29 @@ After all our experiments, here's what we **actually measured**:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│              PART 3 SUMMARY: HOW VIO SOLVES THE PROBLEMS                │
+│              PART 3 SUMMARY: MEASURED RESULTS                           │
 │                                                                         │
-│   Solution #11: IMU bridges fast motion gaps                           │
+│   Experiment 11: Fast Motion                                           │
 │   ────────────────────────────────────────────────                     │
-│   Problem (Part 2): Vision lost 100% frames during shake               │
-│   VIO Result: Only 15% lost, quick recovery!                           │
-│   How: IMU at 400Hz pre-integrates motion between frames               │
+│   Vision-only: 100% frames lost during shake                           │
+│   VIO fusion:  Only 15% lost, quick recovery                          │
+│   Key: IMU pre-integration bridges motion blur                         │
 │                                                                         │
-│   Solution #12: IMU maintains state during visual blackout             │
+│   Experiment 12: Textureless Surfaces                                  │
 │   ────────────────────────────────────────────────                     │
-│   Problem (Part 2): Textureless = lost forever, needs restart          │
-│   VIO Result: Lost, but AUTO-RECOVERED when features returned!         │
-│   How: IMU tracks orientation so VIO knows where to look               │
+│   Vision-only: Lost forever, needs restart                             │
+│   VIO fusion:  Lost, but AUTO-RECOVERED when features returned        │
+│   Key: IMU maintains state during visual blackout                      │
 │                                                                         │
-│   Solution #13: VIO survives combined stress                           │
+│   Experiment 13: Combined Stress Test                                  │
 │   ────────────────────────────────────────────────                     │
-│   Problem: Shake + textureless simultaneously                          │
-│   VIO Result: 40% lost, but recovered to stable tracking!              │
-│   How: Multiple failure modes handled by IMU continuously              │
+│   Vision-only: Would fail completely                                   │
+│   VIO fusion:  40% lost, but recovered to stable tracking!            │
+│   Key: Multiple failure modes handled simultaneously                   │
 │                                                                         │
 │   ═══════════════════════════════════════════════════                  │
 │   KEY TAKEAWAY: VIO transforms UNUSABLE into USABLE                   │
-│   Vision-only: 100% lost, no recovery                                 │
-│   VIO fusion:  15-40% lost, AUTOMATIC recovery                        │
-│   IMU + Vision = More than sum of parts!                              │
+│   IMU + Vision = More than sum of parts                               │
 │   ═══════════════════════════════════════════════════                  │
 │                                                                         │
 └─────────────────────────────────────────────────────────────────────────┘
