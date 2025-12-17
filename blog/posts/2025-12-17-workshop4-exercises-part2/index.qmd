@@ -591,24 +591,27 @@ Vision needs something to "fill the gaps" during feature-less periods.
 ┌─────────────────────────────────────────────────────────────────────────┐
 │              PART 2 SUMMARY: WHY VISION ALONE FAILS                     │
 │                                                                         │
-│   Problem #8: Fast motion causes feature blur                          │
+│   Problem #8: Fast motion causes motion blur                           │
 │   ────────────────────────────────────────────                         │
-│   Symptom: Tracking lost during rapid movement                         │
-│   Impact: Robot loses localization when moving quickly                 │
+│   Measured: 100% of frames LOST during shake                           │
+│   Solution: IMU at 400Hz bridges the visual gaps (Part 3!)             │
 │                                                                         │
 │   Problem #9: Textureless surfaces have no features                    │
-│   ────────────────────────────────────────────────                      │
-│   Symptom: Tracking fails on blank walls, ceilings                     │
-│   Impact: Robot can't navigate corridors, warehouses                   │
+│   ────────────────────────────────────────────────                     │
+│   Measured: ~800 features detected but 0 inliers matched               │
+│   Solution: IMU maintains pose estimate during visual blackout         │
 │                                                                         │
-│   Problem #10: Lighting changes affect matching                        │
-│   ────────────────────────────────────────────────                      │
-│   Symptom: Drift when exposure changes                                 │
-│   Impact: Day/night, indoor/outdoor transitions fail                   │
+│   Problem #10: Lighting changes break feature descriptors              │
+│   ────────────────────────────────────────────────                     │
+│   Measured: Inliers drop 118 → 0 during exposure change                │
+│   Solution: IMU is completely independent of lighting!                 │
 │                                                                         │
 │   ═══════════════════════════════════════════════════                  │
 │   KEY INSIGHT: Vision and IMU have OPPOSITE failures!                  │
-│   This is what makes FUSION so powerful!                               │
+│   Fast motion: IMU ✅, Vision ❌                                        │
+│   Textureless: IMU ✅, Vision ❌                                        │
+│   Long duration: IMU ❌, Vision ✅                                      │
+│   This is what makes FUSION so powerful! → Part 3                      │
 │   ═══════════════════════════════════════════════════                  │
 │                                                                         │
 └─────────────────────────────────────────────────────────────────────────┘
