@@ -76,6 +76,29 @@ ros2 launch realsense2_camera rs_launch.py \
     unite_imu_method:=2
 ```
 
+### RealSense Launch Output
+
+When you launch, you'll see output like this:
+
+```
+[INFO] [camera.camera]: Device with name Intel RealSense D435I was found.
+[INFO] [camera.camera]: Device Serial No: 317222070886
+[INFO] [camera.camera]: Device FW version: 5.13.0.50
+[INFO] [camera.camera]: Set ROS param gyro_fps to default: 200
+[INFO] [camera.camera]: Set ROS param accel_fps to default: 100
+[INFO] [camera.camera]: Starting Sensor: Motion Module
+WARNING [ds-calib-parsers.cpp:36] IMU Calibration is not available,
+        default intrinsic and extrinsic will be used.
+[INFO] [camera.camera]: Open profile: stream_type: Accel(0)Format: MOTION_XYZ32F, FPS: 100
+[INFO] [camera.camera]: Open profile: stream_type: Gyro(0)Format: MOTION_XYZ32F, FPS: 200
+[INFO] [camera.camera]: RealSense Node Is Up!
+```
+
+::: {.callout-warning}
+## Notice the WARNING!
+**"IMU Calibration is not available"** - This confirms the D435i IMU is NOT factory calibrated. We'll explore this in Experiment 5!
+:::
+
 ### Check the IMU Topic
 
 ```bash
@@ -92,27 +115,35 @@ ros2 topic echo /camera/camera/imu --once
 
 ### The Shocking Result
 
+**Actual output from our D435i** (December 17, 2025):
+
 ```yaml
 header:
   stamp:
-    sec: 1734425312
-    nanosec: 892345678
-  frame_id: "camera_imu_optical_frame"
+    sec: 1765940863
+    nanosec: 540482304
+  frame_id: camera_imu_optical_frame
 orientation:
   x: 0.0
   y: 0.0
   z: 0.0
-  w: 0.0   # ← All zeros! No orientation!
-orientation_covariance: [-1.0, 0.0, 0.0, ...]  # -1 means "not provided"
+  w: 0.0   # ← ALL ZEROS! No orientation computed!
+orientation_covariance:
+- -1.0     # ← This -1 means "orientation NOT PROVIDED"
+- 0.0
+- 0.0
+# ... (rest are zeros)
 angular_velocity:
-  x: -0.0123    # rad/s - we have this!
-  y: 0.0045
-  z: -0.0012
+  x: -0.024434609338641167    # rad/s - real rotation rate!
+  y: -0.001745329238474369
+  z: 0.0
 linear_acceleration:
-  x: 0.142      # m/s² - we have this!
-  y: -0.087
-  z: 9.78       # ← Gravity! Pointing down.
+  x: 0.13729310035705566      # m/s² - real acceleration!
+  y: -9.443803787231445       # ← Gravity component (camera tilted!)
+  z: -2.5399222373962402      # ← Gravity component
 ```
+
+Notice the camera is tilted ~70° - gravity is split between Y and Z axes!
 
 ::: {.callout-important}
 ## The Problem: Raw IMU ≠ Orientation
@@ -186,15 +217,26 @@ ros2 run imu_filter_madgwick imu_filter_madgwick_node --ros-args \
 ros2 topic echo /imu/data --field orientation
 ```
 
-**Now we see real orientation!**
+**Now we see real orientation!** Actual output from our test:
 
 ```yaml
+header:
+  stamp:
+    sec: 1765940920
+    nanosec: 373782272
+  frame_id: camera_imu_optical_frame
 orientation:
-  x: 0.0123
-  y: -0.0456
-  z: 0.7891
-  w: 0.6123   # ← Valid quaternion!
+  x: -0.5715487262389173    # ← Real values!
+  y: 0.557508732210737
+  z: -0.4266440447846019
+  w: 0.42484223671061966    # ← Valid quaternion!
+orientation_covariance:
+- 0.0    # ← No longer -1! Filter provides orientation
+# ...
 ```
+
+**Before Madgwick**: `orientation = (0, 0, 0, 0)` ❌
+**After Madgwick**: `orientation = (-0.57, 0.56, -0.43, 0.42)` ✅
 
 ### Visualize in RViz2
 
@@ -267,19 +309,41 @@ ros2 topic echo /imu/rpy/filtered
 3. Return to the exact starting position
 4. Check yaw again
 
-### What You'll See
+### Actual Console Output - Yaw Drift Test
 
-```yaml
-# Starting position
-roll: 0.02
-pitch: -0.01
-yaw: 0.15       # ← Starting yaw
+We monitored Roll-Pitch-Yaw while keeping the camera **completely stationary**:
 
-# After 360° rotation and return
-roll: 0.02      # ← Roll is fine!
-pitch: -0.01    # ← Pitch is fine!
-yaw: 0.87       # ← YAW DRIFTED! Should be ~0.15!
 ```
+Monitoring YAW DRIFT for 10 seconds...
+Keep camera STATIONARY to see drift!
+
+  Time     Roll      Pitch      Yaw      Yaw Drift
+-------------------------------------------------------
+   0.0s   -106.13     -0.81    -75.83     +0.0000
+   0.5s   -106.12     -0.79    -75.78     +0.0454
+   1.0s   -106.10     -0.78    -75.75     +0.0828
+   1.5s   -106.17     -0.78    -75.71     +0.1185
+   2.0s   -106.10     -0.80    -75.67     +0.1559
+   3.0s   -106.07     -0.77    -75.61     +0.2203
+   4.0s   -106.12     -0.76    -75.53     +0.3014
+   5.0s   -106.15     -0.76    -75.44     +0.3847
+   6.0s   -106.09     -0.77    -75.36     +0.4654
+   7.0s   -106.12     -0.79    -75.28     +0.5497
+   8.0s   -106.12     -0.82    -75.20     +0.6298
+   9.0s   -106.13     -0.80    -75.13     +0.7012
+  10.0s   -106.12     -0.75    -75.06     +0.7723
+-------------------------------------------------------
+
+STATIONARY YAW DRIFT: +0.8171 degrees over 10 seconds
+DRIFT RATE: +4.6712 degrees/minute
+```
+
+**Key observations:**
+- **Roll**: Stable at -106° (camera is tilted on its side) ✅
+- **Pitch**: Stable at -0.8° ✅
+- **Yaw**: Drifting from -75.83° → -75.06° even while stationary! ❌
+
+At this rate: **~4.7°/minute = 280° drift per hour!**
 
 ::: {.callout-warning}
 ## Yaw Drift: The Magnetometer Problem
@@ -391,23 +455,36 @@ ros2 run robot_localization ekf_node --ros-args \
 ros2 topic echo /odometry/filtered --field pose.pose.position
 ```
 
-### The Disaster Unfolds
+### Actual Console Output - The Disaster Unfolds
 
-**With the camera sitting perfectly still:**
+We integrated acceleration to compute position with the camera **sitting perfectly still**:
 
-```yaml
-# t = 0 seconds
-position: {x: 0.0, y: 0.0, z: 0.0}
-
-# t = 5 seconds
-position: {x: 0.12, y: -0.08, z: 0.03}  # ← Already drifting!
-
-# t = 30 seconds
-position: {x: 2.45, y: -1.87, z: 0.94}  # ← METERS of drift!
-
-# t = 60 seconds
-position: {x: 8.73, y: -4.21, z: 2.15}  # ← COMPLETELY WRONG!
 ```
+DEAD RECKONING - Integrating acceleration to get position
+Camera should be STATIONARY - watch position drift!
+
+  Time      Position (m)                    Velocity (m/s)
+          X        Y        Z            Vx       Vy       Vz
+------------------------------------------------------------------------
+   1.0s     0.068   -4.707   -1.345        0.135   -9.367   -2.676
+   2.0s     0.270  -18.783   -5.366        0.268  -18.736   -5.352
+   3.0s     0.606  -42.226  -12.064        0.403  -28.100   -8.029
+   5.0s     1.681 -117.200  -33.484        0.672  -46.834  -13.381
+  10.0s     6.733 -468.597 -133.859        1.348  -93.675  -26.757
+  15.0s    15.157 -1054.147 -301.123        2.021 -140.508  -40.136
+  20.0s    26.887 -1869.728 -534.111        2.692 -187.135  -53.459
+  25.0s    41.974 -2917.539 -833.429        3.366 -233.772  -66.778
+  30.0s    60.420 -4198.513 -1199.342        4.039 -280.437  -80.107
+------------------------------------------------------------------------
+
+FINAL POSITION ERROR: 4385.88 meters (should be 0!)
+Camera was STATIONARY but IMU thinks it moved 4385.9 meters!
+```
+
+**The camera never moved, yet the IMU computed:**
+- Position drift: **4.4 KILOMETERS** in 30 seconds!
+- Velocity error: **280 m/s** (faster than a race car!)
+- This is completely unusable for navigation!
 
 ::: {.callout-important}
 ## Double Integration Amplifies Error
