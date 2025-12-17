@@ -540,50 +540,63 @@ ros2 bag play imu_stationary &
 ros2 topic echo /camera/camera/imu --field linear_acceleration | head -100
 ```
 
-### What You'll See (Uncalibrated)
+### Actual Console Output - Bias Measurement
 
-```yaml
-# Should be [0, 0, 9.81] on flat surface
-linear_acceleration:
-  x: 0.142    # ← Should be ~0
-  y: -0.087   # ← Should be ~0
-  z: 9.73     # ← Should be ~9.81
+We measured 1000 samples (~5 seconds) from a stationary D435i:
 
-# This bias will cause drift!
+```
+CALIBRATION TEST - Measuring IMU bias and noise
+Camera should be STATIONARY on a flat surface
+Collecting 1000 samples (~5 seconds at 200Hz)...
+
+============================================================
+ACCELEROMETER ANALYSIS (should be [0, 0, 9.81] if flat)
+============================================================
+
+Axis     Mean (m/s2)    Std Dev    Bias from expected
+------------------------------------------------------------
+X         +0.1427      0.0075      +0.1427 (expect 0)
+Y         -9.4008      0.0075      -9.4008 (expect 0)
+Z         -2.5576      0.0082      -12.3676 (expect 9.81)
+
+Gravity magnitude: 9.7436 m/s2 (expected: 9.81)
+Note: Camera is tilted, so gravity is distributed across axes
+
+============================================================
+GYROSCOPE ANALYSIS (should be [0, 0, 0] when stationary)
+============================================================
+
+Axis     Mean (rad/s)   Std Dev        Bias
+------------------------------------------------------------
+X       -0.003032    0.002499    -0.003032 rad/s
+Y       -0.001384    0.002205    -0.001384 rad/s
+Z       -0.000463    0.001468    -0.000463 rad/s
+
+Gyro bias in deg/s: X=-0.1737  Y=-0.0793  Z=-0.0265
+
+IMPACT: 0.1737 deg/s bias = 10.42 deg drift per minute!
 ```
 
-### Run Intel Calibration
-
-```bash
-# Use the Intel RealSense Viewer
-realsense-viewer
-
-# Navigate to:
-# More → On-chip Calibration → Calibrate IMU
-# Follow the instructions (keep camera still, then rotate)
-```
-
-### After Calibration
-
-```yaml
-linear_acceleration:
-  x: 0.003    # ← Much better!
-  y: 0.002    # ← Much better!
-  z: 9.807    # ← Closer to 9.81!
-```
+**Key findings:**
+- **Gyro X-axis bias**: -0.17°/s → causes **10.4° drift per minute!**
+- **Gravity magnitude**: 9.74 m/s² (vs expected 9.81) - 0.7% error
+- **Std dev**: ~0.002 rad/s - shows sensor noise level
 
 ### Eureka Moment #5
 
 ::: {.callout-tip}
-## Calibration Reduces Bias (But Doesn't Eliminate It)
+## Calibration and Bias: The Root Cause of Drift
 
-| Metric | Before Cal | After Cal | Improvement |
-|--------|------------|-----------|-------------|
-| X bias | 0.142 m/s² | 0.003 m/s² | 47x better |
-| Y bias | 0.087 m/s² | 0.002 m/s² | 43x better |
-| Z error | 0.08 m/s² | 0.003 m/s² | 27x better |
+| Measurement | Value | Impact |
+|-------------|-------|--------|
+| Gyro X bias | -0.17°/s | 10.4°/min drift |
+| Gyro Y bias | -0.08°/s | 4.8°/min drift |
+| Gyro Z bias | -0.03°/s | 1.6°/min drift |
+| Gravity error | 0.7% | Affects tilt calculation |
 
-**yDx.M is factory calibrated** - one less thing to worry about at the workshop!
+**This explains Experiment 3!** The ~4.7°/min yaw drift we measured earlier comes directly from these gyro biases being integrated over time.
+
+**yDx.M is factory calibrated** - eliminating this source of error!
 :::
 
 ---
@@ -646,8 +659,14 @@ ros2 run imu_filter_madgwick imu_filter_madgwick_node --ros-args \
 Always verify:
 ```bash
 ros2 param get /imu_filter_madgwick world_frame
-# Should return: "enu" for ROS 2 compatibility
 ```
+
+**Actual output from our test:**
+```
+String value is: enu
+```
+
+✅ Our Madgwick filter is correctly configured for ROS 2!
 :::
 
 ---
@@ -661,12 +680,36 @@ Every `sensor_msgs/Imu` message has three 3×3 covariance matrices. These tell f
 ### Check the Covariances
 
 ```bash
-ros2 topic echo /imu/data --field orientation_covariance
-ros2 topic echo /imu/data --field angular_velocity_covariance
-ros2 topic echo /imu/data --field linear_acceleration_covariance
+ros2 topic echo /camera/camera/imu --once | grep -A10 "covariance"
 ```
 
-### What They Mean
+**Actual output from our D435i:**
+
+```yaml
+orientation_covariance:
+- -1.0          # ← -1 means "NOT PROVIDED"
+- 0.0
+- 0.0
+# ... (rest zeros)
+
+angular_velocity_covariance:
+- 0.01          # ← Diagonal: variance of X rotation
+- 0.0
+- 0.0
+- 0.0
+- 0.01          # ← Diagonal: variance of Y rotation
+- 0.0
+- 0.0
+- 0.0
+- 0.01          # ← Diagonal: variance of Z rotation
+
+linear_acceleration_covariance:
+- 0.01          # Same pattern: 0.01 on diagonal
+- 0.0
+# ...
+```
+
+### What These Values Mean
 
 ```
 Covariance Matrix (3x3, stored as 9 elements row-major):
