@@ -1,0 +1,501 @@
+---
+title: "Go2-W ROS 2 Interface: Wheel + Leg Control"
+subtitle: "ROSCon India 2025 Workshop Prep - Part 2 of 4"
+author: "Rajesh"
+date: "2025-12-18"
+categories: [ros2, isaac-sim, isaac-lab, go2-w, unitree, workshop, roscon-india]
+toc: true
+toc-depth: 3
+image: thumbnail.png
+---
+
+## Go2-W ROS 2 Architecture
+
+The Go2-W requires a more complex ROS 2 interface than standard quadrupeds due to its **16 joints** (12 leg + 4 wheel) and **hybrid control modes**.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│               GO2-W ROS 2 CONTROL ARCHITECTURE               │
+│                                                             │
+│  ┌─────────────┐     ┌─────────────┐     ┌─────────────┐   │
+│  │   Isaac     │     │   ROS 2     │     │  External   │   │
+│  │    Sim      │ ←→  │   Bridge    │ ←→  │ Controller  │   │
+│  └─────────────┘     └─────────────┘     └─────────────┘   │
+│        │                   │                   │            │
+│        ▼                   ▼                   ▼            │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │              GO2-W JOINT STATE (16 joints)          │   │
+│  │  Legs (12): Position + Velocity                     │   │
+│  │  Wheels (4): Velocity + Torque                      │   │
+│  └─────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+::: {.callout-note}
+## Series Navigation
+- **Part 1**: [Isaac Sim vs Isaac Lab](/posts/2025-12-18-isaac-workshop-part1/)
+- **Part 2**: Go2-W ROS 2 Interface ← You are here
+- **Part 3**: [Training Go2-W Locomotion](/posts/2025-12-18-isaac-workshop-part3/)
+- **Part 4**: [Go2-W Sim-to-Real](/posts/2025-12-18-isaac-workshop-part4/)
+:::
+
+---
+
+## ROS 2 Topics for Go2-W
+
+### Published Topics (Sensor Data)
+
+| Topic | Message Type | Content |
+|-------|--------------|---------|
+| `/go2w/joint_states` | `sensor_msgs/JointState` | All 16 joint positions/velocities |
+| `/go2w/imu` | `sensor_msgs/Imu` | Base IMU data |
+| `/go2w/wheel_velocities` | `std_msgs/Float64MultiArray` | 4 wheel angular velocities |
+| `/go2w/wheel_torques` | `std_msgs/Float64MultiArray` | 4 wheel effort feedback |
+| `/tf` | `tf2_msgs/TFMessage` | Transform tree |
+| `/tf_static` | `tf2_msgs/TFMessage` | Static transforms |
+
+### Subscribed Topics (Commands)
+
+| Topic | Message Type | Content |
+|-------|--------------|---------|
+| `/go2w/joint_commands` | `std_msgs/Float64MultiArray` | 16 joint targets |
+| `/go2w/leg_commands` | `std_msgs/Float64MultiArray` | 12 leg position targets |
+| `/go2w/wheel_commands` | `std_msgs/Float64MultiArray` | 4 wheel velocity targets |
+| `/cmd_vel` | `geometry_msgs/Twist` | High-level velocity command |
+
+---
+
+## TF Tree for Go2-W (16 Joints)
+
+```
+world
+└── base_link
+    ├── imu_link
+    │
+    ├── FL_hip_link
+    │   └── FL_thigh_link
+    │       └── FL_calf_link
+    │           └── FL_wheel_link  ← NEW (wheel frame)
+    │
+    ├── FR_hip_link
+    │   └── FR_thigh_link
+    │       └── FR_calf_link
+    │           └── FR_wheel_link  ← NEW
+    │
+    ├── RL_hip_link
+    │   └── RL_thigh_link
+    │       └── RL_calf_link
+    │           └── RL_wheel_link  ← NEW
+    │
+    └── RR_hip_link
+        └── RR_thigh_link
+            └── RR_calf_link
+                └── RR_wheel_link  ← NEW
+```
+
+::: {.callout-important}
+## Key Difference from Go2
+The Go2-W TF tree has **4 additional wheel frames** at the end of each leg kinematic chain.
+:::
+
+---
+
+## Enable ROS 2 Bridge in Isaac Sim
+
+### Step 1: Enable Extension
+
+1. Open Isaac Sim
+2. Go to: `Window > Extensions`
+3. Search: "ROS2"
+4. Enable: `omni.isaac.ros2_bridge`
+
+### Step 2: Source ROS 2
+
+```bash
+# Before launching Isaac Sim
+source /opt/ros/humble/setup.bash
+export ROS_DOMAIN_ID=0
+```
+
+---
+
+## OmniGraph Setup for Go2-W
+
+The OmniGraph visual programming system connects Isaac Sim to ROS 2.
+
+### Required Nodes
+
+| OmniGraph Node | Purpose | Target Prim |
+|----------------|---------|-------------|
+| **ROS2 Publish Joint State** | Publish all 16 joints | `/World/Go2W` |
+| **ROS2 Publish IMU** | Publish IMU data | `/World/Go2W/base_link/imu_sensor` |
+| **ROS2 Publish TF** | Publish transform tree | `/World/Go2W` |
+| **ROS2 Subscribe Joint State** | Receive joint commands | `/World/Go2W` |
+
+### Go2-W Specific Nodes (Wheel Control)
+
+| OmniGraph Node | Purpose | Topic |
+|----------------|---------|-------|
+| **ROS2 Publish Float64MultiArray** | Wheel velocities | `/go2w/wheel_velocities` |
+| **ROS2 Publish Float64MultiArray** | Wheel torques | `/go2w/wheel_torques` |
+| **ROS2 Subscribe Float64MultiArray** | Wheel commands | `/go2w/wheel_commands` |
+
+---
+
+## Joint State Message Structure
+
+The `/go2w/joint_states` message contains all 16 joints:
+
+```python
+# sensor_msgs/JointState
+name: [
+    # Legs (12 joints)
+    "FL_hip_joint", "FL_thigh_joint", "FL_calf_joint",
+    "FR_hip_joint", "FR_thigh_joint", "FR_calf_joint",
+    "RL_hip_joint", "RL_thigh_joint", "RL_calf_joint",
+    "RR_hip_joint", "RR_thigh_joint", "RR_calf_joint",
+    # Wheels (4 joints)
+    "FL_wheel_joint",
+    "FR_wheel_joint",
+    "RL_wheel_joint",
+    "RR_wheel_joint"
+]
+position: [...]  # 16 values (rad for legs, ignored for wheels)
+velocity: [...]  # 16 values (rad/s)
+effort: [...]    # 16 values (N.m)
+```
+
+---
+
+## Wheel-Specific Control Interface
+
+### Wheel Velocity Command
+
+```python
+# std_msgs/Float64MultiArray
+# Wheel velocities in rad/s
+data: [FL_vel, FR_vel, RL_vel, RR_vel]
+```
+
+### Publishing Wheel Commands (Python)
+
+```python
+#!/usr/bin/env python3
+import rclpy
+from rclpy.node import Node
+from std_msgs.msg import Float64MultiArray
+
+class Go2WheelController(Node):
+    def __init__(self):
+        super().__init__('go2w_wheel_controller')
+
+        # Wheel command publisher
+        self.wheel_pub = self.create_publisher(
+            Float64MultiArray,
+            '/go2w/wheel_commands',
+            10
+        )
+
+        # Timer for control loop
+        self.timer = self.create_timer(0.02, self.control_loop)  # 50 Hz
+
+        # Target wheel velocity (m/s → rad/s conversion needed)
+        self.wheel_radius = 0.0889  # 7-inch / 2 = 3.5 inch = 0.0889 m
+        self.target_linear_vel = 1.0  # m/s
+
+    def control_loop(self):
+        msg = Float64MultiArray()
+
+        # Convert linear velocity to angular velocity
+        angular_vel = self.target_linear_vel / self.wheel_radius
+
+        # All wheels same velocity for straight motion
+        msg.data = [angular_vel, angular_vel, angular_vel, angular_vel]
+
+        self.wheel_pub.publish(msg)
+
+def main():
+    rclpy.init()
+    node = Go2WheelController()
+    rclpy.spin(node)
+    rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()
+```
+
+---
+
+## Complete Go2-W ROS 2 Interface Node
+
+```python
+#!/usr/bin/env python3
+"""
+Go2-W ROS 2 Interface Node
+Handles both leg (position) and wheel (velocity) control
+"""
+
+import rclpy
+from rclpy.node import Node
+import numpy as np
+
+from sensor_msgs.msg import JointState, Imu
+from std_msgs.msg import Float64MultiArray
+from geometry_msgs.msg import Twist
+
+class Go2WInterface(Node):
+    def __init__(self):
+        super().__init__('go2w_interface')
+
+        # Go2-W specs
+        self.num_legs = 12
+        self.num_wheels = 4
+        self.num_joints = 16
+        self.wheel_radius = 0.0889  # meters
+
+        # Publishers
+        self.leg_cmd_pub = self.create_publisher(
+            Float64MultiArray, '/go2w/leg_commands', 10)
+        self.wheel_cmd_pub = self.create_publisher(
+            Float64MultiArray, '/go2w/wheel_commands', 10)
+
+        # Subscribers
+        self.joint_sub = self.create_subscription(
+            JointState, '/go2w/joint_states', self.joint_callback, 10)
+        self.imu_sub = self.create_subscription(
+            Imu, '/go2w/imu', self.imu_callback, 10)
+        self.cmd_vel_sub = self.create_subscription(
+            Twist, '/cmd_vel', self.cmd_vel_callback, 10)
+
+        # State storage
+        self.leg_positions = np.zeros(12)
+        self.leg_velocities = np.zeros(12)
+        self.wheel_velocities = np.zeros(4)
+        self.wheel_torques = np.zeros(4)
+
+        # Commands
+        self.target_linear_vel = 0.0
+        self.target_angular_vel = 0.0
+
+        # Control loop
+        self.timer = self.create_timer(0.02, self.control_loop)
+
+        self.get_logger().info('Go2-W Interface initialized (16 joints)')
+
+    def joint_callback(self, msg: JointState):
+        """Process 16-joint state message"""
+        if len(msg.position) >= 16:
+            self.leg_positions = np.array(msg.position[:12])
+            self.leg_velocities = np.array(msg.velocity[:12])
+            self.wheel_velocities = np.array(msg.velocity[12:16])
+            if len(msg.effort) >= 16:
+                self.wheel_torques = np.array(msg.effort[12:16])
+
+    def imu_callback(self, msg: Imu):
+        """Process IMU data"""
+        self.angular_velocity = np.array([
+            msg.angular_velocity.x,
+            msg.angular_velocity.y,
+            msg.angular_velocity.z
+        ])
+
+    def cmd_vel_callback(self, msg: Twist):
+        """Process velocity command"""
+        self.target_linear_vel = msg.linear.x
+        self.target_angular_vel = msg.angular.z
+
+    def control_loop(self):
+        """Main control loop at 50 Hz"""
+
+        # Convert cmd_vel to wheel velocities (differential drive)
+        # For straight motion: all wheels same velocity
+        # For turning: differential between left and right
+
+        wheel_base = 0.4  # meters (approximate)
+
+        v_left = (self.target_linear_vel -
+                  self.target_angular_vel * wheel_base / 2) / self.wheel_radius
+        v_right = (self.target_linear_vel +
+                   self.target_angular_vel * wheel_base / 2) / self.wheel_radius
+
+        # Publish wheel commands
+        wheel_msg = Float64MultiArray()
+        wheel_msg.data = [v_left, v_right, v_left, v_right]  # FL, FR, RL, RR
+        self.wheel_cmd_pub.publish(wheel_msg)
+
+        # Leg commands (default standing pose - let policy handle this)
+        leg_msg = Float64MultiArray()
+        default_pose = [0.1, 0.8, -1.5] * 4  # Standing pose
+        leg_msg.data = default_pose
+        self.leg_cmd_pub.publish(leg_msg)
+
+def main():
+    rclpy.init()
+    node = Go2WInterface()
+    rclpy.spin(node)
+    rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()
+```
+
+---
+
+## Verify ROS 2 Connection
+
+### Check Topics
+
+```bash
+# List all Go2-W topics
+ros2 topic list | grep go2w
+```
+
+**Expected output:**
+```
+/go2w/joint_states
+/go2w/imu
+/go2w/wheel_velocities
+/go2w/wheel_torques
+/go2w/joint_commands
+/go2w/leg_commands
+/go2w/wheel_commands
+```
+
+### Echo Joint States
+
+```bash
+# See all 16 joints
+ros2 topic echo /go2w/joint_states
+```
+
+### Send Test Wheel Command
+
+```bash
+# Roll forward slowly
+ros2 topic pub /go2w/wheel_commands std_msgs/Float64MultiArray \
+    "data: [5.0, 5.0, 5.0, 5.0]"
+```
+
+---
+
+## RViz Visualization
+
+### Launch RViz
+
+```bash
+rviz2
+```
+
+### Add Displays
+
+1. **TF**: Shows all 16+ frames
+2. **RobotModel**: Visualizes Go2-W (needs URDF)
+3. **Axes**: Wheel frame orientations
+
+### TF Tree Visualization
+
+```bash
+# View full TF tree
+ros2 run tf2_tools view_frames
+```
+
+This generates a PDF showing the complete Go2-W transform tree including wheel frames.
+
+---
+
+## Quick Reference Card
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│           GO2-W ROS 2 QUICK REFERENCE                        │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ENABLE ROS 2 BRIDGE                                        │
+│  ───────────────────                                       │
+│  Extensions → omni.isaac.ros2_bridge                       │
+│  export ROS_DOMAIN_ID=0                                    │
+│                                                             │
+│  KEY TOPICS                                                 │
+│  ──────────                                                │
+│  /go2w/joint_states    ← 16 joints (12 leg + 4 wheel)     │
+│  /go2w/wheel_commands  → 4 wheel velocities (rad/s)       │
+│  /go2w/leg_commands    → 12 leg positions (rad)           │
+│  /cmd_vel              → High-level velocity              │
+│                                                             │
+│  WHEEL CONVERSION                                           │
+│  ────────────────                                          │
+│  wheel_radius = 0.0889 m (7-inch / 2)                     │
+│  angular_vel = linear_vel / wheel_radius                  │
+│                                                             │
+│  VERIFY                                                     │
+│  ──────                                                    │
+│  ros2 topic list | grep go2w                              │
+│  ros2 topic echo /go2w/joint_states                       │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Troubleshooting
+
+### Problem: No Topics Visible
+
+**Causes:**
+- ROS 2 bridge extension not enabled
+- ROS_DOMAIN_ID mismatch
+- OmniGraph not connected to simulation
+
+**Fix:** Verify extension enabled, check domain ID, restart Isaac Sim
+
+### Problem: Only 12 Joints in Joint State
+
+**Cause:** Using standard Go2 URDF instead of Go2-W
+
+**Fix:** Ensure Go2-W URDF/USD is loaded (should have 16 joints)
+
+### Problem: Wheels Not Responding
+
+**Causes:**
+- Wheel joints set to Position mode (should be Velocity)
+- Wheel command topic not connected in OmniGraph
+
+**Fix:** Check joint drive mode, verify OmniGraph connections
+
+---
+
+## Screenshots to Capture
+
+- [ ] ROS 2 bridge extension enabled
+- [ ] `ros2 topic list` showing Go2-W topics
+- [ ] OmniGraph with 16-joint publishers
+- [ ] RViz showing Go2-W with wheel frames
+- [ ] TF tree PDF showing complete hierarchy
+
+---
+
+## Workshop Questions
+
+::: {.callout-warning}
+## Questions to Ask
+1. Best practice for separating leg vs wheel command topics?
+2. How to handle wheel-leg synchronization in ROS 2?
+3. Recommended control rate for wheel velocity commands?
+4. Any issues with high-frequency joint state publishing?
+:::
+
+---
+
+## What's Next
+
+With ROS 2 connected, we can train the Go2-W locomotion policy:
+
+→ **[Part 3: Training Go2-W Locomotion](/posts/2025-12-18-isaac-workshop-part3/)** - Train hybrid wheel-leg policy
+
+---
+
+## Sources
+
+- [ROS 2 Bridge Documentation](https://docs.isaacsim.omniverse.nvidia.com/latest/ros2_tutorials/index.html)
+- [OmniGraph for ROS 2](https://docs.isaacsim.omniverse.nvidia.com/latest/ros2_tutorials/tutorial_ros2_omnigraph.html)
+- [unitree_ros2](https://github.com/unitreerobotics/unitree_ros2)

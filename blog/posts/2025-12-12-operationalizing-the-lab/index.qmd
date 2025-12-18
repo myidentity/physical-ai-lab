@@ -273,11 +273,7 @@ c) Clone Isaac Lab Repository            [NOT FOUND]
 
 Follow these steps in order:
 
-**1. Initial menu showing components not yet installed:**
-
-![Main menu before setup](images/01_main_menu_before.png)
-
-**2. NGC Login (Option 's'):**
+**1. NGC Login (Option 's'):**
 
 You need an NVIDIA NGC account to download Isaac Sim:
 
@@ -293,7 +289,7 @@ When prompted:
 
 ![NGC login success](images/03_ngc_login_success.png)
 
-**3. Pull Isaac Sim Image (Option 'p') - ~15GB download:**
+**2. Pull Isaac Sim Image (Option 'p') - ~15GB download:**
 
 ![Image pull starting](images/04_image_pull_start.png)
 
@@ -307,13 +303,13 @@ This download takes 15-30 minutes depending on your internet speed.
 
 ![Image pull complete](images/06_image_pull_complete.png)
 
-**4. Clone Isaac Lab (Option 'c'):**
+**3. Clone Isaac Lab (Option 'c'):**
 
 ![Cloning Isaac Lab](images/07_clone_isaaclab.png)
 
 ![Clone complete](images/08_clone_complete.png)
 
-**5. Menu after setup complete - all components [FOUND]:**
+**4. Menu after setup complete - all components [FOUND]:**
 
 ![Main menu after setup](images/09_main_menu_after.png)
 

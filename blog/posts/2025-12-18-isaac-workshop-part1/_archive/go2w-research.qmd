@@ -1,0 +1,173 @@
+---
+title: "Go2-W Isaac Sim Research Notes"
+subtitle: "Wheeled Quadruped Simulation Options"
+author: "Rajesh"
+date: "2025-12-17"
+categories: [isaac-sim, isaac-lab, unitree-go2, research, go2-w]
+toc: true
+toc-depth: 3
+draft: true
+---
+
+## Summary
+
+**Go2-W = Wheeled variant of Go2** with 4 additional wheel motors (16 total joints vs 12).
+
+While NVIDIA Isaac Sim does not include Go2-W in built-in assets, the **robot_lab** extension by fan-ziqi provides ready-to-use RL training environments.
+
+---
+
+## Quick Start: Training Go2-W
+
+```bash
+# Clone robot_lab extension
+git clone https://github.com/fan-ziqi/robot_lab.git
+python -m pip install -e source/robot_lab
+
+# Train Go2-W locomotion
+python scripts/reinforcement_learning/rsl_rl/train.py \
+  --task=RobotLab-Isaac-Velocity-Rough-Unitree-Go2W-v0 --headless
+
+# Play trained policy
+python scripts/reinforcement_learning/rsl_rl/play.py \
+  --task=RobotLab-Isaac-Velocity-Rough-Unitree-Go2W-v0
+```
+
+**Compatibility**: Isaac Sim 4.5/5.0/5.1 + Isaac Lab 2.3.0
+
+---
+
+## Official Unitree Repositories
+
+### unitree_ros (Primary URDF Source)
+
+| Item | Details |
+|------|---------|
+| Repository | [github.com/unitreerobotics/unitree_ros](https://github.com/unitreerobotics/unitree_ros) |
+| Location | `robots/go2w_description/` |
+| Contents | URDF, Xacro, mesh files (DAE/STL) |
+| License | BSD-3-Clause |
+| Stars | 1.1k+ |
+
+### unitree_mujoco (MuJoCo Simulation)
+
+| Item | Details |
+|------|---------|
+| Repository | [github.com/unitreerobotics/unitree_mujoco](https://github.com/unitreerobotics/unitree_mujoco) |
+| Location | `unitree_robots/go2w/scene.xml` |
+| Config | Set `robot: "go2w"` in config.yaml |
+
+### unitree_model (Hugging Face)
+
+| Item | Details |
+|------|---------|
+| Repository | [huggingface.co/datasets/unitreerobotics/unitree_model](https://huggingface.co/datasets/unitreerobotics/unitree_model) |
+| Contains | Official 3D model assets |
+
+---
+
+## Community Extensions
+
+### robot_lab (fan-ziqi) - Recommended
+
+The best solution for Go2-W RL training in Isaac Lab.
+
+| Item | Details |
+|------|---------|
+| Repository | [github.com/fan-ziqi/robot_lab](https://github.com/fan-ziqi/robot_lab) |
+| Task Name | `RobotLab-Isaac-Velocity-Rough-Unitree-Go2W-v0` |
+| Compatibility | Isaac Sim 4.5/5.0/5.1 + Isaac Lab 2.3.0 |
+
+**Also supports:**
+- Unitree B2W
+- Deeprobotics M20
+- DDTRobot Tita
+- MagicLab MagicDog-W
+
+### mujoco_sim2sim_assets
+
+Pre-converted Go2-W USD file for Isaac Lab → MuJoCo deployment.
+
+| Item | Details |
+|------|---------|
+| Repository | [github.com/Beat-in-our-hearts/mujoco_sim2sim_assets](https://github.com/Beat-in-our-hearts/mujoco_sim2sim_assets) |
+| File | `unitree_go2w/usd/go2w.usd` |
+| Status | Partial support, alignment testing incomplete |
+
+---
+
+## File Format Availability
+
+| Format | Official Source | Path |
+|--------|-----------------|------|
+| **URDF** | unitree_ros | `robots/go2w_description/urdf/` |
+| **Xacro** | unitree_ros | `robots/go2w_description/xacro/` |
+| **MJCF** | unitree_mujoco | `unitree_robots/go2w/scene.xml` |
+| **USD** | mujoco_sim2sim_assets | `unitree_go2w/usd/go2w.usd` |
+
+**Not available in:**
+- mujoco_menagerie (Go2 only, no Go2-W)
+- unitree_rl_lab (no Go2-W configs)
+- Isaac Sim built-in assets
+
+---
+
+## Go2-W Specifications
+
+| Spec | Value |
+|------|-------|
+| Total Joints | 16 (12 leg + 4 wheel motors) |
+| Tires | 7-inch pneumatic |
+| Max Wheeled Speed | 2.5 m/s |
+| Weight | ~18 kg |
+| Max Climb Angle | 35 degrees |
+| Obstacle Height | Up to 70cm (walking mode) |
+
+**Key Feature:** Wheel motors can be locked programmatically for static maneuvers (stair climbing).
+
+---
+
+## Custom USD Import Workflow
+
+If robot_lab doesn't fit your needs, import URDF manually:
+
+1. Get URDF from `unitree_ros/robots/go2w_description/`
+2. In Isaac Sim: `Isaac Utils > Workflows > URDF Importer`
+3. Configure wheel joints as **velocity mode**
+4. Set appropriate collision filtering
+5. Save USD for reuse
+
+---
+
+## Comparison: Go2 vs Go2-W
+
+| Feature | Go2 | Go2-W |
+|---------|-----|-------|
+| Joint Count | 12 | 16 |
+| Wheels | No | Yes (4) |
+| Max Speed | ~3.5 m/s (running) | ~2.5 m/s (wheeled) |
+| Isaac Lab Built-in | ✅ | ❌ |
+| robot_lab Extension | N/A | ✅ |
+| Locomotion Type | Legged only | Hybrid wheel-leg |
+
+---
+
+## Workshop Questions
+
+::: {.callout-warning}
+## Questions About Go2-W
+1. Any plans to add Go2-W to Isaac Lab official assets?
+2. Best practices for hybrid wheel-leg reward design?
+3. How to handle wheel lock/unlock in RL training?
+4. Sim-to-real considerations for wheeled-legged robots?
+:::
+
+---
+
+## Sources
+
+- [unitree_ros](https://github.com/unitreerobotics/unitree_ros) - Official URDF
+- [unitree_mujoco](https://github.com/unitreerobotics/unitree_mujoco) - MuJoCo support
+- [robot_lab](https://github.com/fan-ziqi/robot_lab) - Isaac Lab extension
+- [mujoco_sim2sim_assets](https://github.com/Beat-in-our-hearts/mujoco_sim2sim_assets) - USD conversion
+- [Unitree Model (HuggingFace)](https://huggingface.co/datasets/unitreerobotics/unitree_model)

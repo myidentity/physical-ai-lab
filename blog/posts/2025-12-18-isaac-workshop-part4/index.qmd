@@ -1,0 +1,555 @@
+---
+title: "Go2-W Sim-to-Real: Deploying Hybrid Locomotion"
+subtitle: "ROSCon India 2025 Workshop Prep - Part 4 of 4"
+author: "Rajesh"
+date: "2025-12-18"
+categories: [isaac-sim, isaac-lab, sim-to-real, go2-w, jetson, tensorrt, roscon-india]
+toc: true
+toc-depth: 3
+image: thumbnail.png
+---
+
+## The Sim-to-Real Challenge for Go2-W
+
+Deploying a hybrid wheel-leg policy is **more complex** than standard quadruped deployment. The sim-to-real gap includes:
+
+1. **Tire dynamics** - Pneumatic tire deformation differs from rigid simulation
+2. **Wheel slip** - Real-world slip is harder to detect and handle
+3. **Mode transitions** - Switching between rolling and walking requires careful timing
+4. **Control latency** - Wheel motors may have different response times than leg motors
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│              GO2-W SIM-TO-REAL PIPELINE                      │
+│                                                             │
+│  SIMULATION                          REAL WORLD             │
+│  ──────────                          ──────────             │
+│                                                             │
+│  ┌──────────┐     ┌──────────┐     ┌──────────────────┐   │
+│  │ Isaac    │     │  ONNX    │     │    Jetson        │   │
+│  │   Lab    │ --> │ Export   │ --> │   + Go2-W        │   │
+│  │ Training │     │  (16D)   │     │   Hardware       │   │
+│  └──────────┘     └──────────┘     └──────────────────┘   │
+│                                                             │
+│  Key Challenge: 16D actions (12 leg + 4 wheel)             │
+│  Different control modes: Position vs Velocity              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+::: {.callout-note}
+## Series Navigation
+- **Part 1**: [Isaac Sim vs Isaac Lab](/posts/2025-12-18-isaac-workshop-part1/)
+- **Part 2**: [Go2-W ROS 2 Interface](/posts/2025-12-18-isaac-workshop-part2/)
+- **Part 3**: [Training Go2-W Locomotion](/posts/2025-12-18-isaac-workshop-part3/)
+- **Part 4**: Go2-W Sim-to-Real ← You are here (Final!)
+:::
+
+---
+
+## Export Trained Policy
+
+### ONNX Export for 16D Actions
+
+```python
+import torch
+import onnx
+
+# Load trained Go2-W policy
+checkpoint = torch.load(
+    "logs/rsl_rl/RobotLab-Isaac-Velocity-Rough-Unitree-Go2W-v0/model_1000.pt"
+)
+
+# Reconstruct policy network
+# Note: 53D observations, 16D actions for Go2-W
+policy = create_go2w_policy(
+    num_obs=53,      # Go2-W observation space
+    num_actions=16,  # 12 leg + 4 wheel
+    hidden_dims=[512, 256, 128]
+)
+policy.load_state_dict(checkpoint["model_state_dict"])
+policy.eval()
+
+# Export to ONNX
+dummy_obs = torch.zeros(1, 53)  # Go2-W observation dimension
+
+torch.onnx.export(
+    policy.actor,
+    dummy_obs,
+    "go2w_locomotion_policy.onnx",
+    input_names=["observations"],
+    output_names=["actions"],  # 16D output
+    dynamic_axes={
+        "observations": {0: "batch_size"},
+        "actions": {0: "batch_size"}
+    },
+    opset_version=11
+)
+
+print("✅ Go2-W policy exported (53D input → 16D output)")
+```
+
+### Verify ONNX Model
+
+```python
+import onnx
+
+model = onnx.load("go2w_locomotion_policy.onnx")
+onnx.checker.check_model(model)
+
+# Verify dimensions
+print(f"Input shape: {model.graph.input[0].type.tensor_type.shape}")
+print(f"Output shape: {model.graph.output[0].type.tensor_type.shape}")
+```
+
+---
+
+## TensorRT Optimization
+
+### Convert for Jetson Deployment
+
+```bash
+# On Jetson device
+trtexec --onnx=go2w_locomotion_policy.onnx \
+        --saveEngine=go2w_locomotion_policy.engine \
+        --fp16 \
+        --workspace=1024
+```
+
+### Inference Latency Requirements
+
+| Component | Max Latency | Notes |
+|-----------|-------------|-------|
+| **Leg control** | 20 ms | Standard quadruped timing |
+| **Wheel control** | 10 ms | Faster response needed |
+| **Total loop** | 20 ms (50 Hz) | Go2-W control rate |
+
+::: {.callout-important}
+## Critical Timing
+Wheel motors need **faster response** than legs. If wheel commands lag, the robot may slip or lose traction.
+:::
+
+---
+
+## Go2-W Specific Sim-to-Real Gaps
+
+### 1. Tire Deformation
+
+| Simulation | Reality |
+|------------|---------|
+| Rigid cylinder | Pneumatic deformation |
+| Point contact | Contact patch |
+| Constant friction | Pressure-dependent |
+
+**Mitigation:** Domain randomization on tire friction during training
+
+### 2. Wheel Slip Detection
+
+| Simulation | Reality |
+|------------|---------|
+| Perfect velocity sensing | Encoder noise |
+| Instant slip detection | Detection delay |
+| Known friction | Variable surfaces |
+
+**Mitigation:** Train with sensor noise and detection delays
+
+### 3. Mode Transition Dynamics
+
+| Simulation | Reality |
+|------------|---------|
+| Instant mode switch | Mechanical transition time |
+| No wheel lock delay | Brake engagement delay |
+| Perfect coordination | Timing mismatches |
+
+**Mitigation:** Add mode transition penalty in reward function
+
+---
+
+## Safety Systems for Go2-W
+
+::: {.callout-warning}
+## Critical Safety
+Go2-W has **additional safety concerns** beyond standard quadrupeds due to continuous wheel rotation.
+:::
+
+### Safety Layer Hierarchy
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│              GO2-W SAFETY LAYERS                             │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Level 3: Policy Safety                                     │
+│  ───────────────────────                                   │
+│  • Leg joint limits: ±1.04 to ±3.49 rad                    │
+│  • Wheel velocity limits: ±2.5 m/s                         │
+│  • Action rate limiting                                    │
+│  • Wheel runaway detection                                 │
+│                                                             │
+│  Level 2: Firmware Safety                                   │
+│  ────────────────────────                                  │
+│  • Hardware joint limits                                   │
+│  • Motor current limits                                    │
+│  • Wheel motor timeout                                     │
+│  • Emergency wheel lock                                    │
+│                                                             │
+│  Level 1: Physical Safety                                   │
+│  ────────────────────────                                  │
+│  • E-stop always in hand                                   │
+│  • Harness for initial tests                               │
+│  • Clear test area                                         │
+│  • Two people minimum                                      │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Wheel-Specific Safety
+
+```python
+class Go2WSafetyWrapper:
+    def __init__(self):
+        # Wheel safety limits
+        self.max_wheel_vel = 28.0  # rad/s (~2.5 m/s at wheel radius)
+        self.wheel_accel_limit = 50.0  # rad/s²
+        self.prev_wheel_cmd = np.zeros(4)
+
+    def apply_wheel_safety(self, wheel_actions, dt=0.02):
+        """Apply safety limits to wheel commands"""
+
+        # Velocity clipping
+        safe_actions = np.clip(wheel_actions,
+                               -self.max_wheel_vel,
+                               self.max_wheel_vel)
+
+        # Acceleration limiting (prevent wheel spin-up)
+        accel = (safe_actions - self.prev_wheel_cmd) / dt
+        accel = np.clip(accel, -self.wheel_accel_limit, self.wheel_accel_limit)
+        safe_actions = self.prev_wheel_cmd + accel * dt
+
+        self.prev_wheel_cmd = safe_actions.copy()
+        return safe_actions
+
+    def detect_wheel_runaway(self, cmd_vel, actual_vel, threshold=10.0):
+        """Detect if wheels are spinning out of control"""
+        error = np.abs(cmd_vel - actual_vel)
+        if np.any(error > threshold):
+            return True  # Trigger emergency stop
+        return False
+```
+
+---
+
+## Validation Protocol for Go2-W
+
+### Phase 1: Suspended Tests (Wheels + Legs)
+
+```
+┌────────────────────────────────────────┐
+│  PHASE 1: SUSPENDED (Robot in harness) │
+├────────────────────────────────────────┤
+│  □ Verify all 16 joints respond        │
+│  □ Test wheel rotation (no ground)     │
+│  □ Test leg motion                     │
+│  □ Run policy at 10% speed             │
+│  □ Check for oscillations              │
+│  □ Verify wheel velocity limits        │
+└────────────────────────────────────────┘
+```
+
+### Phase 2: Rolling Only (Flat Ground)
+
+```
+┌────────────────────────────────────────┐
+│  PHASE 2: ROLLING (Wheels on ground)   │
+├────────────────────────────────────────┤
+│  □ Lower to flat surface               │
+│  □ Legs in standing pose (locked)      │
+│  □ Test wheel-only motion              │
+│  □ Verify straight-line tracking       │
+│  □ Test turning with wheels            │
+│  □ Check slip detection                │
+└────────────────────────────────────────┘
+```
+
+### Phase 3: Hybrid Mode Transitions
+
+```
+┌────────────────────────────────────────┐
+│  PHASE 3: HYBRID (Mode switching)      │
+├────────────────────────────────────────┤
+│  □ Place small obstacle                │
+│  □ Robot approaches on wheels          │
+│  □ Verify transition to legs           │
+│  □ Robot clears obstacle               │
+│  □ Verify transition back to wheels    │
+│  □ Check transition smoothness         │
+└────────────────────────────────────────┘
+```
+
+### Phase 4: Full Capability
+
+```
+┌────────────────────────────────────────┐
+│  PHASE 4: FULL (All capabilities)      │
+├────────────────────────────────────────┤
+│  □ Varied terrain                      │
+│  □ Full speed tests                    │
+│  □ Emergency stop tests                │
+│  □ Extended duration                   │
+│  □ Payload tests                       │
+└────────────────────────────────────────┘
+```
+
+---
+
+## Deployment Architecture
+
+### Jetson Inference Node
+
+```python
+#!/usr/bin/env python3
+"""Go2-W Policy Inference Node for Jetson"""
+
+import rclpy
+from rclpy.node import Node
+import numpy as np
+import tensorrt as trt
+import pycuda.driver as cuda
+import pycuda.autoinit
+
+from sensor_msgs.msg import JointState, Imu
+from std_msgs.msg import Float64MultiArray
+from geometry_msgs.msg import Twist
+
+class Go2WPolicyNode(Node):
+    def __init__(self):
+        super().__init__('go2w_policy_node')
+
+        # Load TensorRT engine
+        self.engine = self.load_engine("go2w_locomotion_policy.engine")
+        self.context = self.engine.create_execution_context()
+
+        # Go2-W specific dimensions
+        self.obs_dim = 53
+        self.action_dim = 16
+        self.num_legs = 12
+        self.num_wheels = 4
+
+        # Allocate buffers
+        self.obs_buffer = np.zeros(self.obs_dim, dtype=np.float32)
+        self.action_buffer = np.zeros(self.action_dim, dtype=np.float32)
+
+        # GPU memory
+        self.d_input = cuda.mem_alloc(self.obs_buffer.nbytes)
+        self.d_output = cuda.mem_alloc(self.action_buffer.nbytes)
+
+        # ROS 2 interface
+        self.joint_sub = self.create_subscription(
+            JointState, '/go2w/joint_states', self.joint_callback, 10)
+        self.imu_sub = self.create_subscription(
+            Imu, '/go2w/imu', self.imu_callback, 10)
+        self.cmd_sub = self.create_subscription(
+            Twist, '/cmd_vel', self.cmd_callback, 10)
+
+        # Separate publishers for legs and wheels
+        self.leg_pub = self.create_publisher(
+            Float64MultiArray, '/go2w/leg_commands', 10)
+        self.wheel_pub = self.create_publisher(
+            Float64MultiArray, '/go2w/wheel_commands', 10)
+
+        # Control loop at 50 Hz
+        self.timer = self.create_timer(0.02, self.control_loop)
+
+        # State
+        self.leg_pos = np.zeros(12)
+        self.leg_vel = np.zeros(12)
+        self.wheel_vel = np.zeros(4)
+        self.wheel_torque = np.zeros(4)
+        self.base_ang_vel = np.zeros(3)
+        self.cmd_vel = np.zeros(3)
+        self.prev_actions = np.zeros(16)
+
+        # Safety wrapper
+        self.safety = Go2WSafetyWrapper()
+
+        self.get_logger().info("Go2-W Policy Node initialized (16 actions)")
+
+    def build_observation(self):
+        """Build 53D observation for Go2-W"""
+        obs = np.concatenate([
+            self.base_lin_vel,      # 3D
+            self.base_ang_vel,      # 3D
+            self.gravity_vec,       # 3D
+            self.cmd_vel,           # 3D
+            self.leg_pos,           # 12D
+            self.leg_vel,           # 12D
+            self.wheel_vel,         # 4D - Go2-W specific
+            self.wheel_torque,      # 4D - Go2-W specific
+            self.slip_signal,       # 4D - Go2-W specific
+            self.prev_actions       # 16D (12 leg + 4 wheel)
+        ])
+        return obs.astype(np.float32)
+
+    def control_loop(self):
+        """Main control loop"""
+        # Build observation
+        obs = self.build_observation()
+
+        # Run inference
+        actions = self.infer(obs)
+
+        # Split actions: first 12 for legs, last 4 for wheels
+        leg_actions = actions[:12]
+        wheel_actions = actions[12:16]
+
+        # Apply safety
+        leg_actions = self.apply_leg_safety(leg_actions)
+        wheel_actions = self.safety.apply_wheel_safety(wheel_actions)
+
+        # Publish leg commands (position targets)
+        leg_msg = Float64MultiArray()
+        default_pose = np.array([0.1, 0.8, -1.5] * 4)
+        leg_msg.data = (default_pose + leg_actions * 0.25).tolist()
+        self.leg_pub.publish(leg_msg)
+
+        # Publish wheel commands (velocity targets)
+        wheel_msg = Float64MultiArray()
+        wheel_msg.data = wheel_actions.tolist()
+        self.wheel_pub.publish(wheel_msg)
+
+        # Store for next iteration
+        self.prev_actions = actions.copy()
+```
+
+---
+
+## Domain Randomization Checklist
+
+For robust sim-to-real transfer, ensure training included:
+
+### Standard Randomization
+- [ ] Ground friction: [0.4, 1.2]
+- [ ] Base mass: ±2 kg
+- [ ] Motor strength: [0.9, 1.1]
+- [ ] Observation noise: 1-5%
+
+### Go2-W Specific Randomization
+- [ ] Tire friction: [0.5, 1.25]
+- [ ] Tire restitution: [0.0, 0.1]
+- [ ] Wheel motor delay: [0, 20] ms
+- [ ] Wheel imbalance (vibration)
+- [ ] Slip detection noise
+- [ ] Mode transition delay
+
+---
+
+## Quick Reference Card
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│           GO2-W SIM-TO-REAL QUICK REFERENCE                  │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  EXPORT POLICY                                              │
+│  ─────────────                                             │
+│  Observations: 53D (not 45D)                               │
+│  Actions: 16D (12 leg + 4 wheel)                           │
+│  torch.onnx.export(..., input_shape=(1, 53))              │
+│                                                             │
+│  TENSORRT                                                   │
+│  ─────────                                                 │
+│  trtexec --onnx=go2w.onnx --saveEngine=go2w.engine --fp16 │
+│                                                             │
+│  SAFETY LIMITS                                              │
+│  ─────────────                                             │
+│  Leg joints: ±1.04 to ±3.49 rad                           │
+│  Wheel velocity: ±2.5 m/s (±28 rad/s)                     │
+│  Wheel acceleration: 50 rad/s²                             │
+│                                                             │
+│  VALIDATION PHASES                                          │
+│  ─────────────────                                         │
+│  1. Suspended (harness) - all joints                       │
+│  2. Rolling only - wheels on flat ground                   │
+│  3. Hybrid - mode transitions                              │
+│  4. Full capability - varied terrain                       │
+│                                                             │
+│  WHEEL SAFETY                                               │
+│  ────────────                                              │
+│  • Runaway detection: |cmd - actual| > 10 rad/s           │
+│  • Acceleration limiting                                   │
+│  • Emergency wheel lock                                    │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Workshop Questions
+
+::: {.callout-warning}
+## Questions to Ask
+1. How to calibrate wheel slip detection for real hardware?
+2. Best practices for wheel motor timeout/watchdog?
+3. How to handle mode transition failures safely?
+4. Recommended Jetson model for Go2-W (Orin Nano vs NX)?
+5. Can we use Go2's built-in controller as safety fallback?
+:::
+
+---
+
+## Series Complete!
+
+::: {.callout-tip}
+## Go2-W Training Pipeline Summary
+
+| Part | Focus | Key Go2-W Specifics |
+|------|-------|---------------------|
+| 1 | Isaac Sim Setup | 16 joints, URDF import, wheel physics |
+| 2 | ROS 2 Interface | Wheel velocity topics, 16-joint control |
+| 3 | RL Training | 16D actions, energy penalty, slip reward |
+| 4 | Sim-to-Real | Wheel safety, mode transitions, validation |
+
+**Core Message**: Go2-W requires different treatment than standard quadrupeds at every stage—from physics setup to deployment safety.
+:::
+
+---
+
+## Additional Resources
+
+### Unitree Official
+
+| Resource | Link |
+|----------|------|
+| unitree_sdk2 | [GitHub](https://github.com/unitreerobotics/unitree_sdk2) |
+| unitree_ros2 | [GitHub](https://github.com/unitreerobotics/unitree_ros2) |
+| unitree_mujoco | [GitHub](https://github.com/unitreerobotics/unitree_mujoco) |
+
+### Community
+
+| Resource | Link |
+|----------|------|
+| robot_lab | [GitHub](https://github.com/fan-ziqi/robot_lab) |
+| go2_omniverse | [GitHub](https://github.com/abizovnuralem/go2_omniverse) |
+
+### NVIDIA
+
+| Resource | Link |
+|----------|------|
+| Isaac ROS | [nvidia-isaac-ros.github.io](https://nvidia-isaac-ros.github.io/) |
+| TensorRT | [NVIDIA TensorRT](https://developer.nvidia.com/tensorrt) |
+
+---
+
+## What's Next
+
+Congratulations on completing the Go2-W workshop preparation!
+
+At **ROSCon India 2025**, you'll have the opportunity to:
+- Run the full pipeline on actual hardware
+- Ask questions to NVIDIA/Unitree engineers
+- Network with fellow roboticists
+
+**See you at the workshop!** 🤖🛞
+
+---
+
+*Part 4 of 4 - Go2-W Workshop Preparation Complete!*

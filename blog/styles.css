@@ -703,6 +703,20 @@ input[type="submit"] {
    Add new posts here as: .sidebar-item a[href*="POST-FOLDER"]::before
    ───────────────────────────────────────────────────────────────── */
 
+/* Go2-W Training Workshop Series */
+.sidebar-item a[href*="isaac-workshop-part1"]::before {
+  background-image: url('/posts/2025-12-18-isaac-workshop-part1/thumbnail.png');
+}
+.sidebar-item a[href*="isaac-workshop-part2"]::before {
+  background-image: url('/posts/2025-12-18-isaac-workshop-part2/thumbnail.png');
+}
+.sidebar-item a[href*="isaac-workshop-part3"]::before {
+  background-image: url('/posts/2025-12-18-isaac-workshop-part3/thumbnail.png');
+}
+.sidebar-item a[href*="isaac-workshop-part4"]::before {
+  background-image: url('/posts/2025-12-18-isaac-workshop-part4/thumbnail.png');
+}
+
 /* Workshop 4 Exercise Preview Series (NEW) */
 .sidebar-item a[href*="workshop4-exercises-part1"]::before {
   background-image: url('/posts/2025-12-17-workshop4-exercises-part1/thumbnail.png');

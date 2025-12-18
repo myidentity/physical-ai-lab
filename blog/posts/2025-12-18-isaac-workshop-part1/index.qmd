@@ -1,0 +1,494 @@
+---
+title: "Isaac Sim vs Isaac Lab: Understanding the Stack"
+subtitle: "ROSCon India 2025 Workshop Prep - Part 1 of 4"
+author: "Rajesh"
+date: "2025-12-18"
+categories: [isaac-sim, isaac-lab, go2-w, unitree, workshop, roscon-india]
+toc: true
+toc-depth: 3
+image: thumbnail.png
+---
+
+## Isaac Sim vs Isaac Lab: What's the Difference?
+
+Before diving into Go2-W training, let's clarify the NVIDIA stack—because the naming can be confusing:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    NVIDIA ROBOTICS STACK                    │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │              robot_lab Extension                     │   │
+│  │         (Go2-W environments - what we need!)        │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                          ↓                                  │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │                 ISAAC LAB                            │   │
+│  │     Reinforcement Learning Framework                 │   │
+│  │     • RL training environments                       │   │
+│  │     • PPO, SAC algorithms (via RSL-RL)              │   │
+│  │     • Domain randomization                           │   │
+│  │     • Curriculum learning                            │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                          ↓                                  │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │                 ISAAC SIM                            │   │
+│  │     Physics Simulation Platform                      │   │
+│  │     • PhysX 5 rigid body dynamics                   │   │
+│  │     • USD scene format                               │   │
+│  │     • RTX rendering                                  │   │
+│  │     • ROS 2 bridge                                   │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+| Component | Purpose | When to Use |
+|-----------|---------|-------------|
+| **Isaac Sim** | Physics simulation, visualization | Loading robots, testing scenes, ROS 2 integration |
+| **Isaac Lab** | RL training framework | Training locomotion policies, domain randomization |
+| **robot_lab** | Go2-W specific environments | Training the Go2-W (not included in stock Isaac Lab) |
+
+::: {.callout-important}
+## We're Using Isaac Lab
+This workshop focuses on **reinforcement learning**, which means we need **Isaac Lab** (not just Isaac Sim). Isaac Lab includes Isaac Sim as its foundation—when you run Isaac Lab, you get the full simulation capabilities plus the RL training framework.
+:::
+
+---
+
+## Launching Isaac Lab
+
+We've already set up a convenient launcher script in an earlier post: [Setting Up Your Physical AI Laboratory](/posts/2025-12-12-operationalizing-the-lab/).
+
+### Quick Launch
+
+```bash
+# From anywhere (using the symlink we created)
+~/auto_start.sh
+
+# Select Option 8: Isaac Lab: Start/Build Container
+```
+
+### What Option 8 Does
+
+1. **First run**: Builds the Isaac Lab Docker container (~10-15 min)
+2. **Subsequent runs**: Starts the existing container
+3. **Enters** an interactive shell inside the container
+4. **Mounts** your Isaac Lab repository for persistent changes
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│              AUTO_START.SH MENU (Option 8)                   │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Isaac Lab Container includes:                              │
+│  ─────────────────────────────                              │
+│  • Isaac Sim 5.1.0 (simulation engine)                     │
+│  • Isaac Lab framework (RL training)                       │
+│  • RSL-RL (PPO implementation)                             │
+│  • PyTorch with CUDA                                       │
+│  • All dependencies pre-configured                         │
+│                                                             │
+│  Your robot_lab extension installs INTO this container     │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+::: {.callout-tip}
+## Why Use the Container?
+The Isaac Lab Docker container ensures all dependencies are correctly versioned and configured. No "works on my machine" issues!
+:::
+
+---
+
+## Our Mission: Train the Go2-W
+
+This 4-part series focuses exclusively on training the **Unitree Go2-W**—the wheeled variant of the Go2 quadruped. The Go2-W combines legged locomotion with wheeled mobility, creating a 16-DoF hybrid platform that requires specialized simulation setup.
+
+::: {.callout-important}
+## Why Go2-W Specifically?
+Simple—**I own one**, and it's the only robot that can conquer the stairs at home!
+
+- **Ground clearance**: The 7-inch wheels provide significantly more clearance than the standard Go2
+- **Uneven stairs**: My home has stairs that are uneven and taller than what the regular Go2 can handle
+- **Hybrid advantage**: When wheels alone can't cut it, the legs take over—best of both worlds
+
+Training a policy for this platform is fundamentally different from standard quadrupeds, and that's exactly why it's interesting.
+:::
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    GO2-W HYBRID PLATFORM                     │
+│                                                             │
+│     ┌─────────────────────────────────────────┐             │
+│     │           LEGS (12 DoF)                 │             │
+│     │  Hip → Thigh → Calf (×4 legs)          │             │
+│     └─────────────────────────────────────────┘             │
+│                        +                                    │
+│     ┌─────────────────────────────────────────┐             │
+│     │          WHEELS (4 DoF)                 │             │
+│     │  7-inch pneumatic tires (×4)           │             │
+│     └─────────────────────────────────────────┘             │
+│                        =                                    │
+│     ┌─────────────────────────────────────────┐             │
+│     │     16-DoF HYBRID LOCOMOTION            │             │
+│     │  Roll on flat, walk over obstacles     │             │
+│     └─────────────────────────────────────────┘             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+::: {.callout-note}
+## Series Navigation
+- **Part 1**: Isaac Sim vs Isaac Lab ← You are here
+- **Part 2**: [Go2-W ROS 2 Interface](/posts/2025-12-18-isaac-workshop-part2/)
+- **Part 3**: [Training Go2-W Locomotion](/posts/2025-12-18-isaac-workshop-part3/)
+- **Part 4**: [Go2-W Sim-to-Real](/posts/2025-12-18-isaac-workshop-part4/)
+:::
+
+---
+
+## Go2-W Specifications
+
+| Specification | Value |
+|--------------|-------|
+| **Dimensions** | 70cm × 43cm × 50cm |
+| **Weight** | ~18kg (including battery) |
+| **Leg Joints** | 12 DoF (Hip, Thigh, Calf × 4) |
+| **Wheel Motors** | 4 DoF (in-wheel motors) |
+| **Total DoF** | **16** |
+| **Tires** | 7-inch pneumatic |
+| **Max Wheeled Speed** | 2.5 m/s |
+| **Max Climb Angle** | 35 degrees |
+| **Obstacle Height** | Up to 70cm (walking mode) |
+
+### Joint Structure (16 DoF)
+
+```
+Go2-W Joint Names:
+──────────────────────────────────────────────────
+Front Left (FL):
+  FL_hip_joint    → FL_thigh_joint → FL_calf_joint → FL_wheel_joint
+
+Front Right (FR):
+  FR_hip_joint    → FR_thigh_joint → FR_calf_joint → FR_wheel_joint
+
+Rear Left (RL):
+  RL_hip_joint    → RL_thigh_joint → RL_calf_joint → RL_wheel_joint
+
+Rear Right (RR):
+  RR_hip_joint    → RR_thigh_joint → RR_calf_joint → RR_wheel_joint
+──────────────────────────────────────────────────
+Legs (12):  Position/Torque control
+Wheels (4): Velocity control (continuous rotation)
+```
+
+---
+
+## The Simulation Asset Challenge
+
+::: {.callout-warning}
+## Critical Finding
+A direct, official USD for the Go2-W **does not exist** in NVIDIA's built-in assets or Unitree's primary release channels.
+
+You cannot simply "find" the Go2-W—**you must construct it** or use the `robot_lab` extension.
+:::
+
+### Two Paths to Go2-W in Isaac Sim
+
+| Path | Complexity | Use Case |
+|------|------------|----------|
+| **Option A: robot_lab Extension** | Easy ✅ | Ready-to-train RL environments |
+| **Option B: URDF Import** | Advanced | Custom USD asset creation |
+
+---
+
+## Option A: robot_lab Extension (Recommended)
+
+The **[robot_lab](https://github.com/fan-ziqi/robot_lab)** extension by fan-ziqi provides pre-configured Go2-W environments for Isaac Lab.
+
+### Installation
+
+```bash
+# Clone the extension
+git clone https://github.com/fan-ziqi/robot_lab.git
+cd robot_lab
+
+# Install into Isaac Lab
+python -m pip install -e source/robot_lab
+```
+
+### Verify Go2-W Environment
+
+```bash
+# List available environments
+./isaaclab.sh -p scripts/environments/list_envs.py | grep -i go2w
+```
+
+**Expected output:**
+```
+RobotLab-Isaac-Velocity-Flat-Unitree-Go2W-v0
+RobotLab-Isaac-Velocity-Rough-Unitree-Go2W-v0
+```
+
+### Quick Test
+
+```bash
+# Train Go2-W (quick test)
+./isaaclab.sh -p scripts/reinforcement_learning/rsl_rl/train.py \
+    --task=RobotLab-Isaac-Velocity-Rough-Unitree-Go2W-v0 \
+    --num_envs=64 \
+    --max_iterations=100
+
+# Play trained policy
+./isaaclab.sh -p scripts/reinforcement_learning/rsl_rl/play.py \
+    --task=RobotLab-Isaac-Velocity-Rough-Unitree-Go2W-v0
+```
+
+**Compatibility:** Isaac Sim 4.5/5.0/5.1 + Isaac Lab 2.3.0
+
+---
+
+## Option B: Custom URDF Import
+
+If you need a custom Go2-W USD asset (for custom sensors, modifications, etc.), import from the official URDF.
+
+### Source Repositories
+
+| Repository | URL | Content | Path |
+|------------|-----|---------|------|
+| **unitree_ros** | [GitHub](https://github.com/unitreerobotics/unitree_ros) | URDF, Meshes | `robots/go2w_description/` |
+| **unitree_mujoco** | [GitHub](https://github.com/unitreerobotics/unitree_mujoco) | Physics Params | `unitree_robots/go2w/scene.xml` |
+
+### Step 1: Get the URDF
+
+```bash
+# Clone unitree_ros
+git clone https://github.com/unitreerobotics/unitree_ros.git
+
+# Go2-W files are at:
+# unitree_ros/robots/go2w_description/
+#   ├── urdf/go2w_description.urdf
+#   ├── xacro/
+#   └── meshes/
+```
+
+### Step 2: Fix Package Paths
+
+The URDF uses ROS package paths that Isaac Sim cannot resolve:
+
+```xml
+<!-- Before: ROS package path -->
+<mesh filename="package://go2w_description/meshes/base_link.dae"/>
+
+<!-- After: Relative path -->
+<mesh filename="../meshes/base_link.dae"/>
+```
+
+### Step 3: Import to Isaac Sim
+
+1. Open Isaac Sim
+2. Navigate to: `Isaac Utils > Workflows > URDF Importer`
+3. Select `go2w_description.urdf`
+4. Configure import settings:
+
+| Setting | Value | Reason |
+|---------|-------|--------|
+| **Fix Base Link** | ❌ Unchecked | Go2-W is mobile |
+| **Leg Joint Drive Type** | Position or Effort | RL outputs positions/torques |
+| **Wheel Joint Drive Type** | **Velocity** | Wheels need continuous rotation |
+| **Self-Collision** | ❌ Disabled | Performance optimization |
+| **Create Physics Scene** | ✅ Checked | Required for simulation |
+
+### Step 4: Fix the "Pink Robot" Issue
+
+::: {.callout-warning}
+## Known Issue: GitHub Issue #131
+After import, the robot may appear **pink or white** (untextured).
+
+**Cause:** Incompatibility between Unitree's Collada materials and Omniverse MDL.
+:::
+
+**Manual Fix:**
+
+1. Expand Stage: `Go2W > base_link > Visuals`
+2. Select mesh prims
+3. Apply OmniPBR materials:
+
+| Material | Albedo (Hex) | Roughness | Metallic | Apply To |
+|----------|--------------|-----------|----------|----------|
+| `Rubber_Black` | `#1A1A1A` | 0.8 | 0.0 | Wheel meshes |
+| `Unitree_Grey` | `#C0C0C0` | 0.4 | 0.6 | Body and legs |
+
+4. Save as `go2w_conditioned.usd`
+
+---
+
+## Physics Configuration
+
+### Leg Joints (Revolute)
+
+| Parameter | Value | Notes |
+|-----------|-------|-------|
+| **Stiffness** | 0 or low | Let RL policy be the controller |
+| **Damping** | 1.0–5.0 Ns/m | Motor back-EMF and friction |
+
+### Joint Limits
+
+| Joint | Lower Limit | Upper Limit |
+|-------|-------------|-------------|
+| Hip | -1.04 rad | +1.04 rad |
+| Thigh | -1.57 rad | +3.49 rad |
+| Calf | -2.72 rad | -0.83 rad |
+| **Wheel** | **−∞** | **+∞** |
+
+### Wheel Joints (Continuous)
+
+| Parameter | Value | Notes |
+|-----------|-------|-------|
+| **Drive Type** | Velocity | Continuous rotation |
+| **Friction** | Low | Efficient rolling |
+| **Damping** | Minimal | Prevent "sticky" behavior |
+
+### Tire Physics Materials
+
+| Parameter | Value | Reason |
+|-----------|-------|--------|
+| **Static Friction** | 1.0 | Prevent sideways sliding |
+| **Dynamic Friction** | 0.8 | Traction during acceleration |
+| **Restitution** | 0.05 | Pneumatic tires absorb impact |
+
+### Complete Physics Material Table
+
+| Material | Static | Dynamic | Restitution | Use |
+|----------|--------|---------|-------------|-----|
+| Tire Rubber | 1.0 | 0.8 | 0.05 | Wheels |
+| Aluminum | 0.5 | 0.3 | 0.1 | Chassis/Legs |
+| Concrete | 0.8 | 0.7 | 0.1 | Training Ground |
+| Ice | 0.1 | 0.05 | 0.1 | Domain Randomization |
+
+---
+
+## Inertial Property Validation
+
+::: {.callout-important}
+## Critical Step
+The Go2-W weighs **18kg**—3kg more than the standard Go2. Using wrong inertia values will cause unstable simulation.
+:::
+
+**Validation Process:**
+
+1. Select `base_link` prim
+2. Check `Physics > Mass API`
+3. Verify trunk mass: ~6-8kg (total should sum to ~18kg)
+4. If values are wrong, reference `unitree_mujoco/unitree_robots/go2w/scene.xml`
+
+---
+
+## Troubleshooting
+
+### Problem: Robot Appears Pink/White
+
+**Cause:** Material path issues during URDF import
+
+**Fix:** Manually apply OmniPBR materials (see Step 4 above)
+
+### Problem: Simulation Explodes
+
+**Causes:**
+- Invalid inertia tensor (too small or non-positive definite)
+- Incorrect collision meshes
+
+**Fixes:**
+- Re-check mass properties in Physics API
+- Use Convex Hulls instead of Triangle Meshes for collisions
+
+### Problem: Wheels Drag Instead of Roll
+
+**Causes:**
+- Wheel joint set to Position drive (should be Velocity)
+- Zero friction on wheel physics material
+- Joint type not set to Continuous
+
+**Fix:** Ensure wheel joints use Velocity drive mode
+
+---
+
+## Quick Reference Card
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│              GO2-W ISAAC SIM QUICK REFERENCE                 │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  RECOMMENDED: Use robot_lab Extension                       │
+│  ─────────────────────────────────────                     │
+│  git clone https://github.com/fan-ziqi/robot_lab.git       │
+│  python -m pip install -e source/robot_lab                  │
+│                                                             │
+│  Task: RobotLab-Isaac-Velocity-Rough-Unitree-Go2W-v0       │
+│                                                             │
+│  ───────────────────────────────────────────────────────── │
+│                                                             │
+│  MANUAL IMPORT: URDF → USD                                  │
+│  ─────────────────────────────                             │
+│  URDF: unitree_ros/robots/go2w_description/urdf/           │
+│  Physics: unitree_mujoco/unitree_robots/go2w/scene.xml     │
+│                                                             │
+│  Import Settings:                                           │
+│    • Fix Base Link: OFF                                    │
+│    • Leg Joints: Position/Effort                           │
+│    • Wheel Joints: VELOCITY (important!)                   │
+│                                                             │
+│  ───────────────────────────────────────────────────────── │
+│                                                             │
+│  GO2-W SPECS                                                │
+│  ───────────                                               │
+│  Total Joints: 16 (12 leg + 4 wheel)                       │
+│  Weight: 18kg                                              │
+│  Max Speed: 2.5 m/s (wheeled)                              │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Screenshots to Capture
+
+When setting up Go2-W, capture these for reference:
+
+- [ ] robot_lab extension installed successfully
+- [ ] Go2-W environments listed in terminal
+- [ ] Go2-W spawned in Isaac Sim (if using custom USD)
+- [ ] Physics materials applied correctly
+- [ ] Stage hierarchy showing 16 joints
+
+---
+
+## Workshop Questions
+
+::: {.callout-warning}
+## Questions to Ask
+1. Is Go2-W planned for official Isaac Lab assets?
+2. Best practices for tire-terrain friction in PhysX?
+3. How to validate inertia tensor against real hardware?
+4. Any known issues with robot_lab + Isaac Lab 2.3.0?
+:::
+
+---
+
+## What's Next
+
+With Go2-W set up in Isaac Sim, we can now connect it to ROS 2:
+
+→ **[Part 2: Go2-W ROS 2 Interface](/posts/2025-12-18-isaac-workshop-part2/)** - 16-joint control via ROS 2
+
+---
+
+## Sources
+
+- [robot_lab Extension](https://github.com/fan-ziqi/robot_lab) - Go2-W Isaac Lab environments
+- [unitree_ros](https://github.com/unitreerobotics/unitree_ros) - Official URDF source
+- [unitree_mujoco](https://github.com/unitreerobotics/unitree_mujoco) - Physics parameters
+- [Isaac Sim Documentation](https://docs.isaacsim.omniverse.nvidia.com/)
+- [URDF Importer Guide](https://docs.isaacsim.omniverse.nvidia.com/latest/robot_simulation/ext_isaacsim_asset_convert_urdf_to_usd.html)

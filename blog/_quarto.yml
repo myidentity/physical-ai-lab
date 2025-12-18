@@ -23,7 +23,17 @@ website:
     search: true
     background: light
     contents:
-      - section: "Workshop 4 Exercise Preview (NEW)"
+      - section: "NVIDIA Isaac Lab Workshop"
+        contents:
+          - text: "Part 1: Isaac Sim vs Isaac Lab"
+            href: posts/2025-12-18-isaac-workshop-part1/index.qmd
+          - text: "Part 2: Go2-W ROS 2 Interface"
+            href: posts/2025-12-18-isaac-workshop-part2/index.qmd
+          - text: "Part 3: Training Go2-W Locomotion"
+            href: posts/2025-12-18-isaac-workshop-part3/index.qmd
+          - text: "Part 4: Go2-W Sim-to-Real"
+            href: posts/2025-12-18-isaac-workshop-part4/index.qmd
+      - section: "Workshop 4 Exercise Preview"
         contents:
           - text: "Part 1: IMU Alone (Experiments 1-7)"
             href: posts/2025-12-17-workshop4-exercises-part1/index.qmd
