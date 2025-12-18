@@ -241,7 +241,6 @@ You'll see a menu like this:
 ```
 ═══════════════════════════════════════════════════════
          Isaac Sim 5.1.0 & Isaac Lab Launcher
-           (Official NVIDIA Commands)
 ═══════════════════════════════════════════════════════
 
 ─────────── SETUP (First Time) ─────────────────────────
@@ -249,11 +248,25 @@ s) NGC Login (for pulling images)        [manual check]
 p) Pull Isaac Sim 5.1.0 Image (~15GB)    [NOT FOUND]
 c) Clone Isaac Lab Repository            [NOT FOUND]
 
-─────────── ISAAC SIM (Simulation Only) ───────────────
-1) Isaac Sim: Start with GUI
-2) Isaac Sim: Start Headless
-3) Isaac Sim: Run Compatibility Check
-...
+─────────── 🎮 ISAAC SIM (Standalone Simulation) ─────────
+  Start Simulator:
+    1) With GUI (Desktop Mode)
+    2) Headless (No Display)
+  ...
+  💾 Save Your Work:
+    7) Save Installed Packages ⭐
+
+─────────── 🤖 ISAAC LAB (RL Training Environment) ───────
+  Start & Access:
+    8) Start/Build Container ⭐
+    9) Enter Container
+  🛑 Shutdown Options:
+    h) Hibernate (Safe) ⭐ - Preserves everything
+    a) DELETE Everything ⚠️ - Destroys all data
+
+─────────── ⚙️  UTILITIES ─────────────────────────────────
+    0) Toggle Display Driver (Dummy ↔ NVIDIA)
+    b) Python Package Guide
 ```
 
 ### First-Time Setup Walkthrough
@@ -314,28 +327,52 @@ This download takes 15-30 minutes depending on your internet speed.
 | **p** | Pull Isaac Sim Image | Download Isaac Sim 5.1.0 (~15GB) |
 | **c** | Clone Isaac Lab | Clone Isaac Lab repository |
 
-#### Isaac Sim Options
+#### 🎮 Isaac Sim Options
 
 | Option | Name | Description |
 |--------|------|-------------|
-| **1** | Start with GUI | Launch Isaac Sim with graphical interface |
-| **2** | Start Headless | Launch without display (for servers) |
+| **1** | With GUI | Launch Isaac Sim with graphical interface |
+| **2** | Headless | Launch without display (for servers/remote) |
 | **3** | Compatibility Check | Verify system meets requirements |
 | **4** | Setup Directories | Create/reset cache directories |
+| **5** | System Information | View GPU, storage, and image info |
+| **6** | Check Prerequisites | Verify Docker, GPU access, etc. |
+| **7** | Save Installed Packages ⭐ | Save pip-installed packages permanently |
 
-#### Isaac Lab Options
+::: {.callout-tip}
+## Option 7: Save Your Packages
+When you `pip install` packages inside Isaac Sim, they're lost when you exit. Use **Option 7** while the container is running to save them permanently to a custom image.
+:::
+
+#### 🤖 Isaac Lab Options
 
 | Option | Name | Description |
 |--------|------|-------------|
-| **8** | Start/Build Container | Build the Isaac Lab Docker container and start it |
-| **9** | Quick Access | Enter a running Isaac Lab container |
-| **a** | Stop Container | Stop the Isaac Lab container |
+| **8** | Start/Build Container | Build and start the Isaac Lab Docker container |
+| **9** | Enter/Resume Container | Enter running container or resume hibernated one |
+| **h** | Hibernate (Safe) ⭐ | Safely pause container - preserves everything |
+| **a** | DELETE Everything ⚠️ | Destroys container + all training logs |
+
+::: {.callout-important}
+## Safe Shutdown vs Destructive Delete
+
+- **Option h (Hibernate)**: Use this before shutting down your computer. Everything is preserved - training logs, installed packages, container state. Resume with Option 9 when you return.
+
+- **Option a (DELETE)**: Only use when you want a clean slate or need to free disk space. This **permanently deletes** all training logs and container data! Requires typing "DELETE" to confirm.
+:::
+
+#### ⚙️ Utilities
+
+| Option | Name | Description |
+|--------|------|-------------|
+| **0** | Toggle Display Driver | Switch between NVIDIA (HDMI) and Dummy (headless) |
+| **b** | Python Package Guide | Instructions for managing packages |
 
 ::: {.callout-note}
 ## Isaac Lab vs Isaac Sim {.unlisted}
 
-- **Isaac Sim** (Options 1-4): The base simulator for rendering and physics
-- **Isaac Lab** (Options 8-a): Reinforcement learning framework built on Isaac Sim
+- **Isaac Sim** (Options 1-7): The base simulator for rendering and physics
+- **Isaac Lab** (Options 8, 9, h, a): Reinforcement learning framework built on Isaac Sim
 :::
 
 ---

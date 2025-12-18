@@ -892,33 +892,88 @@ enter_isaac_lab() {
     fi
 }
 
-# Function to stop Isaac Lab container
-stop_isaac_lab() {
+# Function to hibernate Isaac Lab container (safe for shutdown)
+hibernate_isaac_lab() {
     clear
     echo "═══════════════════════════════════════════════════════"
-    echo "   Isaac Lab - Stop Container"
+    echo "   Isaac Lab - Hibernate Container (Safe Shutdown)"
     echo "═══════════════════════════════════════════════════════"
     echo ""
 
     LAB_STATUS=$(check_isaac_lab_status)
 
     if [ "$LAB_STATUS" = "running" ]; then
-        print_warning "Stopping Isaac Lab container..."
+        print_info "Hibernating Isaac Lab container..."
         echo ""
-        cd "${HOME}/docker/isaac-lab/IsaacLab"
-        python3 docker/container.py stop
+        print_success "This is SAFE - everything is preserved:"
+        echo "  ✓ Training logs"
+        echo "  ✓ Installed packages"
+        echo "  ✓ All container state"
+        echo ""
+
+        docker stop isaac-lab-base
+
         if [ $? -eq 0 ]; then
             echo ""
-            print_success "Container stopped successfully"
+            print_success "Container hibernated successfully!"
             echo ""
-            print_info "Data is preserved in Docker volumes"
-            print_info "Use Option 9 to resume later"
+            print_important "You can now safely shut down your computer"
+            print_info "When you return: Use Option 9 to resume"
         else
-            print_error "Failed to stop container"
+            print_error "Failed to hibernate container"
         fi
-        cd - > /dev/null
     elif [ "$LAB_STATUS" = "stopped" ]; then
-        print_info "Container is already stopped"
+        print_info "Container is already hibernated/stopped"
+        print_info "Use Option 9 to resume when ready"
+    else
+        print_info "No Isaac Lab container exists"
+        print_info "Use Option 8 to create one first"
+    fi
+
+    echo ""
+    read -p "Press Enter to continue..."
+}
+
+# Function to stop Isaac Lab container (DESTRUCTIVE - deletes everything!)
+stop_isaac_lab() {
+    clear
+    echo "═══════════════════════════════════════════════════════"
+    echo "   Isaac Lab - DESTRUCTIVE Stop (Delete Everything)"
+    echo "═══════════════════════════════════════════════════════"
+    echo ""
+
+    LAB_STATUS=$(check_isaac_lab_status)
+
+    if [ "$LAB_STATUS" = "running" ] || [ "$LAB_STATUS" = "stopped" ]; then
+        print_error "⚠️  WARNING: THIS IS DESTRUCTIVE! ⚠️"
+        echo ""
+        echo "  This will PERMANENTLY DELETE:"
+        echo "    ✗ All training logs (logs/rsl_rl/)"
+        echo "    ✗ All cached data"
+        echo "    ✗ All container state"
+        echo ""
+        print_warning "If you just want to shut down your computer safely,"
+        print_warning "use Option 'h' (Hibernate) instead!"
+        echo ""
+        echo "─────────────────────────────────────────────────────"
+        read -p "Type 'DELETE' to confirm destruction: " confirm
+
+        if [ "$confirm" = "DELETE" ]; then
+            print_warning "Destroying Isaac Lab container and volumes..."
+            echo ""
+            cd "${HOME}/docker/isaac-lab/IsaacLab"
+            python3 docker/container.py stop
+            if [ $? -eq 0 ]; then
+                echo ""
+                print_success "Container and volumes destroyed"
+                print_info "Use Option 8 to create a fresh container"
+            else
+                print_error "Failed to stop container"
+            fi
+            cd - > /dev/null
+        else
+            print_info "Operation cancelled - nothing was deleted"
+        fi
     else
         print_info "No Isaac Lab container exists"
     fi
@@ -965,9 +1020,20 @@ main_menu() {
         if [ "$LAB_STATUS" = "running" ]; then
             echo -e "${GREEN}✓${NC} Isaac Lab: Container ${GREEN}RUNNING${NC}"
         elif [ "$LAB_STATUS" = "stopped" ]; then
-            echo -e "${YELLOW}⚠${NC} Isaac Lab: Container ${YELLOW}STOPPED${NC}"
+            echo -e "${YELLOW}⚠${NC} Isaac Lab: Container ${YELLOW}HIBERNATED${NC}"
         else
             echo -e "${BLUE}ℹ${NC} Isaac Lab: Container ${BLUE}not created yet${NC}"
+        fi
+        echo ""
+
+        # Quick workflow hints based on status
+        if [ "$LAB_STATUS" = "running" ]; then
+            print_important "→ Option 9 to enter, Option h to hibernate before shutdown"
+        elif [ "$LAB_STATUS" = "stopped" ]; then
+            print_important "→ Option 9 to resume hibernated container"
+        fi
+        if [ "$SIM_STATUS" = "running" ]; then
+            print_important "→ Option 7 to save installed packages before exiting"
         fi
         echo ""
 
@@ -990,59 +1056,71 @@ main_menu() {
             echo -e "${RED}[NOT FOUND]${NC}"
         fi
         echo ""
-
-        echo "0) Toggle Display Driver (Dummy ↔ NVIDIA)"
+        echo "─────────── 🎮 ISAAC SIM (Standalone Simulation) ─────────"
         echo ""
-        echo "─────────── ISAAC SIM (Simulation Only) ───────────────"
+        echo "  Start Simulator:"
         if [ "$SIM_STATUS" = "running" ]; then
-            echo -e "1) Isaac Sim: Start with GUI - ${GREEN}RUNNING${NC}"
+            echo -e "    1) With GUI (Desktop Mode) - ${GREEN}RUNNING${NC}"
+            echo -e "    2) Headless (No Display)   - ${GREEN}RUNNING${NC}"
         else
-            echo "1) Isaac Sim: Start with GUI"
-        fi
-        if [ "$SIM_STATUS" = "running" ]; then
-            echo -e "2) Isaac Sim: Start Headless - ${GREEN}RUNNING${NC}"
-        else
-            echo "2) Isaac Sim: Start Headless"
-        fi
-        echo "3) Isaac Sim: Run Compatibility Check"
-        echo "4) Isaac Sim: Setup/Reset Directories"
-        echo "5) Isaac Sim: System Information"
-        echo "6) Isaac Sim: Check Prerequisites"
-        if [ "$SIM_STATUS" = "running" ]; then
-            echo -e "7) Isaac Sim: Save Changes (Commit Image) ⭐ - ${GREEN}RUNNING${NC}"
-        else
-            echo -e "7) Isaac Sim: Save Changes (Commit Image) ⭐ - ${YELLOW}Not Running${NC}"
+            echo "    1) With GUI (Desktop Mode)"
+            echo "    2) Headless (No Display)"
         fi
         echo ""
-        echo "─────────── ISAAC LAB (RL Training) ────────────────────"
-        if [ "$LAB_STATUS" = "running" ]; then
-            echo -e "8) Isaac Lab: Start/Build Container - ${GREEN}RUNNING${NC}"
+        echo "  Maintenance:"
+        echo "    3) Run Compatibility Check"
+        echo "    4) Setup/Reset Directories"
+        echo "    5) System Information"
+        echo "    6) Check Prerequisites"
+        echo ""
+        echo "  💾 Save Your Work:"
+        if [ "$SIM_STATUS" = "running" ]; then
+            echo -e "    7) Save Installed Packages ⭐ - ${GREEN}Container Running - Ready to Save!${NC}"
         else
-            echo "8) Isaac Lab: Start/Build Container ⭐"
+            echo -e "    7) Save Installed Packages - ${YELLOW}Start container first (Option 1 or 2)${NC}"
         fi
-
+        echo -e "       ${CYAN}(Packages you pip install are lost on exit unless you save here)${NC}"
+        echo ""
+        echo "─────────── 🤖 ISAAC LAB (RL Training Environment) ───────"
+        echo ""
+        echo "  Start & Access:"
         if [ "$LAB_STATUS" = "running" ]; then
-            echo -e "9) Isaac Lab: Quick Access (if running) - ${GREEN}RUNNING${NC}"
-        else
-            echo -e "9) Isaac Lab: Quick Access (if running) - ${BLUE}Use Option 8 First${NC}"
-        fi
-
-        if [ "$LAB_STATUS" = "running" ]; then
-            echo -e "a) Isaac Lab: Stop Container - ${GREEN}RUNNING${NC}"
+            echo -e "    8) Start/Build Container - ${GREEN}RUNNING${NC}"
+            echo -e "    9) Enter Container ⭐     - ${GREEN}Ready to Enter${NC}"
         elif [ "$LAB_STATUS" = "stopped" ]; then
-            echo -e "a) Isaac Lab: Stop Container - ${YELLOW}Already Stopped${NC}"
+            echo -e "    8) Start/Build Container - ${YELLOW}HIBERNATED${NC}"
+            echo -e "    9) Resume Container ⭐    - ${YELLOW}Will wake up hibernated container${NC}"
         else
-            echo -e "a) Isaac Lab: Stop Container - ${BLUE}Not Available${NC}"
+            echo     "    8) Start/Build Container ⭐ (First time: ~10-15 min)"
+            echo -e "    9) Enter Container       - ${BLUE}Use Option 8 first${NC}"
         fi
         echo ""
-        echo "─────────── UTILITIES ──────────────────────────────────"
-        echo "b) Python Package Management Guide"
+        echo "  🛑 Shutdown Options:"
+        if [ "$LAB_STATUS" = "running" ]; then
+            echo -e "    h) ${GREEN}Hibernate (Safe)${NC} ⭐        - Preserves everything, safe for reboot"
+        elif [ "$LAB_STATUS" = "stopped" ]; then
+            echo -e "    h) Hibernate (Safe)          - ${YELLOW}Already hibernated${NC}"
+        else
+            echo -e "    h) Hibernate (Safe)          - ${BLUE}No container to hibernate${NC}"
+        fi
         echo ""
-        echo "x/q) Exit"
+        if [ "$LAB_STATUS" = "running" ] || [ "$LAB_STATUS" = "stopped" ]; then
+            echo -e "    a) ${RED}DELETE Everything${NC} ⚠️        - Destroys container + training logs"
+        else
+            echo -e "    a) DELETE Everything         - ${BLUE}Nothing to delete${NC}"
+        fi
+        echo -e "       ${CYAN}(Only use to free disk space or start fresh)${NC}"
+        echo ""
+        echo "─────────── ⚙️  UTILITIES ─────────────────────────────────"
+        echo "    0) Toggle Display Driver (Dummy ↔ NVIDIA)"
+        echo "    b) Python Package Management Guide"
+        echo ""
+        echo "─────────── 🚪 EXIT ───────────────────────────────────────"
+        echo "    x) Exit Launcher"
         echo ""
         echo "═══════════════════════════════════════════════════════"
         echo ""
-        read -p "Select option [s,p,c,0-9,a,b,x,q]: " choice
+        read -p "Select option [s,p,c,0-9,a,b,h,x,q]: " choice
 
         case $choice in
             s|S)
@@ -1085,6 +1163,9 @@ main_menu() {
                 ;;
             9)
                 enter_isaac_lab
+                ;;
+            h|H)
+                hibernate_isaac_lab
                 ;;
             a|A)
                 stop_isaac_lab
