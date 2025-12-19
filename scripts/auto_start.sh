@@ -12,6 +12,9 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
+# Script version (for documentation reference)
+SCRIPT_VERSION="2.0.0"
+
 # Official NVIDIA Isaac Sim paths
 ISAAC_HOME="${HOME}/docker/isaac-sim"
 CUSTOM_IMAGE="isaac-sim-custom:latest"
@@ -476,6 +479,25 @@ clone_isaac_lab() {
         echo ""
         print_success "Isaac Lab cloned successfully!"
         ISAAC_LAB_AVAILABLE=true
+
+        # Patch Dockerfile.base to include robot_lab installation
+        # This ensures robot_lab survives container recreation
+        DOCKERFILE="${HOME}/docker/isaac-lab/IsaacLab/docker/Dockerfile.base"
+        if [ -f "$DOCKERFILE" ] && ! grep -q "robot_lab" "$DOCKERFILE"; then
+            echo ""
+            print_info "Patching Dockerfile.base for robot_lab support..."
+            # Add robot_lab install before WORKDIR line
+            sed -i '/^WORKDIR/i \
+# Install robot_lab extension for Go2-W environments (Physical AI Lab Workshop)\
+RUN --mount=type=cache,target=${DOCKER_USER_HOME}/.cache/pip \\\
+    ${ISAACLAB_PATH}/isaaclab.sh -p -m pip install -e ${ISAACLAB_PATH}/robot_lab/source/robot_lab\
+' "$DOCKERFILE"
+            if [ $? -eq 0 ]; then
+                print_success "Dockerfile.base patched for robot_lab"
+            else
+                print_warning "Could not patch Dockerfile.base automatically"
+            fi
+        fi
     else
         echo ""
         print_error "Clone failed. Check your internet connection."
@@ -987,7 +1009,7 @@ main_menu() {
     while true; do
         clear
         echo "═══════════════════════════════════════════════════════"
-        echo "         Isaac Sim 5.1.0 & Isaac Lab Launcher"
+        echo "     Isaac Sim 5.1.0 & Isaac Lab Launcher v${SCRIPT_VERSION}"
         echo "           (Official NVIDIA Commands)"
         echo "═══════════════════════════════════════════════════════"
         echo ""
