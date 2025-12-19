@@ -900,9 +900,9 @@ enter_isaac_lab() {
         python3 docker/container.py enter
         cd - > /dev/null
     elif [ "$LAB_STATUS" = "stopped" ]; then
-        print_warning "Container exists but is stopped"
+        print_info "Container is hibernated (safe state)"
         echo ""
-        print_info "Starting container first..."
+        print_info "Waking up container..."
         echo ""
         cd "${HOME}/docker/isaac-lab/IsaacLab"
         python3 docker/container.py start
@@ -1047,7 +1047,7 @@ main_menu() {
         if [ "$SIM_STATUS" = "running" ]; then
             echo -e "${GREEN}✓${NC} Isaac Sim: Container ${GREEN}RUNNING${NC}"
         else
-            echo -e "${BLUE}ℹ${NC} Isaac Sim: Container ${YELLOW}STOPPED${NC}"
+            echo -e "${BLUE}ℹ${NC} Isaac Sim: Container ${YELLOW}HIBERNATED${NC}"
         fi
 
         # Isaac Lab container status
