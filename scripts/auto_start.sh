@@ -13,7 +13,7 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # Script version (for documentation reference)
-SCRIPT_VERSION="2.0.0"
+SCRIPT_VERSION="2.1.0"
 
 # Official NVIDIA Isaac Sim paths
 ISAAC_HOME="${HOME}/docker/isaac-sim"
@@ -904,16 +904,19 @@ enter_isaac_lab() {
         echo ""
         print_info "Waking up container..."
         echo ""
-        cd "${HOME}/docker/isaac-lab/IsaacLab"
-        python3 docker/container.py start
+        # Use docker start (not container.py start) to resume without rebuilding
+        docker start isaac-lab-base > /dev/null 2>&1
         if [ $? -eq 0 ]; then
-            print_success "Container started"
+            print_success "Container resumed"
             echo ""
             print_info "Entering container..."
             echo ""
+            cd "${HOME}/docker/isaac-lab/IsaacLab"
             python3 docker/container.py enter
+            cd - > /dev/null
+        else
+            print_error "Failed to resume container"
         fi
-        cd - > /dev/null
     else
         print_error "Container not running"
         echo ""

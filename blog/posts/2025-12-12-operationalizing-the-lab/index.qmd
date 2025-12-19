@@ -25,7 +25,7 @@ By the end of this guide, you will have:
 
 **Time required:** ~2 hours (mostly waiting for downloads)
 
-**The Easy Path:** After installing Docker (Section 3), download our launcher script (v2.0.0) - it handles everything else!
+**The Easy Path:** After installing Docker (Section 3), download our launcher script (v2.1.0) - it handles everything else!
 ```bash
 wget https://raw.githubusercontent.com/myidentity/physical-ai-lab/main/scripts/auto_start.sh
 chmod +x auto_start.sh
@@ -224,7 +224,7 @@ Now that Docker is set up, use our launcher script to handle everything else: NG
 
 ### Download the Launcher
 
-Current version: **v2.0.0**
+Current version: **v2.1.0**
 
 ```bash
 cd ~
@@ -242,7 +242,7 @@ You'll see a menu like this:
 
 ```
 ═══════════════════════════════════════════════════════
-     Isaac Sim 5.1.0 & Isaac Lab Launcher v2.0.0
+     Isaac Sim 5.1.0 & Isaac Lab Launcher v2.1.0
 ═══════════════════════════════════════════════════════
 
 ─────────── SETUP (First Time) ─────────────────────────
