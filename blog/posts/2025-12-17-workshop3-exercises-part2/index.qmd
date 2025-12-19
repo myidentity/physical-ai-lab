@@ -523,6 +523,283 @@ The real power comes from **combining** Exercises 4 and 5:
 
 ---
 
+## Fleet Connectivity
+
+::: {.callout-note}
+## 📋 From ROSCon India 2025 Workshop (ZettaScale)
+This section covers official fleet connectivity patterns presented at Workshop 3.
+:::
+
+When managing multiple robots, you have **two connectivity patterns** to choose from:
+
+### Pattern 1: Fleet Manager Connects to All Robots
+
+The Fleet Manager runs a router that **connects outbound** to each robot:
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    FLEET MANAGER → ROBOTS                                │
+│                                                                          │
+│                    ┌─────────────────┐                                  │
+│                    │  Fleet Manager  │                                  │
+│                    │  (rmw_zenohd)   │                                  │
+│                    └────────┬────────┘                                  │
+│                             │                                            │
+│           ┌─────────────────┼─────────────────┐                         │
+│           │                 │                 │                          │
+│           ▼                 ▼                 ▼                          │
+│    ┌────────────┐   ┌────────────┐   ┌────────────┐                    │
+│    │  robot-1   │   │  robot-2   │   │  robot-3   │                    │
+│    │ rmw_zenohd │   │ rmw_zenohd │   │ rmw_zenohd │                    │
+│    │192.168.1.10│   │192.168.1.11│   │192.168.1.12│                    │
+│    └────────────┘   └────────────┘   └────────────┘                    │
+│                                                                          │
+│    Fleet Manager connects OUT to each robot's router                    │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+**Fleet Manager Configuration:**
+```json5
+// fleet_manager.json5 - ZENOH_ROUTER_CONFIG_URI
+{
+  mode: "router",
+  connect: {
+    endpoints: [
+      "tcp/192.168.1.10:7447",  // robot-1
+      "tcp/192.168.1.11:7447",  // robot-2
+      "tcp/192.168.1.12:7447"   // robot-3
+    ]
+  }
+}
+```
+
+```bash
+# Launch Fleet Manager
+export ZENOH_ROUTER_CONFIG_URI=/configs/fleet_manager.json5
+ros2 run rmw_zenoh_cpp rmw_zenohd
+```
+
+### Pattern 2: Robots Connect to Fleet Manager
+
+Each robot **connects outbound** to the Fleet Manager:
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    ROBOTS → FLEET MANAGER                                │
+│                                                                          │
+│    ┌────────────┐   ┌────────────┐   ┌────────────┐                    │
+│    │  robot-1   │   │  robot-2   │   │  robot-3   │                    │
+│    │ rmw_zenohd │   │ rmw_zenohd │   │ rmw_zenohd │                    │
+│    └─────┬──────┘   └─────┬──────┘   └─────┬──────┘                    │
+│          │                │                │                            │
+│          └────────────────┼────────────────┘                            │
+│                           │                                              │
+│                           ▼                                              │
+│                    ┌─────────────────┐                                  │
+│                    │  Fleet Manager  │                                  │
+│                    │  (rmw_zenohd)   │                                  │
+│                    │ 192.168.1.100   │                                  │
+│                    └─────────────────┘                                  │
+│                                                                          │
+│    Each robot connects OUT to Fleet Manager's router                    │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+**Robot Configuration:**
+```json5
+// robot_config.json5 - ZENOH_ROUTER_CONFIG_URI on each robot
+{
+  mode: "router",
+  connect: {
+    endpoints: [
+      "tcp/192.168.1.100:7447"  // Fleet Manager address
+    ]
+  }
+}
+```
+
+```bash
+# On each robot
+export ZENOH_ROUTER_CONFIG_URI=/configs/robot_config.json5
+ros2 run rmw_zenoh_cpp rmw_zenohd
+```
+
+### Which Pattern to Choose?
+
+| Consideration | Fleet Manager → Robots | Robots → Fleet Manager |
+|---------------|:----------------------:|:----------------------:|
+| **NAT/Firewall** | Fleet Manager must reach robots | ✅ Robots reach out (NAT-friendly) |
+| **Dynamic fleet** | Must update FM config | ✅ Robots self-register |
+| **Security** | FM needs robot IPs | ✅ Robots need only FM IP |
+| **Scalability** | Config grows with fleet | ✅ Single endpoint |
+
+::: {.callout-tip}
+## Recommendation
+**Pattern 2 (Robots → Fleet Manager)** is usually better because:
+- Works through NAT (robots initiate connections)
+- No need to update Fleet Manager config for new robots
+- Single well-known endpoint for all robots
+:::
+
+---
+
+## Access Control (ACL)
+
+::: {.callout-note}
+## 📋 From ROSCon India 2025 Workshop (ZettaScale)
+This section covers fine-grained access control for Zenoh topic forwarding.
+:::
+
+Access Control Lists (ACLs) provide **fine-grained control** over which topics can be forwarded through a Zenoh router. This is essential for:
+
+- **Bandwidth reduction** - Don't forward high-bandwidth topics over slow links
+- **Privacy** - Block camera data from leaving the robot
+- **Operational safety** - Restrict who can send control commands
+
+### ACL Rule Syntax
+
+ACL rules apply per **key expression**, **direction**, and **peer**:
+
+```json5
+// router_with_acl.json5
+{
+  mode: "router",
+  listen: {
+    endpoints: ["tcp/0.0.0.0:7447"]
+  },
+  access_control: {
+    enabled: true,
+    default_permission: "deny",  // Deny by default, allow explicitly
+    rules: [
+      {
+        // Allow odometry and battery from any peer
+        id: "allow-telemetry",
+        permission: "allow",
+        key_exprs: ["/*/odom", "/*/battery_state"],
+        messages: ["put", "get", "declare_subscriber"]
+      },
+      {
+        // Block camera data to external networks
+        id: "block-camera",
+        permission: "deny",
+        key_exprs: ["/camera/**", "/**/image_raw", "/**/points/**"],
+        messages: ["put"]
+      },
+      {
+        // Only allow cmd_vel from authenticated operators
+        id: "restrict-control",
+        permission: "allow",
+        key_exprs: ["/cmd_vel", "/**/cmd_vel"],
+        interfaces: ["tls/0.0.0.0:7448"],  // Only via TLS
+        messages: ["put"]
+      }
+    ]
+  }
+}
+```
+
+### Common ACL Patterns
+
+**1. Block high-bandwidth topics from external network:**
+```json5
+{
+  id: "block-cameras-external",
+  permission: "deny",
+  key_exprs: [
+    "/camera/points/**",     // Point clouds (huge!)
+    "/camera/**/image_raw",  // Raw images
+    "/velodyne_points"       // LIDAR
+  ],
+  messages: ["put"]
+}
+```
+
+**2. Allow only compressed images:**
+```json5
+{
+  id: "allow-compressed-only",
+  permission: "allow",
+  key_exprs: ["/camera/**/compressed", "/camera/**/theora"],
+  messages: ["put", "declare_subscriber"]
+}
+```
+
+**3. Read-only access for monitoring:**
+```json5
+{
+  id: "monitoring-read-only",
+  permission: "allow",
+  key_exprs: ["**"],  // All topics
+  messages: ["get", "declare_subscriber"],  // No "put"!
+  // Peers with this cert can only subscribe, not publish
+}
+```
+
+### ACL with mTLS: Per-Robot Permissions
+
+Combine ACLs with mTLS certificates for **per-robot authorization**:
+
+```json5
+{
+  mode: "router",
+  access_control: {
+    enabled: true,
+    rules: [
+      {
+        id: "robot-042-full-access",
+        permission: "allow",
+        key_exprs: ["/robot_042/**"],
+        cert_common_name: "robot-042"  // Only this robot
+      },
+      {
+        id: "operator-read-only",
+        permission: "allow",
+        key_exprs: ["**"],
+        messages: ["get", "declare_subscriber"],
+        cert_common_name: "operator-*"  // Operators can only read
+      }
+    ]
+  }
+}
+```
+
+::: {.callout-warning}
+## ACL Processing Order
+Rules are evaluated **in order**. Place more specific rules before general ones:
+
+```json5
+// CORRECT: Specific first, then general
+rules: [
+  { id: "allow-compressed", key_exprs: ["/camera/*/compressed"], permission: "allow" },
+  { id: "block-camera", key_exprs: ["/camera/**"], permission: "deny" }
+]
+
+// WRONG: General rule blocks everything before specific is checked
+rules: [
+  { id: "block-camera", key_exprs: ["/camera/**"], permission: "deny" },
+  { id: "allow-compressed", key_exprs: ["/camera/*/compressed"], permission: "allow" }  // Never reached!
+]
+```
+:::
+
+### Testing ACL Configuration
+
+```bash
+# Start router with ACL
+zenohd -c router_with_acl.json5
+
+# This should SUCCEED (telemetry allowed)
+zenoh --connect "tcp/127.0.0.1:7447" subscribe -k "/robot/odom"
+
+# This should FAIL (camera blocked)
+zenoh --connect "tcp/127.0.0.1:7447" subscribe -k "/camera/image_raw"
+
+# Check router logs for ACL denials
+# Look for: "access denied for key expression..."
+```
+
+---
+
 ## What's Next
 
 In **Part 3**, we'll preview Exercises 6-8:

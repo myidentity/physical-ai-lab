@@ -172,6 +172,251 @@ pgrep -a zenoh
 
 The router pattern is what enables Exercises 4-8 (remote connectivity, cloud routers, NAT traversal).
 
+### Zenoh Configuration Files
+
+::: {.callout-note}
+## 📋 From ROSCon India 2025 Workshop (ZettaScale)
+This section covers official Zenoh configuration file locations presented at Workshop 3.
+:::
+
+Zenoh's behavior is controlled by configuration files. The **default configurations** are installed with `rmw_zenoh_cpp`:
+
+```bash
+# Default configuration file location
+/opt/ros/$ROS_DISTRO/share/rmw_zenoh_cpp/config/
+
+# Two key files:
+DEFAULT_RMW_ZENOH_ROUTER_CONFIG.json5   # For the Zenoh router (rmw_zenohd)
+DEFAULT_RMW_ZENOH_SESSION_CONFIG.json5  # For all ROS 2 nodes
+```
+
+**Router Configuration** (`DEFAULT_RMW_ZENOH_ROUTER_CONFIG.json5`):
+```json5
+{
+  mode: "router",
+  listen: {
+    endpoints: ["tcp/[::]:7447"]  // Listen on all interfaces, port 7447
+  },
+  scouting: {
+    multicast: {
+      enabled: true,
+      address: "224.0.0.224:7446"
+    }
+  }
+}
+```
+
+**Session Configuration** (`DEFAULT_RMW_ZENOH_SESSION_CONFIG.json5`):
+```json5
+{
+  mode: "client",
+  connect: {
+    endpoints: ["tcp/localhost:7447"]  // Connect to local router
+  },
+  scouting: {
+    multicast: { enabled: true },
+    gossip: { enabled: true }
+  }
+}
+```
+
+::: {.callout-tip}
+## Override Configuration Files
+You can specify custom configurations using environment variables:
+
+```bash
+# For the router
+export ZENOH_ROUTER_CONFIG_URI=/path/to/custom_router_config.json5
+ros2 run rmw_zenoh_cpp rmw_zenohd
+
+# For ROS 2 nodes
+export ZENOH_SESSION_CONFIG_URI=/path/to/custom_session_config.json5
+ros2 run demo_nodes_cpp talker
+```
+:::
+
+### Connecting to a Remote Robot
+
+::: {.callout-note}
+## 📋 From ROSCon India 2025 Workshop (ZettaScale)
+This section covers how to connect your workstation to a robot running Zenoh.
+:::
+
+When your robot is running `rmw_zenohd` on a different machine, you need to configure your nodes to connect to it. The **simplest method** uses `ZENOH_CONFIG_OVERRIDE`:
+
+```bash
+# Configure your node to connect to robot's Zenoh router
+export ZENOH_CONFIG_OVERRIDE='connect/endpoints=["tcp/192.168.1.2:7447"]'
+
+# Start the router on your workstation (connects to robot)
+ros2 run rmw_zenoh_cpp rmw_zenohd
+
+# Your ROS 2 nodes now communicate with the robot!
+ros2 topic list  # Shows robot's topics
+```
+
+::: {.callout-note collapse="true"}
+## ASCII Diagram: Connecting to Robot (Click to Expand)
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    CONNECT TO ROBOT                                      │
+│                                                                          │
+│    Your Workstation                          Robot (192.168.1.2)        │
+│    ────────────────                          ──────────────────          │
+│                                                                          │
+│    ┌──────────────┐                          ┌──────────────┐           │
+│    │  rmw_zenohd  │───── TCP connection ────►│  rmw_zenohd  │           │
+│    │  (client)    │         :7447            │  (router)    │           │
+│    └──────┬───────┘                          └──────┬───────┘           │
+│           │                                         │                    │
+│    ┌──────┴───────┐                          ┌──────┴───────┐           │
+│    │   rviz2      │                          │  camera_node │           │
+│    │   teleop     │◄─────── topics ─────────►│  lidar_node  │           │
+│    │   rqt        │                          │  odom_node   │           │
+│    └──────────────┘                          └──────────────┘           │
+│                                                                          │
+│    ZENOH_CONFIG_OVERRIDE='connect/endpoints=["tcp/192.168.1.2:7447"]'   │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+:::
+
+**Connect Just 1 Node (No Local Router Needed!):**
+
+You can also connect a **single node** directly to the robot without running a local router:
+
+```bash
+# No need for local rmw_zenohd - node connects directly!
+export ZENOH_CONFIG_OVERRIDE='connect/endpoints=["tcp/192.168.1.2:7447"]'
+ros2 run rviz2 rviz2
+```
+
+This is useful when you just want to visualize or teleop without setting up a full local infrastructure.
+
+### Router Discovery via UDP Multicast
+
+::: {.callout-note}
+## 📋 From ROSCon India 2025 Workshop (ZettaScale)
+This section explains how Zenoh routers automatically discover each other.
+:::
+
+On a local network, Zenoh routers can **automatically discover** each other using UDP multicast - no manual configuration needed!
+
+**How It Works:**
+
+1. **Gossip Protocol**: Routers use a gossip protocol for node interconnections
+2. **UDP Multicast Scouting**: Routers broadcast their presence on `224.0.0.224:7446`
+3. **Auto-Connect**: When routers discover each other, they automatically form a mesh
+
+::: {.callout-note collapse="true"}
+## 🔍 Deep Dive: What is the Gossip Protocol?
+
+The **Gossip Protocol** (also called "epidemic protocol") is inspired by how rumors spread in social networks. It's a decentralized way for nodes to share information without a central coordinator.
+
+![How the Gossip Protocol Works in Zenoh - Decentralized discovery for robot networks](gossip-protocol.png){fig-alt="Infographic showing the 3 steps of gossip protocol: Step 1 - Router A connects to B and shares knowledge about C; Step 2 - Router B learns about C through gossip and connects; Step 3 - Full mesh network formed with all routers discovered. Key benefits shown: Decentralized, Scalable, Fault Tolerant, NAT Friendly."}
+
+**How Gossip Works in Zenoh (ASCII Diagram):**
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    GOSSIP PROTOCOL IN ACTION                            │
+│                                                                          │
+│   Step 1: Router A connects to Router B                                 │
+│   ┌─────┐         ┌─────┐                                               │
+│   │  A  │────────►│  B  │     A tells B: "I know about router C"       │
+│   └─────┘         └─────┘                                               │
+│                                                                          │
+│   Step 2: Router B now knows about C (even without direct connection)   │
+│   ┌─────┐         ┌─────┐         ┌─────┐                               │
+│   │  A  │────────►│  B  │ · · · · │  C  │   B can now connect to C!    │
+│   └─────┘         └─────┘         └─────┘                               │
+│                                                                          │
+│   Step 3: Information spreads exponentially                             │
+│   ┌─────┐         ┌─────┐         ┌─────┐                               │
+│   │  A  │◄───────►│  B  │◄───────►│  C  │   Full mesh formed!          │
+│   └──┬──┘         └─────┘         └──┬──┘                               │
+│      │                               │                                   │
+│      └───────────────────────────────┘                                  │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+**Key Properties:**
+
+| Property | Description |
+|----------|-------------|
+| **Decentralized** | No central server needed - each node shares what it knows |
+| **Scalable** | Information spreads in O(log N) rounds for N nodes |
+| **Fault-tolerant** | Works even if some nodes fail - no single point of failure |
+| **Eventually consistent** | All nodes eventually learn about all other nodes |
+
+**Why Zenoh Uses Gossip:**
+
+1. **Works without multicast** - Gossip works over unicast TCP connections
+2. **NAT-friendly** - Only needs outbound connections
+3. **Self-healing** - Network topology updates automatically as routers join/leave
+4. **Efficient** - Each router only needs to know a few peers, gossip spreads the rest
+
+**Gossip vs Multicast:**
+
+| Aspect | UDP Multicast | Gossip Protocol |
+|--------|---------------|-----------------|
+| **Network** | Same subnet only | Works across subnets |
+| **NAT** | Blocked by NAT | Works through NAT |
+| **Speed** | Instant discovery | Gradual (seconds) |
+| **Reliability** | Can lose packets | Reliable (retries) |
+| **WiFi** | Often blocked | Always works |
+
+**Configuration:**
+
+```json5
+scouting: {
+  multicast: { enabled: true },   // Fast local discovery
+  gossip: { enabled: true }       // Cross-network discovery
+}
+```
+
+**Best Practice:** Enable BOTH multicast (for fast local discovery) and gossip (for reliability and cross-network discovery).
+:::
+
+**Enable Router Discovery via Config File:**
+
+```json5
+// zenoh_router_discovery.json5
+{
+  mode: "router",
+  scouting: {
+    multicast: {
+      enabled: true,
+      address: "224.0.0.224:7446",
+      autoconnect: { router: "true" }  // Auto-connect to discovered routers
+    }
+  }
+}
+```
+
+```bash
+# Use the config
+export ZENOH_ROUTER_CONFIG_URI=/path/to/zenoh_router_discovery.json5
+ros2 run rmw_zenoh_cpp rmw_zenohd
+```
+
+**Enable Router Discovery via Environment Variable:**
+
+```bash
+# Quick inline override without a config file
+export ZENOH_CONFIG_OVERRIDE='scouting/multicast/enabled=true;scouting/multicast/autoconnect=["router"]'
+ros2 run rmw_zenoh_cpp rmw_zenohd
+```
+
+::: {.callout-warning}
+## When Multicast Fails
+UDP multicast often doesn't work on:
+- **WiFi networks** (many access points block multicast)
+- **Cloud/VPN** (different subnets)
+- **Docker** (without `--net=host`)
+
+In these cases, use explicit `connect/endpoints` configuration instead.
+:::
+
 ### Key Takeaways
 
 - **DDS** uses multicast for peer-to-peer discovery (fast on LAN, problematic elsewhere)

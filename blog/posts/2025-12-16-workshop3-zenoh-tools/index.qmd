@@ -323,6 +323,118 @@ Find them in `/workshop3/exercises/`
 
 ---
 
+## Advanced Configuration Reference
+
+::: {.callout-note}
+## 📋 From ROSCon India 2025 Workshop (ZettaScale)
+These advanced configurations were presented at Workshop 3.
+:::
+
+### Priority Configuration Quick Reference
+
+Zenoh supports **priority levels** to control message delivery order and ensure latency-critical messages aren't blocked by bulk data.
+
+| Priority | Constant | Value | Use Case |
+|----------|----------|-------|----------|
+| **Realtime** | `Z_PRIORITY_REAL_TIME` | 1 | Emergency stop |
+| **Interactive High** | `Z_PRIORITY_INTERACTIVE_HIGH` | 2 | `/cmd_vel` |
+| **Interactive Low** | `Z_PRIORITY_INTERACTIVE_LOW` | 3 | User interactions |
+| **Data High** | `Z_PRIORITY_DATA_HIGH` | 4 | High-priority sensors |
+| **Data** | `Z_PRIORITY_DATA` | 5 | Normal sensor streams |
+| **Data Low** | `Z_PRIORITY_DATA_LOW` | 6 | Low-priority telemetry |
+| **Background** | `Z_PRIORITY_BACKGROUND` | 7 | Logs, diagnostics |
+
+**Example Configuration:**
+
+```json5
+// zenoh_priority_config.json5
+{
+  mode: "client",
+  connect: { endpoints: ["tcp/127.0.0.1:7447"] },
+  qos: {
+    publication: {
+      "rt/cmd_vel": { priority: 2, express: true },
+      "rt/emergency_stop": { priority: 1, express: true },
+      "rt/camera/**": { priority: 5 },
+      "rt/rosout": { priority: 7 }
+    }
+  }
+}
+```
+
+::: {.callout-tip}
+## Express Mode
+Use `express: true` for latency-critical topics. This bypasses batching to send messages immediately - essential for `/cmd_vel` and safety topics!
+:::
+
+### Connecting Worlds with Zenoh Routers
+
+::: {.callout-note}
+## 📋 From ROSCon India 2025 Workshop (ZettaScale)
+Zenoh routers can be linked together for global connectivity.
+:::
+
+**The Key Insight:** Zenoh routers can be **linked together** to form a global mesh network. Messages are securely routed to authenticated cloud routers.
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    CONNECTED ZENOH ROUTERS                              │
+│                                                                          │
+│    Factory Floor                    Cloud                               │
+│    ─────────────                    ─────                               │
+│    ┌──────────┐                   ┌──────────┐                         │
+│    │ Local    │───── TLS ────────►│ Cloud    │                         │
+│    │ Router   │    (mTLS)         │ Router   │                         │
+│    └────┬─────┘                   └────┬─────┘                         │
+│         │                              │                                │
+│    ┌────┴────┐                    ┌────┴────┐                          │
+│    │ robot-1 │                    │ Fleet   │                          │
+│    │ robot-2 │                    │ Monitor │                          │
+│    │ robot-3 │                    │ Dashboard│                          │
+│    └─────────┘                    └─────────┘                          │
+│                                                                          │
+│    Routers linked = Global ROS 2 connectivity with security!           │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+**Router Linking Configuration:**
+
+```json5
+// local_router_linked.json5 (factory floor)
+{
+  mode: "router",
+  listen: { endpoints: ["tcp/0.0.0.0:7447"] },
+  connect: {
+    endpoints: ["tls/cloud.example.com:7448"]  // Connect to cloud router
+  },
+  transport: {
+    link: {
+      tls: {
+        root_ca_certificate: "/certs/ca.pem",
+        connect_private_key: "/certs/client.key",
+        connect_certificate: "/certs/client.pem"
+      }
+    }
+  }
+}
+```
+
+**Use Cases for Linked Routers:**
+
+| Scenario | Pattern |
+|----------|---------|
+| **Multi-site fleet** | Site routers → Cloud router |
+| **Hybrid cloud** | Factory router → Cloud router |
+| **Geo-distributed** | Regional routers → Global mesh |
+| **Vendor isolation** | Customer router → Vendor support router |
+
+::: {.callout-warning}
+## Security First!
+When linking routers across networks, **always use mTLS**! This ensures only authenticated routers can join your Zenoh network.
+:::
+
+---
+
 ## What I Learned
 
 Building these tools taught me several lessons:

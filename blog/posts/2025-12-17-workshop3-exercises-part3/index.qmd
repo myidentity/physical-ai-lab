@@ -231,6 +231,61 @@ Zenoh supports **priority levels** to ensure critical messages aren't blocked:
 }
 ```
 
+### Official Zenoh Priority Levels
+
+::: {.callout-note}
+## 📋 From ROSCon India 2025 Workshop (ZettaScale)
+Zenoh supports these priority levels for controlling delivery and processing order.
+:::
+
+| Priority Constant | Value | Use Case |
+|-------------------|-------|----------|
+| `Z_PRIORITY_REAL_TIME` | 1 | Emergency stop, safety-critical |
+| `Z_PRIORITY_INTERACTIVE_HIGH` | 2 | Control commands (`/cmd_vel`) |
+| `Z_PRIORITY_INTERACTIVE_LOW` | 3 | User interactions |
+| `Z_PRIORITY_DATA_HIGH` | 4 | High-priority sensor data |
+| `Z_PRIORITY_DATA` | 5 | Normal sensor streams |
+| `Z_PRIORITY_DATA_LOW` | 6 | Low-priority telemetry |
+| `Z_PRIORITY_BACKGROUND` | 7 | Logs, diagnostics |
+
+**Per-Topic Priority in Zenoh Session Config:**
+
+```json5
+// zenoh_session_priority.json5
+{
+  mode: "client",
+  connect: { endpoints: ["tcp/127.0.0.1:7447"] },
+
+  // Per-topic QoS configuration
+  qos: {
+    publication: {
+      // Real-time priority for control commands
+      "rt/cmd_vel": {
+        priority: 2,      // Z_PRIORITY_INTERACTIVE_HIGH
+        express: true     // Bypass batching for latency-critical!
+      },
+      "rt/emergency_stop": {
+        priority: 1,      // Z_PRIORITY_REAL_TIME
+        express: true
+      },
+      // Data priority for sensors
+      "rt/camera/**": { priority: 5 },
+      "rt/scan": { priority: 5 }
+    }
+  }
+}
+```
+
+::: {.callout-tip}
+## `express` Mode: Bypass Batching!
+The **`express: true`** setting tells Zenoh to send this message **immediately** without waiting to batch it with other messages. This reduces latency for critical messages at the cost of slightly less efficient network usage.
+
+Use `express: true` for:
+- `/cmd_vel` - Control commands
+- `/emergency_stop` - Safety critical
+- Heartbeat/liveness messages
+:::
+
 ### Flow Control Strategies
 
 | Strategy | Description | When to Use |
@@ -239,6 +294,144 @@ Zenoh supports **priority levels** to ensure critical messages aren't blocked:
 | **Drop newest** | Discard new messages when queue full | Rarely useful |
 | **Block sender** | Pause publisher until queue has space | Reliable data |
 | **Sample** | Only keep every Nth message | High-rate sensors |
+
+### Downsampling: Per-Topic Frequency Control
+
+::: {.callout-note}
+## 📋 From ROSCon India 2025 Workshop (ZettaScale)
+Zenoh routers can automatically downsample topics when sending to bandwidth-constrained links.
+:::
+
+**When to Use Downsampling:**
+
+- Crossing from **wired LAN to wireless** (WiFi, GSM, LTE)
+- Sending to **cloud** with limited bandwidth
+- **Edge computing** with limited processing capacity
+- **Fleet monitoring** where full rate isn't needed
+
+**Zenoh Router Downsampling Configuration:**
+
+```json5
+// router_downsample.json5
+{
+  mode: "router",
+  listen: { endpoints: ["tcp/0.0.0.0:7447"] },
+
+  // Downsampling rules for different interfaces
+  downsampling: [
+    {
+      // For wireless interface (low bandwidth)
+      interfaces: ["tcp/0.0.0.0:7448"],  // Wireless client port
+      rules: [
+        {
+          key_exprs: ["rt/camera/**"],
+          freq: 5  // 30 Hz → 5 Hz
+        },
+        {
+          key_exprs: ["rt/scan"],
+          freq: 2  // 10 Hz → 2 Hz
+        },
+        {
+          key_exprs: ["rt/odom"],
+          freq: 10  // Keep at 10 Hz (control needs it)
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Comparison: Downsampling vs Compression vs Filtering:**
+
+| Technique | Bandwidth Reduction | Quality Loss | Use Case |
+|-----------|:------------------:|:------------:|----------|
+| **Filtering** (--allow/--deny) | 100% (blocked) | Complete | Topics not needed remotely |
+| **Downsampling** (freq) | 50-90% | Temporal | Lower frequency acceptable |
+| **Compression** (JPEG/ZSTD) | 80-95% | Minor | Images, point clouds |
+| **All combined** | 99%+ | Varies | WiFi/cellular deployments |
+
+::: {.callout-tip}
+## Downsampling Strategy
+1. **Filter first** - Don't send topics you don't need (`--deny`)
+2. **Compress images** - Use `/compressed` instead of `/image_raw`
+3. **Downsample remaining** - Reduce frequency for non-critical topics
+4. **Keep control at full rate** - Never downsample `/cmd_vel`!
+:::
+
+### Congestion Control: Per-Topic Dropping Policy
+
+::: {.callout-note}
+## 📋 From ROSCon India 2025 Workshop (ZettaScale)
+System load is highest at startup - important messages can be dropped. Configure per-topic policies!
+:::
+
+**The Startup Problem:**
+
+At robot startup, multiple high-bandwidth topics start publishing simultaneously:
+- PointCloud (10-50 MB/message)
+- OccupancyGrid (1-10 MB/message)
+- Camera images (1-3 MB/message)
+
+This burst can overwhelm the network, causing important messages to be dropped!
+
+**ROS 2 QoS + Zenoh Interaction:**
+
+| ROS 2 QoS | Zenoh Behavior | Effect |
+|-----------|----------------|--------|
+| `RELIABLE` + `KEEP_ALL` | Forces reliable channel, always blocks | Publisher waits for ACK |
+| `RELIABLE` + `KEEP_LAST(n)` | Reliable with limited queue | Old messages dropped |
+| `BEST_EFFORT` | No retries, fast | Messages may be lost |
+
+**Per-Topic Congestion Policy Configuration:**
+
+```json5
+// zenoh_congestion.json5
+{
+  mode: "client",
+  connect: { endpoints: ["tcp/127.0.0.1:7447"] },
+
+  qos: {
+    publication: {
+      // Camera: Best effort, drop oldest (it's temporal data)
+      "rt/camera/**": {
+        congestion_control: "drop",
+        priority: 5
+      },
+
+      // PointCloud: Allow dropping to prevent blocking
+      "rt/points": {
+        congestion_control: "drop",
+        priority: 5
+      },
+
+      // Control commands: Block until delivered (critical!)
+      "rt/cmd_vel": {
+        congestion_control: "block",
+        priority: 2,
+        express: true
+      },
+
+      // OccupancyGrid: Drop oldest, keep latest
+      "rt/map": {
+        congestion_control: "drop",
+        priority: 6
+      }
+    }
+  }
+}
+```
+
+**Congestion Control Options:**
+
+| `congestion_control` | Behavior | Best For |
+|---------------------|----------|----------|
+| `"block"` | Publisher waits until space available | Control commands, must-deliver |
+| `"drop"` | New messages dropped when queue full | Sensor streams, temporal data |
+
+::: {.callout-warning}
+## Critical: Never Block Camera Publishers!
+If camera publishers use `congestion_control: "block"`, a slow subscriber can freeze the entire camera pipeline. Always use `"drop"` for high-bandwidth sensor data.
+:::
 
 ### Hands-On Testing: cmd_vel Under Congestion
 

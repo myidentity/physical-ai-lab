@@ -365,6 +365,183 @@ echo -1 | sudo tee /sys/module/usbcore/parameters/autosuspend
 
 ---
 
+## Multi-Host Robot Architecture
+
+::: {.callout-note}
+## 📋 From ROSCon India 2025 Workshop (ZettaScale)
+This section covers optimal Zenoh architecture for robots with multiple compute units.
+:::
+
+Modern robots often have **multiple compute units** (ARM for sensors, x86 for perception, Jetson for AI). Here's how to configure Zenoh for this scenario:
+
+### The Single Router Pattern
+
+::: {.callout-tip}
+## ZettaScale Recommendation: One Router Only!
+For multi-host robots, it's better to have **ONE router** (on the main compute unit) rather than running routers on every host.
+:::
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    MULTI-HOST ROBOT ARCHITECTURE                        │
+│                                                                          │
+│    AMR (Main Compute)             ARM Board (Sensors)                   │
+│    192.168.1.10                   192.168.1.11                          │
+│    ────────────────               ────────────────                       │
+│    ┌──────────────┐               ┌──────────────┐                      │
+│    │  rmw_zenohd  │◄──── TCP ────►│  ROS nodes   │                      │
+│    │  (ROUTER)    │               │  (clients)   │                      │
+│    └──────┬───────┘               └──────────────┘                      │
+│           │                                                              │
+│    ┌──────┴───────┐               Jetson (AI)                           │
+│    │  Navigation  │               192.168.1.12                          │
+│    │  Perception  │               ────────────────                       │
+│    │  Planning    │               ┌──────────────┐                      │
+│    └──────────────┘               │  Detection   │                      │
+│                                   │  SLAM        │                      │
+│                                   │  (clients)   │                      │
+│                                   └──────┬───────┘                      │
+│                                          │                              │
+│                                          └────── TCP ───────────────────┘
+│                                                         to AMR router    │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Configuration: Main Compute (AMR)
+
+```json5
+// amr_router.json5 - Runs on main compute unit
+{
+  mode: "router",
+  listen: {
+    endpoints: [
+      "tcp/192.168.1.10:7447",     // Ethernet interface
+      "tcp/127.0.0.1:7447"         // Local processes
+    ]
+  },
+  transport: {
+    shared_memory: { enabled: true }  // SHM for local processes
+  }
+}
+```
+
+```bash
+# On AMR (main compute)
+export ZENOH_ROUTER_CONFIG_URI=/configs/amr_router.json5
+ros2 run rmw_zenoh_cpp rmw_zenohd
+```
+
+### Configuration: ARM / Jetson (Clients)
+
+```json5
+// arm_client.json5 - Runs on ARM board
+{
+  mode: "client",
+  connect: {
+    endpoints: ["tcp/192.168.1.10:7447"]  // Connect to AMR router
+  }
+}
+```
+
+```bash
+# On ARM board
+export ZENOH_SESSION_CONFIG_URI=/configs/arm_client.json5
+ros2 launch realsense2_camera rs_launch.py
+```
+
+### Why Single Router?
+
+| Aspect | Multiple Routers | Single Router |
+|--------|-----------------|---------------|
+| **Complexity** | Router federation config | Simple star topology |
+| **Latency** | Inter-router hops | Direct client-router |
+| **Memory** | Router per host | One router total |
+| **Debugging** | Multiple log sources | Centralized logging |
+| **Failure modes** | Router sync issues | Single point of failure |
+
+::: {.callout-warning}
+## Single Point of Failure
+The single-router pattern means the main compute is critical. For production, consider:
+- Running the router in a systemd service with auto-restart
+- Health monitoring with watchdog
+- Graceful degradation for sensor hosts
+:::
+
+---
+
+## Link-Level Compression (LZ4)
+
+::: {.callout-note}
+## 📋 From ROSCon India 2025 Workshop (ZettaScale)
+Zenoh supports transparent link-level compression using LZ4.
+:::
+
+Zenoh can compress all traffic at the **transport layer** - no application changes needed!
+
+### How It Works
+
+- Uses **LZ4** compression (fast, low CPU overhead)
+- Achieves **30-50% bandwidth reduction** typically
+- **Transparent** to ROS 2 applications
+- **Must be enabled on BOTH ends** of the Zenoh link
+
+### Enable Compression
+
+**Via environment variable (quick):**
+
+```bash
+# Enable on client
+export ZENOH_CONFIG_OVERRIDE='transport/link/compression/enabled=true'
+ros2 run demo_nodes_cpp talker
+
+# Enable on router too!
+export ZENOH_CONFIG_OVERRIDE='transport/link/compression/enabled=true'
+ros2 run rmw_zenoh_cpp rmw_zenohd
+```
+
+**Via config file (recommended):**
+
+```json5
+// zenoh_compressed.json5
+{
+  mode: "client",
+  connect: { endpoints: ["tcp/192.168.1.10:7447"] },
+  transport: {
+    link: {
+      compression: {
+        enabled: true  // LZ4 compression
+      }
+    }
+  }
+}
+```
+
+### Compression Impact
+
+| Data Type | Raw Size | Compressed | Reduction |
+|-----------|----------|------------|-----------|
+| Point clouds | 10 MB | 3-4 MB | ~65% |
+| LIDAR scans | 30 KB | 15 KB | ~50% |
+| Odometry | 400 B | 300 B | ~25% |
+| Images (raw) | 2.76 MB | 1.5 MB | ~45% |
+| Images (JPEG) | 230 KB | 220 KB | ~5% (already compressed) |
+
+::: {.callout-tip}
+## When to Use Link Compression
+
+**Enable compression for:**
+- Multi-host robots over Ethernet
+- Cloud connectivity (always!)
+- Low-bandwidth wireless links
+
+**Skip compression for:**
+- Local SHM transport (no benefit)
+- Already-compressed data (JPEG, H264, ZSTD)
+- Ultra-low-latency control (adds ~0.1ms)
+:::
+
+---
+
 ## Putting It All Together
 
 Here's the complete optimization workflow:
