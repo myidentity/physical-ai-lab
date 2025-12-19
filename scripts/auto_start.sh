@@ -498,6 +498,18 @@ RUN --mount=type=cache,target=${DOCKER_USER_HOME}/.cache/pip \\\
                 print_warning "Could not patch Dockerfile.base automatically"
             fi
         fi
+
+        # Patch container_interface.py to fix terminal compatibility (Kitty, etc.)
+        CONTAINER_INTERFACE="${HOME}/docker/isaac-lab/IsaacLab/docker/utils/container_interface.py"
+        if [ -f "$CONTAINER_INTERFACE" ] && ! grep -q 'TERM=xterm-256color' "$CONTAINER_INTERFACE"; then
+            print_info "Patching container_interface.py for terminal compatibility..."
+            sed -i 's/"--tty",$/"--tty",\n                "-e", "TERM=xterm-256color",/' "$CONTAINER_INTERFACE"
+            if [ $? -eq 0 ]; then
+                print_success "container_interface.py patched for terminal compatibility"
+            else
+                print_warning "Could not patch container_interface.py automatically"
+            fi
+        fi
     else
         echo ""
         print_error "Clone failed. Check your internet connection."
