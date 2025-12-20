@@ -13,7 +13,7 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # Script version (for documentation reference)
-SCRIPT_VERSION="2.1.0"
+SCRIPT_VERSION="2.2.0"
 
 # Official NVIDIA Isaac Sim paths
 ISAAC_HOME="${HOME}/docker/isaac-sim"
@@ -904,10 +904,12 @@ enter_isaac_lab() {
         echo ""
         print_info "Waking up container..."
         echo ""
+        # Re-grant X11 permissions (fixes display after host hibernate/resume)
+        xhost +local:docker > /dev/null 2>&1
         # Use docker start (not container.py start) to resume without rebuilding
         docker start isaac-lab-base > /dev/null 2>&1
         if [ $? -eq 0 ]; then
-            print_success "Container resumed"
+            print_success "Container resumed (X11 display restored)"
             echo ""
             print_info "Entering container..."
             echo ""
