@@ -50,3 +50,7 @@ Thumbs.db
 local/
 *_recording.sh
 *_prototype.sh
+
+# Private content (stored in separate private repo: physical-ai-lab-private)
+# Put ALL private content here: prototypes, drafts, experiments, notes, etc.
+private/

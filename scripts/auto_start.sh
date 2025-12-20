@@ -13,7 +13,8 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # Script version (for documentation reference)
-SCRIPT_VERSION="2.2.0"
+# 2.3.0 - Added Newton Physics Engine + robot_lab to Dockerfile.base
+SCRIPT_VERSION="2.3.0"
 
 # Official NVIDIA Isaac Sim paths
 ISAAC_HOME="${HOME}/docker/isaac-sim"
