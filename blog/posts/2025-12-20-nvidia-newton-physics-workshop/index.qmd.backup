@@ -1,0 +1,553 @@
+---
+title: "NVIDIA Newton Physics: GPU-Accelerated Simulation for Physical AI"
+description: "Hands-on workshop exploring NVIDIA's Newton physics engine, Cosmos world foundation models, and the Isaac ecosystem for training embodied AI agents"
+author: "Rajesh"
+date: "2025-12-20"
+categories: [nvidia, newton, physics-simulation, physical-ai, isaac-lab, workshop]
+image: "images/newton-overview.png"
+draft: true
+---
+
+## Overview
+
+Today I attended an NVIDIA workshop on **Newton Physics** - their new open-source GPU-accelerated physics simulation engine designed specifically for Physical AI development. The workshop was presented by Ninad Madhab from NVIDIA and covered the full stack from world foundation models to hands-on simulation.
+
+::: {.callout-note}
+## Workshop Details
+- **Date**: December 20, 2025
+- **Duration**: ~2 hours
+- **Format**: Presentation + Hands-on Lab (Brev.dev cloud)
+- **Presenter**: Ninad Madhab, NVIDIA
+:::
+
+## The Physical AI Stack
+
+NVIDIA's vision for Physical AI involves multiple layers working together:
+
+### 1. Cosmos World Foundation Models
+
+![NVIDIA Cosmos World Foundation Models](images/cosmos-world-models.png){fig-alt="NVIDIA Cosmos showing Predict, Transfer, and Reason components"}
+
+NVIDIA Cosmos is a platform for developing world foundation models that understand and can predict physical world behavior:
+
+| Component | Purpose |
+|-----------|---------|
+| **Cosmos Predict** | Generate future virtual world states from multi-modal inputs |
+| **Cosmos Transfer** | Generate physics-aware virtual worlds conditioned by real world and 3D inputs |
+| **Cosmos Reason** | Chain-of-thought reasoning for physical AI world state understanding |
+
+### 2. The Robotics Data Challenge
+
+One of the key insights from the workshop was the evolution of scaling laws in AI:
+
+```
+Perception AI → Generative AI → Agentic AI → Physical AI
+```
+
+Physical AI requires **three types of scaling**:
+
+1. **Pre-training Scaling** - Internet video pre-training
+2. **Post-training Scaling** - Human demonstration + synthetic data generation
+3. **Test-time Scaling** - "Long thinking" for complex physical reasoning
+
+### 3. Isaac GROOT-Mimic Blueprint
+
+![Isaac GROOT-Mimic Blueprint](images/groot-mimic-blueprint.png){fig-alt="GROOT-Mimic data pipeline from demonstrations to training data"}
+
+A fascinating data multiplication pipeline:
+
+```
+10s of demonstrations → 100s of synthetic motions → 1 Million training examples
+```
+
+The pipeline components:
+
+- **GROOT-Teleop** (Isaac Lab) - Capture human demonstrations via teleoperation
+- **GROOT-Mimic** (Isaac Lab) - Learn motion patterns from demonstrations
+- **GROOT-Gen** (Omniverse + Cosmos) - Generate synthetic variations at scale
+
+## Newton Physics Engine
+
+The main focus of the hands-on portion was **Newton** - NVIDIA's new physics simulation engine.
+
+### What is Newton?
+
+![What is Newton?](images/newton-overview.png){fig-alt="Newton overview slide showing key features and backers"}
+
+Newton is a GPU-accelerated physics simulation engine built upon **NVIDIA Warp**, specifically targeting roboticists and simulation researchers.
+
+**Key Characteristics:**
+
+- **Open Source** - Apache 2.0 license
+- **GPU-Accelerated** - Leverages NVIDIA Warp for fast, scalable simulation
+- **Differentiable** - Supports gradient computation for machine learning
+- **Modular** - Easily extensible with new solvers and components
+
+**Backed by Industry Leaders:**
+
+- Disney Research
+- Google DeepMind
+- NVIDIA
+- The Linux Foundation
+
+### Core Features
+
+| Feature | Description |
+|---------|-------------|
+| **Multiple Solvers** | XPBD, VBD, MuJoCo, Featherstone, SemiImplicit |
+| **Rich Import/Export** | URDF, MJCF, USD file formats |
+| **Modular Design** | Easy to extend with custom solvers |
+| **Differentiable** | End-to-end gradient support for RL |
+
+### Newton Architecture
+
+![Newton Introduction Notebook](images/newton-introduction.png){fig-alt="Newton introduction Jupyter notebook showing key features"}
+
+Newton follows a clean architectural pattern:
+
+```python
+import newton
+import warp as wp
+import numpy as np
+from pxr import Usd, UsdGeom
+
+# Key modules
+import newton.examples
+import newton.usd
+import rerun as rr  # Visualization
+```
+
+### Key Concepts
+
+#### 1. ModelBuilder
+
+Create articulated systems programmatically or import from standard formats:
+
+```python
+builder = newton.ModelBuilder()
+builder.add_usd("cartpole.usd")
+
+# Finalize and upload to GPU
+model = builder.finalize()
+```
+
+#### 2. Articulations
+
+Multi-body systems connected by joints. Newton supports:
+
+- **REVOLUTE (Hinge)** - Rotation around a single axis
+- **PRISMATIC (Slider)** - Translation along a single axis
+- **BALL (Spherical)** - Rotation in all directions
+- **FIXED** - No relative motion (welded connection)
+- **DISTANCE** - Maintains constant distance between points
+
+#### 3. State Management
+
+The `newton.State` class holds all time-varying simulation data:
+
+```python
+class State:
+    """Holds all time-varying data for a model."""
+
+    # Joint state
+    joint_q: wp.array   # Joint positions
+    joint_qd: wp.array  # Joint velocities
+
+    # Body state
+    body_q: wp.array    # Body coordinates
+    body_qd: wp.array   # Body velocities
+
+    # Particle state
+    particle_q: wp.array   # Particle positions
+    particle_qd: wp.array  # Particle velocities
+```
+
+#### 4. Simulation Loop
+
+![Newton Code Example](images/newton-code-example.png){fig-alt="Newton code example putting it all together"}
+
+Putting it all together:
+
+```python
+import newton
+
+# Import model from USD
+builder = newton.ModelBuilder()
+builder.add_usd("cartpole.usd")
+model = builder.finalize()
+
+# Create MuJoCo solver
+solver = newton.solvers.SolverMuJoCo(model)
+
+# Create state and control objects
+state_0 = model.state()
+state_1 = model.state()
+control = model.control()
+contacts = model.collide(state_0)
+
+# Simulation loop
+for i in range(num_steps):
+    state_0.clear_forces()
+
+    # Forward dynamics
+    solver.step(
+        model, state_0, state_1,
+        control, contacts, sim_dt
+    )
+
+    # Swap states
+    state_0, state_1 = state_1, state_0
+```
+
+#### 5. Selection API
+
+For reinforcement learning, we often need to select subsets of DOFs batched by environment:
+
+```python
+from newton.selection import ArticulationView
+
+# Create view onto data for one articulation
+ants = ArticulationView(model, "/World/envs/*/Robot/torso")
+
+# Get strided joint arrays
+ant_q = ants.get_attribute("joint_q", state_0)
+ant_qd = ants.get_attribute("joint_qd", state_0)
+
+# Set DOF states (masked)
+ants.set_attribute("joint_q", state_0, xform, mask=mask)
+ants.set_attribute("joint_qd", state_0, velocity, mask=mask)
+
+# Helpers for manipulating root state
+ants.set_root_transforms(state_0, xform, mask=mask)
+ants.set_root_velocities(state_0, velocity, mask=mask)
+```
+
+### Hydroelastic Contacts
+
+Newton includes sophisticated contact modeling via `newton.geometry`:
+
+- **SDF-SDF collision detection** with multi-stage broadphase and narrow-band SDFs
+- Meshes are converted to narrow-band SDFs
+- Contact constraints generated from isosurface triangles
+- Area-dependent scaling of MuJoCo constraint parameters
+- **Contact reduction** finds representative points from thousands of generated contacts
+
+The demo showed the **Objaverse SDF grasping benchmark** at 1mm SDF resolution - all running in realtime!
+
+## NVIDIA Isaac Perceptor
+
+The workshop also covered **Isaac Perceptor** - a reference workflow for autonomous mobile robots:
+
+**Components:**
+
+- Disparity computation
+- Visual Odometry
+- People Segmentation
+- 3D Occupancy Grid
+
+All optimized to run on **NVIDIA Jetson** with Isaac ROS (30+ ROS packages, fully optimized).
+
+## Isaac Lab Arena
+
+For policy evaluation, NVIDIA provides **Isaac Lab Arena** - a framework for closed-loop policy inference:
+
+### Tasks Design
+
+Tasks are defined using the `TaskBase` abstract class:
+
+```python
+class TaskBase(ABC):
+    @abstractmethod
+    def get_scene_cfg(self) -> Any:
+        """Additional scene configurations."""
+
+    @abstractmethod
+    def get_termination_cfg(self) -> Any:
+        """Success and failure conditions."""
+
+    @abstractmethod
+    def get_events_cfg(self) -> Any:
+        """Reset and randomization handling."""
+
+    @abstractmethod
+    def get_metrics(self) -> list[MetricBase]:
+        """Performance evaluation metrics."""
+
+    @abstractmethod
+    def get_mimic_env_cfg(self, embodiment_name: str) -> Any:
+        """Demonstration generation configuration."""
+```
+
+Example workflows include:
+- G1 Loco-Manipulation Box
+- Pick and Place Task
+- **GR1 Open Microwave Door Task**
+
+## Hands-on Lab Environment
+
+The workshop used **Brev.dev** for cloud-based GPU access:
+
+| Spec | Value |
+|------|-------|
+| GPU | NVIDIA L40S (44GB VRAM) |
+| Cost | $1.89/hour |
+| Region | N. Virginia (AWS) |
+
+**Tutorial Notebooks:**
+
+1. `00_introduction.ipynb` - Newton basics
+2. `01_articulations.ipynb` - Joint systems
+3. `02_inverse_kinematics.ipynb` - IK solving
+4. `03_joint_control.ipynb` - Control strategies
+5. `04_domain_randomization.ipynb` - Sim-to-real transfer
+6. `05_robot_policy.ipynb` - RL policy training
+7. `06_diffsim.ipynb` - Differentiable simulation
+
+::: {.callout-important}
+## Blackwell Architecture Note
+The GROOT N1.5 codebase does not yet support running on Blackwell architecture (RTX 50 series, RTX Pro 6000, DGX Spark). Use the **Base + GROOT** container for policy post-training and evaluation on Blackwell GPUs.
+:::
+
+## Key Takeaways
+
+1. **Newton is production-ready** - Open source, backed by major players, actively developed
+
+2. **MuJoCo integration** - Newton can use MuJoCo as a solver backend, bringing the best of both worlds
+
+3. **Differentiable by design** - Every component supports gradient computation for end-to-end learning
+
+4. **USD-native** - Deep integration with Universal Scene Description for Omniverse compatibility
+
+5. **Scaling is the key** - The GROOT-Mimic pipeline shows how to go from 10 demos to 1M training examples
+
+## Next Steps
+
+Based on this workshop, I plan to:
+
+1. **Try Newton locally** - Install and run the tutorial notebooks on my RTX 5090
+2. **Integrate with Isaac Lab** - Use Newton as an alternative physics backend
+3. **Explore GROOT-Mimic** - Test the demonstration multiplication pipeline
+4. **Build custom environments** - Create Newton-based tasks for Go2-W training
+
+## Workshop Screenshots Gallery
+
+Below are all the screenshots captured during the workshop, in chronological order:
+
+::: {.panel-tabset}
+
+### Session Start (11:06-11:30)
+
+![11:06 - Workshop Intro](images/Screenshot%20from%202025-12-20%2011-06-32.png)
+
+![11:09](images/Screenshot%20from%202025-12-20%2011-09-23.png)
+
+![11:09](images/Screenshot%20from%202025-12-20%2011-09-32.png)
+
+![11:12](images/Screenshot%20from%202025-12-20%2011-12-32.png)
+
+![11:14 - Robotics Data Challenge](images/Screenshot%20from%202025-12-20%2011-14-27.png)
+
+![11:14](images/Screenshot%20from%202025-12-20%2011-14-48.png)
+
+![11:16](images/Screenshot%20from%202025-12-20%2011-16-19.png)
+
+![11:23](images/Screenshot%20from%202025-12-20%2011-23-11.png)
+
+![11:23 - Digital Twins](images/Screenshot%20from%202025-12-20%2011-23-26.png)
+
+![11:23](images/Screenshot%20from%202025-12-20%2011-23-53.png)
+
+![11:25](images/Screenshot%20from%202025-12-20%2011-25-25.png)
+
+![11:26](images/Screenshot%20from%202025-12-20%2011-26-20.png)
+
+![11:26 - Isaac Perceptor](images/Screenshot%20from%202025-12-20%2011-26-50.png)
+
+![11:29](images/Screenshot%20from%202025-12-20%2011-29-16.png)
+
+![11:29](images/Screenshot%20from%202025-12-20%2011-29-53.png)
+
+![11:30 - GROOT-Mimic](images/Screenshot%20from%202025-12-20%2011-30-47.png)
+
+### Mid-Session (11:33-12:00)
+
+![11:33](images/Screenshot%20from%202025-12-20%2011-33-14.png)
+
+![11:40](images/Screenshot%20from%202025-12-20%2011-40-56.png)
+
+![11:41](images/Screenshot%20from%202025-12-20%2011-41-07.png)
+
+![11:43 - Isaac Lab Arena](images/Screenshot%20from%202025-12-20%2011-43-47.png)
+
+![11:43](images/Screenshot%20from%202025-12-20%2011-43-55.png)
+
+![11:44](images/Screenshot%20from%202025-12-20%2011-44-57.png)
+
+![11:45](images/Screenshot%20from%202025-12-20%2011-45-03.png)
+
+![11:46](images/Screenshot%20from%202025-12-20%2011-46-58.png)
+
+![11:48](images/Screenshot%20from%202025-12-20%2011-48-10.png)
+
+![11:48](images/Screenshot%20from%202025-12-20%2011-48-20.png)
+
+![11:49](images/Screenshot%20from%202025-12-20%2011-49-42.png)
+
+![11:51](images/Screenshot%20from%202025-12-20%2011-51-39.png)
+
+![11:56](images/Screenshot%20from%202025-12-20%2011-56-14.png)
+
+![11:56](images/Screenshot%20from%202025-12-20%2011-56-32.png)
+
+![11:57 - Brev.dev Setup](images/Screenshot%20from%202025-12-20%2011-57-43.png)
+
+![11:57](images/Screenshot%20from%202025-12-20%2011-57-52.png)
+
+![11:58](images/Screenshot%20from%202025-12-20%2011-58-56.png)
+
+### Newton Deep Dive (12:03-12:30)
+
+![12:03 - What is Newton](images/Screenshot%20from%202025-12-20%2012-03-34.png)
+
+![12:03](images/Screenshot%20from%202025-12-20%2012-03-55.png)
+
+![12:04](images/Screenshot%20from%202025-12-20%2012-04-11.png)
+
+![12:04](images/Screenshot%20from%202025-12-20%2012-04-58.png)
+
+![12:05](images/Screenshot%20from%202025-12-20%2012-05-32.png)
+
+![12:06](images/Screenshot%20from%202025-12-20%2012-06-46.png)
+
+![12:08](images/Screenshot%20from%202025-12-20%2012-08-07.png)
+
+![12:09](images/Screenshot%20from%202025-12-20%2012-09-20.png)
+
+![12:09](images/Screenshot%20from%202025-12-20%2012-09-24.png)
+
+![12:10](images/Screenshot%20from%202025-12-20%2012-10-25.png)
+
+![12:11 - Newton Introduction](images/Screenshot%20from%202025-12-20%2012-11-21.png)
+
+![12:11](images/Screenshot%20from%202025-12-20%2012-11-43.png)
+
+![12:12](images/Screenshot%20from%202025-12-20%2012-12-09.png)
+
+![12:12](images/Screenshot%20from%202025-12-20%2012-12-24.png)
+
+![12:12](images/Screenshot%20from%202025-12-20%2012-12-27.png)
+
+![12:12](images/Screenshot%20from%202025-12-20%2012-12-37.png)
+
+![12:12](images/Screenshot%20from%202025-12-20%2012-12-53.png)
+
+![12:13](images/Screenshot%20from%202025-12-20%2012-13-00.png)
+
+![12:13](images/Screenshot%20from%202025-12-20%2012-13-11.png)
+
+![12:14 - Articulations](images/Screenshot%20from%202025-12-20%2012-14-33.png)
+
+![12:16](images/Screenshot%20from%202025-12-20%2012-16-17.png)
+
+![12:20 - Newton State](images/Screenshot%20from%202025-12-20%2012-20-08.png)
+
+![12:20](images/Screenshot%20from%202025-12-20%2012-20-16.png)
+
+![12:20](images/Screenshot%20from%202025-12-20%2012-20-58.png)
+
+![12:21](images/Screenshot%20from%202025-12-20%2012-21-36.png)
+
+![12:22](images/Screenshot%20from%202025-12-20%2012-22-38.png)
+
+![12:22](images/Screenshot%20from%202025-12-20%2012-22-50.png)
+
+![12:23](images/Screenshot%20from%202025-12-20%2012-23-25.png)
+
+![12:25 - Hydroelastic Contacts](images/Screenshot%20from%202025-12-20%2012-25-25.png)
+
+![12:25](images/Screenshot%20from%202025-12-20%2012-25-43.png)
+
+![12:27](images/Screenshot%20from%202025-12-20%2012-27-50.png)
+
+![12:28](images/Screenshot%20from%202025-12-20%2012-28-58.png)
+
+### Hands-on & Wrap-up (12:42-13:06)
+
+![12:42 - Code Example](images/Screenshot%20from%202025-12-20%2012-42-11.png)
+
+![12:42](images/Screenshot%20from%202025-12-20%2012-42-30.png)
+
+![12:43](images/Screenshot%20from%202025-12-20%2012-43-11.png)
+
+![12:43](images/Screenshot%20from%202025-12-20%2012-43-19.png)
+
+![12:43](images/Screenshot%20from%202025-12-20%2012-43-45.png)
+
+![12:44](images/Screenshot%20from%202025-12-20%2012-44-13.png)
+
+![12:44](images/Screenshot%20from%202025-12-20%2012-44-45.png)
+
+![12:44](images/Screenshot%20from%202025-12-20%2012-44-48.png)
+
+![12:45](images/Screenshot%20from%202025-12-20%2012-45-49.png)
+
+![12:46](images/Screenshot%20from%202025-12-20%2012-46-41.png)
+
+![12:47](images/Screenshot%20from%202025-12-20%2012-47-56.png)
+
+![12:48](images/Screenshot%20from%202025-12-20%2012-48-36.png)
+
+![12:49](images/Screenshot%20from%202025-12-20%2012-49-50.png)
+
+![12:50 - Selection API](images/Screenshot%20from%202025-12-20%2012-50-07.png)
+
+![12:51](images/Screenshot%20from%202025-12-20%2012-51-07.png)
+
+![12:51](images/Screenshot%20from%202025-12-20%2012-51-45.png)
+
+![12:52](images/Screenshot%20from%202025-12-20%2012-52-09.png)
+
+![12:52](images/Screenshot%20from%202025-12-20%2012-52-28.png)
+
+![12:54](images/Screenshot%20from%202025-12-20%2012-54-54.png)
+
+![12:56 - ROS Workspaces](images/Screenshot%20from%202025-12-20%2012-56-15.png)
+
+![12:56](images/Screenshot%20from%202025-12-20%2012-56-36.png)
+
+![12:58](images/Screenshot%20from%202025-12-20%2012-58-08.png)
+
+![12:58](images/Screenshot%20from%202025-12-20%2012-58-13.png)
+
+![12:59](images/Screenshot%20from%202025-12-20%2012-59-48.png)
+
+![12:59](images/Screenshot%20from%202025-12-20%2012-59-57.png)
+
+![13:00](images/Screenshot%20from%202025-12-20%2013-00-04.png)
+
+![13:00](images/Screenshot%20from%202025-12-20%2013-00-54.png)
+
+![13:01 - Tasks Design](images/Screenshot%20from%202025-12-20%2013-01-03.png)
+
+![13:01](images/Screenshot%20from%202025-12-20%2013-01-16.png)
+
+![13:02](images/Screenshot%20from%202025-12-20%2013-02-03.png)
+
+![13:04](images/Screenshot%20from%202025-12-20%2013-04-20.png)
+
+![13:05](images/Screenshot%20from%202025-12-20%2013-05-50.png)
+
+![13:06 - Workshop End](images/Screenshot%20from%202025-12-20%2013-06-26.png)
+
+:::
+
+## Resources
+
+- [Newton GitHub Repository](https://github.com/nvidia/newton) (Apache 2.0)
+- [NVIDIA Warp](https://github.com/NVIDIA/warp) - The underlying GPU compute framework
+- [Isaac Lab Arena Documentation](https://isaac-sim.github.io/IsaacLab-Arena/)
+- [Brev.dev](https://brev.nvidia.com) - Cloud GPU platform for hands-on labs
+
+---
+
+*This workshop was part of NVIDIA's ongoing Physical AI education series. The combination of Cosmos, Newton, and Isaac Lab represents a comprehensive stack for developing embodied AI agents.*
