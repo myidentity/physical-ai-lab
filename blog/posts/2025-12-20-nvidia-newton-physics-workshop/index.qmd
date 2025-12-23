@@ -261,6 +261,34 @@ model = builder.finalize()
 
 The `newton.Model` is a flat Python struct of 1D, 2D Warp arrays that stores non-time varying data, supporting generalized and maximal coordinates.
 
+::: {.callout-tip}
+## 💡 Practical Discovery: Bodies ≠ Shapes!
+
+When working with Newton models, you might notice something surprising:
+
+```python
+print(f"Bodies: {model.body_count}, Shapes: {model.shape_count}")
+# Output: Bodies: 17, Shapes: 35  ← Why 35 shapes for 17 bodies?
+```
+
+**Newton creates 2 shapes per body** - one for **visual geometry** (rendering) and one for **collision geometry** (physics). This separation allows:
+
+- Visual meshes to be high-detail (smooth rendering)
+- Collision meshes to be simplified (fast physics)
+
+To see which shape belongs to which body:
+
+```python
+import numpy as np
+shape_body = model.shape_body.numpy()  # Maps shape_idx → body_idx
+
+for shape_idx, body_idx in enumerate(shape_body):
+    print(f"Shape {shape_idx} → Body {body_idx}")
+```
+
+This is especially important when customizing colors with `viewer.update_shape_colors()` - you need to color **all shapes**, not just bodies! For a 17-body robot like the Go2-W, that's 35 shape indices to consider (plus 1 for ground = 36 total).
+:::
+
 #### 3. Articulations
 
 ![Articulations Introduction](images/54-articulations-introduction.png){fig-alt="Multi-body systems connected by joints"}
