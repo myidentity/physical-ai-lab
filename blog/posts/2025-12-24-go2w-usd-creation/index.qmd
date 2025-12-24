@@ -1,0 +1,566 @@
+---
+title: "Creating Go2W USD: The NVIDIA Professional Way"
+subtitle: "A Journey of Discovery with the pxr API"
+author: "Rajesh"
+date: "2025-12-24"
+categories: [newton, usd, pxr-api, isaac-sim, go2-w, physical-ai, tutorial]
+toc: true
+toc-depth: 3
+image: images/thumbnail.png
+css: styles.css
+---
+
+*This tutorial is guided by [Dr. Nova Brooks](/dr-nova-brooks.qmd), your AI mentor for robotics and simulation.*
+
+---
+
+## The Journey Begins
+
+::: {.dialogue}
+**Rajesh**: Dr. Nova, I've been working with the Newton physics engine and ran into a frustrating problem. When I load my Go2W robot from URDF, it creates 35 shapes instead of the expected 17. The simulation is loading both visual AND collision geometry!
+
+**Dr. Nova Brooks**: Ah, the classic URDF double-counting problem! This is exactly why NVIDIA uses USD (Universal Scene Description) for their professional robot assets. Let me show you how we can fix this - and I'll warn you now, the journey will teach you more than just the solution!
+:::
+
+::: {.callout-important}
+## The Problem We're Solving
+When Newton loads URDF files, it processes **both** visual and collision geometry as physics shapes. For a robot with 17 bodies, this creates 35+ shapes, causing incorrect collision detection and heavier simulation load.
+:::
+
+![URDF vs USD: Why USD is the professional choice for robot assets](images/urdf-vs-usd-comparison.png){fig-alt="Comparison table showing USD advantages over URDF: layered architecture, separate collision/visual, composition references, industry standard"}
+
+---
+
+## Understanding USD Architecture
+
+::: {.dialogue}
+**Dr. Nova Brooks**: Before we dive in, let me explain USD's architecture. Unlike URDF which is flat, USD uses a **layered approach** - and this will become VERY important later. Trust me.
+
+**Rajesh**: Layered how?
+
+**Dr. Nova Brooks**: Each layer handles a different concern:
+:::
+
+```
+go2.usd                          <- Main entry point
+├── configuration/
+│   ├── go2_base.usd            <- Geometry (colliders + visuals)
+│   ├── go2_physics.usd         <- Physics (joints, mass, inertia)
+│   └── go2_robot.usd           <- Robot metadata
+```
+
+::: {.callout-note}
+## Why Layered Architecture?
+| Layer | Purpose | Contains |
+|-------|---------|----------|
+| `go2_base.usd` | Geometry | Mesh references, **collider shapes**, **visual transforms** |
+| `go2_physics.usd` | Physics | Joint definitions, mass properties, drive parameters |
+| `go2_robot.usd` | Metadata | Robot type, version, custom attributes |
+
+Pay attention to `go2_base.usd` - it contains BOTH colliders AND visuals separately. This becomes important!
+:::
+
+![USD Layered Architecture: Separation of concerns for robot assets](images/usd-layered-architecture.png){fig-alt="Diagram showing go2.usd composing go2_base.usd, go2_physics.usd, and go2_robot.usd sublayers"}
+
+---
+
+## Starting Point: NVIDIA's Professional Go2 USD
+
+::: {.dialogue}
+**Rajesh**: So where do we start? Do we create everything from scratch?
+
+**Dr. Nova Brooks**: Absolutely not! We start with **NVIDIA's professional Go2 USD** - it's already perfectly structured. We'll modify it to become Go2W. Let's look at it in Isaac Sim first:
+:::
+
+![Starting point: NVIDIA's Go2 USD loaded in Isaac Sim](images/01-starting-point-isaac-sim.png){fig-alt="Isaac Sim showing the original Go2 robot USD with foot pads"}
+
+::: {.dialogue}
+**Rajesh**: I see! The Go2 has small foot pads at the end of each leg. For Go2W, I need to replace those with wheels.
+
+**Dr. Nova Brooks**: Exactly. First, let's study the Go2W URDF to understand what wheel specifications we need:
+:::
+
+```{.python filename="Wheel Specifications from Go2W URDF"}
+# Wheel parameters extracted from Go2W URDF
+WHEEL_RADIUS = 0.085      # meters
+WHEEL_LENGTH = 0.04       # meters (width)
+WHEEL_MASS = 1.166        # kg (motor + wheel combined)
+WHEEL_EFFORT_LIMIT = 23.7 # Nm (max torque)
+
+# Wheel inertia (from URDF)
+WHEEL_INERTIA = {
+    "ixx": 0.0017,
+    "iyy": 0.0028,  # Around rotation axis
+    "izz": 0.0017
+}
+```
+
+---
+
+## First Attempt: Modifying the Physics Layer
+
+::: {.dialogue}
+**Rajesh**: Okay, I understand the specs. Let me start modifying!
+
+**Dr. Nova Brooks**: Go ahead - start with the collision geometry. Replace those foot spheres with wheel cylinders.
+:::
+
+### Step 1: Replace Collision Spheres with Cylinders
+
+```{.python filename="create_go2w_usd.py - Collision Geometry"}
+from pxr import Usd, UsdGeom, UsdPhysics, Gf
+
+def modify_go2_base_colliders(base_usd_path):
+    """
+    Replace foot sphere colliders with wheel cylinders.
+
+    Original path: /colliders/{leg}_foot/mesh_0/sphere
+    New path:      /colliders/{leg}_foot/mesh_0/cylinder
+    """
+    stage = Usd.Stage.Open(base_usd_path)
+
+    legs = ["FL", "FR", "RL", "RR"]
+
+    for leg in legs:
+        sphere_path = f"/colliders/{leg}_foot/mesh_0/sphere"
+        parent_path = f"/colliders/{leg}_foot/mesh_0"
+
+        # Remove the old sphere
+        stage.RemovePrim(sphere_path)
+
+        # Create new cylinder
+        cylinder_path = f"{parent_path}/cylinder"
+        cylinder = UsdGeom.Cylinder.Define(stage, cylinder_path)
+
+        # Set cylinder properties
+        cylinder.CreateRadiusAttr().Set(WHEEL_RADIUS)  # 0.085m
+        cylinder.CreateHeightAttr().Set(WHEEL_LENGTH)  # 0.04m
+        cylinder.CreateAxisAttr().Set("Y")  # Wheel spins around Y axis
+
+        # Apply collision API - makes it a physics collider
+        UsdPhysics.CollisionAPI.Apply(cylinder.GetPrim())
+
+        print(f"[{leg}] Created wheel cylinder collider")
+
+    stage.Save()
+```
+
+### Step 2: Convert Joints for Wheel Rotation
+
+::: {.dialogue}
+**Rajesh**: The collision shapes are cylinders now. But they can't rotate - the feet were fixed to the calf with `FixedJoint`.
+
+**Dr. Nova Brooks**: Right! Convert them to `RevoluteJoint` - joints that allow continuous rotation:
+:::
+
+```{.python filename="create_go2w_usd.py - Joint Conversion"}
+def modify_go2_physics(physics_usd_path):
+    """
+    Convert foot FixedJoints to RevoluteJoints for wheel rotation.
+    """
+    stage = Usd.Stage.Open(physics_usd_path)
+
+    legs = ["FL", "FR", "RL", "RR"]
+
+    for leg in legs:
+        joint_path = f"/go2_description/joints/{leg}_foot_joint"
+        joint_prim = stage.GetPrimAtPath(joint_path)
+
+        # Get the FixedJoint to extract body connections
+        fixed_joint = UsdPhysics.FixedJoint(joint_prim)
+
+        # Extract existing relationships (parent/child bodies)
+        body0_targets = fixed_joint.GetBody0Rel().GetTargets()  # Calf
+        body1_targets = fixed_joint.GetBody1Rel().GetTargets()  # Foot
+
+        # Extract local transforms
+        local_pos0 = joint_prim.GetAttribute("physics:localPos0").Get()
+        local_rot0 = joint_prim.GetAttribute("physics:localRot0").Get()
+        local_pos1 = joint_prim.GetAttribute("physics:localPos1").Get()
+        local_rot1 = joint_prim.GetAttribute("physics:localRot1").Get()
+
+        # Remove the FixedJoint
+        stage.RemovePrim(joint_path)
+
+        # Create RevoluteJoint (allows rotation!)
+        revolute = UsdPhysics.RevoluteJoint.Define(stage, joint_path)
+        revolute.CreateAxisAttr().Set("Y")  # Rotate around Y axis
+
+        # Reconnect bodies
+        revolute.CreateBody0Rel().SetTargets(body0_targets)
+        revolute.CreateBody1Rel().SetTargets(body1_targets)
+
+        # Restore transforms
+        revolute.CreateLocalPos0Attr().Set(local_pos0)
+        revolute.CreateLocalRot0Attr().Set(local_rot0)
+        revolute.CreateLocalPos1Attr().Set(local_pos1)
+        revolute.CreateLocalRot1Attr().Set(local_rot1)
+
+        # NO LIMITS = continuous rotation (like a wheel!)
+
+        # Add drive for motor control
+        joint_prim = stage.GetPrimAtPath(joint_path)
+        drive_api = UsdPhysics.DriveAPI.Apply(joint_prim, "angular")
+        drive_api.CreateStiffnessAttr().Set(0.0)   # Velocity control mode
+        drive_api.CreateDampingAttr().Set(0.5)
+        drive_api.CreateMaxForceAttr().Set(23.7)   # Effort limit
+
+        print(f"[{leg}] Created RevoluteJoint (continuous, axis=Y)")
+
+    stage.Save()
+```
+
+![Go2 to Go2W: Converting the foot joint to a wheel joint](images/joint-conversion-go2-to-go2w.png){fig-alt="Diagram showing Go2 leg with FixedJoint foot converting to Go2W leg with RevoluteJoint wheel"}
+
+::: {.eureka-box}
+## Eureka: Continuous Joints in USD
+A `RevoluteJoint` with **no limits set** becomes a continuous joint - it can rotate forever! In URDF you specify `type="continuous"`, but in USD you simply don't add limit attributes.
+:::
+
+---
+
+## First Test: Something's Not Right...
+
+::: {.dialogue}
+**Rajesh**: I ran the simulation and... wait, the robot is spawning INSIDE the ground!
+
+**Dr. Nova Brooks**: Ah yes! The wheel radius is larger than the foot pad. You need to adjust the spawn height.
+:::
+
+### Debugging: Spawn Height Issue
+
+```python
+# Original spawn height (for Go2 with foot pads)
+spawn_height = 0.35  # meters
+
+# Problem: Wheels are bigger! Robot spawns inside ground.
+# Wheel radius: 0.085m vs foot sphere: ~0.02m
+
+# Fix: Increase spawn height to account for larger wheels
+spawn_height = 0.42  # Adjusted for wheel radius
+```
+
+::: {.dialogue}
+**Rajesh**: Fixed! But now the wheels look... upside down?
+
+**Dr. Nova Brooks**: That's because you might have the axis orientation wrong. Let me check...
+:::
+
+### Debugging: Wheel Orientation
+
+```python
+# Initial attempt - wheels were upside down
+cylinder.CreateAxisAttr().Set("Z")  # Wrong!
+
+# Fix: Wheels should spin around Y axis (the axle direction)
+cylinder.CreateAxisAttr().Set("Y")  # Correct!
+```
+
+![Wheel Axis Orientation: Getting the rotation axis right](images/wheel-axis-orientation.png){fig-alt="Diagram showing wrong axis=Z vs correct axis=Y for wheel rotation in 3D"}
+
+Here's what the wrong orientation looked like - the robot collapsed because the wheels couldn't support it properly:
+
+![The wheel orientation problem in action](images/05-wheel-orientation-wrong.png){fig-alt="Screenshot showing Go2W robot collapsed due to incorrect wheel orientation"}
+
+::: {.dialogue}
+**Rajesh**: Okay, spawn height fixed, orientation fixed. Let me run the simulation again... The physics works! I can see the collision cylinders. But wait... why does my Go2W still LOOK like it has feet?!
+
+**Dr. Nova Brooks**: *smiles knowingly* Now you've discovered something important...
+:::
+
+---
+
+## The Discovery: "Where Are My Wheels?!"
+
+::: {.dialogue}
+**Rajesh**: I don't understand! I replaced the collision geometry. The physics shows wheel cylinders. But visually, the robot still has leg feet!
+
+**Dr. Nova Brooks**: Remember when I said USD has **layered architecture** and it would become important? Here's your lesson:
+:::
+
+![THE KEY INSIGHT: Collision and Visual are completely separate in USD](images/collision-vs-visual-key-insight.png){fig-alt="Diagram showing collision layer with simple cylinder vs visual layer with detailed wheel mesh - they are independent"}
+
+::: {.eureka-box}
+## THE KEY INSIGHT: Collision ≠ Visual!
+
+In USD, **collision geometry** and **visual geometry** are **completely separate**!
+
+- `go2_base.usd` contains BOTH:
+  - `/colliders/...` - Physics collision shapes (what we modified)
+  - `/visuals/...` - Visual mesh references (still pointing to foot meshes!)
+
+You modified the **collision layer** but forgot the **visual layer**!
+:::
+
+![The "Aha Moment": Collision cylinders work, but visuals still show feet!](images/03-aha-moment-no-visual-wheels.png){fig-alt="Go2W showing black wheel collision cylinders but visual geometry still shows leg structure with feet"}
+
+::: {.dialogue}
+**Rajesh**: Oh! So when I see those big black cylinders, that's the collision geometry. But the actual visual meshes - the ones that LOOK like feet - are still the old Go2 foot meshes!
+
+**Dr. Nova Brooks**: Exactly! Now you understand why USD's separation of concerns is both powerful AND something you need to be aware of. To make it visually look like wheels, you need to modify the visual layer too.
+
+**Rajesh**: But I don't have wheel visual meshes in USD format...
+
+**Dr. Nova Brooks**: Then let's create them! First, we need to convert the wheel DAE meshes to USD format.
+:::
+
+---
+
+## Going Back: Converting Wheel Meshes
+
+::: {.dialogue}
+**Dr. Nova Brooks**: You have wheel meshes in DAE (Collada) format from the Go2W URDF package. USD can't reference DAE directly, so we need to convert them using Isaac Sim's asset converter:
+:::
+
+```{.python filename="convert_wheel_meshes.py"}
+#!/usr/bin/env python3
+"""
+Convert wheel DAE meshes to USD format using Isaac Sim's asset converter.
+
+Run with isaaclab.sh:
+  cd /workspace/isaaclab
+  ./isaaclab.sh -p <path>/convert_wheel_meshes.py
+"""
+
+# ========================================
+# CRITICAL: Launch Isaac Sim FIRST!
+# This MUST be before any other imports
+# ========================================
+from isaaclab.app import AppLauncher
+
+# Launch omniverse app in headless mode
+simulation_app = AppLauncher(headless=True).app
+
+# ========================================
+# Now we can import Isaac Lab modules
+# ========================================
+import os
+from isaaclab.sim.converters import MeshConverter, MeshConverterCfg
+
+
+def convert_wheel_meshes():
+    """Convert wheel DAE files to USD using MeshConverter."""
+
+    meshes_dir = "/workspace/isaaclab/robot_lab/.../go2w_description/meshes"
+
+    wheels = [
+        ("left_wheel.dae", "left_wheel.usd"),
+        ("right_wheel.dae", "right_wheel.usd"),
+    ]
+
+    for dae_name, usd_name in wheels:
+        in_path = os.path.join(meshes_dir, dae_name)
+
+        cfg = MeshConverterCfg(
+            asset_path=in_path,
+            usd_dir=meshes_dir,
+            usd_file_name=usd_name,
+            make_instanceable=False,
+        )
+
+        converter = MeshConverter(cfg)
+        print(f"Converted: {converter.usd_path}")
+
+
+if __name__ == "__main__":
+    convert_wheel_meshes()
+    simulation_app.close()
+```
+
+::: {.callout-tip}
+## Key Insight: AppLauncher First!
+The `AppLauncher` must be imported and invoked **before any other imports**. This initializes the Omniverse runtime which provides access to the asset converter.
+:::
+
+---
+
+## Completing the Picture: Visual Layer
+
+::: {.dialogue}
+**Rajesh**: Wheel meshes converted! Now how do I replace the visual foot references with wheel references?
+
+**Dr. Nova Brooks**: Open `go2_base.usd` again and modify the `/visuals/` paths. Clear the existing foot mesh reference and add your wheel USD:
+:::
+
+```{.python filename="create_go2w_usd.py - Visual Geometry"}
+def modify_go2_base_visuals(base_usd_path):
+    """
+    Replace foot visual meshes with wheel USD meshes.
+
+    The visuals are at: /visuals/{leg}_foot
+    We clear existing references and add wheel USD mesh references.
+    """
+    stage = Usd.Stage.Open(base_usd_path)
+
+    # Wheel USD paths (converted from DAE)
+    WHEEL_MESHES_DIR = "/workspace/isaaclab/.../go2w_description/meshes"
+    left_wheel_usd = f"{WHEEL_MESHES_DIR}/left_wheel.usd"
+    right_wheel_usd = f"{WHEEL_MESHES_DIR}/right_wheel.usd"
+
+    legs = [
+        ("FL", True),   # Front Left - left wheel
+        ("FR", False),  # Front Right - right wheel
+        ("RL", True),   # Rear Left - left wheel
+        ("RR", False),  # Rear Right - right wheel
+    ]
+
+    for leg, is_left in legs:
+        visuals_path = f"/visuals/{leg}_foot"
+        visuals_prim = stage.GetPrimAtPath(visuals_path)
+
+        # Clear existing foot mesh reference
+        visuals_prim.GetReferences().ClearReferences()
+
+        # Remove any existing child geometry
+        for child in visuals_prim.GetChildren():
+            stage.RemovePrim(child.GetPath())
+
+        # Add wheel USD mesh reference
+        wheel_usd = left_wheel_usd if is_left else right_wheel_usd
+        visuals_prim.GetReferences().AddReference(wheel_usd)
+
+        print(f"[{leg}] Added wheel visual: {os.path.basename(wheel_usd)}")
+
+    stage.Save()
+```
+
+::: {.callout-note}
+## References in USD
+The `GetReferences().AddReference()` method creates a **composition arc** - USD's way of including external assets. Think of it like `#include` in C++ or `import` in Python, but for 3D geometry.
+:::
+
+---
+
+## Success! Both Collision AND Visuals Working
+
+::: {.dialogue}
+**Rajesh**: Let me run the simulation one more time...
+
+**Dr. Nova Brooks**: What do you see now?
+
+**Rajesh**: IT WORKS! I can see actual wheel meshes now! The Go2W has proper wheels!
+
+**Dr. Nova Brooks**: Let's do a final comparison - Go2 vs Go2W side by side:
+:::
+
+![Final Result: Go2 (left) vs Go2W (right) - Wheels are clearly visible!](images/go2-vs-go2w-final.png){fig-alt="Side-by-side comparison of Go2 legged robot and Go2W wheeled robot in Newton physics viewer"}
+
+::: {.callout-note}
+## What We See in the Final Result
+| Robot | Position | Features |
+|-------|----------|----------|
+| **Go2** (left) | x = -1.5 | Original legged robot with small foot pads |
+| **Go2W** (right) | x = +1.5 | Our modified wheeled robot with visible wheels |
+
+Both robots use the same physics simulation. The Go2W shows our wheel cylinders for collision AND wheel USD meshes for visualization!
+:::
+
+---
+
+## The Complete Orchestration
+
+Here's how all the pieces fit together:
+
+```{.python filename="create_go2w_usd.py - Main Function"}
+def create_go2w_from_go2(input_dir, output_dir):
+    """
+    Create Go2W USD from Go2 USD.
+
+    The journey we took:
+    1. Copy Go2 USD files as starting point
+    2. Modify collision geometry (sphere → cylinder)
+    3. Convert joints (Fixed → Revolute)
+    4. Update mass properties
+    5. Discover visuals are separate! (the "aha moment")
+    6. Convert wheel meshes (DAE → USD)
+    7. Update visual references
+    """
+    import shutil
+
+    # Copy USD files as starting point
+    input_main = os.path.join(input_dir, "go2.usd")
+    shutil.copy2(input_main, os.path.join(output_dir, "go2w_proper.usd"))
+    shutil.copytree(
+        os.path.join(input_dir, "configuration"),
+        os.path.join(output_dir, "configuration")
+    )
+
+    config_dir = os.path.join(output_dir, "configuration")
+
+    # Step 1: Collision geometry
+    modify_go2_base_colliders(os.path.join(config_dir, "go2_base.usd"))
+
+    # Step 2: Joints and mass (physics layer)
+    modify_go2_physics(os.path.join(config_dir, "go2_physics.usd"))
+
+    # Step 3: Visual geometry (the part we almost forgot!)
+    modify_go2_base_visuals(os.path.join(config_dir, "go2_base.usd"))
+
+    # Step 4: Metadata
+    modify_go2_robot(os.path.join(config_dir, "go2_robot.usd"))
+
+    print(f"Go2W USD created: {output_dir}/go2w_proper.usd")
+```
+
+---
+
+## Key Learnings: What This Journey Taught Us
+
+::: {.dialogue}
+**Dr. Nova Brooks**: So Rajesh, what did you learn from this journey?
+
+**Rajesh**: So much more than I expected! Let me reflect...
+:::
+
+![The Real Journey: Learning Through Debugging](images/iterative-journey-overview.png){fig-alt="Infographic showing the iterative journey from Go2 USD to Go2W USD with debugging steps and aha moment"}
+
+::: {.eureka-box}
+## Key Takeaways from Our Journey
+
+1. **Start with professional assets** - Don't reinvent the wheel (pun intended). NVIDIA's Go2 USD gave us a solid foundation.
+
+2. **USD's layered architecture is powerful** - But you need to understand ALL the layers. Collision and visual geometry are separate!
+
+3. **The "aha moment" was the real lesson** - We thought we were done after modifying physics, but visuals were still showing feet. This taught us more than any tutorial could.
+
+4. **Debug systematically** - Spawn height (inside ground), wheel orientation (upside down), visual vs collision... each problem taught us something.
+
+5. **pxr API is the NVIDIA way** - Using the same tools NVIDIA engineers use gives us professional-grade results.
+
+6. **Document your mistakes** - The journey is more educational than just showing the final solution!
+:::
+
+---
+
+## Full Source Code
+
+The complete scripts are available in the Isaac Lab robot_lab extension:
+
+```bash
+# Location in Isaac Lab container
+/workspace/isaaclab/robot_lab/source/robot_lab/data/Robots/unitree/go2w_description/
+├── scripts/
+│   ├── create_go2w_usd.py      # Main USD creation script
+│   └── convert_wheel_meshes.py  # DAE → USD converter
+├── meshes/
+│   ├── left_wheel.usd          # Converted wheel mesh
+│   └── right_wheel.usd
+└── usd/
+    └── go2w_proper.usd         # The final Go2W USD!
+```
+
+::: {.dialogue}
+**Dr. Nova Brooks**: Congratulations, Rajesh! You didn't just create a Go2W USD - you learned *why* USD is structured the way it is. That lesson about collision vs visual geometry will serve you well in future projects.
+
+**Rajesh**: Thanks Dr. Nova! The mistakes along the way were actually the best teachers. I can't wait to train locomotion policies on this Go2W!
+:::
+
+---
+
+::: {.callout-tip}
+## Next Steps
+- Train locomotion policies for Go2W using Newton or Isaac Lab
+- Experiment with different wheel sizes and physics properties
+- Apply these techniques to create USD assets for other robots
+- Remember: When something doesn't look right, check BOTH collision AND visual layers!
+:::

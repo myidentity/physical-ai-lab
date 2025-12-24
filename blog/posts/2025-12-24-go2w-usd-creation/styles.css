@@ -1,0 +1,140 @@
+/* Custom styles for Dr. Nova Brooks dialogue posts */
+
+/* Dialogue box styling */
+.dialogue {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-left: 4px solid #6c5ce7;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    border-radius: 0 8px 8px 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.dialogue p {
+    margin-bottom: 1rem;
+    line-height: 1.7;
+}
+
+.dialogue p:last-child {
+    margin-bottom: 0;
+}
+
+.dialogue strong {
+    color: #2d3436;
+}
+
+/* Dr. Nova Brooks name styling */
+.dialogue p strong:first-child {
+    color: #6c5ce7;
+    font-size: 1.05em;
+}
+
+/* Rajesh name styling */
+.dialogue p strong:contains("Rajesh") {
+    color: #00b894;
+}
+
+/* Eureka box styling */
+.eureka-box {
+    background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+    border: 2px solid #f39c12;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.eureka-box h2 {
+    color: #d35400;
+    margin-top: 0;
+    font-size: 1.3rem;
+}
+
+.eureka-box ol, .eureka-box ul {
+    margin-bottom: 0;
+}
+
+.eureka-box li {
+    margin-bottom: 0.5rem;
+}
+
+/* Go2W example box */
+.go2w-example {
+    background: linear-gradient(135deg, #fff5eb 0%, #ffecd2 100%);
+    border-left: 4px solid #ff7675;
+    padding: 1rem 1.5rem;
+    margin: 1rem 0;
+    border-radius: 0 8px 8px 0;
+}
+
+/* Code block enhancements */
+.sourceCode {
+    border-radius: 8px;
+    margin: 1.5rem 0;
+}
+
+/* Filename label for code blocks */
+.code-with-filename .code-with-filename-file {
+    background-color: #2d3436;
+    color: #dfe6e9;
+    padding: 0.5rem 1rem;
+    border-radius: 8px 8px 0 0;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.85rem;
+}
+
+/* Make tables more readable */
+table {
+    margin: 1.5rem 0;
+}
+
+table th {
+    background-color: #6c5ce7;
+    color: white;
+}
+
+table tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+/* ASCII art/diagram boxes */
+pre:not(.sourceCode) {
+    background-color: #2d3436;
+    color: #dfe6e9;
+    padding: 1.5rem;
+    border-radius: 8px;
+    overflow-x: auto;
+}
+
+/* Character introduction styling */
+.character-intro {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    padding: 2rem;
+    margin: 1.5rem 0;
+    text-align: center;
+    color: white;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+}
+
+.character-intro img.character-portrait {
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    margin-bottom: 1rem;
+}
+
+.character-intro p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin: 0.5rem 0;
+    color: rgba(255,255,255,0.95);
+}
+
+.character-intro p:first-of-type {
+    font-size: 1.15rem;
+}
+
+.character-intro em {
+    opacity: 0.85;
+    font-size: 1rem;
+}

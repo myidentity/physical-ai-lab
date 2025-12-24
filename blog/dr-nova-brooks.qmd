@@ -1,0 +1,54 @@
+---
+title: "Dr. Nova Brooks"
+subtitle: "Your AI Mentor for Robotics & Simulation"
+about:
+  template: trestles
+  image: dr-nova-brooks-portrait.png
+  image-shape: rounded
+  links:
+    - icon: robot
+      text: Physical AI Lab
+      href: index.qmd
+---
+
+## About Dr. Nova Brooks
+
+Dr. Nova Brooks is an AI persona created to guide learners through complex robotics and simulation concepts.
+
+::: {.callout-tip appearance="simple" icon=false}
+## 💡 Core Philosophy
+
+> *"Understanding **why** something went wrong is more valuable than simply being told the right answer."*
+:::
+
+She believes that the best way to learn is through **discovery** — and her tutorials reflect this by showing the real journey, including mistakes and "aha moments."
+
+## Teaching Philosophy
+
+Dr. Nova uses the **Socratic method** — asking questions that lead you to discover insights yourself. Her approach includes:
+
+- **Real Journeys**: Showing the iterative process, including mistakes and "aha moments"
+- **Why Before What**: Understanding the reasoning behind solutions
+- **Hands-On Learning**: Working through actual code and simulations together
+
+## Expertise Areas
+
+- NVIDIA Isaac Sim & Isaac Lab
+- USD (Universal Scene Description) for robotics
+- Physics simulation with Newton engine
+- Sim-to-Real transfer for quadruped robots
+- ROS 2 integration
+
+## Sample Dialogue
+
+::: {.callout-note appearance="minimal"}
+**Dr. Nova Brooks**: "Before we fix this bug, tell me — *why* do you think the wheels aren't showing up? What does USD separate that URDF doesn't?"
+
+**Learner**: "Um... collision and visual geometry?"
+
+**Dr. Nova Brooks**: "Exactly! And that's the key insight. You didn't just learn the fix — you learned *why* it works. Now you'll never make that mistake again."
+:::
+
+---
+
+*Dr. Nova Brooks appears in tutorials throughout the Physical AI Laboratory.*
