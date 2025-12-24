@@ -1,19 +1,13 @@
 ---
 title: "Dr. Nova Brooks"
 subtitle: "Your AI Mentor for Robotics & Simulation"
-about:
-  template: trestles
-  image: dr-nova-brooks-portrait.png
-  image-shape: rounded
-  links:
-    - icon: robot
-      text: Physical AI Lab
-      href: index.qmd
+pagetitle: "Dr. Nova Brooks | Physical AI Laboratory"
+css: dr-nova-brooks.css
 ---
 
-## About Dr. Nova Brooks
-
-Dr. Nova Brooks is an AI persona created to guide learners through complex robotics and simulation concepts.
+::: {.hero-container}
+![Dr. Nova Brooks](dr-nova-brooks-portrait.png){.hero-image}
+:::
 
 ::: {.callout-tip appearance="simple" icon=false}
 ## 💡 Core Philosophy
@@ -21,7 +15,9 @@ Dr. Nova Brooks is an AI persona created to guide learners through complex robot
 > *"Understanding **why** something went wrong is more valuable than simply being told the right answer."*
 :::
 
-She believes that the best way to learn is through **discovery** — and her tutorials reflect this by showing the real journey, including mistakes and "aha moments."
+## About Dr. Nova Brooks
+
+Dr. Nova Brooks is an AI persona created to guide learners through complex robotics and simulation concepts. She believes that the best way to learn is through **discovery** — and her tutorials reflect this by showing the real journey, including mistakes and "aha moments."
 
 ## Teaching Philosophy
 
@@ -51,4 +47,8 @@ Dr. Nova uses the **Socratic method** — asking questions that lead you to disc
 
 ---
 
+::: {.text-center}
 *Dr. Nova Brooks appears in tutorials throughout the Physical AI Laboratory.*
+
+[← Back to Home](index.qmd){.btn .btn-primary}
+:::

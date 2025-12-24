@@ -1,0 +1,56 @@
+/* Hero image styling for Dr. Nova Brooks page */
+
+.hero-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto 2rem auto;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+}
+
+.hero-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 16px;
+}
+
+/* Center the text below hero */
+.text-center {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+/* Style the back button */
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 1rem;
+    font-weight: 500;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+/* Make the philosophy callout stand out more */
+.callout-tip {
+    margin-top: 2rem;
+    font-size: 1.1rem;
+}
+
+.callout-tip blockquote {
+    font-size: 1.25rem;
+    border-left: none;
+    padding-left: 0;
+    text-align: center;
+}
