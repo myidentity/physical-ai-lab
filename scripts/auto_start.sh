@@ -907,10 +907,11 @@ enter_isaac_lab() {
         echo ""
         # Re-grant X11 permissions (fixes display after host hibernate/resume)
         xhost +local:docker > /dev/null 2>&1
-        # Use docker start (not container.py start) to resume without rebuilding
-        docker start isaac-lab-base > /dev/null 2>&1
+        # Use docker restart (not start) to get fresh NVIDIA driver handles
+        # This fixes "Failed to initialize NVML" after host hibernate/resume
+        docker restart isaac-lab-base > /dev/null 2>&1
         if [ $? -eq 0 ]; then
-            print_success "Container resumed (X11 display restored)"
+            print_success "Container resumed (X11 + GPU restored)"
             echo ""
             print_info "Entering container..."
             echo ""
