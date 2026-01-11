@@ -864,9 +864,53 @@ Output (action):
                     <div class="avatar">🎓</div>
                     <div class="bubble">
                         <strong>Dr. Nova Brooks</strong>
-                        You're right to be suspicious. There's a hidden flaw in this beautiful picture. And discovering it is one of the key insights of this entire bootcamp...
+                        You're right to be suspicious. There are actually <em>two</em> hidden flaws in this beautiful picture. Let me tell you about the first one now - and we'll save the bigger one for the next chapter...
                     </div>
                 </div>
+            </div>
+
+            <div class="insight-box">
+                <div class="insight-title">Compounding Errors: The Drift Problem</div>
+                <p>
+                    Imagine you've recorded a perfect demonstration. The robot tries to replicate it. At timestep 47, its action is slightly off - maybe by just a few millimeters. Now it's in a state it <em>never saw during training</em>.
+                    <br><br>
+                    What happens next? The policy has no idea what to do from this unfamiliar state. It guesses - and guesses wrong. Now it's even further off track. The errors <strong>compound</strong>. By timestep 100, the robot is completely lost.
+                </p>
+            </div>
+
+            <div class="dialogue">
+                <div class="message rajesh">
+                    <div class="avatar">👨‍💻</div>
+                    <div class="bubble">
+                        <strong>Rajesh</strong>
+                        So even if there's only one "correct" way to do the task, the robot can still fail because small errors snowball?
+                    </div>
+                </div>
+                <div class="message nova">
+                    <div class="avatar">🎓</div>
+                    <div class="bubble">
+                        <strong>Dr. Nova Brooks</strong>
+                        Exactly. This is why we'll learn about <strong>Action Chunking</strong> in Lesson 4. Instead of predicting one action at a time, the robot predicts entire <em>sequences</em> of actions. Fewer decision points means fewer opportunities for errors to compound.
+                    </div>
+                </div>
+            </div>
+
+            <div class="so-arm-example">
+                <div class="example-header">
+                    <span class="example-icon">🦾</span>
+                    <span class="example-title">SO-ARM101: Why Action Chunking Matters</span>
+                </div>
+                <div class="example-content">
+                    <p>
+                        When your SO-ARM101 folds a shirt, it might take 500 timesteps. If each timestep has even a 1% chance of drifting off track, naive imitation learning almost guarantees failure. ACT (Action Chunking Transformer) predicts chunks of ~100 actions at once, reducing this to just 5 decision points - a much more robust approach.
+                    </p>
+                </div>
+            </div>
+
+            <div class="narrative">
+                <p>
+                    But there's an even deeper flaw - one that appears even when your demonstrations are perfect and your policy never drifts. It's the reason why naive imitation learning fails on almost all real-world tasks...
+                </p>
             </div>
         </section>
 
@@ -1171,7 +1215,7 @@ Output (action):
                 </div>
                 <div class="summary-card">
                     <h4>Imitation Learning</h4>
-                    <p>Learning from demonstrations - elegant and safe. But naive approaches fail on multimodal tasks.</p>
+                    <p>Learning from demonstrations - elegant and safe. But naive approaches suffer from compounding errors and fail on multimodal tasks.</p>
                 </div>
                 <div class="summary-card">
                     <h4>Generative Policies</h4>
@@ -1225,7 +1269,8 @@ Output (action):
                 <div class="example-content">
                     <p>
                         Before the next lesson, make sure you understand:<br><br>
-                        • <strong>Why mode averaging fails</strong> - This is the key insight<br>
+                        • <strong>Why mode averaging fails</strong> - The multimodal targets problem<br>
+                        • <strong>Why errors compound</strong> - Small drifts snowball into complete failure<br>
                         • <strong>Probability distributions</strong> - What's a Gaussian? What does it mean to sample?<br>
                         • <strong>Your SO-ARM101</strong> - Get familiar with the 6 degrees of freedom per arm<br><br>
                         We're not asking you to implement anything yet. Just build intuition. The math comes next.
