@@ -1,6 +1,8 @@
 project:
   type: website
   output-dir: ../_site
+  resources:
+    - "lessons/**"
 
 website:
   title: "Physical AI Laboratory"
@@ -25,6 +27,10 @@ website:
     search: true
     background: light
     contents:
+      - section: "Robot Learning Bootcamp"
+        contents:
+          - text: "Lesson 1: Why Can't Robots Fold Clothes?"
+            href: posts/2025-12-28-lesson-1-why-cant-robots-fold-clothes/index.qmd
       - section: "NVIDIA Isaac Lab Workshop"
         contents:
           - text: "Part 1: Isaac Sim vs Isaac Lab"

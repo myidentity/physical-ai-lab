@@ -703,6 +703,11 @@ input[type="submit"] {
    Add new posts here as: .sidebar-item a[href*="POST-FOLDER"]::before
    ───────────────────────────────────────────────────────────────── */
 
+/* Robot Learning Bootcamp Series */
+.sidebar-item a[href*="lesson-1-why-cant-robots-fold-clothes"]::before {
+  background-image: url('/posts/2025-12-28-lesson-1-why-cant-robots-fold-clothes/thumbnail.jpg');
+}
+
 /* Go2-W Training Workshop Series */
 .sidebar-item a[href*="isaac-workshop-part1"]::before {
   background-image: url('/posts/2025-12-18-isaac-workshop-part1/thumbnail.png');
@@ -771,4 +776,57 @@ input[type="submit"] {
 }
 .sidebar-item a[href*="isaac-sim-assets-and-robots"]::before {
   background-image: url('/posts/2025-12-06-isaac-sim-assets-and-robots/thumbnail.png');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Course Lesson Stub Posts - Hero Image + CTA Styling
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Hero image - full width with rounded corners */
+.hero-image {
+  width: 100%;
+  max-height: 400px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* CTA container - gradient background */
+.lesson-cta {
+  text-align: center;
+  padding: 2rem;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  border-radius: 12px;
+  margin: 2rem 0;
+  color: white;
+}
+
+.lesson-cta h2 {
+  color: white;
+  margin-bottom: 1rem;
+}
+
+.lesson-cta p {
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 1.5rem;
+}
+
+/* CTA button - large and prominent */
+.cta-button {
+  display: inline-block;
+  padding: 1rem 2.5rem;
+  background: linear-gradient(135deg, #e94560 0%, #ff6b6b 100%);
+  color: white !important;
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-decoration: none !important;
+  border-radius: 50px;
+  box-shadow: 0 4px 15px rgba(233, 69, 96, 0.4);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(233, 69, 96, 0.5);
 }
