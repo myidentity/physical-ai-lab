@@ -5,7 +5,7 @@ description: "A comprehensive walkthrough of all 8 Zenoh workshop exercises with
 author: "Rajesh"
 date: "2025-12-17"
 categories: [ros2, zenoh, workshop, roscon-india, exercises, walkthrough]
-image: "thumbnail.png"
+image: "thumbnail.jpg"
 toc: true
 toc-depth: 3
 number-sections: true

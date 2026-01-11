@@ -6,7 +6,7 @@ date: "2025-12-24"
 categories: [newton, usd, isaac-lab, go2-w, physical-ai, tutorial]
 toc: true
 toc-depth: 3
-image: images/thumbnail.png
+image: images/thumbnail.jpg
 css: styles.css
 ---
 

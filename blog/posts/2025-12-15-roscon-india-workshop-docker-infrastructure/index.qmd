@@ -4,7 +4,7 @@ description: "How we built Docker infrastructure with modern Gazebo Sim, GPU acc
 author: "Physical AI Lab Team"
 date: "2025-12-15"
 categories: [ROS2, Docker, Zenoh, Workshop, ROSCon, NVIDIA, Gazebo]
-image: "thumbnail.png"
+image: "thumbnail.jpg"
 draft: false
 format:
   html:

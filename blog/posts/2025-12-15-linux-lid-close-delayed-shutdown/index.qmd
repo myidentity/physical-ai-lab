@@ -4,7 +4,7 @@ description: "When s2idle fails you, build a custom lid-close handler that waits
 author: "Rajesh"
 date: "2025-12-15"
 categories: [Linux, Power Management, systemd, Tutorial, NVIDIA]
-image: "thumbnail.png"
+image: "thumbnail.jpg"
 format:
   html:
     code-fold: false

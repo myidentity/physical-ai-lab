@@ -6,7 +6,7 @@ date: "2025-12-18"
 categories: [isaac-sim, isaac-lab, reinforcement-learning, go2-w, unitree, roscon-india]
 toc: true
 toc-depth: 3
-image: thumbnail.png
+image: thumbnail.jpg
 ---
 
 ## The Challenge: Hybrid Locomotion

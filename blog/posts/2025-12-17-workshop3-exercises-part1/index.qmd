@@ -4,7 +4,7 @@ subtitle: "Part 1 of 3: Core Pub/Sub, QoS, and Shared Memory Transport"
 author: "Rajesh"
 date: "2025-12-17T09:00:00"
 categories: [ros2, zenoh, workshop, roscon-india, tutorial]
-image: "thumbnail.png"
+image: "thumbnail.jpg"
 toc: true
 toc-depth: 3
 code-fold: true

@@ -6,7 +6,7 @@ date: "2025-12-18"
 categories: [ros2, isaac-sim, isaac-lab, go2-w, unitree, workshop, roscon-india]
 toc: true
 toc-depth: 3
-image: thumbnail.png
+image: thumbnail.jpg
 ---
 
 ## Go2-W ROS 2 Architecture

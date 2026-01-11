@@ -4,7 +4,7 @@ description: "Hands-on workshop exploring NVIDIA's Newton physics engine, Cosmos
 author: "Rajesh"
 date: "2025-12-20"
 categories: [nvidia, newton, physics-simulation, physical-ai, isaac-lab, workshop]
-image: "images/05-what-is-newton.png"
+image: "images/05-what-is-newton.jpg"
 draft: false
 ---
 

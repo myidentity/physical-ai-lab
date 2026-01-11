@@ -6,7 +6,7 @@ date: "2025-12-18"
 categories: [isaac-sim, isaac-lab, sim-to-real, go2-w, jetson, tensorrt, roscon-india]
 toc: true
 toc-depth: 3
-image: thumbnail.png
+image: thumbnail.jpg
 ---
 
 ## The Sim-to-Real Challenge for Go2-W

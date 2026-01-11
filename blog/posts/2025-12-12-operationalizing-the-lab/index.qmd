@@ -4,7 +4,7 @@ description: "A complete beginner's guide to NVIDIA Isaac Sim & Isaac Lab on Ubu
 author: "Rajesh"
 date: "2025-12-12"
 categories: [Infrastructure, Docker, Isaac Sim, Isaac Lab, Tutorial]
-image: "thumbnail.png"
+image: "thumbnail.jpg"
 format:
   html:
     code-fold: false
