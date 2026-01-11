@@ -370,6 +370,44 @@
                 </p>
             </div>
 
+            <div class="dialogue">
+                <div class="message rajesh">
+                    <div class="avatar">👨‍💻</div>
+                    <div class="bubble">
+                        <strong>Rajesh</strong>
+                        Before we dive deeper - what kinds of robot motions are we actually talking about? Backflips and clothes folding seem like completely different skills.
+                    </div>
+                </div>
+                <div class="message nova">
+                    <div class="avatar">🎓</div>
+                    <div class="bubble">
+                        <strong>Dr. Nova Brooks</strong>
+                        Great question. There are three fundamental categories of robot motion, and understanding them helps explain why progress has been so uneven.
+                    </div>
+                </div>
+            </div>
+
+            <div class="insight-box">
+                <div class="insight-title">The Three Types of Robot Motion</div>
+                <p>
+                    <strong>1. Manipulation:</strong> Picking, placing, folding, pouring - tasks involving object interaction. This is what your SO-ARM101 does. It's the <em>hardest</em> category because objects are unpredictable.<br><br>
+                    <strong>2. Locomotion:</strong> Walking, running, jumping - moving the robot's body through space. Boston Dynamics dogs and humanoids excel here. The physics is more predictable.<br><br>
+                    <strong>3. Whole-Body Control:</strong> Humanoid robots that combine locomotion AND manipulation simultaneously. This is the ultimate challenge - imagine walking while carrying a tray of glasses.
+                </p>
+            </div>
+
+            <div class="so-arm-example">
+                <div class="example-header">
+                    <span class="example-icon">🦾</span>
+                    <span class="example-title">Why We Start with Manipulation</span>
+                </div>
+                <div class="example-content">
+                    <p>
+                        Your SO-ARM101 is a pure manipulation platform - four arms, fixed base. This lets us focus on the <em>hardest</em> problem (handling deformable objects like clothes) without the added complexity of balance and locomotion. Once you master manipulation, the concepts transfer to whole-body control.
+                    </p>
+                </div>
+            </div>
+
             <div class="narrative">
                 <p>
                     Here's another way to see the gap: think about how accessible AI has become for developers.
@@ -586,7 +624,54 @@ where:
                     <div class="avatar">🎓</div>
                     <div class="bubble">
                         <strong>Dr. Nova Brooks</strong>
-                        Around 2010, a new paradigm emerged. Instead of deriving equations, what if the robot could <em>learn</em> from experience? This is where reinforcement learning entered the picture...
+                        Before I answer that, let me give you a framework for thinking about the two fundamental approaches to robotics. This distinction will clarify everything that follows.
+                    </div>
+                </div>
+            </div>
+
+            <div class="insight-box">
+                <div class="insight-title">Explicit vs Implicit Modeling</div>
+                <p>
+                    <strong>Explicit Modeling (Classical Robotics):</strong> You write down equations. Forward kinematics, inverse dynamics, trajectory optimization - everything is derived from first principles. You're <em>explicitly</em> telling the robot how the world works.<br><br>
+                    <strong>Implicit Modeling (Learning-Based):</strong> No equations. No pipelines. Just a single neural network that takes in observations and outputs actions. The "model" of the world is <em>implicit</em> - learned from data, buried in the network weights. You can't inspect it or debug it, but it captures things equations never could.
+                </p>
+            </div>
+
+            <div class="dialogue">
+                <div class="message rajesh">
+                    <div class="avatar">👨‍💻</div>
+                    <div class="bubble">
+                        <strong>Rajesh</strong>
+                        So implicit modeling is like a black box - it works, but you don't know exactly how?
+                    </div>
+                </div>
+                <div class="message nova">
+                    <div class="avatar">🎓</div>
+                    <div class="bubble">
+                        <strong>Dr. Nova Brooks</strong>
+                        Exactly. Classical roboticists hated this idea - "How can you trust something you can't verify?" But the implicit approach can capture friction, air resistance, material properties, and all those infinite hidden variables we talked about. The data <em>contains</em> the physics, even if we never write it down.
+                    </div>
+                </div>
+            </div>
+
+            <div class="so-arm-example">
+                <div class="example-header">
+                    <span class="example-icon">🦾</span>
+                    <span class="example-title">SO-ARM101: Why Implicit Wins for Manipulation</span>
+                </div>
+                <div class="example-content">
+                    <p>
+                        When your SO-ARM101 grips a t-shirt, the fabric deforms in ways that would take thousands of equations to model explicitly. But if you train on 1000 demonstrations of shirt folding, the implicit model learns "when I see this crinkle pattern, grip here and pull this way." No equations needed - just data.
+                    </p>
+                </div>
+            </div>
+
+            <div class="dialogue">
+                <div class="message nova">
+                    <div class="avatar">🎓</div>
+                    <div class="bubble">
+                        <strong>Dr. Nova Brooks</strong>
+                        Around 2010, a new paradigm emerged that embraced implicit modeling. Instead of deriving equations, what if the robot could <em>learn</em> from experience? This is where reinforcement learning entered the picture...
                     </div>
                 </div>
             </div>
