@@ -663,7 +663,7 @@ input[type="submit"] {
    Sidebar Thumbnails - Small preview images next to menu items
 
    HOW TO ADD NEW POSTS:
-   1. Ensure your post has a thumbnail.png in its directory
+   1. Ensure your post has a thumbnail.jpg in its directory
    2. Add your post's folder name to the selector list below
    3. Add a new ::before rule with the background-image URL
    ═══════════════════════════════════════════════════════════════ */
@@ -710,72 +710,72 @@ input[type="submit"] {
 
 /* Go2-W Training Workshop Series */
 .sidebar-item a[href*="isaac-workshop-part1"]::before {
-  background-image: url('/posts/2025-12-18-isaac-workshop-part1/thumbnail.png');
+  background-image: url('/posts/2025-12-18-isaac-workshop-part1/thumbnail.jpg');
 }
 .sidebar-item a[href*="isaac-workshop-part2"]::before {
-  background-image: url('/posts/2025-12-18-isaac-workshop-part2/thumbnail.png');
+  background-image: url('/posts/2025-12-18-isaac-workshop-part2/thumbnail.jpg');
 }
 .sidebar-item a[href*="isaac-workshop-part3"]::before {
-  background-image: url('/posts/2025-12-18-isaac-workshop-part3/thumbnail.png');
+  background-image: url('/posts/2025-12-18-isaac-workshop-part3/thumbnail.jpg');
 }
 .sidebar-item a[href*="isaac-workshop-part4"]::before {
-  background-image: url('/posts/2025-12-18-isaac-workshop-part4/thumbnail.png');
+  background-image: url('/posts/2025-12-18-isaac-workshop-part4/thumbnail.jpg');
 }
 
 /* Workshop 4 Exercise Preview Series (NEW) */
 .sidebar-item a[href*="workshop4-exercises-part1"]::before {
-  background-image: url('/posts/2025-12-17-workshop4-exercises-part1/thumbnail.png');
+  background-image: url('/posts/2025-12-17-workshop4-exercises-part1/thumbnail.jpg');
 }
 .sidebar-item a[href*="workshop4-exercises-part2"]::before {
-  background-image: url('/posts/2025-12-17-workshop4-exercises-part2/thumbnail.png');
+  background-image: url('/posts/2025-12-17-workshop4-exercises-part2/thumbnail.jpg');
 }
 .sidebar-item a[href*="workshop4-exercises-part3"]::before {
-  background-image: url('/posts/2025-12-17-workshop4-exercises-part3/thumbnail.png');
+  background-image: url('/posts/2025-12-17-workshop4-exercises-part3/thumbnail.jpg');
 }
 .sidebar-item a[href*="workshop4-exercises-part4"]::before {
-  background-image: url('/posts/2025-12-17-workshop4-exercises-part4/thumbnail.png');
+  background-image: url('/posts/2025-12-17-workshop4-exercises-part4/thumbnail.jpg');
 }
 
 /* Workshop 3 Exercise Preview Series */
 .sidebar-item a[href*="workshop3-exercises-part1"]::before {
-  background-image: url('/posts/2025-12-17-workshop3-exercises-part1/thumbnail.png');
+  background-image: url('/posts/2025-12-17-workshop3-exercises-part1/thumbnail.jpg');
 }
 .sidebar-item a[href*="workshop3-exercises-part2"]::before {
-  background-image: url('/posts/2025-12-17-workshop3-exercises-part2/thumbnail.png');
+  background-image: url('/posts/2025-12-17-workshop3-exercises-part2/thumbnail.jpg');
 }
 .sidebar-item a[href*="workshop3-exercises-part3"]::before {
-  background-image: url('/posts/2025-12-17-workshop3-exercises-part3/thumbnail.png');
+  background-image: url('/posts/2025-12-17-workshop3-exercises-part3/thumbnail.jpg');
 }
 .sidebar-item a[href*="workshop3-official-image"]::before {
-  background-image: url('/posts/2025-12-17-workshop3-official-image/thumbnail.png');
+  background-image: url('/posts/2025-12-17-workshop3-official-image/thumbnail.jpg');
 }
 .sidebar-item a[href*="workshop3-exercises-walkthrough"]::before {
-  background-image: url('/posts/2025-12-17-workshop3-exercises-walkthrough/thumbnail.png');
+  background-image: url('/posts/2025-12-17-workshop3-exercises-walkthrough/thumbnail.jpg');
 }
 
 /* Preparing for Zenoh (Our Tools) Series */
 .sidebar-item a[href*="workshop3-zenoh-tools"]::before {
-  background-image: url('/posts/2025-12-16-workshop3-zenoh-tools/thumbnail.png');
+  background-image: url('/posts/2025-12-16-workshop3-zenoh-tools/thumbnail.jpg');
 }
 .sidebar-item a[href*="workshop3-zenoh-performance"]::before {
-  background-image: url('/posts/2025-12-16-workshop3-zenoh-performance/thumbnail.png');
+  background-image: url('/posts/2025-12-16-workshop3-zenoh-performance/thumbnail.jpg');
 }
 .sidebar-item a[href*="workshop3-zenoh-dashboard"]::before {
-  background-image: url('/posts/2025-12-16-workshop3-zenoh-dashboard/thumbnail.png');
+  background-image: url('/posts/2025-12-16-workshop3-zenoh-dashboard/thumbnail.jpg');
 }
 
 /* Other Posts */
 .sidebar-item a[href*="roscon-india-workshop-docker-infrastructure"]::before {
-  background-image: url('/posts/2025-12-15-roscon-india-workshop-docker-infrastructure/thumbnail.png');
+  background-image: url('/posts/2025-12-15-roscon-india-workshop-docker-infrastructure/thumbnail.jpg');
 }
 .sidebar-item a[href*="linux-lid-close-delayed-shutdown"]::before {
-  background-image: url('/posts/2025-12-15-linux-lid-close-delayed-shutdown/thumbnail.png');
+  background-image: url('/posts/2025-12-15-linux-lid-close-delayed-shutdown/thumbnail.jpg');
 }
 .sidebar-item a[href*="operationalizing-the-lab"]::before {
-  background-image: url('/posts/2025-12-12-operationalizing-the-lab/thumbnail.png');
+  background-image: url('/posts/2025-12-12-operationalizing-the-lab/thumbnail.jpg');
 }
 .sidebar-item a[href*="isaac-sim-assets-and-robots"]::before {
-  background-image: url('/posts/2025-12-06-isaac-sim-assets-and-robots/thumbnail.png');
+  background-image: url('/posts/2025-12-06-isaac-sim-assets-and-robots/thumbnail.jpg');
 }
 
 /* ═══════════════════════════════════════════════════════════════
