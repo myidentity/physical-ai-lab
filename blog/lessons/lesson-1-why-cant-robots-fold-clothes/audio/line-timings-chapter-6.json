@@ -1,0 +1,222 @@
+[
+  {
+    "index": 0,
+    "speaker": "PROFESSOR",
+    "text": "Chapter 6. Probability Distributions. The Real Solution.",
+    "line_type": "transition",
+    "chapter": 6,
+    "start_ms": 0,
+    "duration_ms": 5036,
+    "end_ms": 5036
+  },
+  {
+    "index": 1,
+    "speaker": "PROFESSOR",
+    "text": "We've seen the mode averaging problem. When we train a policy to output a single action, it averages across different expert strategies and produces garbage. The solution is elegantly simple: don't output a single action. Output a probability distribution over actions.",
+    "line_type": "lecture",
+    "chapter": 6,
+    "start_ms": 5036,
+    "duration_ms": 15500,
+    "end_ms": 20536
+  },
+  {
+    "index": 2,
+    "speaker": "PROFESSOR",
+    "text": "When you have a distribution with multiple peaks, each peak represents a valid strategy. By sampling from this distribution, you commit to one coherent strategy. You might sample left-first or right-first, but you'll never sample the averaged middle that crashes into everything.",
+    "line_type": "lecture",
+    "chapter": 6,
+    "start_ms": 20536,
+    "duration_ms": 15452,
+    "end_ms": 35988
+  },
+  {
+    "index": 3,
+    "speaker": "STUDENT_1",
+    "text": "Why should robot policies output probability distributions instead of just point values?",
+    "line_type": "question",
+    "chapter": 6,
+    "start_ms": 35988,
+    "duration_ms": 6260,
+    "end_ms": 42248
+  },
+  {
+    "index": 4,
+    "speaker": "PROFESSOR",
+    "text": "Distributions can represent multiple valid actions simultaneously. When you sample from the distribution, you commit to one mode. This naturally handles multimodal expert behavior without averaging.",
+    "line_type": "answer",
+    "chapter": 6,
+    "start_ms": 42248,
+    "duration_ms": 11660,
+    "end_ms": 53908
+  },
+  {
+    "index": 5,
+    "speaker": "PROFESSOR",
+    "text": "For example, the ACT policy outputs a distribution over action chunks. Sampling picks one consistent trajectory. Either a left-fold OR a right-fold, never the averaged collision.",
+    "line_type": "example",
+    "chapter": 6,
+    "start_ms": 53908,
+    "duration_ms": 11972,
+    "end_ms": 65880
+  },
+  {
+    "index": 6,
+    "speaker": "STUDENT_3",
+    "text": "So instead of predicting THE action, we predict all possible actions and then randomly pick one valid option.",
+    "line_type": "echo",
+    "chapter": 6,
+    "start_ms": 65880,
+    "duration_ms": 7532,
+    "end_ms": 73412
+  },
+  {
+    "index": 7,
+    "speaker": "PROFESSOR",
+    "text": "Exactly right. Predict the full picture, then commit to one path.",
+    "line_type": "acknowledgment",
+    "chapter": 6,
+    "start_ms": 73412,
+    "duration_ms": 4580,
+    "end_ms": 77992
+  },
+  {
+    "index": 8,
+    "speaker": "PROFESSOR",
+    "text": "This is how self-driving cars handle intersections. They predict multiple possible pedestrian paths and plan for each scenario, rather than assuming everyone will walk in some averaged direction.",
+    "line_type": "consequence",
+    "chapter": 6,
+    "start_ms": 77992,
+    "duration_ms": 11012,
+    "end_ms": 89004
+  },
+  {
+    "index": 9,
+    "speaker": "STUDENT_2",
+    "text": "What exactly is Deep Generative Modeling and why do we need it for robot learning?",
+    "line_type": "question",
+    "chapter": 6,
+    "start_ms": 89004,
+    "duration_ms": 5276,
+    "end_ms": 94280
+  },
+  {
+    "index": 10,
+    "speaker": "PROFESSOR",
+    "text": "Deep Generative Modeling learns to generate samples from complex distributions. For robotics, it models the distribution of valid actions. This enables multimodal policies that can sample coherent action sequences rather than averaging.",
+    "line_type": "answer",
+    "chapter": 6,
+    "start_ms": 94280,
+    "duration_ms": 14060,
+    "end_ms": 108340
+  },
+  {
+    "index": 11,
+    "speaker": "PROFESSOR",
+    "text": "The VAE in ACT learns the distribution of valid folding trajectories from your demonstrations. At inference time, it samples one complete trajectory rather than averaging across all the demos.",
+    "line_type": "example",
+    "chapter": 6,
+    "start_ms": 108340,
+    "duration_ms": 11684,
+    "end_ms": 120024
+  },
+  {
+    "index": 12,
+    "speaker": "STUDENT_4",
+    "text": "So generative models learn WHAT valid actions look like, and then we just pick one when we need to act.",
+    "line_type": "echo",
+    "chapter": 6,
+    "start_ms": 120024,
+    "duration_ms": 6284,
+    "end_ms": 126308
+  },
+  {
+    "index": 13,
+    "speaker": "PROFESSOR",
+    "text": "Precisely. Learn the space of possibilities, then sample one reality.",
+    "line_type": "acknowledgment",
+    "chapter": 6,
+    "start_ms": 126308,
+    "duration_ms": 5084,
+    "end_ms": 131392
+  },
+  {
+    "index": 14,
+    "speaker": "PROFESSOR",
+    "text": "Midjourney and DALL-E work the same way. They don't output the average of all possible images. They learn what valid images look like, then sample one specific image.",
+    "line_type": "consequence",
+    "chapter": 6,
+    "start_ms": 131392,
+    "duration_ms": 10052,
+    "end_ms": 141444
+  },
+  {
+    "index": 15,
+    "speaker": "STUDENT_3",
+    "text": "How do deep generative models actually work under the hood?",
+    "line_type": "question",
+    "chapter": 6,
+    "start_ms": 141444,
+    "duration_ms": 4124,
+    "end_ms": 145568
+  },
+  {
+    "index": 16,
+    "speaker": "PROFESSOR",
+    "text": "They learn to model P of data. The probability distribution of training data. New samples are generated by sampling from this learned distribution. VAEs, GANs, and diffusion models are all examples of this approach.",
+    "line_type": "answer",
+    "chapter": 6,
+    "start_ms": 145568,
+    "duration_ms": 13196,
+    "end_ms": 158764
+  },
+  {
+    "index": 17,
+    "speaker": "PROFESSOR",
+    "text": "For your SO-ARM101, the VAE learns P of trajectories given observations. Sampling produces new, valid folding trajectories that weren't even in your training data, but follow the patterns the model learned.",
+    "line_type": "example",
+    "chapter": 6,
+    "start_ms": 158764,
+    "duration_ms": 12980,
+    "end_ms": 171744
+  },
+  {
+    "index": 18,
+    "speaker": "STUDENT_1",
+    "text": "So it's like learning the rules of what makes a valid trajectory, then generating new trajectories that follow those rules.",
+    "line_type": "echo",
+    "chapter": 6,
+    "start_ms": 171744,
+    "duration_ms": 7628,
+    "end_ms": 179372
+  },
+  {
+    "index": 19,
+    "speaker": "PROFESSOR",
+    "text": "That's a perfect way to think about it.",
+    "line_type": "acknowledgment",
+    "chapter": 6,
+    "start_ms": 179372,
+    "duration_ms": 2564,
+    "end_ms": 181936
+  },
+  {
+    "index": 20,
+    "speaker": "PROFESSOR",
+    "text": "This is exactly how AlphaFold works for protein folding. It learned the distribution of valid protein structures, then samples plausible structures for new sequences.",
+    "line_type": "consequence",
+    "chapter": 6,
+    "start_ms": 181936,
+    "duration_ms": 9932,
+    "end_ms": 191868
+  },
+  {
+    "index": 21,
+    "speaker": "PROFESSOR",
+    "text": "In our next lesson, we'll dive deep into VAEs and understand the mathematical machinery that makes all of this possible. But first, let me show you where this technology has already arrived.",
+    "line_type": "lecture",
+    "chapter": 6,
+    "start_ms": 191868,
+    "duration_ms": 10964,
+    "end_ms": 202832
+  }
+]

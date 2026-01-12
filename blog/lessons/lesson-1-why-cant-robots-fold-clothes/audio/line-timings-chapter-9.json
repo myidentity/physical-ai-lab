@@ -1,0 +1,22 @@
+[
+  {
+    "index": 0,
+    "speaker": "PROFESSOR",
+    "text": "Thank you for joining me in this first lesson. See you next time when we dive deep into Variational Autoencoders.",
+    "line_type": "transition",
+    "chapter": 9,
+    "start_ms": 0,
+    "duration_ms": 6740,
+    "end_ms": 6740
+  },
+  {
+    "index": 1,
+    "speaker": "AMBIENT",
+    "text": "Class dismissed.",
+    "line_type": "transition",
+    "chapter": 9,
+    "start_ms": 6740,
+    "duration_ms": 500,
+    "end_ms": 7240
+  }
+]

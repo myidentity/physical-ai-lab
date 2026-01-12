@@ -1,0 +1,202 @@
+[
+  {
+    "index": 0,
+    "speaker": "PROFESSOR",
+    "text": "Chapter 7. The Future Is Already Here.",
+    "line_type": "transition",
+    "chapter": 7,
+    "start_ms": 0,
+    "duration_ms": 3524,
+    "end_ms": 3524
+  },
+  {
+    "index": 1,
+    "speaker": "PROFESSOR",
+    "text": "Everything we've discussed. Imitation learning with multimodal policies. It's not theoretical anymore. Companies are already building foundation models for robotics that can fold clothes, clear tables, and manipulate deformable objects.",
+    "line_type": "lecture",
+    "chapter": 7,
+    "start_ms": 3524,
+    "duration_ms": 14204,
+    "end_ms": 17728
+  },
+  {
+    "index": 2,
+    "speaker": "STUDENT_4",
+    "text": "What are foundation models and why did they revolutionize AI?",
+    "line_type": "question",
+    "chapter": 7,
+    "start_ms": 17728,
+    "duration_ms": 3932,
+    "end_ms": 21660
+  },
+  {
+    "index": 3,
+    "speaker": "PROFESSOR",
+    "text": "Foundation models are large neural networks pre-trained on massive datasets that learn general representations. The breakthrough is that they can be fine-tuned for specific tasks with minimal data. GPT-3, CLIP, and DALL-E are all foundation models.",
+    "line_type": "answer",
+    "chapter": 7,
+    "start_ms": 21660,
+    "duration_ms": 14780,
+    "end_ms": 36440
+  },
+  {
+    "index": 4,
+    "speaker": "PROFESSOR",
+    "text": "Imagine downloading a foundation robot model pre-trained on millions of manipulation demos. Then you fine-tune it on just 50 demos for your specific folding task on your SO-ARM101. That's the future we're building toward.",
+    "line_type": "example",
+    "chapter": 7,
+    "start_ms": 36440,
+    "duration_ms": 13052,
+    "end_ms": 49492
+  },
+  {
+    "index": 5,
+    "speaker": "STUDENT_2",
+    "text": "So instead of training from scratch every time, we stand on the shoulders of massive pre-training.",
+    "line_type": "echo",
+    "chapter": 7,
+    "start_ms": 49492,
+    "duration_ms": 6188,
+    "end_ms": 55680
+  },
+  {
+    "index": 6,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. Transfer learning at scale.",
+    "line_type": "acknowledgment",
+    "chapter": 7,
+    "start_ms": 55680,
+    "duration_ms": 3164,
+    "end_ms": 58844
+  },
+  {
+    "index": 7,
+    "speaker": "PROFESSOR",
+    "text": "This is why ChatGPT can write code, poetry, and emails without being specifically trained on each. The foundation learns general patterns that transfer everywhere.",
+    "line_type": "consequence",
+    "chapter": 7,
+    "start_ms": 58844,
+    "duration_ms": 9668,
+    "end_ms": 68512
+  },
+  {
+    "index": 8,
+    "speaker": "STUDENT_1",
+    "text": "What are Vision Language Action models, these VLAs I keep hearing about?",
+    "line_type": "question",
+    "chapter": 7,
+    "start_ms": 68512,
+    "duration_ms": 5132,
+    "end_ms": 73644
+  },
+  {
+    "index": 9,
+    "speaker": "PROFESSOR",
+    "text": "VLAs extend Vision Language Models by adding an action output head. They take vision plus language instructions as input and output robot actions. This enables instruction-following robots that understand natural language commands.",
+    "line_type": "answer",
+    "chapter": 7,
+    "start_ms": 73644,
+    "duration_ms": 13148,
+    "end_ms": 86792
+  },
+  {
+    "index": 10,
+    "speaker": "PROFESSOR",
+    "text": "You could say 'Fold the blue shirt on the table' and the VLA processes your camera view, understands the language, and outputs joint commands for both of your SO-ARM101 arms to execute the fold.",
+    "line_type": "example",
+    "chapter": 7,
+    "start_ms": 86792,
+    "duration_ms": 11684,
+    "end_ms": 98476
+  },
+  {
+    "index": 11,
+    "speaker": "STUDENT_3",
+    "text": "So it combines seeing, understanding language, AND knowing how to move. All in one model.",
+    "line_type": "echo",
+    "chapter": 7,
+    "start_ms": 98476,
+    "duration_ms": 6212,
+    "end_ms": 104688
+  },
+  {
+    "index": 12,
+    "speaker": "PROFESSOR",
+    "text": "That's the vision. One unified model for perception, reasoning, and action.",
+    "line_type": "acknowledgment",
+    "chapter": 7,
+    "start_ms": 104688,
+    "duration_ms": 5276,
+    "end_ms": 109964
+  },
+  {
+    "index": 13,
+    "speaker": "PROFESSOR",
+    "text": "Google's RT-2 demonstrated this. A single model that can follow instructions like 'pick up the extinct animal' by reasoning that a dinosaur toy is extinct.",
+    "line_type": "consequence",
+    "chapter": 7,
+    "start_ms": 109964,
+    "duration_ms": 10004,
+    "end_ms": 119968
+  },
+  {
+    "index": 14,
+    "speaker": "STUDENT_2",
+    "text": "What is Pi-0 from Physical Intelligence? I've seen their cloth folding videos.",
+    "line_type": "question",
+    "chapter": 7,
+    "start_ms": 119968,
+    "duration_ms": 5684,
+    "end_ms": 125652
+  },
+  {
+    "index": 15,
+    "speaker": "PROFESSOR",
+    "text": "Pi-0 is a foundation model for robotics from Sergey Levine's company, Physical Intelligence. It's trained on diverse manipulation data and can perform complex tasks like folding clothes, clearing tables, and handling deformable objects in real homes.",
+    "line_type": "answer",
+    "chapter": 7,
+    "start_ms": 125652,
+    "duration_ms": 15284,
+    "end_ms": 140936
+  },
+  {
+    "index": 16,
+    "speaker": "PROFESSOR",
+    "text": "The architecture. VAE plus Transformer. Is exactly what you'll learn to build in this course. The same principles that power Pi-0 will power your SO-ARM101.",
+    "line_type": "example",
+    "chapter": 7,
+    "start_ms": 140936,
+    "duration_ms": 11204,
+    "end_ms": 152140
+  },
+  {
+    "index": 17,
+    "speaker": "STUDENT_4",
+    "text": "So the cutting-edge industrial robots use the same architecture we're about to learn?",
+    "line_type": "echo",
+    "chapter": 7,
+    "start_ms": 152140,
+    "duration_ms": 5204,
+    "end_ms": 157344
+  },
+  {
+    "index": 18,
+    "speaker": "PROFESSOR",
+    "text": "The very same. You're learning state-of-the-art techniques.",
+    "line_type": "acknowledgment",
+    "chapter": 7,
+    "start_ms": 157344,
+    "duration_ms": 3932,
+    "end_ms": 161276
+  },
+  {
+    "index": 19,
+    "speaker": "PROFESSOR",
+    "text": "This is why I created this bootcamp. The gap between research labs and what you can build at home is closing rapidly.",
+    "line_type": "consequence",
+    "chapter": 7,
+    "start_ms": 161276,
+    "duration_ms": 7124,
+    "end_ms": 168400
+  }
+]

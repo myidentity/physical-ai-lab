@@ -1,0 +1,412 @@
+[
+  {
+    "index": 0,
+    "speaker": "PROFESSOR",
+    "text": "Chapter 5. The Plot Twist: When Good Paths Average to Disaster.",
+    "line_type": "transition",
+    "chapter": 5,
+    "start_ms": 0,
+    "duration_ms": 7496,
+    "end_ms": 7496
+  },
+  {
+    "index": 1,
+    "speaker": "PROFESSOR",
+    "text": "You collect demonstrations from multiple humans. Some people go left around the box. Others go right. Both paths are perfectly valid - they both reach the goal.",
+    "line_type": "lecture",
+    "chapter": 5,
+    "start_ms": 7496,
+    "duration_ms": 13896,
+    "end_ms": 21392
+  },
+  {
+    "index": 2,
+    "speaker": "PROFESSOR",
+    "text": "You train your neural network on these demonstrations. It learns to predict actions from observations.",
+    "line_type": "lecture",
+    "chapter": 5,
+    "start_ms": 21392,
+    "duration_ms": 9432,
+    "end_ms": 30824
+  },
+  {
+    "index": 3,
+    "speaker": "PROFESSOR",
+    "text": "The robot sees the obstacle. It has learned from demonstrations that went both left AND right. What does it do?",
+    "line_type": "lecture",
+    "chapter": 5,
+    "start_ms": 30824,
+    "duration_ms": 10224,
+    "end_ms": 41048
+  },
+  {
+    "index": 4,
+    "speaker": "STUDENT_2",
+    "text": "Why is handling multimodal data challenging for classical robotics?",
+    "line_type": "question",
+    "chapter": 5,
+    "start_ms": 41048,
+    "duration_ms": 5152,
+    "end_ms": 46200
+  },
+  {
+    "index": 5,
+    "speaker": "PROFESSOR",
+    "text": "Robots receive images (2D), depth (3D), joint angles (1D vectors), forces (vectors) - all different data types requiring different processing. Classical approaches struggle to fuse these coherently.",
+    "line_type": "answer",
+    "chapter": 5,
+    "start_ms": 46200,
+    "duration_ms": 20416,
+    "end_ms": 66616
+  },
+  {
+    "index": 6,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: SO-ARM101 has: 2 camera feeds (images), 24 joint encoders (angles), and gripper force sensors. A policy must process all modalities together.",
+    "line_type": "example",
+    "chapter": 5,
+    "start_ms": 66616,
+    "duration_ms": 21656,
+    "end_ms": 88272
+  },
+  {
+    "index": 7,
+    "speaker": "PROFESSOR",
+    "text": "So remember: Why is handling multimodal data challenging for classical robotics?",
+    "line_type": "reinforcement",
+    "chapter": 5,
+    "start_ms": 88272,
+    "duration_ms": 12504,
+    "end_ms": 100776
+  },
+  {
+    "index": 8,
+    "speaker": "PROFESSOR",
+    "text": "The neural network outputs the average of the two paths. Half-left plus half-right equals... straight ahead . The robot drives directly into the obstacle.",
+    "line_type": "lecture",
+    "chapter": 5,
+    "start_ms": 100776,
+    "duration_ms": 13440,
+    "end_ms": 114216
+  },
+  {
+    "index": 9,
+    "speaker": "PROFESSOR",
+    "text": "When the same observation can lead to multiple valid actions, a standard neural network averages them together. This mode averaging produces an action that might not be valid at all. Two good solutions, averaged, become one terrible solution.",
+    "line_type": "lecture",
+    "chapter": 5,
+    "start_ms": 114216,
+    "duration_ms": 19560,
+    "end_ms": 133776
+  },
+  {
+    "index": 10,
+    "speaker": "PROFESSOR",
+    "text": "This is called the multimodal targets problem . The word \"multimodal\" here means \"multiple valid modes of behavior\" - not multiple sensor modalities.",
+    "line_type": "lecture",
+    "chapter": 5,
+    "start_ms": 133776,
+    "duration_ms": 14424,
+    "end_ms": 148200
+  },
+  {
+    "index": 11,
+    "speaker": "STUDENT_3",
+    "text": "What is undermodeling in robotics?",
+    "line_type": "question",
+    "chapter": 5,
+    "start_ms": 148200,
+    "duration_ms": 3448,
+    "end_ms": 151648
+  },
+  {
+    "index": 12,
+    "speaker": "PROFESSOR",
+    "text": "Undermodeling means your mathematical model neglects real-world factors: friction, backlash, cable stretch, thermal expansion, wear. The gap between model and reality causes control errors.",
+    "line_type": "answer",
+    "chapter": 5,
+    "start_ms": 151648,
+    "duration_ms": 18160,
+    "end_ms": 169808
+  },
+  {
+    "index": 13,
+    "speaker": "PROFESSOR",
+    "text": "Your SO-ARM101 servo response varies with temperature and load. No equation captures this - but a learned policy can adapt from experience.",
+    "line_type": "example",
+    "chapter": 5,
+    "start_ms": 169808,
+    "duration_ms": 16112,
+    "end_ms": 185920
+  },
+  {
+    "index": 14,
+    "speaker": "PROFESSOR",
+    "text": "So remember: What is undermodeling in robotics?",
+    "line_type": "reinforcement",
+    "chapter": 5,
+    "start_ms": 185920,
+    "duration_ms": 9768,
+    "end_ms": 195688
+  },
+  {
+    "index": 15,
+    "speaker": "PROFESSOR",
+    "text": "And it explains why naive imitation learning fails on real tasks. The training data contains multiple valid strategies. The neural network, trained to minimize prediction error, learns to predict the average - which is often invalid.",
+    "line_type": "lecture",
+    "chapter": 5,
+    "start_ms": 195688,
+    "duration_ms": 19128,
+    "end_ms": 214816
+  },
+  {
+    "index": 16,
+    "speaker": "PROFESSOR",
+    "text": "Imagine you've mastered the arm motion for bowling a cricket ball. But you're blindfolded - you can't see where the batsman is standing. No matter how perfect your technique, you'll bowl to the wrong place. Visual input isn't optional. Coming from LLMs, we forget this - text models don't need to \"see.\" But robots absolutely do. The observation must include what matters for the decision.",
+    "line_type": "lecture",
+    "chapter": 5,
+    "start_ms": 214816,
+    "duration_ms": 29568,
+    "end_ms": 244384
+  },
+  {
+    "index": 17,
+    "speaker": "STUDENT_4",
+    "text": "Why does classical robotics 'overlook available data'?",
+    "line_type": "question",
+    "chapter": 5,
+    "start_ms": 244384,
+    "duration_ms": 4432,
+    "end_ms": 248816
+  },
+  {
+    "index": 18,
+    "speaker": "PROFESSOR",
+    "text": "Classical approaches derive motion from physics equations, not from examples. They don't learn from thousands of demonstrations or improve with more data. Experience is wasted.",
+    "line_type": "answer",
+    "chapter": 5,
+    "start_ms": 248816,
+    "duration_ms": 15832,
+    "end_ms": 264648
+  },
+  {
+    "index": 19,
+    "speaker": "PROFESSOR",
+    "text": "If you have 1000 successful folding demos, classical robotics can't use them directly. Imitation learning extracts the policy from this data.",
+    "line_type": "example",
+    "chapter": 5,
+    "start_ms": 264648,
+    "duration_ms": 15488,
+    "end_ms": 280136
+  },
+  {
+    "index": 20,
+    "speaker": "PROFESSOR",
+    "text": "So remember: Why does classical robotics 'overlook available data'?",
+    "line_type": "reinforcement",
+    "chapter": 5,
+    "start_ms": 280136,
+    "duration_ms": 11400,
+    "end_ms": 291536
+  },
+  {
+    "index": 21,
+    "speaker": "STUDENT_1",
+    "text": "What is the multimodal targets problem in imitation learning?",
+    "line_type": "question",
+    "chapter": 5,
+    "start_ms": 291536,
+    "duration_ms": 4696,
+    "end_ms": 296232
+  },
+  {
+    "index": 22,
+    "speaker": "PROFESSOR",
+    "text": "For the same observation, experts might take different valid actions. Standard regression predicts the mean of these actions, which may not be a valid action itself.",
+    "line_type": "answer",
+    "chapter": 5,
+    "start_ms": 296232,
+    "duration_ms": 14752,
+    "end_ms": 310984
+  },
+  {
+    "index": 23,
+    "speaker": "PROFESSOR",
+    "text": "Same fabric position: demo 1 folds left edge first, demo 2 folds right edge first. Mean action = fold from middle = drops fabric.",
+    "line_type": "example",
+    "chapter": 5,
+    "start_ms": 310984,
+    "duration_ms": 17024,
+    "end_ms": 328008
+  },
+  {
+    "index": 24,
+    "speaker": "PROFESSOR",
+    "text": "So remember: What is the multimodal targets problem in imitation learning?",
+    "line_type": "reinforcement",
+    "chapter": 5,
+    "start_ms": 328008,
+    "duration_ms": 11664,
+    "end_ms": 339672
+  },
+  {
+    "index": 25,
+    "speaker": "STUDENT_2",
+    "text": "What are point estimate policies and why do they fail?",
+    "line_type": "question",
+    "chapter": 5,
+    "start_ms": 339672,
+    "duration_ms": 3952,
+    "end_ms": 343624
+  },
+  {
+    "index": 26,
+    "speaker": "PROFESSOR",
+    "text": "Point estimates output a single action value, not a distribution. When multiple valid actions exist, point estimates collapse to the mean, which often lies between modes and is invalid.",
+    "line_type": "answer",
+    "chapter": 5,
+    "start_ms": 343624,
+    "duration_ms": 16888,
+    "end_ms": 360512
+  },
+  {
+    "index": 27,
+    "speaker": "PROFESSOR",
+    "text": "Policy outputs exactly 12 joint angles. If left-fold and right-fold are both valid, it might output middle values that don't correspond to either valid fold.",
+    "line_type": "example",
+    "chapter": 5,
+    "start_ms": 360512,
+    "duration_ms": 16640,
+    "end_ms": 377152
+  },
+  {
+    "index": 28,
+    "speaker": "PROFESSOR",
+    "text": "So remember: What are point estimate policies and why do they fail?",
+    "line_type": "reinforcement",
+    "chapter": 5,
+    "start_ms": 377152,
+    "duration_ms": 11160,
+    "end_ms": 388312
+  },
+  {
+    "index": 29,
+    "speaker": "STUDENT_3",
+    "text": "How does mode averaging cause robot failures?",
+    "line_type": "question",
+    "chapter": 5,
+    "start_ms": 388312,
+    "duration_ms": 4312,
+    "end_ms": 392624
+  },
+  {
+    "index": 30,
+    "speaker": "PROFESSOR",
+    "text": "When training data has multiple valid action modes, MSE loss minimizes average error by outputting the mean. If modes are 'go left' and 'go right', mean is 'go straight into obstacle'.",
+    "line_type": "answer",
+    "chapter": 5,
+    "start_ms": 392624,
+    "duration_ms": 18472,
+    "end_ms": 411096
+  },
+  {
+    "index": 31,
+    "speaker": "PROFESSOR",
+    "text": "Bimanual folding might have left-arm-first and right-arm-first modes. Averaging produces simultaneous motion that tangles fabric.",
+    "line_type": "example",
+    "chapter": 5,
+    "start_ms": 411096,
+    "duration_ms": 14768,
+    "end_ms": 425864
+  },
+  {
+    "index": 32,
+    "speaker": "PROFESSOR",
+    "text": "So remember: How does mode averaging cause robot failures?",
+    "line_type": "reinforcement",
+    "chapter": 5,
+    "start_ms": 425864,
+    "duration_ms": 10512,
+    "end_ms": 436376
+  },
+  {
+    "index": 33,
+    "speaker": "STUDENT_4",
+    "text": "How can you visualize the mode averaging problem?",
+    "line_type": "question",
+    "chapter": 5,
+    "start_ms": 436376,
+    "duration_ms": 3832,
+    "end_ms": 440208
+  },
+  {
+    "index": 34,
+    "speaker": "PROFESSOR",
+    "text": "The lecture Colab shows a 2D navigation task where point estimate crashes into obstacle (averaging left/right paths), while multimodal policy successfully chooses one path.",
+    "line_type": "answer",
+    "chapter": 5,
+    "start_ms": 440208,
+    "duration_ms": 17392,
+    "end_ms": 457600
+  },
+  {
+    "index": 35,
+    "speaker": "PROFESSOR",
+    "text": "Run the Colab to see how VAE-based policies sample from learned distributions, committing to one mode rather than averaging.",
+    "line_type": "example",
+    "chapter": 5,
+    "start_ms": 457600,
+    "duration_ms": 13520,
+    "end_ms": 471120
+  },
+  {
+    "index": 36,
+    "speaker": "PROFESSOR",
+    "text": "So remember: How can you visualize the mode averaging problem?",
+    "line_type": "reinforcement",
+    "chapter": 5,
+    "start_ms": 471120,
+    "duration_ms": 10416,
+    "end_ms": 481536
+  },
+  {
+    "index": 37,
+    "speaker": "STUDENT_1",
+    "text": "What is the compounding error problem in imitation learning?",
+    "line_type": "question",
+    "chapter": 5,
+    "start_ms": 481536,
+    "duration_ms": 4360,
+    "end_ms": 485896
+  },
+  {
+    "index": 38,
+    "speaker": "PROFESSOR",
+    "text": "Small prediction errors accumulate over time. The policy enters states never seen in training, makes larger errors, drifts further from expert behavior. It's a distribution shift problem.",
+    "line_type": "answer",
+    "chapter": 5,
+    "start_ms": 485896,
+    "duration_ms": 17080,
+    "end_ms": 502976
+  },
+  {
+    "index": 39,
+    "speaker": "PROFESSOR",
+    "text": "If gripper is 1cm off, next prediction is based on wrong state, causing 2cm error, then 4cm... Soon SO-ARM101 is grabbing air instead of fabric.",
+    "line_type": "example",
+    "chapter": 5,
+    "start_ms": 502976,
+    "duration_ms": 18824,
+    "end_ms": 521800
+  },
+  {
+    "index": 40,
+    "speaker": "PROFESSOR",
+    "text": "So remember: What is the compounding error problem in imitation learning?",
+    "line_type": "reinforcement",
+    "chapter": 5,
+    "start_ms": 521800,
+    "duration_ms": 11280,
+    "end_ms": 533080
+  }
+]

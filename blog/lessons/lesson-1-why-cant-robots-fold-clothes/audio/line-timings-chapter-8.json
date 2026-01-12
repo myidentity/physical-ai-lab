@@ -1,0 +1,72 @@
+[
+  {
+    "index": 0,
+    "speaker": "PROFESSOR",
+    "text": "Chapter 8. Your Journey Begins.",
+    "line_type": "transition",
+    "chapter": 8,
+    "start_ms": 0,
+    "duration_ms": 3140,
+    "end_ms": 3140
+  },
+  {
+    "index": 1,
+    "speaker": "PROFESSOR",
+    "text": "Let's recap the journey we've taken today. We started with a paradox. Robots can do backflips but can't fold laundry. Classical robotics gave us beautiful equations but couldn't handle the messiness of the real world.",
+    "line_type": "lecture",
+    "chapter": 8,
+    "start_ms": 3140,
+    "duration_ms": 12716,
+    "end_ms": 15856
+  },
+  {
+    "index": 2,
+    "speaker": "PROFESSOR",
+    "text": "Reinforcement learning promised to learn from experience, but it's dangerous, data-hungry, and struggles with complex rewards. Imitation learning showed us how to learn from human demonstrations safely and efficiently.",
+    "line_type": "lecture",
+    "chapter": 8,
+    "start_ms": 15856,
+    "duration_ms": 12212,
+    "end_ms": 28068
+  },
+  {
+    "index": 3,
+    "speaker": "PROFESSOR",
+    "text": "But naive imitation fails on multimodal tasks. The mode averaging problem destroys coherent behavior. The solution? Output distributions, not point estimates. Use deep generative modeling to sample coherent actions.",
+    "line_type": "lecture",
+    "chapter": 8,
+    "start_ms": 28068,
+    "duration_ms": 14132,
+    "end_ms": 42200
+  },
+  {
+    "index": 4,
+    "speaker": "PROFESSOR",
+    "text": "And this isn't science fiction. Companies like Physical Intelligence are already deploying these techniques. Foundation models are emerging that you can fine-tune for your own tasks.",
+    "line_type": "lecture",
+    "chapter": 8,
+    "start_ms": 42200,
+    "duration_ms": 10220,
+    "end_ms": 52420
+  },
+  {
+    "index": 5,
+    "speaker": "PROFESSOR",
+    "text": "Over the next three lessons, you'll learn to build these systems yourself. VAEs, action chunking, transformer architectures. By the end, you'll train your SO-ARM101 to fold clothes using the same techniques powering the most advanced robots in the world.",
+    "line_type": "lecture",
+    "chapter": 8,
+    "start_ms": 52420,
+    "duration_ms": 15476,
+    "end_ms": 67896
+  },
+  {
+    "index": 6,
+    "speaker": "PROFESSOR",
+    "text": "The future of robotics is not locked in corporate labs. It's accessible to anyone willing to learn. And that journey starts now.",
+    "line_type": "lecture",
+    "chapter": 8,
+    "start_ms": 67896,
+    "duration_ms": 7628,
+    "end_ms": 75524
+  }
+]

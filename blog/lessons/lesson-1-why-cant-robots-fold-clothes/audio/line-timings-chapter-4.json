@@ -1,0 +1,1322 @@
+[
+  {
+    "index": 0,
+    "speaker": "PROFESSOR",
+    "text": "Chapter 4. Learning Like Humans: The Imitation Breakthrough.",
+    "line_type": "transition",
+    "chapter": 4,
+    "start_ms": 0,
+    "duration_ms": 5152,
+    "end_ms": 5152
+  },
+  {
+    "index": 1,
+    "speaker": "PROFESSOR",
+    "text": "Think about how humans actually learn motor skills. Did you learn to write by randomly scribbling until you accidentally made letters? Did you learn to pour water by spilling it thousands of times until you got lucky?",
+    "line_type": "lecture",
+    "chapter": 4,
+    "start_ms": 5152,
+    "duration_ms": 12516,
+    "end_ms": 17668
+  },
+  {
+    "index": 2,
+    "speaker": "PROFESSOR",
+    "text": "No. Someone showed you. You watched, you imitated, you refined.",
+    "line_type": "lecture",
+    "chapter": 4,
+    "start_ms": 17668,
+    "duration_ms": 6204,
+    "end_ms": 23872
+  },
+  {
+    "index": 3,
+    "speaker": "PROFESSOR",
+    "text": "Robot tries random actions to Gets reward signal to Slowly learns over millions of attempts",
+    "line_type": "lecture",
+    "chapter": 4,
+    "start_ms": 23872,
+    "duration_ms": 6996,
+    "end_ms": 30868
+  },
+  {
+    "index": 4,
+    "speaker": "STUDENT_2",
+    "text": "What is imitation learning and how does it solve RL's problems?",
+    "line_type": "question",
+    "chapter": 4,
+    "start_ms": 30868,
+    "duration_ms": 4556,
+    "end_ms": 35424
+  },
+  {
+    "index": 5,
+    "speaker": "PROFESSOR",
+    "text": "Instead of trial-and-error, the robot learns from expert demonstrations. It observes a human (or other expert) performing the task and learns to replicate that behavior. No random exploration, no reward engineering.",
+    "line_type": "answer",
+    "chapter": 4,
+    "start_ms": 35424,
+    "duration_ms": 14028,
+    "end_ms": 49452
+  },
+  {
+    "index": 6,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: You teleoperate the Leader arms to fold clothes; SO-ARM101 learns from your demonstrations to replicate the behavior on the Follower arms.",
+    "line_type": "example",
+    "chapter": 4,
+    "start_ms": 49452,
+    "duration_ms": 12944,
+    "end_ms": 62396
+  },
+  {
+    "index": 7,
+    "speaker": "STUDENT_4",
+    "text": "So instead of trial-and-error or physics equations, we just show the robot what good looks like and it copies that.",
+    "line_type": "echo",
+    "chapter": 4,
+    "start_ms": 62396,
+    "duration_ms": 8384,
+    "end_ms": 70780
+  },
+  {
+    "index": 8,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. Learning by watching, not by failing.",
+    "line_type": "acknowledgment",
+    "chapter": 4,
+    "start_ms": 70780,
+    "duration_ms": 4908,
+    "end_ms": 75688
+  },
+  {
+    "index": 9,
+    "speaker": "PROFESSOR",
+    "text": "Imitation learning is why you can train a useful robot policy in hours instead of weeks - the demonstrations provide structure that RL has to discover blindly.",
+    "line_type": "consequence",
+    "chapter": 4,
+    "start_ms": 75688,
+    "duration_ms": 10856,
+    "end_ms": 86544
+  },
+  {
+    "index": 10,
+    "speaker": "PROFESSOR",
+    "text": "Expert demonstrates task to Robot observes to Robot learns to copy the expert's behavior",
+    "line_type": "lecture",
+    "chapter": 4,
+    "start_ms": 86544,
+    "duration_ms": 7020,
+    "end_ms": 93564
+  },
+  {
+    "index": 11,
+    "speaker": "PROFESSOR",
+    "text": "Let's go back to our coffee pouring task. With imitation learning, you don't need to define a reward function. You don't need the robot to explore randomly. You just... pour the coffee yourself while the robot watches.",
+    "line_type": "lecture",
+    "chapter": 4,
+    "start_ms": 93564,
+    "duration_ms": 13380,
+    "end_ms": 106944
+  },
+  {
+    "index": 12,
+    "speaker": "PROFESSOR",
+    "text": "This is where your SO-ARM101's bimanual setup shines. You have Leader arms (that you control) and Follower arms (that replicate). To collect demonstrations: you move the Leader arms to fold clothes, and the system records every joint angle and camera frame. Then you train a policy to map observations to actions. The Follower arms learn to replicate your movements.",
+    "line_type": "lecture",
+    "chapter": 4,
+    "start_ms": 106944,
+    "duration_ms": 22524,
+    "end_ms": 129468
+  },
+  {
+    "index": 13,
+    "speaker": "STUDENT_3",
+    "text": "How does imitation learning work in detail?",
+    "line_type": "question",
+    "chapter": 4,
+    "start_ms": 129468,
+    "duration_ms": 3308,
+    "end_ms": 132776
+  },
+  {
+    "index": 14,
+    "speaker": "PROFESSOR",
+    "text": "Collect demonstrations (observation-action pairs) from an expert. Train a neural network to predict the expert's action given the observation. At test time, the network imitates the expert behavior.",
+    "line_type": "answer",
+    "chapter": 4,
+    "start_ms": 132776,
+    "duration_ms": 12612,
+    "end_ms": 145388
+  },
+  {
+    "index": 15,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: Record 100 demos of you folding clothes via Leader arms. Train policy: (camera, joints) to actions. Follower arms execute the learned policy.",
+    "line_type": "example",
+    "chapter": 4,
+    "start_ms": 145388,
+    "duration_ms": 14072,
+    "end_ms": 159460
+  },
+  {
+    "index": 16,
+    "speaker": "STUDENT_3",
+    "text": "So it's basically supervised learning - input is what the robot sees, output is what it should do, trained on expert examples?",
+    "line_type": "echo",
+    "chapter": 4,
+    "start_ms": 159460,
+    "duration_ms": 10112,
+    "end_ms": 169572
+  },
+  {
+    "index": 17,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. Standard ML, but the output is motor commands.",
+    "line_type": "acknowledgment",
+    "chapter": 4,
+    "start_ms": 169572,
+    "duration_ms": 5604,
+    "end_ms": 175176
+  },
+  {
+    "index": 18,
+    "speaker": "PROFESSOR",
+    "text": "This is how Tesla collected their Autopilot training data - millions of hours of human driving, no reward engineering needed.",
+    "line_type": "consequence",
+    "chapter": 4,
+    "start_ms": 175176,
+    "duration_ms": 9176,
+    "end_ms": 184352
+  },
+  {
+    "index": 19,
+    "speaker": "PROFESSOR",
+    "text": "The elegance of this approach is stunning. No reward engineering. No dangerous exploration. No need to derive physics equations. You just show the robot what to do.",
+    "line_type": "lecture",
+    "chapter": 4,
+    "start_ms": 184352,
+    "duration_ms": 11292,
+    "end_ms": 195644
+  },
+  {
+    "index": 20,
+    "speaker": "PROFESSOR",
+    "text": "And here's what makes it practical: we now have massive datasets of robot demonstrations. The LeRobot library on Hugging Face hosts datasets from research labs around the world - manipulation tasks, locomotion, tool use. The data revolution that transformed NLP is finally reaching robotics.",
+    "line_type": "lecture",
+    "chapter": 4,
+    "start_ms": 195644,
+    "duration_ms": 18828,
+    "end_ms": 214472
+  },
+  {
+    "index": 21,
+    "speaker": "PROFESSOR",
+    "text": "Imagine you've recorded a perfect demonstration. The robot tries to replicate it. At timestep 47, its action is slightly off - maybe by just a few millimeters. Now it's in a state it never saw during training . What happens next? The policy has no idea what to do from this unfamiliar state. It guesses - and guesses wrong. Now it's even further off track. The errors compound . By timestep 100, the robot is completely lost.",
+    "line_type": "lecture",
+    "chapter": 4,
+    "start_ms": 214472,
+    "duration_ms": 27252,
+    "end_ms": 241724
+  },
+  {
+    "index": 22,
+    "speaker": "STUDENT_4",
+    "text": "Why is coffee pouring a good example for imitation learning?",
+    "line_type": "question",
+    "chapter": 4,
+    "start_ms": 241724,
+    "duration_ms": 3884,
+    "end_ms": 245608
+  },
+  {
+    "index": 23,
+    "speaker": "PROFESSOR",
+    "text": "Pouring latte art requires precise timing, force control, and adapting to fluid dynamics - impossible to program explicitly. But a barista can demonstrate, and the robot can learn the implicit skill from examples.",
+    "line_type": "answer",
+    "chapter": 4,
+    "start_ms": 245608,
+    "duration_ms": 13980,
+    "end_ms": 259588
+  },
+  {
+    "index": 24,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: Fabric manipulation is similar: impossible to model fabric physics, but your bimanual demos capture the implicit 'feel' the policy learns to replicate.",
+    "line_type": "example",
+    "chapter": 4,
+    "start_ms": 259588,
+    "duration_ms": 13976,
+    "end_ms": 273564
+  },
+  {
+    "index": 25,
+    "speaker": "STUDENT_1",
+    "text": "So the robot learns the whole motion pattern - tilt angle, pour rate, when to stop - just from watching someone do it ten times.",
+    "line_type": "echo",
+    "chapter": 4,
+    "start_ms": 273564,
+    "duration_ms": 10256,
+    "end_ms": 283820
+  },
+  {
+    "index": 26,
+    "speaker": "PROFESSOR",
+    "text": "Right. No physics model of fluid dynamics required.",
+    "line_type": "acknowledgment",
+    "chapter": 4,
+    "start_ms": 283820,
+    "duration_ms": 5076,
+    "end_ms": 288896
+  },
+  {
+    "index": 27,
+    "speaker": "PROFESSOR",
+    "text": "Professional baristas spend years mastering pour techniques - imitation learning can transfer that skill to a robot in hours of demonstrations.",
+    "line_type": "consequence",
+    "chapter": 4,
+    "start_ms": 288896,
+    "duration_ms": 9896,
+    "end_ms": 298792
+  },
+  {
+    "index": 28,
+    "speaker": "PROFESSOR",
+    "text": "When your SO-ARM101 folds a shirt, it might take 500 timesteps. If each timestep has even a 1% chance of drifting off track, naive imitation learning almost guarantees failure. ACT (Action Chunking Transformer) predicts chunks of ~100 actions at once, reducing this to just 5 decision points - a much more robust approach.",
+    "line_type": "lecture",
+    "chapter": 4,
+    "start_ms": 298792,
+    "duration_ms": 23004,
+    "end_ms": 321796
+  },
+  {
+    "index": 29,
+    "speaker": "PROFESSOR",
+    "text": "But there's an even deeper flaw - one that appears even when your demonstrations are perfect and your policy never drifts. It's the reason why naive imitation learning fails on almost all real-world tasks...",
+    "line_type": "lecture",
+    "chapter": 4,
+    "start_ms": 321796,
+    "duration_ms": 12492,
+    "end_ms": 334288
+  },
+  {
+    "index": 30,
+    "speaker": "STUDENT_1",
+    "text": "What is Learning from Demonstrations (LfD)?",
+    "line_type": "question",
+    "chapter": 4,
+    "start_ms": 334288,
+    "duration_ms": 3716,
+    "end_ms": 338004
+  },
+  {
+    "index": 31,
+    "speaker": "PROFESSOR",
+    "text": "The robot observes expert performing a task, records the observations and actions taken, then learns a mapping from observations to actions that replicates expert behavior.",
+    "line_type": "answer",
+    "chapter": 4,
+    "start_ms": 338004,
+    "duration_ms": 11340,
+    "end_ms": 349344
+  },
+  {
+    "index": 32,
+    "speaker": "PROFESSOR",
+    "text": "You teleoperate Leader arms while cameras record. The (images, leader_joints, follower_joints) tuples become training data for the policy network.",
+    "line_type": "example",
+    "chapter": 4,
+    "start_ms": 349344,
+    "duration_ms": 12584,
+    "end_ms": 361928
+  },
+  {
+    "index": 33,
+    "speaker": "STUDENT_4",
+    "text": "So instead of programming every motion, we just show the robot what to do and it learns to replicate?",
+    "line_type": "echo",
+    "chapter": 4,
+    "start_ms": 361928,
+    "duration_ms": 7880,
+    "end_ms": 369808
+  },
+  {
+    "index": 34,
+    "speaker": "PROFESSOR",
+    "text": "Right. Programming by demonstration, not by code.",
+    "line_type": "acknowledgment",
+    "chapter": 4,
+    "start_ms": 369808,
+    "duration_ms": 5076,
+    "end_ms": 374884
+  },
+  {
+    "index": 35,
+    "speaker": "PROFESSOR",
+    "text": "Surgical robot companies like Intuitive now use this - expert surgeons demonstrate procedures that less experienced robots can replicate.",
+    "line_type": "consequence",
+    "chapter": 4,
+    "start_ms": 374884,
+    "duration_ms": 9848,
+    "end_ms": 384732
+  },
+  {
+    "index": 36,
+    "speaker": "STUDENT_2",
+    "text": "What are observation-action pairs in imitation learning?",
+    "line_type": "question",
+    "chapter": 4,
+    "start_ms": 384732,
+    "duration_ms": 3764,
+    "end_ms": 388496
+  },
+  {
+    "index": 37,
+    "speaker": "PROFESSOR",
+    "text": "Each training example is (observation, action): what the robot sensed at time t, and what action the expert took. The dataset is a collection of these pairs from many demonstrations.",
+    "line_type": "answer",
+    "chapter": 4,
+    "start_ms": 388496,
+    "duration_ms": 11820,
+    "end_ms": 400316
+  },
+  {
+    "index": 38,
+    "speaker": "PROFESSOR",
+    "text": "At t=1.5s: observation = (camera_image, all_joint_angles), action = (target_follower_angles). Thousands of these pairs train the policy.",
+    "line_type": "example",
+    "chapter": 4,
+    "start_ms": 400316,
+    "duration_ms": 15728,
+    "end_ms": 416044
+  },
+  {
+    "index": 39,
+    "speaker": "STUDENT_3",
+    "text": "So each moment in the demo becomes a training example - this is what I saw, this is what I did.",
+    "line_type": "echo",
+    "chapter": 4,
+    "start_ms": 416044,
+    "duration_ms": 8144,
+    "end_ms": 424188
+  },
+  {
+    "index": 40,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. Thousands of pairs from just a few minutes of demonstration.",
+    "line_type": "acknowledgment",
+    "chapter": 4,
+    "start_ms": 424188,
+    "duration_ms": 5628,
+    "end_ms": 429816
+  },
+  {
+    "index": 41,
+    "speaker": "PROFESSOR",
+    "text": "The quality of these pairs determines everything - bad demonstrations teach bad habits. Garbage in, garbage out applies strongly here.",
+    "line_type": "consequence",
+    "chapter": 4,
+    "start_ms": 429816,
+    "duration_ms": 9824,
+    "end_ms": 439640
+  },
+  {
+    "index": 42,
+    "speaker": "STUDENT_3",
+    "text": "What is a policy in robot learning?",
+    "line_type": "question",
+    "chapter": 4,
+    "start_ms": 439640,
+    "duration_ms": 2996,
+    "end_ms": 442636
+  },
+  {
+    "index": 43,
+    "speaker": "PROFESSOR",
+    "text": "A policy pi is a function (usually neural network) that maps observations to actions: pi(o) = a. It encodes the robot's behavior - given what I see, what should I do?",
+    "line_type": "answer",
+    "chapter": 4,
+    "start_ms": 442636,
+    "duration_ms": 12948,
+    "end_ms": 455584
+  },
+  {
+    "index": 44,
+    "speaker": "PROFESSOR",
+    "text": "Your ACT policy: pi(camera_images, joint_states) to (12 follower joint angles for next timestep). Runs at 50Hz for smooth motion.",
+    "line_type": "example",
+    "chapter": 4,
+    "start_ms": 455584,
+    "duration_ms": 12776,
+    "end_ms": 468360
+  },
+  {
+    "index": 45,
+    "speaker": "STUDENT_1",
+    "text": "So the policy is the robot's brain - it takes in sensor data and outputs motor commands, like a function we're trying to learn?",
+    "line_type": "echo",
+    "chapter": 4,
+    "start_ms": 468360,
+    "duration_ms": 9896,
+    "end_ms": 478256
+  },
+  {
+    "index": 46,
+    "speaker": "PROFESSOR",
+    "text": "Perfect. Pi of O equals A. That's the whole game.",
+    "line_type": "acknowledgment",
+    "chapter": 4,
+    "start_ms": 478256,
+    "duration_ms": 5244,
+    "end_ms": 483500
+  },
+  {
+    "index": 47,
+    "speaker": "PROFESSOR",
+    "text": "Every autonomous system from drones to self-driving cars has a policy at its core - the decision-making function.",
+    "line_type": "consequence",
+    "chapter": 4,
+    "start_ms": 483500,
+    "duration_ms": 8384,
+    "end_ms": 491884
+  },
+  {
+    "index": 48,
+    "speaker": "STUDENT_4",
+    "text": "What is the input-output structure for a robot manipulation policy?",
+    "line_type": "question",
+    "chapter": 4,
+    "start_ms": 491884,
+    "duration_ms": 4292,
+    "end_ms": 496176
+  },
+  {
+    "index": 49,
+    "speaker": "PROFESSOR",
+    "text": "Input: observations (images + proprioception). Output: actions (joint targets). For 6-DOF arm: input is camera + 6 current joint angles, output is 6 target joint angles.",
+    "line_type": "answer",
+    "chapter": 4,
+    "start_ms": 496176,
+    "duration_ms": 14196,
+    "end_ms": 510372
+  },
+  {
+    "index": 50,
+    "speaker": "PROFESSOR",
+    "text": "Input: 2 camera images + 24 joint angles. Output: 12 target angles for Follower arms. Policy processes multimodal input to produce motor commands.",
+    "line_type": "example",
+    "chapter": 4,
+    "start_ms": 510372,
+    "duration_ms": 12392,
+    "end_ms": 522764
+  },
+  {
+    "index": 51,
+    "speaker": "STUDENT_2",
+    "text": "So the policy takes in everything the robot senses - cameras, joint angles - and outputs exactly what the motors should do.",
+    "line_type": "echo",
+    "chapter": 4,
+    "start_ms": 522764,
+    "duration_ms": 9752,
+    "end_ms": 532516
+  },
+  {
+    "index": 52,
+    "speaker": "PROFESSOR",
+    "text": "Right. Sensor data in, motor commands out. That's the whole interface.",
+    "line_type": "acknowledgment",
+    "chapter": 4,
+    "start_ms": 532516,
+    "duration_ms": 6348,
+    "end_ms": 538864
+  },
+  {
+    "index": 53,
+    "speaker": "PROFESSOR",
+    "text": "Getting this input-output structure right is half the battle - many projects fail because they include wrong inputs or predict wrong outputs.",
+    "line_type": "consequence",
+    "chapter": 4,
+    "start_ms": 538864,
+    "duration_ms": 9536,
+    "end_ms": 548400
+  },
+  {
+    "index": 54,
+    "speaker": "STUDENT_1",
+    "text": "What does it mean for a policy to be 'learned'?",
+    "line_type": "question",
+    "chapter": 4,
+    "start_ms": 548400,
+    "duration_ms": 3308,
+    "end_ms": 551708
+  },
+  {
+    "index": 55,
+    "speaker": "PROFESSOR",
+    "text": "The policy's parameters (neural network weights) are optimized from data to minimize prediction error on expert actions. It's not hand-coded - the behavior emerges from training.",
+    "line_type": "answer",
+    "chapter": 4,
+    "start_ms": 551708,
+    "duration_ms": 11364,
+    "end_ms": 563072
+  },
+  {
+    "index": 56,
+    "speaker": "PROFESSOR",
+    "text": "After training on 100 folding demos, the ACT network weights encode 'folding behavior' - you didn't program the motion, the network learned it.",
+    "line_type": "example",
+    "chapter": 4,
+    "start_ms": 563072,
+    "duration_ms": 10736,
+    "end_ms": 573808
+  },
+  {
+    "index": 57,
+    "speaker": "STUDENT_2",
+    "text": "So training is just finding neural network weights that minimize the difference between predicted actions and what experts actually did?",
+    "line_type": "echo",
+    "chapter": 4,
+    "start_ms": 573808,
+    "duration_ms": 9056,
+    "end_ms": 582864
+  },
+  {
+    "index": 58,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. Same loss functions as any supervised learning.",
+    "line_type": "acknowledgment",
+    "chapter": 4,
+    "start_ms": 582864,
+    "duration_ms": 5340,
+    "end_ms": 588204
+  },
+  {
+    "index": 59,
+    "speaker": "PROFESSOR",
+    "text": "Google's RT-1 took this to scale - one learned policy controlling multiple robot types across hundreds of tasks.",
+    "line_type": "consequence",
+    "chapter": 4,
+    "start_ms": 588204,
+    "duration_ms": 8960,
+    "end_ms": 597164
+  },
+  {
+    "index": 60,
+    "speaker": "STUDENT_2",
+    "text": "What is proprioceptive data in robotics?",
+    "line_type": "question",
+    "chapter": 4,
+    "start_ms": 597164,
+    "duration_ms": 3260,
+    "end_ms": 600424
+  },
+  {
+    "index": 61,
+    "speaker": "PROFESSOR",
+    "text": "Proprioception is the robot's sense of its own body - joint angles, velocities, torques. Like how you know your arm position without looking. Essential for closed-loop control.",
+    "line_type": "answer",
+    "chapter": 4,
+    "start_ms": 600424,
+    "duration_ms": 11508,
+    "end_ms": 611932
+  },
+  {
+    "index": 62,
+    "speaker": "PROFESSOR",
+    "text": "SO-ARM101 servos report their current angles. The policy uses this proprioceptive feedback along with camera images to decide next actions.",
+    "line_type": "example",
+    "chapter": 4,
+    "start_ms": 611932,
+    "duration_ms": 10976,
+    "end_ms": 622908
+  },
+  {
+    "index": 63,
+    "speaker": "STUDENT_4",
+    "text": "So proprioception is the robot knowing where its own body is - joint angles, velocities - like how you know where your hand is with eyes closed.",
+    "line_type": "echo",
+    "chapter": 4,
+    "start_ms": 622908,
+    "duration_ms": 10232,
+    "end_ms": 633140
+  },
+  {
+    "index": 64,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. Essential for coordination, often overlooked.",
+    "line_type": "acknowledgment",
+    "chapter": 4,
+    "start_ms": 633140,
+    "duration_ms": 5436,
+    "end_ms": 638576
+  },
+  {
+    "index": 65,
+    "speaker": "PROFESSOR",
+    "text": "Robots without proprioception are like humans with eyes closed - they can plan but can't execute precisely because they don't know where their body is.",
+    "line_type": "consequence",
+    "chapter": 4,
+    "start_ms": 638576,
+    "duration_ms": 10136,
+    "end_ms": 648712
+  },
+  {
+    "index": 66,
+    "speaker": "STUDENT_3",
+    "text": "How is a policy trained on demonstrations?",
+    "line_type": "question",
+    "chapter": 4,
+    "start_ms": 648712,
+    "duration_ms": 3476,
+    "end_ms": 652188
+  },
+  {
+    "index": 67,
+    "speaker": "PROFESSOR",
+    "text": "Supervised learning: minimize difference between predicted actions and expert actions. Loss = MSE(pi(observation), expert_action). Optimize neural network weights via gradient descent.",
+    "line_type": "answer",
+    "chapter": 4,
+    "start_ms": 652188,
+    "duration_ms": 14124,
+    "end_ms": 666312
+  },
+  {
+    "index": 68,
+    "speaker": "PROFESSOR",
+    "text": "Training loop: sample batch of (obs, action) pairs to predict actions to compute MSE loss to backprop to update weights. Repeat until policy mimics demos.",
+    "line_type": "example",
+    "chapter": 4,
+    "start_ms": 666312,
+    "duration_ms": 12248,
+    "end_ms": 678560
+  },
+  {
+    "index": 69,
+    "speaker": "STUDENT_3",
+    "text": "So we're minimizing MSE between what the network predicts and what the expert did - standard regression?",
+    "line_type": "echo",
+    "chapter": 4,
+    "start_ms": 678560,
+    "duration_ms": 8552,
+    "end_ms": 687112
+  },
+  {
+    "index": 70,
+    "speaker": "PROFESSOR",
+    "text": "Right. Which works great until we hit the multimodal problem.",
+    "line_type": "acknowledgment",
+    "chapter": 4,
+    "start_ms": 687112,
+    "duration_ms": 5268,
+    "end_ms": 692380
+  },
+  {
+    "index": 71,
+    "speaker": "PROFESSOR",
+    "text": "Mobile ALOHA trained on just 50 demos per task - dishes, cooking, cleaning - and generalized to new scenarios.",
+    "line_type": "consequence",
+    "chapter": 4,
+    "start_ms": 692380,
+    "duration_ms": 9128,
+    "end_ms": 701508
+  },
+  {
+    "index": 72,
+    "speaker": "STUDENT_4",
+    "text": "Why do robot policies need visual input, not just joint angles?",
+    "line_type": "question",
+    "chapter": 4,
+    "start_ms": 701508,
+    "duration_ms": 5012,
+    "end_ms": 706520
+  },
+  {
+    "index": 73,
+    "speaker": "PROFESSOR",
+    "text": "Joint angles tell you where the robot is, but not where objects are. To manipulate objects, you need to see them. Vision enables adaptation to object position, lighting, and scene changes.",
+    "line_type": "answer",
+    "chapter": 4,
+    "start_ms": 706520,
+    "duration_ms": 12732,
+    "end_ms": 719252
+  },
+  {
+    "index": 74,
+    "speaker": "PROFESSOR",
+    "text": "If fabric moves, SO-ARM101 must see the new position to adjust. Pure joint replay would fold air. Cameras make the policy reactive.",
+    "line_type": "example",
+    "chapter": 4,
+    "start_ms": 719252,
+    "duration_ms": 10688,
+    "end_ms": 729940
+  },
+  {
+    "index": 75,
+    "speaker": "STUDENT_1",
+    "text": "So joint angles alone can't tell you where the shirt is - you need the camera to see the world.",
+    "line_type": "echo",
+    "chapter": 4,
+    "start_ms": 729940,
+    "duration_ms": 7472,
+    "end_ms": 737412
+  },
+  {
+    "index": 76,
+    "speaker": "PROFESSOR",
+    "text": "Right. Vision grounds the robot in reality.",
+    "line_type": "acknowledgment",
+    "chapter": 4,
+    "start_ms": 737412,
+    "duration_ms": 4572,
+    "end_ms": 741984
+  },
+  {
+    "index": 77,
+    "speaker": "PROFESSOR",
+    "text": "This is why vision transformers revolutionized robotics - the same architectures that work for ImageNet work for understanding robot workspaces.",
+    "line_type": "consequence",
+    "chapter": 4,
+    "start_ms": 741984,
+    "duration_ms": 10208,
+    "end_ms": 752192
+  },
+  {
+    "index": 78,
+    "speaker": "STUDENT_1",
+    "text": "What are multimodal observations in robot learning?",
+    "line_type": "question",
+    "chapter": 4,
+    "start_ms": 752192,
+    "duration_ms": 3788,
+    "end_ms": 755980
+  },
+  {
+    "index": 79,
+    "speaker": "PROFESSOR",
+    "text": "Combining different sensor types as input: images (visual), joint angles (proprioceptive), forces (tactile). Neural networks can learn to fuse these modalities end-to-end.",
+    "line_type": "answer",
+    "chapter": 4,
+    "start_ms": 755980,
+    "duration_ms": 11676,
+    "end_ms": 767656
+  },
+  {
+    "index": 80,
+    "speaker": "PROFESSOR",
+    "text": "ACT input: 2 camera images (224x224x3) + 24 joint angles. The network learns which modality matters when for folding decisions.",
+    "line_type": "example",
+    "chapter": 4,
+    "start_ms": 767656,
+    "duration_ms": 13280,
+    "end_ms": 780936
+  },
+  {
+    "index": 81,
+    "speaker": "STUDENT_4",
+    "text": "So the robot fuses camera images, joint angles, and force sensors - like how humans combine sight and touch?",
+    "line_type": "echo",
+    "chapter": 4,
+    "start_ms": 780936,
+    "duration_ms": 8984,
+    "end_ms": 789920
+  },
+  {
+    "index": 82,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. Multimodal sensing enables robust manipulation.",
+    "line_type": "acknowledgment",
+    "chapter": 4,
+    "start_ms": 789920,
+    "duration_ms": 5748,
+    "end_ms": 795668
+  },
+  {
+    "index": 83,
+    "speaker": "PROFESSOR",
+    "text": "This is why humanoid robots have so many sensors - cameras, IMUs, force sensors - each modality adds crucial information.",
+    "line_type": "consequence",
+    "chapter": 4,
+    "start_ms": 795668,
+    "duration_ms": 9920,
+    "end_ms": 805588
+  },
+  {
+    "index": 84,
+    "speaker": "STUDENT_2",
+    "text": "What datasets are available through LeRobot?",
+    "line_type": "question",
+    "chapter": 4,
+    "start_ms": 805588,
+    "duration_ms": 3236,
+    "end_ms": 808824
+  },
+  {
+    "index": 85,
+    "speaker": "PROFESSOR",
+    "text": "166 manipulation datasets on Hugging Face Hub - pushing, picking, placing, stacking, folding. Each has thousands of demonstrations with synchronized video and robot state.",
+    "line_type": "answer",
+    "chapter": 4,
+    "start_ms": 808824,
+    "duration_ms": 12492,
+    "end_ms": 821316
+  },
+  {
+    "index": 86,
+    "speaker": "PROFESSOR",
+    "text": "You can pretrain on existing LeRobot datasets, then fine-tune on your specific SO-ARM101 folding demonstrations for faster learning.",
+    "line_type": "example",
+    "chapter": 4,
+    "start_ms": 821316,
+    "duration_ms": 10256,
+    "end_ms": 831572
+  },
+  {
+    "index": 87,
+    "speaker": "STUDENT_3",
+    "text": "So LeRobot gives us pre-recorded demos we can learn from - like ImageNet but for robot manipulation.",
+    "line_type": "echo",
+    "chapter": 4,
+    "start_ms": 831572,
+    "duration_ms": 8888,
+    "end_ms": 840460
+  },
+  {
+    "index": 88,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. Shared data accelerates everyone's research.",
+    "line_type": "acknowledgment",
+    "chapter": 4,
+    "start_ms": 840460,
+    "duration_ms": 5172,
+    "end_ms": 845632
+  },
+  {
+    "index": 89,
+    "speaker": "PROFESSOR",
+    "text": "Before LeRobot, every lab collected their own data with incompatible formats - now there's a standard way to share and reuse demonstrations.",
+    "line_type": "consequence",
+    "chapter": 4,
+    "start_ms": 845632,
+    "duration_ms": 10160,
+    "end_ms": 855792
+  },
+  {
+    "index": 90,
+    "speaker": "STUDENT_3",
+    "text": "What are the main advantages of imitation learning for robotics?",
+    "line_type": "question",
+    "chapter": 4,
+    "start_ms": 855792,
+    "duration_ms": 4412,
+    "end_ms": 860204
+  },
+  {
+    "index": 91,
+    "speaker": "PROFESSOR",
+    "text": "1) No reward engineering 2) Safe (no random exploration) 3) Sample efficient (learns from expert demos) 4) Offline training (no real-time robot needed during training) 5) Captures implicit skills.",
+    "line_type": "answer",
+    "chapter": 4,
+    "start_ms": 860204,
+    "duration_ms": 16380,
+    "end_ms": 876584
+  },
+  {
+    "index": 92,
+    "speaker": "PROFESSOR",
+    "text": "100 folding demos to 2 hours training on GPU to deploy to SO-ARM101. No broken hardware, no reward function design needed.",
+    "line_type": "example",
+    "chapter": 4,
+    "start_ms": 876584,
+    "duration_ms": 10664,
+    "end_ms": 887248
+  },
+  {
+    "index": 93,
+    "speaker": "STUDENT_1",
+    "text": "So imitation learning wins on safety, data efficiency, and reward engineering - basically solving all of RL's biggest problems?",
+    "line_type": "echo",
+    "chapter": 4,
+    "start_ms": 887248,
+    "duration_ms": 10640,
+    "end_ms": 897888
+  },
+  {
+    "index": 94,
+    "speaker": "PROFESSOR",
+    "text": "Right. Trade random exploration for expert guidance.",
+    "line_type": "acknowledgment",
+    "chapter": 4,
+    "start_ms": 897888,
+    "duration_ms": 5100,
+    "end_ms": 902988
+  },
+  {
+    "index": 95,
+    "speaker": "PROFESSOR",
+    "text": "Covariant.ai ships warehouse robots trained entirely through imitation - no reward engineering, just human demos at scale.",
+    "line_type": "consequence",
+    "chapter": 4,
+    "start_ms": 902988,
+    "duration_ms": 9896,
+    "end_ms": 912884
+  },
+  {
+    "index": 96,
+    "speaker": "STUDENT_4",
+    "text": "How do human demonstrations transfer to robot behavior?",
+    "line_type": "question",
+    "chapter": 4,
+    "start_ms": 912884,
+    "duration_ms": 3908,
+    "end_ms": 916792
+  },
+  {
+    "index": 97,
+    "speaker": "PROFESSOR",
+    "text": "Human operates the robot (teleoperation) or performs the task while robot observes. The demonstration captures the implicit knowledge - timing, force, strategy - that transfers to the learned policy.",
+    "line_type": "answer",
+    "chapter": 4,
+    "start_ms": 916792,
+    "duration_ms": 13764,
+    "end_ms": 930556
+  },
+  {
+    "index": 98,
+    "speaker": "PROFESSOR",
+    "text": "You move Leader arms to fold; Follower arms record synchronized actions. The policy learns your strategy, not just the trajectory - it learns when to grip, how fast to fold.",
+    "line_type": "example",
+    "chapter": 4,
+    "start_ms": 930556,
+    "duration_ms": 12416,
+    "end_ms": 942972
+  },
+  {
+    "index": 99,
+    "speaker": "STUDENT_2",
+    "text": "So the robot doesn't copy the exact trajectory - it learns the underlying pattern that works across variations.",
+    "line_type": "echo",
+    "chapter": 4,
+    "start_ms": 942972,
+    "duration_ms": 8720,
+    "end_ms": 951692
+  },
+  {
+    "index": 100,
+    "speaker": "PROFESSOR",
+    "text": "Right. Generalization, not memorization.",
+    "line_type": "acknowledgment",
+    "chapter": 4,
+    "start_ms": 951692,
+    "duration_ms": 4692,
+    "end_ms": 956384
+  },
+  {
+    "index": 101,
+    "speaker": "PROFESSOR",
+    "text": "The morphology gap is real - human hands have 27 DOFs while robot grippers have 1-2. Demonstrations need adaptation, not just copying.",
+    "line_type": "consequence",
+    "chapter": 4,
+    "start_ms": 956384,
+    "duration_ms": 11240,
+    "end_ms": 967624
+  },
+  {
+    "index": 102,
+    "speaker": "STUDENT_1",
+    "text": "What's wrong with simple supervised learning for robot imitation?",
+    "line_type": "question",
+    "chapter": 4,
+    "start_ms": 967624,
+    "duration_ms": 4388,
+    "end_ms": 972012
+  },
+  {
+    "index": 103,
+    "speaker": "PROFESSOR",
+    "text": "It outputs a single action per observation, but real tasks have multiple valid actions (go left OR right around obstacle). Averaging these modes produces invalid actions (crash into obstacle).",
+    "line_type": "answer",
+    "chapter": 4,
+    "start_ms": 972012,
+    "duration_ms": 13020,
+    "end_ms": 985032
+  },
+  {
+    "index": 104,
+    "speaker": "PROFESSOR",
+    "text": "If demos show folding left-to-right AND right-to-left, naive policy averages to folding in the middle - neither approach, likely dropping fabric.",
+    "line_type": "example",
+    "chapter": 4,
+    "start_ms": 985032,
+    "duration_ms": 9992,
+    "end_ms": 995024
+  },
+  {
+    "index": 105,
+    "speaker": "STUDENT_2",
+    "text": "So regular supervised learning fails because it outputs one answer, but robot tasks often have multiple valid ways to proceed?",
+    "line_type": "echo",
+    "chapter": 4,
+    "start_ms": 995024,
+    "duration_ms": 9704,
+    "end_ms": 1004728
+  },
+  {
+    "index": 106,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. This is the setup for understanding why we need generative models.",
+    "line_type": "acknowledgment",
+    "chapter": 4,
+    "start_ms": 1004728,
+    "duration_ms": 6060,
+    "end_ms": 1010788
+  },
+  {
+    "index": 107,
+    "speaker": "PROFESSOR",
+    "text": "This is exactly why early self-driving attempts failed - predicting one steering angle when multiple are valid causes dangerous averaging.",
+    "line_type": "consequence",
+    "chapter": 4,
+    "start_ms": 1010788,
+    "duration_ms": 9632,
+    "end_ms": 1020420
+  },
+  {
+    "index": 108,
+    "speaker": "STUDENT_2",
+    "text": "Why should robot policies output probability distributions, not point values?",
+    "line_type": "question",
+    "chapter": 4,
+    "start_ms": 1020420,
+    "duration_ms": 5228,
+    "end_ms": 1025648
+  },
+  {
+    "index": 109,
+    "speaker": "PROFESSOR",
+    "text": "Distributions can represent multiple valid actions. Sampling from the distribution commits to one mode. This naturally handles multimodal expert behavior.",
+    "line_type": "answer",
+    "chapter": 4,
+    "start_ms": 1025648,
+    "duration_ms": 10668,
+    "end_ms": 1036316
+  },
+  {
+    "index": 110,
+    "speaker": "PROFESSOR",
+    "text": "ACT outputs a distribution over action chunks. Sampling picks one consistent trajectory - either left-fold OR right-fold, not average.",
+    "line_type": "example",
+    "chapter": 4,
+    "start_ms": 1036316,
+    "duration_ms": 10976,
+    "end_ms": 1047292
+  },
+  {
+    "index": 111,
+    "speaker": "STUDENT_4",
+    "text": "So instead of picking one answer, the policy says here are all the reasonable options with their probabilities.",
+    "line_type": "echo",
+    "chapter": 4,
+    "start_ms": 1047292,
+    "duration_ms": 8072,
+    "end_ms": 1055364
+  },
+  {
+    "index": 112,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. Uncertainty quantification is key to robustness.",
+    "line_type": "acknowledgment",
+    "chapter": 4,
+    "start_ms": 1055364,
+    "duration_ms": 5580,
+    "end_ms": 1060944
+  },
+  {
+    "index": 113,
+    "speaker": "PROFESSOR",
+    "text": "This insight - distributions not points - is why diffusion models and flow matching are now dominating robotics research.",
+    "line_type": "consequence",
+    "chapter": 4,
+    "start_ms": 1060944,
+    "duration_ms": 9128,
+    "end_ms": 1070072
+  },
+  {
+    "index": 114,
+    "speaker": "STUDENT_3",
+    "text": "What is Deep Generative Modeling and why is it needed for robot learning?",
+    "line_type": "question",
+    "chapter": 4,
+    "start_ms": 1070072,
+    "duration_ms": 5204,
+    "end_ms": 1075276
+  },
+  {
+    "index": 115,
+    "speaker": "PROFESSOR",
+    "text": "DGM learns to generate samples from complex distributions. For robotics, it models the distribution of valid actions - enabling multimodal policies that can sample coherent action sequences.",
+    "line_type": "answer",
+    "chapter": 4,
+    "start_ms": 1075276,
+    "duration_ms": 13356,
+    "end_ms": 1088632
+  },
+  {
+    "index": 116,
+    "speaker": "PROFESSOR",
+    "text": "VAE in ACT learns the distribution of valid folding trajectories. At inference, it samples one complete trajectory rather than averaging across demos.",
+    "line_type": "example",
+    "chapter": 4,
+    "start_ms": 1088632,
+    "duration_ms": 11528,
+    "end_ms": 1100160
+  },
+  {
+    "index": 117,
+    "speaker": "STUDENT_3",
+    "text": "So generative models let the robot represent multiple possible actions and sample from them, instead of outputting a single average?",
+    "line_type": "echo",
+    "chapter": 4,
+    "start_ms": 1100160,
+    "duration_ms": 10208,
+    "end_ms": 1110368
+  },
+  {
+    "index": 118,
+    "speaker": "PROFESSOR",
+    "text": "Perfect. Model the distribution, then sample a coherent action.",
+    "line_type": "acknowledgment",
+    "chapter": 4,
+    "start_ms": 1110368,
+    "duration_ms": 5748,
+    "end_ms": 1116116
+  },
+  {
+    "index": 119,
+    "speaker": "PROFESSOR",
+    "text": "Diffusion Policy from Columbia used this exact idea - generating actions like DALL-E generates images.",
+    "line_type": "consequence",
+    "chapter": 4,
+    "start_ms": 1116116,
+    "duration_ms": 8696,
+    "end_ms": 1124812
+  },
+  {
+    "index": 120,
+    "speaker": "STUDENT_4",
+    "text": "How do deep generative models work?",
+    "line_type": "question",
+    "chapter": 4,
+    "start_ms": 1124812,
+    "duration_ms": 2732,
+    "end_ms": 1127544
+  },
+  {
+    "index": 121,
+    "speaker": "PROFESSOR",
+    "text": "They learn to model P(data) - the probability distribution of training data. New samples are generated by sampling from this learned distribution. VAEs, GANs, and diffusion models are examples.",
+    "line_type": "answer",
+    "chapter": 4,
+    "start_ms": 1127544,
+    "duration_ms": 13188,
+    "end_ms": 1140732
+  },
+  {
+    "index": 122,
+    "speaker": "PROFESSOR",
+    "text": "VAE learns P(trajectories | observations). Sampling produces new, valid folding trajectories that weren't in training data but follow learned patterns.",
+    "line_type": "example",
+    "chapter": 4,
+    "start_ms": 1140732,
+    "duration_ms": 11792,
+    "end_ms": 1152524
+  },
+  {
+    "index": 123,
+    "speaker": "STUDENT_1",
+    "text": "So instead of learning a single mapping, the network learns the whole distribution of possible actions.",
+    "line_type": "echo",
+    "chapter": 4,
+    "start_ms": 1152524,
+    "duration_ms": 8216,
+    "end_ms": 1160740
+  },
+  {
+    "index": 124,
+    "speaker": "PROFESSOR",
+    "text": "Right. Model the uncertainty, don't hide from it.",
+    "line_type": "acknowledgment",
+    "chapter": 4,
+    "start_ms": 1160740,
+    "duration_ms": 4692,
+    "end_ms": 1165432
+  },
+  {
+    "index": 125,
+    "speaker": "PROFESSOR",
+    "text": "The jump from GANs to diffusion models to flow matching mirrors what happened in image generation - and robotics is following the same path.",
+    "line_type": "consequence",
+    "chapter": 4,
+    "start_ms": 1165432,
+    "duration_ms": 9560,
+    "end_ms": 1174992
+  },
+  {
+    "index": 126,
+    "speaker": "STUDENT_1",
+    "text": "What preparation is needed for Lecture 2?",
+    "line_type": "question",
+    "chapter": 4,
+    "start_ms": 1174992,
+    "duration_ms": 3188,
+    "end_ms": 1178180
+  },
+  {
+    "index": 127,
+    "speaker": "PROFESSOR",
+    "text": "Study probability distributions (Gaussian basics, mean, variance), understand why distributions matter for robot policies, review the multimodal problem demonstration.",
+    "line_type": "answer",
+    "chapter": 4,
+    "start_ms": 1178180,
+    "duration_ms": 12228,
+    "end_ms": 1190408
+  },
+  {
+    "index": 128,
+    "speaker": "PROFESSOR",
+    "text": "You'll learn VAEs in Lecture 2 - understanding how they encode demonstration distributions is key to understanding ACT policy training.",
+    "line_type": "example",
+    "chapter": 4,
+    "start_ms": 1190408,
+    "duration_ms": 10064,
+    "end_ms": 1200472
+  },
+  {
+    "index": 129,
+    "speaker": "STUDENT_4",
+    "text": "So before next lecture we should understand Gaussians, means, variances - the probability foundations that generative models build on?",
+    "line_type": "echo",
+    "chapter": 4,
+    "start_ms": 1200472,
+    "duration_ms": 9920,
+    "end_ms": 1210392
+  },
+  {
+    "index": 130,
+    "speaker": "PROFESSOR",
+    "text": "Right. The math will make much more sense with that background.",
+    "line_type": "acknowledgment",
+    "chapter": 4,
+    "start_ms": 1210392,
+    "duration_ms": 5124,
+    "end_ms": 1215516
+  },
+  {
+    "index": 131,
+    "speaker": "PROFESSOR",
+    "text": "The ACT paper from Google DeepMind that we'll cover next built directly on these foundations - transformers for action generation.",
+    "line_type": "consequence",
+    "chapter": 4,
+    "start_ms": 1215516,
+    "duration_ms": 9656,
+    "end_ms": 1225172
+  }
+]

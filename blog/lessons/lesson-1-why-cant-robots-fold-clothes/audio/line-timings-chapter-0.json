@@ -1,0 +1,22 @@
+[
+  {
+    "index": 0,
+    "speaker": "AMBIENT",
+    "text": "[Classroom atmosphere begins - soft, barely audible]",
+    "line_type": "transition",
+    "chapter": 0,
+    "start_ms": 0,
+    "duration_ms": 1000,
+    "end_ms": 1000
+  },
+  {
+    "index": 1,
+    "speaker": "PROFESSOR",
+    "text": "Welcome, everyone. Find a comfortable position. Today we're going to explore a question that has puzzled roboticists for decades: Why can't robots fold your clothes?",
+    "line_type": "lecture",
+    "chapter": 0,
+    "start_ms": 1000,
+    "duration_ms": 11528,
+    "end_ms": 12528
+  }
+]

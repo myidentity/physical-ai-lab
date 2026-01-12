@@ -1,0 +1,522 @@
+[
+  {
+    "index": 0,
+    "speaker": "PROFESSOR",
+    "text": "Chapter 3. The Dangerous Promise of Reinforcement Learning.",
+    "line_type": "transition",
+    "chapter": 3,
+    "start_ms": 0,
+    "duration_ms": 4888,
+    "end_ms": 4888
+  },
+  {
+    "index": 1,
+    "speaker": "PROFESSOR",
+    "text": "Reinforcement learning has a seductive premise: the robot doesn't need equations. It just needs to try things and learn from the results.",
+    "line_type": "lecture",
+    "chapter": 3,
+    "start_ms": 4888,
+    "duration_ms": 8748,
+    "end_ms": 13636
+  },
+  {
+    "index": 2,
+    "speaker": "PROFESSOR",
+    "text": "Let's think through what this means for a real robot. Imagine you want to teach your SO-ARM101 to pour coffee - specifically, to pour a heart shape in the foam, like a skilled barista.",
+    "line_type": "lecture",
+    "chapter": 3,
+    "start_ms": 13636,
+    "duration_ms": 12180,
+    "end_ms": 25816
+  },
+  {
+    "index": 3,
+    "speaker": "PROFESSOR",
+    "text": "You tell the robot: \"Try pouring. I'll give you a reward when you make a good heart shape.\" What could go wrong?",
+    "line_type": "lecture",
+    "chapter": 3,
+    "start_ms": 25816,
+    "duration_ms": 8244,
+    "end_ms": 34060
+  },
+  {
+    "index": 4,
+    "speaker": "STUDENT_3",
+    "text": "How did reinforcement learning emerge as an alternative to classical robotics?",
+    "line_type": "question",
+    "chapter": 3,
+    "start_ms": 34060,
+    "duration_ms": 5348,
+    "end_ms": 39408
+  },
+  {
+    "index": 5,
+    "speaker": "PROFESSOR",
+    "text": "Around 2010, researchers realized robots could learn behaviors through trial and error rather than hand-crafted equations. The robot receives rewards for good actions and learns a policy that maximizes cumulative reward.",
+    "line_type": "answer",
+    "chapter": 3,
+    "start_ms": 39408,
+    "duration_ms": 14028,
+    "end_ms": 53436
+  },
+  {
+    "index": 6,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: Instead of calculating how to fold clothes, RL would have SO-ARM101 try random motions and reward successful folds - but this is dangerous and slow on real hardware.",
+    "line_type": "example",
+    "chapter": 3,
+    "start_ms": 53436,
+    "duration_ms": 14696,
+    "end_ms": 68132
+  },
+  {
+    "index": 7,
+    "speaker": "STUDENT_3",
+    "text": "So reinforcement learning said forget the equations - just try stuff and see what gets rewarded.",
+    "line_type": "echo",
+    "chapter": 3,
+    "start_ms": 68132,
+    "duration_ms": 8336,
+    "end_ms": 76468
+  },
+  {
+    "index": 8,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. Trial and error instead of derivation.",
+    "line_type": "acknowledgment",
+    "chapter": 3,
+    "start_ms": 76468,
+    "duration_ms": 4908,
+    "end_ms": 81376
+  },
+  {
+    "index": 9,
+    "speaker": "PROFESSOR",
+    "text": "The DeepMind Atari results in 2013 convinced a generation of researchers that RL could solve robotics - most are still waiting for that to work reliably.",
+    "line_type": "consequence",
+    "chapter": 3,
+    "start_ms": 81376,
+    "duration_ms": 11048,
+    "end_ms": 92424
+  },
+  {
+    "index": 10,
+    "speaker": "PROFESSOR",
+    "text": "Trial 1: Robot tilts cup too fast to hot milk sprays across table Trial 47: Robot grips cup too hard to cup shatters Trial 203: Robot finds local optimum to pours directly onto its own sensors Trial 1,847: Still no heart shape. Kitchen is destroyed. Robot arm has burn marks from hot milk.",
+    "line_type": "lecture",
+    "chapter": 3,
+    "start_ms": 92424,
+    "duration_ms": 21156,
+    "end_ms": 113580
+  },
+  {
+    "index": 11,
+    "speaker": "PROFESSOR",
+    "text": "This is the safety problem . RL requires exploration - trying random actions to discover what works. In a video game, random exploration is fine. In physical reality, random exploration means broken robots, damaged environments, and possibly injured humans.",
+    "line_type": "lecture",
+    "chapter": 3,
+    "start_ms": 113580,
+    "duration_ms": 17676,
+    "end_ms": 131256
+  },
+  {
+    "index": 12,
+    "speaker": "PROFESSOR",
+    "text": "This is the reward design problem . It's surprisingly hard to specify what you want.",
+    "line_type": "lecture",
+    "chapter": 3,
+    "start_ms": 131256,
+    "duration_ms": 6204,
+    "end_ms": 137460
+  },
+  {
+    "index": 13,
+    "speaker": "STUDENT_4",
+    "text": "What is the core principle of reinforcement learning?",
+    "line_type": "question",
+    "chapter": 3,
+    "start_ms": 137460,
+    "duration_ms": 3356,
+    "end_ms": 140816
+  },
+  {
+    "index": 14,
+    "speaker": "PROFESSOR",
+    "text": "An agent takes actions in an environment, receives rewards (positive or negative), and learns a policy that maximizes expected cumulative reward. It's learning from consequences, not from examples.",
+    "line_type": "answer",
+    "chapter": 3,
+    "start_ms": 140816,
+    "duration_ms": 12924,
+    "end_ms": 153740
+  },
+  {
+    "index": 15,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: RL for SO-ARM101 folding: +1 reward for neat fold, -1 for dropping fabric, 0 otherwise. Agent learns through millions of attempts which motions lead to rewards.",
+    "line_type": "example",
+    "chapter": 3,
+    "start_ms": 153740,
+    "duration_ms": 16064,
+    "end_ms": 169804
+  },
+  {
+    "index": 16,
+    "speaker": "STUDENT_4",
+    "text": "So the robot learns like a dog - do something, get a treat or a scolding, adjust behavior accordingly?",
+    "line_type": "echo",
+    "chapter": 3,
+    "start_ms": 169804,
+    "duration_ms": 8048,
+    "end_ms": 177852
+  },
+  {
+    "index": 17,
+    "speaker": "PROFESSOR",
+    "text": "Good intuition. But robots need millions of 'treats' to learn what dogs learn in minutes.",
+    "line_type": "acknowledgment",
+    "chapter": 3,
+    "start_ms": 177852,
+    "duration_ms": 7092,
+    "end_ms": 184944
+  },
+  {
+    "index": 18,
+    "speaker": "PROFESSOR",
+    "text": "DeepMind's AlphaGo used this exact principle - no chess grandmaster knowledge, just rewards for winning. But that took millions of games.",
+    "line_type": "consequence",
+    "chapter": 3,
+    "start_ms": 184944,
+    "duration_ms": 9800,
+    "end_ms": 194744
+  },
+  {
+    "index": 19,
+    "speaker": "PROFESSOR",
+    "text": "Is a heart shape defined by symmetry? Curvature? Contrast against the coffee? Human aesthetic judgment? Different baristas make different hearts - which one is \"correct\"?",
+    "line_type": "lecture",
+    "chapter": 3,
+    "start_ms": 194744,
+    "duration_ms": 10932,
+    "end_ms": 205676
+  },
+  {
+    "index": 20,
+    "speaker": "PROFESSOR",
+    "text": "And even if you could define the reward perfectly, there's the sparse reward problem . The robot only gets positive feedback when it makes a recognizable heart. That might take tens of thousands of random attempts. Until then? Zero signal. The robot is wandering in the dark.",
+    "line_type": "lecture",
+    "chapter": 3,
+    "start_ms": 205676,
+    "duration_ms": 16572,
+    "end_ms": 222248
+  },
+  {
+    "index": 21,
+    "speaker": "PROFESSOR",
+    "text": "Safety: Random exploration damages real hardware and environments. Reward Design: Specifying exactly what you want is often harder than solving the task manually. Sparse Rewards: Complex tasks give feedback only at the end - the robot gets no signal during learning. Generalization: An RL policy trained on one coffee cup often fails on a different cup. Each variation requires retraining.",
+    "line_type": "lecture",
+    "chapter": 3,
+    "start_ms": 222248,
+    "duration_ms": 24372,
+    "end_ms": 246620
+  },
+  {
+    "index": 22,
+    "speaker": "STUDENT_1",
+    "text": "Why is RL dangerous for real robot training?",
+    "line_type": "question",
+    "chapter": 3,
+    "start_ms": 246620,
+    "duration_ms": 3692,
+    "end_ms": 250312
+  },
+  {
+    "index": 23,
+    "speaker": "PROFESSOR",
+    "text": "Early RL requires random exploration to discover what works. Random motions on a real robot can break hardware, damage surroundings, or hurt people. The exploration phase is inherently unsafe.",
+    "line_type": "answer",
+    "chapter": 3,
+    "start_ms": 250312,
+    "duration_ms": 12996,
+    "end_ms": 263308
+  },
+  {
+    "index": 24,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: RL exploring on your bimanual setup could swing arms wildly, crash into the table, snap servo gears, or fling fabric across the room during initial random exploration.",
+    "line_type": "example",
+    "chapter": 3,
+    "start_ms": 263308,
+    "duration_ms": 15152,
+    "end_ms": 278460
+  },
+  {
+    "index": 25,
+    "speaker": "STUDENT_1",
+    "text": "So the robot needs to fail thousands of times to learn - but each failure could break the hardware or hurt someone.",
+    "line_type": "echo",
+    "chapter": 3,
+    "start_ms": 278460,
+    "duration_ms": 8768,
+    "end_ms": 287228
+  },
+  {
+    "index": 26,
+    "speaker": "PROFESSOR",
+    "text": "Right. Simulation helps, but sim-to-real transfer is its own nightmare.",
+    "line_type": "acknowledgment",
+    "chapter": 3,
+    "start_ms": 287228,
+    "duration_ms": 6540,
+    "end_ms": 293768
+  },
+  {
+    "index": 27,
+    "speaker": "PROFESSOR",
+    "text": "Several expensive research robots have been destroyed during RL training - flailing arms, crashes into tables, motors burning out from extreme torques.",
+    "line_type": "consequence",
+    "chapter": 3,
+    "start_ms": 293768,
+    "duration_ms": 10952,
+    "end_ms": 304720
+  },
+  {
+    "index": 28,
+    "speaker": "STUDENT_2",
+    "text": "Why is designing reward functions for RL so difficult?",
+    "line_type": "question",
+    "chapter": 3,
+    "start_ms": 304720,
+    "duration_ms": 4124,
+    "end_ms": 308844
+  },
+  {
+    "index": 29,
+    "speaker": "PROFESSOR",
+    "text": "Good rewards must capture exactly what you want, be measurable, and provide useful gradients. Complex tasks like 'fold clothes neatly' are hard to quantify. Bad rewards lead to reward hacking where robots find loopholes.",
+    "line_type": "answer",
+    "chapter": 3,
+    "start_ms": 308844,
+    "duration_ms": 14604,
+    "end_ms": 323448
+  },
+  {
+    "index": 30,
+    "speaker": "PROFESSOR",
+    "text": "Rewarding 'fabric area reduced' might make SO-ARM101 crumple fabric into a ball rather than fold it. Defining 'neat fold' mathematically is surprisingly hard.",
+    "line_type": "example",
+    "chapter": 3,
+    "start_ms": 323448,
+    "duration_ms": 12440,
+    "end_ms": 335888
+  },
+  {
+    "index": 31,
+    "speaker": "STUDENT_1",
+    "text": "So the robot will find every loophole in your reward function - like a genie granting wishes literally?",
+    "line_type": "echo",
+    "chapter": 3,
+    "start_ms": 335888,
+    "duration_ms": 7928,
+    "end_ms": 343816
+  },
+  {
+    "index": 32,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. Reward hacking is RL's biggest unsolved problem.",
+    "line_type": "acknowledgment",
+    "chapter": 3,
+    "start_ms": 343816,
+    "duration_ms": 5556,
+    "end_ms": 349372
+  },
+  {
+    "index": 33,
+    "speaker": "PROFESSOR",
+    "text": "OpenAI's hand manipulation project spent years just designing rewards - the robot kept finding creative ways to cheat.",
+    "line_type": "consequence",
+    "chapter": 3,
+    "start_ms": 349372,
+    "duration_ms": 9080,
+    "end_ms": 358452
+  },
+  {
+    "index": 34,
+    "speaker": "STUDENT_3",
+    "text": "What is the sparse reward problem in RL?",
+    "line_type": "question",
+    "chapter": 3,
+    "start_ms": 358452,
+    "duration_ms": 3428,
+    "end_ms": 361880
+  },
+  {
+    "index": 35,
+    "speaker": "PROFESSOR",
+    "text": "When rewards only come at task completion (like +1 for successful fold, 0 otherwise), the agent gets no signal about progress. It must randomly stumble onto success to learn anything, which takes enormous time.",
+    "line_type": "answer",
+    "chapter": 3,
+    "start_ms": 361880,
+    "duration_ms": 14460,
+    "end_ms": 376340
+  },
+  {
+    "index": 36,
+    "speaker": "PROFESSOR",
+    "text": "For clothes folding, if you only reward completion, SO-ARM101 must randomly discover the entire multi-step sequence before getting any learning signal.",
+    "line_type": "example",
+    "chapter": 3,
+    "start_ms": 376340,
+    "duration_ms": 11144,
+    "end_ms": 387484
+  },
+  {
+    "index": 37,
+    "speaker": "STUDENT_4",
+    "text": "So if you only reward the final goal, the robot has no idea if it's getting warmer or colder - it's just random exploration.",
+    "line_type": "echo",
+    "chapter": 3,
+    "start_ms": 387484,
+    "duration_ms": 9368,
+    "end_ms": 396852
+  },
+  {
+    "index": 38,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. Dense rewards help but require even more careful design.",
+    "line_type": "acknowledgment",
+    "chapter": 3,
+    "start_ms": 396852,
+    "duration_ms": 5964,
+    "end_ms": 402816
+  },
+  {
+    "index": 39,
+    "speaker": "PROFESSOR",
+    "text": "This is why most RL robotics papers use shaped rewards with hundreds of terms - essentially hand-engineering the solution the RL was supposed to find.",
+    "line_type": "consequence",
+    "chapter": 3,
+    "start_ms": 402816,
+    "duration_ms": 10520,
+    "end_ms": 413336
+  },
+  {
+    "index": 40,
+    "speaker": "STUDENT_4",
+    "text": "Why do RL-trained robot policies struggle to generalize?",
+    "line_type": "question",
+    "chapter": 3,
+    "start_ms": 413336,
+    "duration_ms": 4196,
+    "end_ms": 417532
+  },
+  {
+    "index": 41,
+    "speaker": "PROFESSOR",
+    "text": "RL policies overfit to exact training conditions - same lighting, same objects, same positions. Small changes break the learned behavior. The agent hasn't learned concepts, just specific state-action mappings.",
+    "line_type": "answer",
+    "chapter": 3,
+    "start_ms": 417532,
+    "duration_ms": 14004,
+    "end_ms": 431536
+  },
+  {
+    "index": 42,
+    "speaker": "PROFESSOR",
+    "text": "RL policy trained on blue towels might fail completely on red shirts - it hasn't learned 'folding' as a concept, just specific motor sequences for that towel.",
+    "line_type": "example",
+    "chapter": 3,
+    "start_ms": 431536,
+    "duration_ms": 11360,
+    "end_ms": 442896
+  },
+  {
+    "index": 43,
+    "speaker": "STUDENT_2",
+    "text": "So an RL policy that works perfectly in one kitchen fails completely in another because it memorized specific pixels, not general concepts?",
+    "line_type": "echo",
+    "chapter": 3,
+    "start_ms": 442896,
+    "duration_ms": 10256,
+    "end_ms": 453152
+  },
+  {
+    "index": 44,
+    "speaker": "PROFESSOR",
+    "text": "Right. Overfitting to the training environment.",
+    "line_type": "acknowledgment",
+    "chapter": 3,
+    "start_ms": 453152,
+    "duration_ms": 4356,
+    "end_ms": 457508
+  },
+  {
+    "index": 45,
+    "speaker": "PROFESSOR",
+    "text": "This is why self-driving cars trained in Arizona fail in snow - RL optimizes for what it's seen, not what it hasn't.",
+    "line_type": "consequence",
+    "chapter": 3,
+    "start_ms": 457508,
+    "duration_ms": 9032,
+    "end_ms": 466540
+  },
+  {
+    "index": 46,
+    "speaker": "STUDENT_1",
+    "text": "Why choose imitation learning over RL for robot manipulation?",
+    "line_type": "question",
+    "chapter": 3,
+    "start_ms": 466540,
+    "duration_ms": 4604,
+    "end_ms": 471144
+  },
+  {
+    "index": 47,
+    "speaker": "PROFESSOR",
+    "text": "IL avoids: random exploration (safety), reward engineering (no reward needed), sample inefficiency (learns from demonstrations), and reset problem (offline training from logged data).",
+    "line_type": "answer",
+    "chapter": 3,
+    "start_ms": 471144,
+    "duration_ms": 13740,
+    "end_ms": 484884
+  },
+  {
+    "index": 48,
+    "speaker": "PROFESSOR",
+    "text": "For SO-ARM101 folding: IL needs 100 demos. RL might need millions of attempts with broken fabric and servos. IL wins on practicality.",
+    "line_type": "example",
+    "chapter": 3,
+    "start_ms": 484884,
+    "duration_ms": 11288,
+    "end_ms": 496172
+  },
+  {
+    "index": 49,
+    "speaker": "STUDENT_2",
+    "text": "So instead of millions of random trials, we just show the robot a hundred good examples and it learns from those.",
+    "line_type": "echo",
+    "chapter": 3,
+    "start_ms": 496172,
+    "duration_ms": 8576,
+    "end_ms": 504748
+  },
+  {
+    "index": 50,
+    "speaker": "PROFESSOR",
+    "text": "Right. Humans already solved the task - why rediscover it through trial and error?",
+    "line_type": "acknowledgment",
+    "chapter": 3,
+    "start_ms": 504748,
+    "duration_ms": 6780,
+    "end_ms": 511528
+  },
+  {
+    "index": 51,
+    "speaker": "PROFESSOR",
+    "text": "This is why every successful robot startup uses imitation learning as their foundation - Tesla Optimus, 1X, Figure all start with human demonstrations.",
+    "line_type": "consequence",
+    "chapter": 3,
+    "start_ms": 511528,
+    "duration_ms": 11432,
+    "end_ms": 522960
+  }
+]

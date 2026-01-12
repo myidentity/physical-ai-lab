@@ -1,0 +1,822 @@
+[
+  {
+    "index": 0,
+    "speaker": "PROFESSOR",
+    "text": "Chapter 1. The Paradox.",
+    "line_type": "transition",
+    "chapter": 1,
+    "start_ms": 0,
+    "duration_ms": 3496,
+    "end_ms": 3496
+  },
+  {
+    "index": 1,
+    "speaker": "PROFESSOR",
+    "text": "You've seen the videos. Boston Dynamics robots doing backflips. Humanoids playing table tennis at superhuman speed. Quadrupeds navigating obstacle courses that would trip most humans. The future of robotics looks incredible.",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 3496,
+    "duration_ms": 15036,
+    "end_ms": 18532
+  },
+  {
+    "index": 2,
+    "speaker": "PROFESSOR",
+    "text": "And yet... look around your home. Where's the robot that folds your laundry? The one that loads your dishwasher? The helpful assistant that tidies up after dinner?",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 18532,
+    "duration_ms": 10212,
+    "end_ms": 28744
+  },
+  {
+    "index": 3,
+    "speaker": "PROFESSOR",
+    "text": "Nowhere. Despite decades of robotics research and billions in investment, we don't have general-purpose household robots. We don't even have robots that can reliably hold clothes, let alone fold them.",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 28744,
+    "duration_ms": 12780,
+    "end_ms": 41524
+  },
+  {
+    "index": 4,
+    "speaker": "STUDENT_1",
+    "text": "What is the structure of the Modern Robot Learning Bootcamp?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 41524,
+    "duration_ms": 3884,
+    "end_ms": 45408
+  },
+  {
+    "index": 5,
+    "speaker": "PROFESSOR",
+    "text": "A 4-lecture foundation covering classical robotics, reinforcement learning, imitation learning, and deep generative modeling - building up to training policies for real robots.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 45408,
+    "duration_ms": 11676,
+    "end_ms": 57084
+  },
+  {
+    "index": 6,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: By the end, you'll train an ACT policy on your SO-ARM101 to perform bimanual tasks like clothes folding, starting from Leader arm demonstrations.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 57084,
+    "duration_ms": 14192,
+    "end_ms": 71276
+  },
+  {
+    "index": 7,
+    "speaker": "STUDENT_2",
+    "text": "So we're building up from the basics - physics equations first, then learning methods, until we can actually train our own policy.",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 71276,
+    "duration_ms": 9344,
+    "end_ms": 80620
+  },
+  {
+    "index": 8,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. Each lecture builds on the last.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 80620,
+    "duration_ms": 4428,
+    "end_ms": 85048
+  },
+  {
+    "index": 9,
+    "speaker": "PROFESSOR",
+    "text": "Without this structured progression, students often jump to fancy techniques like diffusion policies without understanding why they need probability distributions in the first place.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 85048,
+    "duration_ms": 11360,
+    "end_ms": 96408
+  },
+  {
+    "index": 10,
+    "speaker": "PROFESSOR",
+    "text": "High-level reasoning is computationally easy for robots. Sensorimotor skills that humans find trivial - picking up objects, folding fabric, navigating cluttered rooms - require enormous computation and learning. Evolution spent billions of years optimizing our motor skills; we've had computers for less than a century.",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 96408,
+    "duration_ms": 19764,
+    "end_ms": 116172
+  },
+  {
+    "index": 11,
+    "speaker": "PROFESSOR",
+    "text": "1. Manipulation: Picking, placing, folding, pouring - tasks involving object interaction. This is what your SO-ARM101 does. It's the hardest category because objects are unpredictable. 2. Locomotion: Walking, running, jumping - moving the robot's body through space. Boston Dynamics dogs and humanoids excel here. The physics is more predictable. 3. Whole-Body Control: Humanoid robots that combine locomotion AND manipulation simultaneously. This is the ultimate challenge - imagine walking while carrying a tray of glasses.",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 116172,
+    "duration_ms": 34548,
+    "end_ms": 150720
+  },
+  {
+    "index": 12,
+    "speaker": "PROFESSOR",
+    "text": "Your SO-ARM101 is a pure manipulation platform - four arms, fixed base. This lets us focus on the hardest problem (handling deformable objects like clothes) without the added complexity of balance and locomotion. Once you master manipulation, the concepts transfer to whole-body control.",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 150720,
+    "duration_ms": 19020,
+    "end_ms": 169740
+  },
+  {
+    "index": 13,
+    "speaker": "STUDENT_2",
+    "text": "Why was this robotics bootcamp created?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 169740,
+    "duration_ms": 3140,
+    "end_ms": 172880
+  },
+  {
+    "index": 14,
+    "speaker": "PROFESSOR",
+    "text": "To bridge the gap between impressive robot demos and practical, accessible robot learning - making the field approachable for developers who want to build real robotic systems.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 172880,
+    "duration_ms": 11004,
+    "end_ms": 183884
+  },
+  {
+    "index": 15,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: Unlike expensive industrial robots, SO-ARM101 costs ~$300 and can be trained in your home to perform useful manipulation tasks.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 183884,
+    "duration_ms": 13688,
+    "end_ms": 197572
+  },
+  {
+    "index": 16,
+    "speaker": "STUDENT_1",
+    "text": "So the goal is democratizing robot learning - making it as accessible as LLMs became with APIs and fine-tuning?",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 197572,
+    "duration_ms": 9464,
+    "end_ms": 207036
+  },
+  {
+    "index": 17,
+    "speaker": "PROFESSOR",
+    "text": "Precisely. Lower the barrier from research lab to home developer.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 207036,
+    "duration_ms": 5652,
+    "end_ms": 212688
+  },
+  {
+    "index": 18,
+    "speaker": "PROFESSOR",
+    "text": "This is why most robotics startups still struggle - impressive demos don't translate to real products without this foundational understanding.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 212688,
+    "duration_ms": 9680,
+    "end_ms": 222368
+  },
+  {
+    "index": 19,
+    "speaker": "PROFESSOR",
+    "text": "Here's another way to see the gap: think about how accessible AI has become for developers.",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 222368,
+    "duration_ms": 6684,
+    "end_ms": 229052
+  },
+  {
+    "index": 20,
+    "speaker": "PROFESSOR",
+    "text": "Three years ago, training your own language model required a research lab. Today, you can fine-tune GPT from your laptop with an API call. LLMs went from \"only OpenAI can do this\" to \"I built one over the weekend\" in record time. The barriers collapsed.",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 229052,
+    "duration_ms": 16356,
+    "end_ms": 245408
+  },
+  {
+    "index": 21,
+    "speaker": "STUDENT_3",
+    "text": "What is the 'reality gap' in robotics demonstrations?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 245408,
+    "duration_ms": 4172,
+    "end_ms": 249580
+  },
+  {
+    "index": 22,
+    "speaker": "PROFESSOR",
+    "text": "Robot demos at expos look impressive but often use pre-programmed motions, controlled environments, and extensive engineering - they don't generalize to real-world, unstructured scenarios.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 249580,
+    "duration_ms": 12180,
+    "end_ms": 261760
+  },
+  {
+    "index": 23,
+    "speaker": "PROFESSOR",
+    "text": "Your SO-ARM101 won't do backflips, but it will learn to handle real fabric with varied textures - something most demo robots can't actually do.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 261760,
+    "duration_ms": 10640,
+    "end_ms": 272400
+  },
+  {
+    "index": 24,
+    "speaker": "STUDENT_3",
+    "text": "So those viral robot videos are basically staged - controlled lighting, known objects, scripted movements that won't work in real homes.",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 272400,
+    "duration_ms": 10880,
+    "end_ms": 283280
+  },
+  {
+    "index": 25,
+    "speaker": "PROFESSOR",
+    "text": "Right. Real robustness requires learning, not scripting.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 283280,
+    "duration_ms": 5364,
+    "end_ms": 288644
+  },
+  {
+    "index": 26,
+    "speaker": "PROFESSOR",
+    "text": "Companies waste millions on demos that look great at trade shows but fail immediately when deployed in actual homes with varied lighting, clutter, and unpredictable objects.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 288644,
+    "duration_ms": 11240,
+    "end_ms": 299884
+  },
+  {
+    "index": 27,
+    "speaker": "PROFESSOR",
+    "text": "This is why we're using the SO-ARM101 for this bootcamp. At ~$300, it's one of the first truly accessible robot arms for learning. Four arms, 48 servos, bimanual manipulation - enough to tackle real tasks like clothes folding. By the end of this course, you'll understand why the robots in expo videos can't do what you'll teach your SO-ARM101 to do.",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 299884,
+    "duration_ms": 23508,
+    "end_ms": 323392
+  },
+  {
+    "index": 28,
+    "speaker": "STUDENT_4",
+    "text": "What is the robotics paradox and why haven't we achieved general-purpose household robots?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 323392,
+    "duration_ms": 5756,
+    "end_ms": 329148
+  },
+  {
+    "index": 29,
+    "speaker": "PROFESSOR",
+    "text": "High-level reasoning is computationally easy for robots, but sensorimotor skills humans find trivial (picking up objects, folding clothes) require enormous computation and learning. This is Moravec's Paradox.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 329148,
+    "duration_ms": 13980,
+    "end_ms": 343128
+  },
+  {
+    "index": 30,
+    "speaker": "PROFESSOR",
+    "text": "Your bimanual setup can learn to fold a specific shirt, but generalizing to all fabrics, lighting conditions, and positions requires massive data and sophisticated policies.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 343128,
+    "duration_ms": 11960,
+    "end_ms": 355088
+  },
+  {
+    "index": 31,
+    "speaker": "STUDENT_2",
+    "text": "So backflips are actually easier than folding shirts because rigid body physics is predictable, while fabric has infinite degrees of freedom?",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 355088,
+    "duration_ms": 9848,
+    "end_ms": 364936
+  },
+  {
+    "index": 32,
+    "speaker": "PROFESSOR",
+    "text": "Right. Moravec's paradox in action - hard things are easy, easy things are impossibly hard.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 364936,
+    "duration_ms": 7836,
+    "end_ms": 372772
+  },
+  {
+    "index": 33,
+    "speaker": "PROFESSOR",
+    "text": "This is exactly why Boston Dynamics spent two decades on walking before even attempting manipulation - motor skills are genuinely harder than reasoning.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 372772,
+    "duration_ms": 10208,
+    "end_ms": 382980
+  },
+  {
+    "index": 34,
+    "speaker": "STUDENT_1",
+    "text": "Why is robotics less accessible than LLMs for developers?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 382980,
+    "duration_ms": 4412,
+    "end_ms": 387392
+  },
+  {
+    "index": 35,
+    "speaker": "PROFESSOR",
+    "text": "LLMs run on any computer with an API call. Robotics requires physical hardware, real-time control, safety considerations, and dealing with the messy real world - making the barrier to entry much higher.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 387392,
+    "duration_ms": 13716,
+    "end_ms": 401108
+  },
+  {
+    "index": 36,
+    "speaker": "PROFESSOR",
+    "text": "LeRobot and SO-ARM101 aim to be the 'Hugging Face moment' for robotics - making it as easy to train a robot policy as it is to fine-tune an LLM.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 401108,
+    "duration_ms": 11432,
+    "end_ms": 412540
+  },
+  {
+    "index": 37,
+    "speaker": "STUDENT_1",
+    "text": "So with LLMs I can just pip install and call an API, but robotics needs actual hardware, safety systems, and real-time control loops.",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 412540,
+    "duration_ms": 11840,
+    "end_ms": 424380
+  },
+  {
+    "index": 38,
+    "speaker": "PROFESSOR",
+    "text": "Precisely. That's the barrier we're breaking down with affordable hardware.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 424380,
+    "duration_ms": 5652,
+    "end_ms": 430032
+  },
+  {
+    "index": 39,
+    "speaker": "PROFESSOR",
+    "text": "This accessibility gap means the smartest developers flock to LLMs while robotics remains stuck in academic labs - until platforms like SO-ARM101 change that.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 430032,
+    "duration_ms": 11696,
+    "end_ms": 441728
+  },
+  {
+    "index": 40,
+    "speaker": "STUDENT_2",
+    "text": "What is the teaching philosophy of this bootcamp?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 441728,
+    "duration_ms": 3236,
+    "end_ms": 444964
+  },
+  {
+    "index": 41,
+    "speaker": "PROFESSOR",
+    "text": "Build from fundamentals - understand why before how. Start with classical robotics limitations, understand RL problems, then see how imitation learning + deep generative models solve them. No prerequisites beyond basic Python.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 444964,
+    "duration_ms": 14964,
+    "end_ms": 459928
+  },
+  {
+    "index": 42,
+    "speaker": "PROFESSOR",
+    "text": "By lecture 4, you'll understand every component of ACT policy training and why each piece is needed for your SO-ARM101 manipulation tasks.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 459928,
+    "duration_ms": 10736,
+    "end_ms": 470664
+  },
+  {
+    "index": 43,
+    "speaker": "STUDENT_3",
+    "text": "So we're not just learning to use LeRobot - we're understanding why each piece exists and how they connect?",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 470664,
+    "duration_ms": 8480,
+    "end_ms": 479144
+  },
+  {
+    "index": 44,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. First principles thinking. Then the tools make sense.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 479144,
+    "duration_ms": 5940,
+    "end_ms": 485084
+  },
+  {
+    "index": 45,
+    "speaker": "PROFESSOR",
+    "text": "Google's RT-2 team said their biggest regret was rushing to scale before understanding fundamentals. We won't make that mistake.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 485084,
+    "duration_ms": 9128,
+    "end_ms": 494212
+  },
+  {
+    "index": 46,
+    "speaker": "STUDENT_3",
+    "text": "What is SO-ARM101 and why was it chosen for this course?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 494212,
+    "duration_ms": 4988,
+    "end_ms": 499200
+  },
+  {
+    "index": 47,
+    "speaker": "PROFESSOR",
+    "text": "SO-ARM101 is an open-source, 6-DOF robot arm costing ~$300. It uses affordable FEETech servos and can be 3D printed. It's the most accessible way to do real imitation learning research.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 499200,
+    "duration_ms": 14628,
+    "end_ms": 513828
+  },
+  {
+    "index": 48,
+    "speaker": "PROFESSOR",
+    "text": "Your bimanual setup uses 4 SO-ARM101 arms (2 Leaders for teleoperation, 2 Followers for execution) with 48 total servos for coordinated manipulation.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 513828,
+    "duration_ms": 13088,
+    "end_ms": 526916
+  },
+  {
+    "index": 49,
+    "speaker": "STUDENT_4",
+    "text": "So instead of a fifty thousand dollar industrial arm, we get the same learning experience with a three hundred dollar kit that actually ships to your door.",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 526916,
+    "duration_ms": 10160,
+    "end_ms": 537076
+  },
+  {
+    "index": 50,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. Accessible hardware democratizes robotics research.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 537076,
+    "duration_ms": 5820,
+    "end_ms": 542896
+  },
+  {
+    "index": 51,
+    "speaker": "PROFESSOR",
+    "text": "The low cost means you can actually break things while learning - unlike industrial arms where a crash costs thousands in repairs.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 542896,
+    "duration_ms": 9080,
+    "end_ms": 551976
+  },
+  {
+    "index": 52,
+    "speaker": "STUDENT_4",
+    "text": "What is LeRobot and why is it important?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 551976,
+    "duration_ms": 2924,
+    "end_ms": 554900
+  },
+  {
+    "index": 53,
+    "speaker": "PROFESSOR",
+    "text": "LeRobot is Hugging Face's open-source robotics library. It provides data collection tools, policy training pipelines, and pre-trained models - making robot learning as accessible as NLP with transformers library.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 554900,
+    "duration_ms": 14460,
+    "end_ms": 569360
+  },
+  {
+    "index": 54,
+    "speaker": "PROFESSOR",
+    "text": "You'll use LeRobot to record demonstrations from your Leader arms, train ACT policies, and deploy them to Follower arms - all with a few Python commands.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 569360,
+    "duration_ms": 11216,
+    "end_ms": 580576
+  },
+  {
+    "index": 55,
+    "speaker": "STUDENT_4",
+    "text": "So LeRobot is like Hugging Face Transformers but for robotics - pretrained models, datasets, and training pipelines all in one place?",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 580576,
+    "duration_ms": 10016,
+    "end_ms": 590592
+  },
+  {
+    "index": 56,
+    "speaker": "PROFESSOR",
+    "text": "Perfect analogy. Same ecosystem, different modality.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 590592,
+    "duration_ms": 5436,
+    "end_ms": 596028
+  },
+  {
+    "index": 57,
+    "speaker": "PROFESSOR",
+    "text": "This is what Hugging Face did for NLP - suddenly everyone could train transformers. LeRobot does that for robot policies.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 596028,
+    "duration_ms": 9392,
+    "end_ms": 605420
+  },
+  {
+    "index": 58,
+    "speaker": "STUDENT_1",
+    "text": "What are the main types of robot motion?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 605420,
+    "duration_ms": 3044,
+    "end_ms": 608464
+  },
+  {
+    "index": 59,
+    "speaker": "PROFESSOR",
+    "text": "Manipulation (moving objects with arms/hands), locomotion (moving the robot body - walking, rolling), and whole-body control (coordinating both). Each has different control challenges.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 608464,
+    "duration_ms": 13116,
+    "end_ms": 621580
+  },
+  {
+    "index": 60,
+    "speaker": "PROFESSOR",
+    "text": "SO-ARM101 is purely manipulation - it's fixed to a table and moves objects. Bimanual folding requires coordinating two manipulators for the same task.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 621580,
+    "duration_ms": 11480,
+    "end_ms": 633060
+  },
+  {
+    "index": 61,
+    "speaker": "STUDENT_2",
+    "text": "So manipulation is moving objects, locomotion is moving yourself, and whole-body control is doing both simultaneously like a humanoid carrying a tray.",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 633060,
+    "duration_ms": 11072,
+    "end_ms": 644132
+  },
+  {
+    "index": 62,
+    "speaker": "PROFESSOR",
+    "text": "Right. We focus on manipulation - arguably the hardest category.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 644132,
+    "duration_ms": 5988,
+    "end_ms": 650120
+  },
+  {
+    "index": 63,
+    "speaker": "PROFESSOR",
+    "text": "Most robotics startups fail because they try whole-body control before mastering manipulation - like learning to juggle while riding a unicycle.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 650120,
+    "duration_ms": 10064,
+    "end_ms": 660184
+  },
+  {
+    "index": 64,
+    "speaker": "STUDENT_2",
+    "text": "What practical questions were addressed in the first Q&A?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 660184,
+    "duration_ms": 3980,
+    "end_ms": 664164
+  },
+  {
+    "index": 65,
+    "speaker": "PROFESSOR",
+    "text": "Hardware ordering, VLA scope, simulation options. Key insight: start with fundamentals before jumping to advanced architectures. The SO-ARM101 is available through Vizuara.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 664164,
+    "duration_ms": 12540,
+    "end_ms": 676704
+  },
+  {
+    "index": 66,
+    "speaker": "PROFESSOR",
+    "text": "The bimanual kit with 4 arms is specifically designed for tasks like clothes folding that require coordinated left-right manipulation.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 676704,
+    "duration_ms": 9656,
+    "end_ms": 686360
+  },
+  {
+    "index": 67,
+    "speaker": "STUDENT_1",
+    "text": "So the key takeaway is start simple - get ACT working on basic tasks before worrying about VLAs or language grounding?",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 686360,
+    "duration_ms": 9704,
+    "end_ms": 696064
+  },
+  {
+    "index": 68,
+    "speaker": "PROFESSOR",
+    "text": "Right. Walk before you run. Fold clothes before you understand natural language.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 696064,
+    "duration_ms": 6660,
+    "end_ms": 702724
+  },
+  {
+    "index": 69,
+    "speaker": "PROFESSOR",
+    "text": "Figure's humanoid team emphasized the same approach - master fundamentals before chasing the latest VLA papers.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 702724,
+    "duration_ms": 8792,
+    "end_ms": 711516
+  },
+  {
+    "index": 70,
+    "speaker": "STUDENT_3",
+    "text": "What does '6 degrees of freedom' mean for SO-ARM101?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 711516,
+    "duration_ms": 5276,
+    "end_ms": 716792
+  },
+  {
+    "index": 71,
+    "speaker": "PROFESSOR",
+    "text": "6 independent joints that can move: base rotation, shoulder, elbow, wrist pitch, wrist roll, and gripper. Each adds one dimension to the configuration space. 6-DOF is enough for most 3D positioning tasks.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 716792,
+    "duration_ms": 15084,
+    "end_ms": 731876
+  },
+  {
+    "index": 72,
+    "speaker": "PROFESSOR",
+    "text": "Each SO-ARM101 arm has 6 servos. Your bimanual setup has 24 total joints (6 per arm \u00d7 4 arms) to control simultaneously.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 731876,
+    "duration_ms": 12128,
+    "end_ms": 744004
+  },
+  {
+    "index": 73,
+    "speaker": "STUDENT_3",
+    "text": "So each joint is one degree of freedom, and six joints means six independent ways the arm can move through space.",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 744004,
+    "duration_ms": 9344,
+    "end_ms": 753348
+  },
+  {
+    "index": 74,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. Four arms means 24 joints to coordinate - that's where learning shines.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 753348,
+    "duration_ms": 7188,
+    "end_ms": 760536
+  },
+  {
+    "index": 75,
+    "speaker": "PROFESSOR",
+    "text": "Each additional DOF exponentially increases the complexity of motion planning - that's why industrial arms are carefully designed for exactly the DOFs they need.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 760536,
+    "duration_ms": 11096,
+    "end_ms": 771632
+  },
+  {
+    "index": 76,
+    "speaker": "STUDENT_4",
+    "text": "What is Welcome & Course Overview?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 771632,
+    "duration_ms": 2564,
+    "end_ms": 774196
+  },
+  {
+    "index": 77,
+    "speaker": "PROFESSOR",
+    "text": "A topic covered in Introduction to Robotics & Imitation Learning.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 774196,
+    "duration_ms": 5220,
+    "end_ms": 779416
+  },
+  {
+    "index": 78,
+    "speaker": "PROFESSOR",
+    "text": "Applies to SO-ARM101 bimanual manipulation learning.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 779416,
+    "duration_ms": 5888,
+    "end_ms": 785304
+  },
+  {
+    "index": 79,
+    "speaker": "STUDENT_2",
+    "text": "So this first session is about understanding the landscape before diving into specific techniques?",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 785304,
+    "duration_ms": 7400,
+    "end_ms": 792704
+  },
+  {
+    "index": 80,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. Context first, then details.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 792704,
+    "duration_ms": 4764,
+    "end_ms": 797468
+  },
+  {
+    "index": 81,
+    "speaker": "PROFESSOR",
+    "text": "Every successful robotics curriculum from Stanford to Berkeley starts with this grounding - understanding why before diving into how.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 797468,
+    "duration_ms": 9296,
+    "end_ms": 806764
+  }
+]

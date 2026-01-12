@@ -830,3 +830,37 @@ input[type="submit"] {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(233, 69, 96, 0.5);
 }
+
+.cta-button-secondary {
+  display: inline-block;
+  padding: 0.8rem 2rem;
+  background: transparent;
+  color: #e94560 !important;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none !important;
+  border: 2px solid #e94560;
+  border-radius: 50px;
+  transition: all 0.2s ease;
+  margin-top: 0.5rem;
+}
+
+.cta-button-secondary:hover {
+  background: rgba(233, 69, 96, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Audio CTA box for lessons */
+.audio-cta {
+  text-align: center;
+  margin: 2rem 0 3rem 0;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(233, 69, 96, 0.1) 0%, rgba(255, 107, 107, 0.05) 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(233, 69, 96, 0.2);
+}
+
+.audio-cta p {
+  margin: 0 0 1rem 0;
+  color: #666;
+}

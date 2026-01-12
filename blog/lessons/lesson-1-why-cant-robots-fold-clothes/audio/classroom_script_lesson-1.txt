@@ -1,0 +1,1170 @@
+
+============================================================
+OPENING
+============================================================
+
+AMBIENT:
+"[Classroom atmosphere begins - soft, barely audible]"
+[Pause: 1.0s]
+
+PROFESSOR:
+"Welcome, everyone. Find a comfortable position. Today we're going to explore a question that has puzzled roboticists for decades: Why can't robots fold your clothes?"
+[Pause: 2.0s]
+
+
+============================================================
+CHAPTER 1
+============================================================
+
+PROFESSOR:
+"Chapter 1. ."
+[Pause: 1.0s]
+
+PROFESSOR:
+"You’ve seen the videos. Boston Dynamics robots doing backflips. Humanoids playing table tennis at superhuman speed. Quadrupeds navigating obstacle courses that would trip most humans. The future of robotics looks incredible."
+[Pause: 1.5s]
+
+PROFESSOR:
+"And yet... look around your home. Where’s the robot that folds your laundry? The one that loads your dishwasher? The helpful assistant that tidies up after dinner?"
+[Pause: 1.5s]
+
+PROFESSOR:
+"Nowhere. Despite decades of robotics research and billions in investment, we don’t have general-purpose household robots. We don’t even have robots that can reliably hold clothes, let alone fold them."
+[Pause: 1.5s]
+
+STUDENT_1:
+"What is the structure of the Modern Robot Learning Bootcamp?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"A 4-lecture foundation covering classical robotics, reinforcement learning, imitation learning, and deep generative modeling - building up to training policies for real robots."
+[Pause: 1.5s]
+
+PROFESSOR:
+"For example, with your SO-ARM101: By the end, you'll train an ACT policy on your SO-ARM101 to perform bimanual tasks like clothes folding, starting from Leader arm demonstrations."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What is the structure of the Modern Robot Learning Bootcamp?]"
+[Pause: 2.0s]
+
+PROFESSOR:
+"Dr. Nova, this doesn’t make sense. If robots can play football and do parkour, why can’t they do something as simple as folding a shirt?"
+[Pause: 1.5s]
+
+PROFESSOR:
+"That’s exactly the question that drove me to create this bootcamp. It’s called Moravec’s Paradox - and it reveals something profound about intelligence itself."
+[Pause: 1.5s]
+
+PROFESSOR:
+"High-level reasoning is computationally easy for robots. Sensorimotor skills that humans find trivial - picking up objects, folding fabric, navigating cluttered rooms - require enormous computation and learning. Evolution spent billions of years optimizing our motor skills; we’ve had computers for less than a century."
+[Pause: 1.5s]
+
+STUDENT_2:
+"Why was this robotics bootcamp created?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"To bridge the gap between impressive robot demos and practical, accessible robot learning - making the field approachable for developers who want to build real robotic systems."
+[Pause: 1.5s]
+
+PROFESSOR:
+"For example, with your SO-ARM101: Unlike expensive industrial robots, SO-ARM101 costs ~$300 and can be trained in your home to perform useful manipulation tasks."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: Why was this robotics bootcamp created?]"
+[Pause: 2.0s]
+
+PROFESSOR:
+"Here’s another way to see the gap: think about how accessible AI has become for developers."
+[Pause: 1.5s]
+
+PROFESSOR:
+"Three years ago, training your own language model required a research lab. Today, you can fine-tune GPT from your laptop with an API call. LLMs went from “only OpenAI can do this” to “I built one over the weekend” in record time. The barriers collapsed."
+[Pause: 1.5s]
+
+STUDENT_3:
+"What is the 'reality gap' in robotics demonstrations?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Robot demos at expos look impressive but often use pre-programmed motions, controlled environments, and extensive engineering - they don't generalize to real-world, unstructured scenarios."
+[Pause: 1.5s]
+
+PROFESSOR:
+"Your SO-ARM101 won't do backflips, but it will learn to handle real fabric with varied textures - something most demo robots can't actually do."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What is the 'reality gap' in robotics demonstrations?]"
+[Pause: 2.0s]
+
+PROFESSOR:
+"There’s still this perception that robotics requires expensive hardware, specialized labs, and PhD-level expertise. A few companies are doing amazing work - but where’s the “Hugging Face moment” for robotics? Where’s the democratization?"
+[Pause: 1.5s]
+
+PROFESSOR:
+"So what’s actually blocking progress? Is it the hardware? The algorithms? The data?"
+[Pause: 1.5s]
+
+PROFESSOR:
+"All three - but not in the way you’d expect. Let me take you on a journey through how we’ve tried to solve this problem. It’s a story of elegant failures, dangerous promises, and a breakthrough that still has a hidden flaw..."
+[Pause: 1.5s]
+
+STUDENT_4:
+"What is the robotics paradox and why haven't we achieved general-purpose household robots?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"High-level reasoning is computationally easy for robots, but sensorimotor skills humans find trivial (picking up objects, folding clothes) require enormous computation and learning. This is Moravec's Paradox."
+[Pause: 1.5s]
+
+PROFESSOR:
+"Your bimanual setup can learn to fold a specific shirt, but generalizing to all fabrics, lighting conditions, and positions requires massive data and sophisticated policies."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What is the robotics paradox and why haven't we achieved general-purpose household robots?]"
+[Pause: 2.0s]
+
+PROFESSOR:
+"This is why we’re using the SO-ARM101 for this bootcamp. At ~$300, it’s one of the first truly accessible robot arms for learning. Four arms, 48 servos, bimanual manipulation - enough to tackle real tasks like clothes folding. By the end of this course, you’ll understand why the robots in expo videos can’t do what you’ll teach your SO-ARM101 to do."
+[Pause: 1.5s]
+
+STUDENT_1:
+"Why is robotics less accessible than LLMs for developers?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"LLMs run on any computer with an API call. Robotics requires physical hardware, real-time control, safety considerations, and dealing with the messy real world - making the barrier to entry much higher."
+[Pause: 1.5s]
+
+PROFESSOR:
+"LeRobot and SO-ARM101 aim to be the 'Hugging Face moment' for robotics - making it as easy to train a robot policy as it is to fine-tune an LLM."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: Why is robotics less accessible than LLMs for developers?]"
+[Pause: 2.0s]
+
+STUDENT_2:
+"What is the teaching philosophy of this bootcamp?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Build from fundamentals - understand why before how. Start with classical robotics limitations, understand RL problems, then see how imitation learning + deep generative models solve them. No prerequisites beyond basic Python."
+[Pause: 1.5s]
+
+PROFESSOR:
+"By lecture 4, you'll understand every component of ACT policy training and why each piece is needed for your SO-ARM101 manipulation tasks."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What is the teaching philosophy of this bootcamp?]"
+[Pause: 2.0s]
+
+STUDENT_3:
+"What is SO-ARM101 and why was it chosen for this course?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"SO-ARM101 is an open-source, 6-DOF robot arm costing ~$300. It uses affordable FEETech servos and can be 3D printed. It's the most accessible way to do real imitation learning research."
+[Pause: 1.5s]
+
+PROFESSOR:
+"Your bimanual setup uses 4 SO-ARM101 arms (2 Leaders for teleoperation, 2 Followers for execution) with 48 total servos for coordinated manipulation."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What is SO-ARM101 and why was it chosen for this course?]"
+[Pause: 2.0s]
+
+STUDENT_4:
+"What is LeRobot and why is it important?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"LeRobot is Hugging Face's open-source robotics library. It provides data collection tools, policy training pipelines, and pre-trained models - making robot learning as accessible as NLP with transformers library."
+[Pause: 1.5s]
+
+PROFESSOR:
+"You'll use LeRobot to record demonstrations from your Leader arms, train ACT policies, and deploy them to Follower arms - all with a few Python commands."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What is LeRobot and why is it important?]"
+[Pause: 2.0s]
+
+STUDENT_1:
+"What are the main types of robot motion?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Manipulation (moving objects with arms/hands), locomotion (moving the robot body - walking, rolling), and whole-body control (coordinating both). Each has different control challenges."
+[Pause: 1.5s]
+
+PROFESSOR:
+"SO-ARM101 is purely manipulation - it's fixed to a table and moves objects. Bimanual folding requires coordinating two manipulators for the same task."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What are the main types of robot motion?]"
+[Pause: 2.0s]
+
+STUDENT_2:
+"What practical questions were addressed in the first Q&A?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Hardware ordering, VLA scope, simulation options. Key insight: start with fundamentals before jumping to advanced architectures. The SO-ARM101 is available through Vizuara."
+[Pause: 1.5s]
+
+PROFESSOR:
+"The bimanual kit with 4 arms is specifically designed for tasks like clothes folding that require coordinated left-right manipulation."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What practical questions were addressed in the first Q&A?]"
+[Pause: 2.0s]
+
+STUDENT_3:
+"What does '6 degrees of freedom' mean for SO-ARM101?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"6 independent joints that can move: base rotation, shoulder, elbow, wrist pitch, wrist roll, and gripper. Each adds one dimension to the configuration space. 6-DOF is enough for most 3D positioning tasks."
+[Pause: 1.5s]
+
+PROFESSOR:
+"Each SO-ARM101 arm has 6 servos. Your bimanual setup has 24 total joints (6 per arm × 4 arms) to control simultaneously."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What does '6 degrees of freedom' mean for SO-ARM101?]"
+[Pause: 2.0s]
+
+STUDENT_4:
+"What is Welcome & Course Overview?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"A topic covered in Introduction to Robotics & Imitation Learning."
+[Pause: 1.5s]
+
+PROFESSOR:
+"Applies to SO-ARM101 bimanual manipulation learning."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What is Welcome & Course Overview?]"
+[Pause: 2.0s]
+
+
+============================================================
+CHAPTER 2
+============================================================
+
+PROFESSOR:
+"Chapter 2. ."
+[Pause: 1.0s]
+
+STUDENT_1:
+"What is classical robotics and what approach does it take?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Classical robotics uses explicit mathematical models - kinematics (geometry of motion) and dynamics (forces) - to calculate exactly how a robot should move. It's deterministic: same input always gives same output."
+[Pause: 1.5s]
+
+PROFESSOR:
+"Classical approach would calculate SO-ARM101's joint angles using transformation matrices, but this breaks down when fabric deforms unpredictably."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What is classical robotics and what approach does it take?]"
+[Pause: 2.0s]
+
+STUDENT_2:
+"What are equations of motion in robotics?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Mathematical relationships mapping joint configurations (angles, velocities) to end-effector positions and forces. They describe how the robot's state evolves over time based on applied torques."
+[Pause: 1.5s]
+
+PROFESSOR:
+"For SO-ARM101's 6-DOF arm, equations of motion relate the 6 joint angles to where the gripper ends up in 3D space (x, y, z, roll, pitch, yaw)."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What are equations of motion in robotics?]"
+[Pause: 2.0s]
+
+STUDENT_3:
+"How does forward kinematics work for a simple 2-link robot arm?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Given joint angles theta1 and theta2, calculate end-effector position using: x = L1*cos(theta1) + L2*cos(theta1+theta2), y = L1*sin(theta1) + L2*sin(theta1+theta2). It's just trigonometry."
+[Pause: 1.5s]
+
+PROFESSOR:
+"SO-ARM101 has 6 joints, so FK chains 6 transformation matrices together - each joint adds rotation/translation to get final gripper pose."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: How does forward kinematics work for a simple 2-link robot arm?]"
+[Pause: 2.0s]
+
+STUDENT_4:
+"Why don't classical robotics equations work well in real life?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Real world has friction, backlash, wear, temperature changes, object deformation, and sensor noise. Mathematical models assume perfect conditions that never exist. The 'undermodeling' gap causes errors to accumulate."
+[Pause: 1.5s]
+
+PROFESSOR:
+"Your SO-ARM101 servos have gear backlash and cable stretch not in any equation. Fabric physics are nearly impossible to model - that's why we need learning."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: Why don't classical robotics equations work well in real life?]"
+[Pause: 2.0s]
+
+STUDENT_1:
+"What is explicit modeling in robotics?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Building mathematical equations that describe exactly how the robot moves - mass, inertia, joint limits, link lengths. You explicitly model every physical property and use physics to compute motion."
+[Pause: 1.5s]
+
+PROFESSOR:
+"Explicit model of SO-ARM101 would include each link's mass, servo torque curves, gear ratios, cable elasticity - incredibly complex and never perfectly accurate."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What is explicit modeling in robotics?]"
+[Pause: 2.0s]
+
+STUDENT_2:
+"What is Forward Kinematics (FK)?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"FK computes the end-effector pose (position + orientation) given joint angles. Input: joint configuration. Output: where the gripper is in 3D space. It's the 'easy direction' - always has a unique solution."
+[Pause: 1.5s]
+
+PROFESSOR:
+"Given SO-ARM101's 6 joint angles (base, shoulder, elbow, wrist1, wrist2, gripper), FK tells you the exact (x, y, z, roll, pitch, yaw) of the gripper."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What is Forward Kinematics (FK)?]"
+[Pause: 2.0s]
+
+STUDENT_3:
+"What is Inverse Kinematics (IK) and why is it harder than FK?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"IK computes joint angles needed to reach a desired end-effector pose. It's the 'hard direction' - may have multiple solutions, no solutions (unreachable), or require iterative numerical solving."
+[Pause: 1.5s]
+
+PROFESSOR:
+"To reach point (30cm, 20cm, 15cm), IK finds joint angles that put SO-ARM101's gripper there. Multiple arm configurations might achieve the same position."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What is Inverse Kinematics (IK) and why is it harder than FK?]"
+[Pause: 2.0s]
+
+STUDENT_4:
+"What are the four main limitations of dynamics-based robotics?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"1) Multimodal data is hard to integrate 2) Undermodeling - real physics is more complex 3) Ignores available data 4) Requires separate perception/planning/control modules that don't optimize end-to-end."
+[Pause: 1.5s]
+
+PROFESSOR:
+"Classical approach for SO-ARM101 folding would need separate vision module, fabric physics model, motion planner, and controller - each introducing errors."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What are the four main limitations of dynamics-based robotics?]"
+[Pause: 2.0s]
+
+STUDENT_1:
+"What is the classical robotics pipeline?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Perception (understand scene from sensors) to State Estimation (localize robot and objects) to Planning (compute trajectory) to Control (execute motion). Each module is engineered separately."
+[Pause: 1.5s]
+
+PROFESSOR:
+"Classical: Camera detects fabric to Estimate fabric pose to Plan fold trajectory to Send joint commands. Each module can fail, and errors compound."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What is the classical robotics pipeline?]"
+[Pause: 2.0s]
+
+STUDENT_2:
+"What is implicit modeling in robotics?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Instead of explicit physics equations, learn a neural network that directly maps observations to actions. The 'model' is implicit in the network weights, learned from data rather than engineered."
+[Pause: 1.5s]
+
+PROFESSOR:
+"ACT policy for SO-ARM101 is implicit: (camera + joints) to neural network to actions. No explicit kinematics - the network learns the mapping."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What is implicit modeling in robotics?]"
+[Pause: 2.0s]
+
+
+============================================================
+CHAPTER 3
+============================================================
+
+PROFESSOR:
+"Chapter 3. ."
+[Pause: 1.0s]
+
+STUDENT_3:
+"How did reinforcement learning emerge as an alternative to classical robotics?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Around 2010, researchers realized robots could learn behaviors through trial and error rather than hand-crafted equations. The robot receives rewards for good actions and learns a policy that maximizes cumulative reward."
+[Pause: 1.5s]
+
+PROFESSOR:
+"Instead of calculating how to fold clothes, RL would have SO-ARM101 try random motions and reward successful folds - but this is dangerous and slow on real hardware."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: How did reinforcement learning emerge as an alternative to classical robotics?]"
+[Pause: 2.0s]
+
+STUDENT_4:
+"What is the core principle of reinforcement learning?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"An agent takes actions in an environment, receives rewards (positive or negative), and learns a policy that maximizes expected cumulative reward. It's learning from consequences, not from examples."
+[Pause: 1.5s]
+
+PROFESSOR:
+"RL for SO-ARM101 folding: +1 reward for neat fold, -1 for dropping fabric, 0 otherwise. Agent learns through millions of attempts which motions lead to rewards."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What is the core principle of reinforcement learning?]"
+[Pause: 2.0s]
+
+STUDENT_1:
+"Why is RL dangerous for real robot training?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Early RL requires random exploration to discover what works. Random motions on a real robot can break hardware, damage surroundings, or hurt people. The exploration phase is inherently unsafe."
+[Pause: 1.5s]
+
+PROFESSOR:
+"RL exploring on your bimanual setup could swing arms wildly, crash into the table, snap servo gears, or fling fabric across the room during initial random exploration."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: Why is RL dangerous for real robot training?]"
+[Pause: 2.0s]
+
+STUDENT_2:
+"Why is designing reward functions for RL so difficult?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Good rewards must capture exactly what you want, be measurable, and provide useful gradients. Complex tasks like 'fold clothes neatly' are hard to quantify. Bad rewards lead to reward hacking where robots find loopholes."
+[Pause: 1.5s]
+
+PROFESSOR:
+"Rewarding 'fabric area reduced' might make SO-ARM101 crumple fabric into a ball rather than fold it. Defining 'neat fold' mathematically is surprisingly hard."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: Why is designing reward functions for RL so difficult?]"
+[Pause: 2.0s]
+
+STUDENT_3:
+"What is the sparse reward problem in RL?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"When rewards only come at task completion (like +1 for successful fold, 0 otherwise), the agent gets no signal about progress. It must randomly stumble onto success to learn anything, which takes enormous time."
+[Pause: 1.5s]
+
+PROFESSOR:
+"For clothes folding, if you only reward completion, SO-ARM101 must randomly discover the entire multi-step sequence before getting any learning signal."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What is the sparse reward problem in RL?]"
+[Pause: 2.0s]
+
+STUDENT_4:
+"Why do RL-trained robot policies struggle to generalize?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"RL policies overfit to exact training conditions - same lighting, same objects, same positions. Small changes break the learned behavior. The agent hasn't learned concepts, just specific state-action mappings."
+[Pause: 1.5s]
+
+PROFESSOR:
+"RL policy trained on blue towels might fail completely on red shirts - it hasn't learned 'folding' as a concept, just specific motor sequences for that towel."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: Why do RL-trained robot policies struggle to generalize?]"
+[Pause: 2.0s]
+
+STUDENT_1:
+"Why choose imitation learning over RL for robot manipulation?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"IL avoids: random exploration (safety), reward engineering (no reward needed), sample inefficiency (learns from demonstrations), and reset problem (offline training from logged data)."
+[Pause: 1.5s]
+
+PROFESSOR:
+"For SO-ARM101 folding: IL needs 100 demos. RL might need millions of attempts with broken fabric and servos. IL wins on practicality."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: Why choose imitation learning over RL for robot manipulation?]"
+[Pause: 2.0s]
+
+
+============================================================
+CHAPTER 4
+============================================================
+
+PROFESSOR:
+"Chapter 4. ."
+[Pause: 1.0s]
+
+STUDENT_2:
+"What is imitation learning and how does it solve RL's problems?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Instead of trial-and-error, the robot learns from expert demonstrations. It observes a human (or other expert) performing the task and learns to replicate that behavior. No random exploration, no reward engineering."
+[Pause: 1.5s]
+
+PROFESSOR:
+"You teleoperate the Leader arms to fold clothes; SO-ARM101 learns from your demonstrations to replicate the behavior on the Follower arms."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What is imitation learning and how does it solve RL's problems?]"
+[Pause: 2.0s]
+
+STUDENT_3:
+"How does imitation learning work in detail?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Collect demonstrations (observation-action pairs) from an expert. Train a neural network to predict the expert's action given the observation. At test time, the network imitates the expert behavior."
+[Pause: 1.5s]
+
+PROFESSOR:
+"Record 100 demos of you folding clothes via Leader arms. Train policy: (camera, joints) to actions. Follower arms execute the learned policy."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: How does imitation learning work in detail?]"
+[Pause: 2.0s]
+
+STUDENT_4:
+"Why is coffee pouring a good example for imitation learning?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Pouring latte art requires precise timing, force control, and adapting to fluid dynamics - impossible to program explicitly. But a barista can demonstrate, and the robot can learn the implicit skill from examples."
+[Pause: 1.5s]
+
+PROFESSOR:
+"Fabric manipulation is similar: impossible to model fabric physics, but your bimanual demos capture the implicit 'feel' the policy learns to replicate."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: Why is coffee pouring a good example for imitation learning?]"
+[Pause: 2.0s]
+
+STUDENT_1:
+"What is Learning from Demonstrations (LfD)?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"The robot observes expert performing a task, records the observations and actions taken, then learns a mapping from observations to actions that replicates expert behavior."
+[Pause: 1.5s]
+
+PROFESSOR:
+"You teleoperate Leader arms while cameras record. The (images, leader_joints, follower_joints) tuples become training data for the policy network."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What is Learning from Demonstrations (LfD)?]"
+[Pause: 2.0s]
+
+STUDENT_2:
+"What are observation-action pairs in imitation learning?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Each training example is (observation, action): what the robot sensed at time t, and what action the expert took. The dataset is a collection of these pairs from many demonstrations."
+[Pause: 1.5s]
+
+PROFESSOR:
+"At t=1.5s: observation = (camera_image, all_joint_angles), action = (target_follower_angles). Thousands of these pairs train the policy."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What are observation-action pairs in imitation learning?]"
+[Pause: 2.0s]
+
+STUDENT_3:
+"What is a policy in robot learning?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"A policy pi is a function (usually neural network) that maps observations to actions: pi(o) = a. It encodes the robot's behavior - given what I see, what should I do?"
+[Pause: 1.5s]
+
+PROFESSOR:
+"Your ACT policy: pi(camera_images, joint_states) to (12 follower joint angles for next timestep). Runs at 50Hz for smooth motion."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What is a policy in robot learning?]"
+[Pause: 2.0s]
+
+STUDENT_4:
+"What is the input-output structure for a robot manipulation policy?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Input: observations (images + proprioception). Output: actions (joint targets). For 6-DOF arm: input is camera + 6 current joint angles, output is 6 target joint angles."
+[Pause: 1.5s]
+
+PROFESSOR:
+"Input: 2 camera images + 24 joint angles. Output: 12 target angles for Follower arms. Policy processes multimodal input to produce motor commands."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What is the input-output structure for a robot manipulation policy?]"
+[Pause: 2.0s]
+
+STUDENT_1:
+"What does it mean for a policy to be 'learned'?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"The policy's parameters (neural network weights) are optimized from data to minimize prediction error on expert actions. It's not hand-coded - the behavior emerges from training."
+[Pause: 1.5s]
+
+PROFESSOR:
+"After training on 100 folding demos, the ACT network weights encode 'folding behavior' - you didn't program the motion, the network learned it."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What does it mean for a policy to be 'learned'?]"
+[Pause: 2.0s]
+
+STUDENT_2:
+"What is proprioceptive data in robotics?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Proprioception is the robot's sense of its own body - joint angles, velocities, torques. Like how you know your arm position without looking. Essential for closed-loop control."
+[Pause: 1.5s]
+
+PROFESSOR:
+"SO-ARM101 servos report their current angles. The policy uses this proprioceptive feedback along with camera images to decide next actions."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What is proprioceptive data in robotics?]"
+[Pause: 2.0s]
+
+STUDENT_3:
+"How is a policy trained on demonstrations?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Supervised learning: minimize difference between predicted actions and expert actions. Loss = MSE(pi(observation), expert_action). Optimize neural network weights via gradient descent."
+[Pause: 1.5s]
+
+PROFESSOR:
+"Training loop: sample batch of (obs, action) pairs to predict actions to compute MSE loss to backprop to update weights. Repeat until policy mimics demos."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: How is a policy trained on demonstrations?]"
+[Pause: 2.0s]
+
+STUDENT_4:
+"Why do robot policies need visual input, not just joint angles?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Joint angles tell you where the robot is, but not where objects are. To manipulate objects, you need to see them. Vision enables adaptation to object position, lighting, and scene changes."
+[Pause: 1.5s]
+
+PROFESSOR:
+"If fabric moves, SO-ARM101 must see the new position to adjust. Pure joint replay would fold air. Cameras make the policy reactive."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: Why do robot policies need visual input, not just joint angles?]"
+[Pause: 2.0s]
+
+STUDENT_1:
+"What are multimodal observations in robot learning?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Combining different sensor types as input: images (visual), joint angles (proprioceptive), forces (tactile). Neural networks can learn to fuse these modalities end-to-end."
+[Pause: 1.5s]
+
+PROFESSOR:
+"ACT input: 2 camera images (224x224x3) + 24 joint angles. The network learns which modality matters when for folding decisions."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What are multimodal observations in robot learning?]"
+[Pause: 2.0s]
+
+STUDENT_2:
+"What datasets are available through LeRobot?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"166 manipulation datasets on Hugging Face Hub - pushing, picking, placing, stacking, folding. Each has thousands of demonstrations with synchronized video and robot state."
+[Pause: 1.5s]
+
+PROFESSOR:
+"You can pretrain on existing LeRobot datasets, then fine-tune on your specific SO-ARM101 folding demonstrations for faster learning."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What datasets are available through LeRobot?]"
+[Pause: 2.0s]
+
+STUDENT_3:
+"What are the main advantages of imitation learning for robotics?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"1) No reward engineering 2) Safe (no random exploration) 3) Sample efficient (learns from expert demos) 4) Offline training (no real-time robot needed during training) 5) Captures implicit skills."
+[Pause: 1.5s]
+
+PROFESSOR:
+"100 folding demos to 2 hours training on GPU to deploy to SO-ARM101. No broken hardware, no reward function design needed."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What are the main advantages of imitation learning for robotics?]"
+[Pause: 2.0s]
+
+STUDENT_4:
+"How do human demonstrations transfer to robot behavior?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Human operates the robot (teleoperation) or performs the task while robot observes. The demonstration captures the implicit knowledge - timing, force, strategy - that transfers to the learned policy."
+[Pause: 1.5s]
+
+PROFESSOR:
+"You move Leader arms to fold; Follower arms record synchronized actions. The policy learns your strategy, not just the trajectory - it learns when to grip, how fast to fold."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: How do human demonstrations transfer to robot behavior?]"
+[Pause: 2.0s]
+
+STUDENT_1:
+"What's wrong with simple supervised learning for robot imitation?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"It outputs a single action per observation, but real tasks have multiple valid actions (go left OR right around obstacle). Averaging these modes produces invalid actions (crash into obstacle)."
+[Pause: 1.5s]
+
+PROFESSOR:
+"If demos show folding left-to-right AND right-to-left, naive policy averages to folding in the middle - neither approach, likely dropping fabric."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What's wrong with simple supervised learning for robot imitation?]"
+[Pause: 2.0s]
+
+STUDENT_2:
+"Why should robot policies output probability distributions, not point values?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Distributions can represent multiple valid actions. Sampling from the distribution commits to one mode. This naturally handles multimodal expert behavior."
+[Pause: 1.5s]
+
+PROFESSOR:
+"ACT outputs a distribution over action chunks. Sampling picks one consistent trajectory - either left-fold OR right-fold, not average."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: Why should robot policies output probability distributions, not point values?]"
+[Pause: 2.0s]
+
+STUDENT_3:
+"What is Deep Generative Modeling and why is it needed for robot learning?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"DGM learns to generate samples from complex distributions. For robotics, it models the distribution of valid actions - enabling multimodal policies that can sample coherent action sequences."
+[Pause: 1.5s]
+
+PROFESSOR:
+"VAE in ACT learns the distribution of valid folding trajectories. At inference, it samples one complete trajectory rather than averaging across demos."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What is Deep Generative Modeling and why is it needed for robot learning?]"
+[Pause: 2.0s]
+
+STUDENT_4:
+"How do deep generative models work?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"They learn to model P(data) - the probability distribution of training data. New samples are generated by sampling from this learned distribution. VAEs, GANs, and diffusion models are examples."
+[Pause: 1.5s]
+
+PROFESSOR:
+"VAE learns P(trajectories | observations). Sampling produces new, valid folding trajectories that weren't in training data but follow learned patterns."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: How do deep generative models work?]"
+[Pause: 2.0s]
+
+STUDENT_1:
+"What preparation is needed for Lecture 2?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Study probability distributions (Gaussian basics, mean, variance), understand why distributions matter for robot policies, review the multimodal problem demonstration."
+[Pause: 1.5s]
+
+PROFESSOR:
+"You'll learn VAEs in Lecture 2 - understanding how they encode demonstration distributions is key to understanding ACT policy training."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What preparation is needed for Lecture 2?]"
+[Pause: 2.0s]
+
+
+============================================================
+CHAPTER 5
+============================================================
+
+PROFESSOR:
+"Chapter 5. ."
+[Pause: 1.0s]
+
+STUDENT_2:
+"Why is handling multimodal data challenging for classical robotics?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Robots receive images (2D), depth (3D), joint angles (1D vectors), forces (vectors) - all different data types requiring different processing. Classical approaches struggle to fuse these coherently."
+[Pause: 1.5s]
+
+PROFESSOR:
+"SO-ARM101 has: 2 camera feeds (images), 24 joint encoders (angles), and gripper force sensors. A policy must process all modalities together."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: Why is handling multimodal data challenging for classical robotics?]"
+[Pause: 2.0s]
+
+STUDENT_3:
+"What is undermodeling in robotics?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Undermodeling means your mathematical model neglects real-world factors: friction, backlash, cable stretch, thermal expansion, wear. The gap between model and reality causes control errors."
+[Pause: 1.5s]
+
+PROFESSOR:
+"Your SO-ARM101 servo response varies with temperature and load. No equation captures this - but a learned policy can adapt from experience."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What is undermodeling in robotics?]"
+[Pause: 2.0s]
+
+STUDENT_4:
+"Why does classical robotics 'overlook available data'?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Classical approaches derive motion from physics equations, not from examples. They don't learn from thousands of demonstrations or improve with more data. Experience is wasted."
+[Pause: 1.5s]
+
+PROFESSOR:
+"If you have 1000 successful folding demos, classical robotics can't use them directly. Imitation learning extracts the policy from this data."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: Why does classical robotics 'overlook available data'?]"
+[Pause: 2.0s]
+
+STUDENT_1:
+"What is the multimodal targets problem in imitation learning?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"For the same observation, experts might take different valid actions. Standard regression predicts the mean of these actions, which may not be a valid action itself."
+[Pause: 1.5s]
+
+PROFESSOR:
+"Same fabric position: demo 1 folds left edge first, demo 2 folds right edge first. Mean action = fold from middle = drops fabric."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What is the multimodal targets problem in imitation learning?]"
+[Pause: 2.0s]
+
+STUDENT_2:
+"What are point estimate policies and why do they fail?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Point estimates output a single action value, not a distribution. When multiple valid actions exist, point estimates collapse to the mean, which often lies between modes and is invalid."
+[Pause: 1.5s]
+
+PROFESSOR:
+"Policy outputs exactly 12 joint angles. If left-fold and right-fold are both valid, it might output middle values that don't correspond to either valid fold."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What are point estimate policies and why do they fail?]"
+[Pause: 2.0s]
+
+STUDENT_3:
+"How does mode averaging cause robot failures?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"When training data has multiple valid action modes, MSE loss minimizes average error by outputting the mean. If modes are 'go left' and 'go right', mean is 'go straight into obstacle'."
+[Pause: 1.5s]
+
+PROFESSOR:
+"Bimanual folding might have left-arm-first and right-arm-first modes. Averaging produces simultaneous motion that tangles fabric."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: How does mode averaging cause robot failures?]"
+[Pause: 2.0s]
+
+STUDENT_4:
+"How can you visualize the mode averaging problem?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"The lecture Colab shows a 2D navigation task where point estimate crashes into obstacle (averaging left/right paths), while multimodal policy successfully chooses one path."
+[Pause: 1.5s]
+
+PROFESSOR:
+"Run the Colab to see how VAE-based policies sample from learned distributions, committing to one mode rather than averaging."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: How can you visualize the mode averaging problem?]"
+[Pause: 2.0s]
+
+STUDENT_1:
+"What is the compounding error problem in imitation learning?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Small prediction errors accumulate over time. The policy enters states never seen in training, makes larger errors, drifts further from expert behavior. It's a distribution shift problem."
+[Pause: 1.5s]
+
+PROFESSOR:
+"If gripper is 1cm off, next prediction is based on wrong state, causing 2cm error, then 4cm... Soon SO-ARM101 is grabbing air instead of fabric."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What is the compounding error problem in imitation learning?]"
+[Pause: 2.0s]
+
+
+============================================================
+CHAPTER 6
+============================================================
+
+PROFESSOR:
+"Chapter 6. ."
+[Pause: 1.0s]
+
+STUDENT_2:
+"What are foundation models and why did they revolutionize AI?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Foundation models are large neural networks pre-trained on massive datasets that learn general representations. They can be fine-tuned for specific tasks with minimal data - GPT-3, CLIP, DALL-E are examples."
+[Pause: 1.5s]
+
+PROFESSOR:
+"Soon you might download a foundation robot model pre-trained on millions of manipulation demos, then fine-tune on 50 demos for your specific folding task."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What are foundation models and why did they revolutionize AI?]"
+[Pause: 2.0s]
+
+STUDENT_3:
+"What are Vision Language Models (VLMs)?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"VLMs like CLIP and LLaVA understand both images and text in a shared representation space. They can describe images, answer visual questions, and connect visual concepts to language semantics."
+[Pause: 1.5s]
+
+PROFESSOR:
+"A VLM could understand 'pick up the blue shirt' from camera input - knowing what 'blue' means visually and what 'shirt' looks like, enabling language-guided manipulation."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What are Vision Language Models (VLMs)?]"
+[Pause: 2.0s]
+
+STUDENT_4:
+"What is the OpenX dataset and why is it significant?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"OpenX combines data from 22 different robot types across 21 institutions, with 527 distinct skills. It's the largest open robot manipulation dataset - enabling foundation models for robotics through cross-embodiment learning."
+[Pause: 1.5s]
+
+PROFESSOR:
+"Policies trained on OpenX might transfer some skills to SO-ARM101, even though it wasn't in the original dataset, thanks to learned general manipulation primitives."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What is the OpenX dataset and why is it significant?]"
+[Pause: 2.0s]
+
+STUDENT_1:
+"How do robot models differ from LLMs in their output?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"LLMs output text tokens. Robot models output actions - continuous joint positions, velocities, or forces. This is a fundamentally different output space requiring different architectures and training approaches."
+[Pause: 1.5s]
+
+PROFESSOR:
+"For SO-ARM101, output is 12 numbers (6 joint angles per arm for both Followers) at 50Hz, not discrete tokens. The policy must produce smooth, coordinated motion."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: How do robot models differ from LLMs in their output?]"
+[Pause: 2.0s]
+
+STUDENT_2:
+"What are Vision Language Action models (VLAs)?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"VLAs extend VLMs by adding an action output head. They take vision + language instructions as input and output robot actions. This enables instruction-following robots that understand natural language commands."
+[Pause: 1.5s]
+
+PROFESSOR:
+"'Fold the blue shirt on the table' to VLA processes camera view, understands language, outputs 50Hz joint commands for both arms to execute the fold."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What are Vision Language Action models (VLAs)?]"
+[Pause: 2.0s]
+
+STUDENT_3:
+"What is Pi-0 from Physical Intelligence?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Pi-0 is a foundation model for robotics from Sergey Levine's lab. It's trained on diverse manipulation data and can perform complex tasks like folding clothes, clearing tables, and handling deformable objects."
+[Pause: 1.5s]
+
+PROFESSOR:
+"Pi-0's architecture (VAE + Transformer) is what you'll learn to build in this course - the same principles apply to training your SO-ARM101."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What is Pi-0 from Physical Intelligence?]"
+[Pause: 2.0s]
+
+STUDENT_4:
+"What makes autonomous clothes folding so impressive and difficult?"
+[Pause: 0.5s]
+
+PROFESSOR:
+"Clothes are deformable (infinite degrees of freedom), vary in texture/size/shape, and require bimanual coordination with precise timing. The robot must adapt in real-time to how fabric moves."
+[Pause: 1.5s]
+
+PROFESSOR:
+"Your bimanual SO-ARM101 setup is specifically designed for this task - Left and Right arms must coordinate like human hands to lift, position, and fold fabric."
+[Pause: 2.0s]
+
+PROFESSOR:
+"[REINFORCE: What makes autonomous clothes folding so impressive and difficult?]"
+[Pause: 2.0s]
+
+
+============================================================
+CHAPTER 7
+============================================================
+
+PROFESSOR:
+"Chapter 7. ."
+[Pause: 1.0s]
+
+
+============================================================
+CHAPTER 8
+============================================================
+
+PROFESSOR:
+"Chapter 8. ."
+[Pause: 1.0s]
+
+
+============================================================
+CLOSING
+============================================================
+
+PROFESSOR:
+"And that concludes today's lecture. You've journeyed through the landscape of robot learning - from classical robotics, through reinforcement learning, to imitation learning and generative policies. Take a moment to let these insights settle. When you're ready, open your eyes. The journey continues in Lesson Two."
+[Pause: 3.0s]
+
+AMBIENT:
+"[Classroom atmosphere fades out slowly]"
+[Pause: 2.0s]
+

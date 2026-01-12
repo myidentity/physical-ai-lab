@@ -1,0 +1,732 @@
+[
+  {
+    "index": 0,
+    "speaker": "PROFESSOR",
+    "text": "Chapter 2. The Beautiful Failure of Classical Robotics.",
+    "line_type": "transition",
+    "chapter": 2,
+    "start_ms": 0,
+    "duration_ms": 4936,
+    "end_ms": 4936
+  },
+  {
+    "index": 1,
+    "speaker": "PROFESSOR",
+    "text": "Classical robotics is built on a beautiful idea: if you know the physics, you can compute the motion. Want to move a robot arm to a specific point? Just solve the equations.",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 4936,
+    "duration_ms": 10932,
+    "end_ms": 15868
+  },
+  {
+    "index": 2,
+    "speaker": "PROFESSOR",
+    "text": "If forward kinematics is \"given angles, find position\"... what if you need to do it backwards? Given a target position, which angles should you use?",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 15868,
+    "duration_ms": 9804,
+    "end_ms": 25672
+  },
+  {
+    "index": 3,
+    "speaker": "PROFESSOR",
+    "text": "This is inverse kinematics (IK), and it's where the elegance starts to crack.",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 25672,
+    "duration_ms": 6516,
+    "end_ms": 32188
+  },
+  {
+    "index": 4,
+    "speaker": "STUDENT_1",
+    "text": "What is classical robotics and what approach does it take?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 32188,
+    "duration_ms": 3980,
+    "end_ms": 36168
+  },
+  {
+    "index": 5,
+    "speaker": "PROFESSOR",
+    "text": "Classical robotics uses explicit mathematical models - kinematics (geometry of motion) and dynamics (forces) - to calculate exactly how a robot should move. It's deterministic: same input always gives same output.",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 36168,
+    "duration_ms": 14844,
+    "end_ms": 51012
+  },
+  {
+    "index": 6,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: Classical approach would calculate SO-ARM101's joint angles using transformation matrices, but this breaks down when fabric deforms unpredictably.",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 51012,
+    "duration_ms": 13688,
+    "end_ms": 64700
+  },
+  {
+    "index": 7,
+    "speaker": "STUDENT_1",
+    "text": "So classical robotics is all about deriving equations from physics - if you know the math perfectly, you know exactly where the arm will go.",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 64700,
+    "duration_ms": 10592,
+    "end_ms": 75292
+  },
+  {
+    "index": 8,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. It works beautifully in controlled factory settings.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 75292,
+    "duration_ms": 5508,
+    "end_ms": 80800
+  },
+  {
+    "index": 9,
+    "speaker": "PROFESSOR",
+    "text": "Engineers spent decades perfecting these equations, only to find that real-world uncertainty defeats mathematical elegance every time.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 80800,
+    "duration_ms": 9776,
+    "end_ms": 90576
+  },
+  {
+    "index": 10,
+    "speaker": "PROFESSOR",
+    "text": "Unlike FK, IK often has multiple solutions - or no solution at all. Your robot might be able to reach a point with its elbow up or elbow down. Or the point might be outside its reach entirely. Suddenly, simple trigonometry becomes a constrained optimization problem.",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 90576,
+    "duration_ms": 17100,
+    "end_ms": 107676
+  },
+  {
+    "index": 11,
+    "speaker": "PROFESSOR",
+    "text": "Your SO-ARM101 has 6 joints per arm. For FK, you chain 6 transformation matrices together - still manageable. But for IK? With 6 joints, you're solving a system with multiple solutions, joint limits, and singularities (positions where the math breaks down). Now imagine coordinating two arms for bimanual manipulation...",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 107676,
+    "duration_ms": 21924,
+    "end_ms": 129600
+  },
+  {
+    "index": 12,
+    "speaker": "PROFESSOR",
+    "text": "Consider a simple pendulum. The equation of motion is textbook physics:",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 129600,
+    "duration_ms": 5988,
+    "end_ms": 135588
+  },
+  {
+    "index": 13,
+    "speaker": "STUDENT_2",
+    "text": "What are equations of motion in robotics?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 135588,
+    "duration_ms": 3188,
+    "end_ms": 138776
+  },
+  {
+    "index": 14,
+    "speaker": "PROFESSOR",
+    "text": "Mathematical relationships mapping joint configurations (angles, velocities) to end-effector positions and forces. They describe how the robot's state evolves over time based on applied torques.",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 138776,
+    "duration_ms": 13020,
+    "end_ms": 151796
+  },
+  {
+    "index": 15,
+    "speaker": "PROFESSOR",
+    "text": "For SO-ARM101's 6-DOF arm, equations of motion relate the 6 joint angles to where the gripper ends up in 3D space (x, y, z, roll, pitch, yaw).",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 151796,
+    "duration_ms": 13808,
+    "end_ms": 165604
+  },
+  {
+    "index": 16,
+    "speaker": "STUDENT_3",
+    "text": "So these equations let you predict exactly where the arm will be if you know the joint angles?",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 165604,
+    "duration_ms": 7496,
+    "end_ms": 173100
+  },
+  {
+    "index": 17,
+    "speaker": "PROFESSOR",
+    "text": "In theory, yes. The reality is messier.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 173100,
+    "duration_ms": 4668,
+    "end_ms": 177768
+  },
+  {
+    "index": 18,
+    "speaker": "PROFESSOR",
+    "text": "NASA's robotic arms on the Space Station use these exact equations - but they operate in a perfectly known, zero-gravity environment.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 177768,
+    "duration_ms": 9728,
+    "end_ms": 187496
+  },
+  {
+    "index": 19,
+    "speaker": "PROFESSOR",
+    "text": "That beautiful equation ignores: air resistance (the pendulum doesn't swing in a vacuum), joint friction (the pivot point has drag), material deformation (the rod isn't perfectly rigid), and temperature effects (metal expands, lubricant viscosity changes). The real world has infinite hidden variables.",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 187496,
+    "duration_ms": 19500,
+    "end_ms": 206996
+  },
+  {
+    "index": 20,
+    "speaker": "PROFESSOR",
+    "text": "This is called undermodeling - your mathematical model doesn't capture enough of reality. And here's the cruel irony: you can't capture enough of reality. The real world is infinitely complex.",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 206996,
+    "duration_ms": 11940,
+    "end_ms": 218936
+  },
+  {
+    "index": 21,
+    "speaker": "PROFESSOR",
+    "text": "Now imagine trying to model a robot folding fabric. The cloth deforms unpredictably. Each fold changes the dynamics. The material properties vary across different clothes. You'd need to model every fiber.",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 218936,
+    "duration_ms": 13668,
+    "end_ms": 232604
+  },
+  {
+    "index": 22,
+    "speaker": "STUDENT_3",
+    "text": "How does forward kinematics work for a simple 2-link robot arm?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 232604,
+    "duration_ms": 5156,
+    "end_ms": 237760
+  },
+  {
+    "index": 23,
+    "speaker": "PROFESSOR",
+    "text": "Given joint angles theta1 and theta2, calculate end-effector position using: x = L1*cos(theta1) + L2*cos(theta1+theta2), y = L1*sin(theta1) + L2*sin(theta1+theta2). It's just trigonometry.",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 237760,
+    "duration_ms": 23076,
+    "end_ms": 260836
+  },
+  {
+    "index": 24,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: SO-ARM101 has 6 joints, so FK chains 6 transformation matrices together - each joint adds rotation/translation to get final gripper pose.",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 260836,
+    "duration_ms": 14864,
+    "end_ms": 275700
+  },
+  {
+    "index": 25,
+    "speaker": "STUDENT_4",
+    "text": "So forward kinematics is the easy direction - plug in joint angles, get end position. But real robots need to go the other way.",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 275700,
+    "duration_ms": 9560,
+    "end_ms": 285260
+  },
+  {
+    "index": 26,
+    "speaker": "PROFESSOR",
+    "text": "Right. And that reverse problem is where classical methods struggle.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 285260,
+    "duration_ms": 5412,
+    "end_ms": 290672
+  },
+  {
+    "index": 27,
+    "speaker": "PROFESSOR",
+    "text": "This is why robot calibration is a whole field - even small errors in link lengths compound into centimeters of end-effector error.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 290672,
+    "duration_ms": 9464,
+    "end_ms": 300136
+  },
+  {
+    "index": 28,
+    "speaker": "PROFESSOR",
+    "text": "1. The Pipeline Problem: Perception to State Estimation to Planning to Control. If any block fails, errors cascade through the entire system. 2. Multimodal Data: Classical equations can't incorporate camera images, force feedback, and joint angles simultaneously. 3. Undermodeling: You can never capture all real-world variables in equations. 4. Ignoring Data: We have massive robotics datasets now - classical methods don't use any of them.",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 300136,
+    "duration_ms": 29532,
+    "end_ms": 329668
+  },
+  {
+    "index": 29,
+    "speaker": "PROFESSOR",
+    "text": "Explicit Modeling (Classical Robotics): You write down equations. Forward kinematics, inverse dynamics, trajectory optimization - everything is derived from first principles. You're explicitly telling the robot how the world works. Implicit Modeling (Learning-Based): No equations. No pipelines. Just a single neural network that takes in observations and outputs actions. The \"model\" of the world is implicit - learned from data, buried in the network weights. You can't inspect it or debug it, but it captures things equations never could.",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 329668,
+    "duration_ms": 32340,
+    "end_ms": 362008
+  },
+  {
+    "index": 30,
+    "speaker": "PROFESSOR",
+    "text": "When your SO-ARM101 grips a t-shirt, the fabric deforms in ways that would take thousands of equations to model explicitly. But if you train on 1000 demonstrations of shirt folding, the implicit model learns \"when I see this crinkle pattern, grip here and pull this way.\" No equations needed - just data.",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 362008,
+    "duration_ms": 19308,
+    "end_ms": 381316
+  },
+  {
+    "index": 31,
+    "speaker": "STUDENT_4",
+    "text": "Why don't classical robotics equations work well in real life?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 381316,
+    "duration_ms": 4172,
+    "end_ms": 385488
+  },
+  {
+    "index": 32,
+    "speaker": "PROFESSOR",
+    "text": "Real world has friction, backlash, wear, temperature changes, object deformation, and sensor noise. Mathematical models assume perfect conditions that never exist. The 'undermodeling' gap causes errors to accumulate.",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 385488,
+    "duration_ms": 14892,
+    "end_ms": 400380
+  },
+  {
+    "index": 33,
+    "speaker": "PROFESSOR",
+    "text": "Your SO-ARM101 servos have gear backlash and cable stretch not in any equation. Fabric physics are nearly impossible to model - that's why we need learning.",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 400380,
+    "duration_ms": 11384,
+    "end_ms": 411764
+  },
+  {
+    "index": 34,
+    "speaker": "STUDENT_4",
+    "text": "So even perfect equations fail because real motors have friction, gears have backlash, and temperature changes everything?",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 411764,
+    "duration_ms": 9176,
+    "end_ms": 420940
+  },
+  {
+    "index": 35,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. The map is never the territory.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 420940,
+    "duration_ms": 4476,
+    "end_ms": 425416
+  },
+  {
+    "index": 36,
+    "speaker": "PROFESSOR",
+    "text": "This is why industrial robots need recalibration every few months - gear wear and cable stretch accumulate errors the equations can't predict.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 425416,
+    "duration_ms": 9848,
+    "end_ms": 435264
+  },
+  {
+    "index": 37,
+    "speaker": "STUDENT_1",
+    "text": "What is explicit modeling in robotics?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 435264,
+    "duration_ms": 3236,
+    "end_ms": 438500
+  },
+  {
+    "index": 38,
+    "speaker": "PROFESSOR",
+    "text": "Building mathematical equations that describe exactly how the robot moves - mass, inertia, joint limits, link lengths. You explicitly model every physical property and use physics to compute motion.",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 438500,
+    "duration_ms": 13212,
+    "end_ms": 451712
+  },
+  {
+    "index": 39,
+    "speaker": "PROFESSOR",
+    "text": "Explicit model of SO-ARM101 would include each link's mass, servo torque curves, gear ratios, cable elasticity - incredibly complex and never perfectly accurate.",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 451712,
+    "duration_ms": 12776,
+    "end_ms": 464488
+  },
+  {
+    "index": 40,
+    "speaker": "STUDENT_2",
+    "text": "So explicit modeling means writing down every physical property - masses, lengths, frictions - and hoping you got them all right.",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 464488,
+    "duration_ms": 9896,
+    "end_ms": 474384
+  },
+  {
+    "index": 41,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. Miss one parameter and your predictions drift.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 474384,
+    "duration_ms": 5100,
+    "end_ms": 479484
+  },
+  {
+    "index": 42,
+    "speaker": "PROFESSOR",
+    "text": "Companies spend millions calibrating industrial robots - measuring every parameter precisely - and still need regular recalibration as components wear.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 479484,
+    "duration_ms": 10688,
+    "end_ms": 490172
+  },
+  {
+    "index": 43,
+    "speaker": "STUDENT_2",
+    "text": "What is Forward Kinematics (FK)?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 490172,
+    "duration_ms": 3044,
+    "end_ms": 493216
+  },
+  {
+    "index": 44,
+    "speaker": "PROFESSOR",
+    "text": "FK computes the end-effector pose (position + orientation) given joint angles. Input: joint configuration. Output: where the gripper is in 3D space. It's the 'easy direction' - always has a unique solution.",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 493216,
+    "duration_ms": 15108,
+    "end_ms": 508324
+  },
+  {
+    "index": 45,
+    "speaker": "PROFESSOR",
+    "text": "Given SO-ARM101's 6 joint angles (base, shoulder, elbow, wrist1, wrist2, gripper), FK tells you the exact (x, y, z, roll, pitch, yaw) of the gripper.",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 508324,
+    "duration_ms": 15800,
+    "end_ms": 524124
+  },
+  {
+    "index": 46,
+    "speaker": "STUDENT_1",
+    "text": "So FK is the easy direction - angles go in, position comes out - because the math is just plugging numbers into known equations?",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 524124,
+    "duration_ms": 10424,
+    "end_ms": 534548
+  },
+  {
+    "index": 47,
+    "speaker": "PROFESSOR",
+    "text": "Right. It's purely computational, no search required.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 534548,
+    "duration_ms": 5268,
+    "end_ms": 539816
+  },
+  {
+    "index": 48,
+    "speaker": "PROFESSOR",
+    "text": "Every robot simulator from Gazebo to Isaac Sim implements FK identically - it's the one solved problem in robotics.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 539816,
+    "duration_ms": 9464,
+    "end_ms": 549280
+  },
+  {
+    "index": 49,
+    "speaker": "STUDENT_3",
+    "text": "What is Inverse Kinematics (IK) and why is it harder than FK?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 549280,
+    "duration_ms": 5468,
+    "end_ms": 554748
+  },
+  {
+    "index": 50,
+    "speaker": "PROFESSOR",
+    "text": "IK computes joint angles needed to reach a desired end-effector pose. It's the 'hard direction' - may have multiple solutions, no solutions (unreachable), or require iterative numerical solving.",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 554748,
+    "duration_ms": 13140,
+    "end_ms": 567888
+  },
+  {
+    "index": 51,
+    "speaker": "PROFESSOR",
+    "text": "To reach point (30cm, 20cm, 15cm), IK finds joint angles that put SO-ARM101's gripper there. Multiple arm configurations might achieve the same position.",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 567888,
+    "duration_ms": 13664,
+    "end_ms": 581552
+  },
+  {
+    "index": 52,
+    "speaker": "STUDENT_3",
+    "text": "So inverse kinematics has multiple solutions - there could be five different ways to reach the same point, and you have to pick one.",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 581552,
+    "duration_ms": 9944,
+    "end_ms": 591496
+  },
+  {
+    "index": 53,
+    "speaker": "PROFESSOR",
+    "text": "Right. And picking wrong means hitting yourself or the table.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 591496,
+    "duration_ms": 5052,
+    "end_ms": 596548
+  },
+  {
+    "index": 54,
+    "speaker": "PROFESSOR",
+    "text": "IK solvers are still a bottleneck in animation and games - that's why motion capture exists. It's easier to record human motion than to synthesize it.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 596548,
+    "duration_ms": 10424,
+    "end_ms": 606972
+  },
+  {
+    "index": 55,
+    "speaker": "STUDENT_4",
+    "text": "What are the four main limitations of dynamics-based robotics?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 606972,
+    "duration_ms": 4148,
+    "end_ms": 611120
+  },
+  {
+    "index": 56,
+    "speaker": "PROFESSOR",
+    "text": "1) Multimodal data is hard to integrate 2) Undermodeling - real physics is more complex 3) Ignores available data 4) Requires separate perception/planning/control modules that don't optimize end-to-end.",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 611120,
+    "duration_ms": 14724,
+    "end_ms": 625844
+  },
+  {
+    "index": 57,
+    "speaker": "PROFESSOR",
+    "text": "Classical approach for SO-ARM101 folding would need separate vision module, fabric physics model, motion planner, and controller - each introducing errors.",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 625844,
+    "duration_ms": 11600,
+    "end_ms": 637444
+  },
+  {
+    "index": 58,
+    "speaker": "STUDENT_2",
+    "text": "So classical robotics fails because: it can't handle cameras well, reality is too complex to model, data gets wasted, and small errors snowball?",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 637444,
+    "duration_ms": 11288,
+    "end_ms": 648732
+  },
+  {
+    "index": 59,
+    "speaker": "PROFESSOR",
+    "text": "Perfect summary. These four walls pushed the field toward learning.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 648732,
+    "duration_ms": 5364,
+    "end_ms": 654096
+  },
+  {
+    "index": 60,
+    "speaker": "PROFESSOR",
+    "text": "Amazon's warehouse robots still fail on unfamiliar packages - their classical perception pipeline breaks on anything it wasn't programmed for.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 654096,
+    "duration_ms": 10016,
+    "end_ms": 664112
+  },
+  {
+    "index": 61,
+    "speaker": "STUDENT_1",
+    "text": "What is the classical robotics pipeline?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 664112,
+    "duration_ms": 3140,
+    "end_ms": 667252
+  },
+  {
+    "index": 62,
+    "speaker": "PROFESSOR",
+    "text": "Perception (understand scene from sensors) to State Estimation (localize robot and objects) to Planning (compute trajectory) to Control (execute motion). Each module is engineered separately.",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 667252,
+    "duration_ms": 13284,
+    "end_ms": 680536
+  },
+  {
+    "index": 63,
+    "speaker": "PROFESSOR",
+    "text": "Classical: Camera detects fabric to Estimate fabric pose to Plan fold trajectory to Send joint commands. Each module can fail, and errors compound.",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 680536,
+    "duration_ms": 11192,
+    "end_ms": 691728
+  },
+  {
+    "index": 64,
+    "speaker": "STUDENT_1",
+    "text": "So the classical pipeline is like a chain - perception, then planning, then control - and if any link fails, the whole thing breaks.",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 691728,
+    "duration_ms": 11048,
+    "end_ms": 702776
+  },
+  {
+    "index": 65,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. Each module's errors compound through the chain.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 702776,
+    "duration_ms": 5100,
+    "end_ms": 707876
+  },
+  {
+    "index": 66,
+    "speaker": "PROFESSOR",
+    "text": "Each stage in this pipeline adds latency and error - by the time you've planned and executed, the world has already changed.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 707876,
+    "duration_ms": 9032,
+    "end_ms": 716908
+  },
+  {
+    "index": 67,
+    "speaker": "STUDENT_2",
+    "text": "What is implicit modeling in robotics?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 716908,
+    "duration_ms": 2996,
+    "end_ms": 719904
+  },
+  {
+    "index": 68,
+    "speaker": "PROFESSOR",
+    "text": "Instead of explicit physics equations, learn a neural network that directly maps observations to actions. The 'model' is implicit in the network weights, learned from data rather than engineered.",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 719904,
+    "duration_ms": 12108,
+    "end_ms": 732012
+  },
+  {
+    "index": 69,
+    "speaker": "PROFESSOR",
+    "text": "ACT policy for SO-ARM101 is implicit: (camera + joints) to neural network to actions. No explicit kinematics - the network learns the mapping.",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 732012,
+    "duration_ms": 11624,
+    "end_ms": 743636
+  },
+  {
+    "index": 70,
+    "speaker": "STUDENT_3",
+    "text": "So instead of writing physics equations, we let a neural network figure out the physics from examples?",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 743636,
+    "duration_ms": 8240,
+    "end_ms": 751876
+  },
+  {
+    "index": 71,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. Learn the function, don't derive it.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 751876,
+    "duration_ms": 4620,
+    "end_ms": 756496
+  },
+  {
+    "index": 72,
+    "speaker": "PROFESSOR",
+    "text": "Tesla's Optimus learned to pick up objects without any physics equations - the neural network figured out the dynamics from watching humans.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 756496,
+    "duration_ms": 9464,
+    "end_ms": 765960
+  }
+]
