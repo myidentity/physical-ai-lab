@@ -1,0 +1,412 @@
+[
+  {
+    "index": 0,
+    "speaker": "PROFESSOR",
+    "text": "Chapter 2. .",
+    "line_type": "transition",
+    "chapter": 2,
+    "start_ms": 0,
+    "duration_ms": 2584,
+    "end_ms": 2584
+  },
+  {
+    "index": 1,
+    "speaker": "RAJESH",
+    "text": "Okay, I understand WHY we need distributions. But how do we actually work with them? A probability distribution seems so... abstract.",
+    "line_type": "dialogue",
+    "chapter": 2,
+    "start_ms": 2584,
+    "duration_ms": 10188,
+    "end_ms": 12772
+  },
+  {
+    "index": 2,
+    "speaker": "PROFESSOR",
+    "text": "Let\u2019s build your intuition from something familiar. Imagine I measure the heights of 100 students in a classroom and plot them on a histogram.",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 12772,
+    "duration_ms": 9228,
+    "end_ms": 22000
+  },
+  {
+    "index": 3,
+    "speaker": "PROFESSOR",
+    "text": "What you\u2019ll see is that most students cluster around the average height, with fewer at the extremes. That histogram approximates a probability distribution - specifically, a Gaussian or \u201cbell curve.\u201d",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 22000,
+    "duration_ms": 12540,
+    "end_ms": 34540
+  },
+  {
+    "index": 4,
+    "speaker": "STUDENT_4",
+    "text": "What is Deep Generative Modeling?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 34540,
+    "duration_ms": 2468,
+    "end_ms": 37008
+  },
+  {
+    "index": 5,
+    "speaker": "PROFESSOR",
+    "text": "Using deep neural networks to learn probability distributions over data. Given training samples, learn P_theta that approximates the true distribution. Then sample new data from P_theta.",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 37008,
+    "duration_ms": 13428,
+    "end_ms": 50436
+  },
+  {
+    "index": 6,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: Learn P(folding trajectories) from demos. Sample from this distribution to generate new, valid folding trajectories that the robot can execute.",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 50436,
+    "duration_ms": 13784,
+    "end_ms": 64220
+  },
+  {
+    "index": 7,
+    "speaker": "STUDENT_1",
+    "text": "So instead of predicting single values, we're learning entire probability distributions over possible outputs?",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 64220,
+    "duration_ms": 7984,
+    "end_ms": 72204
+  },
+  {
+    "index": 8,
+    "speaker": "PROFESSOR",
+    "text": "Exactly.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 72204,
+    "duration_ms": 2460,
+    "end_ms": 74664
+  },
+  {
+    "index": 9,
+    "speaker": "PROFESSOR",
+    "text": "This is the foundation of how Nvidia Isaac trains manipulation policies that can handle real-world variability.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 74664,
+    "duration_ms": 8288,
+    "end_ms": 82952
+  },
+  {
+    "index": 10,
+    "speaker": "RAJESH",
+    "text": "So the distribution tells us: \u201cIf I pick a random student, what\u2019s the probability they\u2019re between 5\u20196\u201d and 5\u20198\u201d?\u201d",
+    "line_type": "dialogue",
+    "chapter": 2,
+    "start_ms": 82952,
+    "duration_ms": 9324,
+    "end_ms": 92276
+  },
+  {
+    "index": 11,
+    "speaker": "PROFESSOR",
+    "text": "Precisely! Now here\u2019s the key insight: we can think about almost ANYTHING as having an underlying probability distribution. Images. Text. Robot trajectories.",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 92276,
+    "duration_ms": 11340,
+    "end_ms": 103616
+  },
+  {
+    "index": 12,
+    "speaker": "PROFESSOR",
+    "text": "Consider all possible images of cats. There\u2019s some incredibly complex, high-dimensional distribution over \u201cvalid cat images.\u201d Most random pixel arrangements are NOT cats - they have zero probability under this distribution. But actual cat photos have high probability.",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 103616,
+    "duration_ms": 17244,
+    "end_ms": 120860
+  },
+  {
+    "index": 13,
+    "speaker": "STUDENT_1",
+    "text": "How is a deep generative model formally defined?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 120860,
+    "duration_ms": 3668,
+    "end_ms": 124528
+  },
+  {
+    "index": 14,
+    "speaker": "PROFESSOR",
+    "text": "A DGM defines P_theta(x) - a probability distribution over data x, parameterized by neural network weights theta. Training adjusts theta so P_theta approximates the true data distribution P_data.",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 124528,
+    "duration_ms": 16428,
+    "end_ms": 140956
+  },
+  {
+    "index": 15,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: P_theta(trajectory | observation) is the VAE's learned distribution. Theta are the encoder/decoder network weights trained on your demos.",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 140956,
+    "duration_ms": 14336,
+    "end_ms": 155292
+  },
+  {
+    "index": 16,
+    "speaker": "STUDENT_2",
+    "text": "It's a neural network that outputs P_theta of x - a probability distribution parameterized by the network weights?",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 155292,
+    "duration_ms": 8128,
+    "end_ms": 163420
+  },
+  {
+    "index": 17,
+    "speaker": "PROFESSOR",
+    "text": "Precisely.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 163420,
+    "duration_ms": 2532,
+    "end_ms": 165952
+  },
+  {
+    "index": 18,
+    "speaker": "PROFESSOR",
+    "text": "Hugging Face's diffusion policy implementations use exactly this formulation for their robotics models.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 165952,
+    "duration_ms": 8096,
+    "end_ms": 174048
+  },
+  {
+    "index": 19,
+    "speaker": "PROFESSOR",
+    "text": "Deep Generative Modeling uses neural networks to learn probability distributions from data. Given training samples, we learn P_theta (a parameterized distribution) that approximates the true data distribution P_data. We can then sample from P_theta to generate new, valid data.",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 174048,
+    "duration_ms": 19716,
+    "end_ms": 193764
+  },
+  {
+    "index": 20,
+    "speaker": "RAJESH",
+    "text": "So for robot learning, we want to learn the distribution of \u201cvalid expert trajectories\u201d?",
+    "line_type": "dialogue",
+    "chapter": 2,
+    "start_ms": 193764,
+    "duration_ms": 7044,
+    "end_ms": 200808
+  },
+  {
+    "index": 21,
+    "speaker": "PROFESSOR",
+    "text": "Exactly! And more specifically, we want to learn P(actions | observations) - given what the robot currently sees, what\u2019s the distribution of appropriate actions?",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 200808,
+    "duration_ms": 11580,
+    "end_ms": 212388
+  },
+  {
+    "index": 22,
+    "speaker": "STUDENT_2",
+    "text": "What is the formula and intuition for KL Divergence?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 212388,
+    "duration_ms": 4028,
+    "end_ms": 216416
+  },
+  {
+    "index": 23,
+    "speaker": "PROFESSOR",
+    "text": "KL(P||Q) = sum P(x) * log(P(x)/Q(x)). Intuition: 'expected surprise when using Q to encode data from P'. It's asymmetric - KL(P||Q) != KL(Q||P).",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 216416,
+    "duration_ms": 17484,
+    "end_ms": 233900
+  },
+  {
+    "index": 24,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: If demos have bimodal trajectories but VAE learns unimodal, KL divergence is high - the model is 'surprised' by trajectories it can't explain.",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 233900,
+    "duration_ms": 13976,
+    "end_ms": 247876
+  },
+  {
+    "index": 25,
+    "speaker": "STUDENT_3",
+    "text": "It measures the 'surprise' when we use Q to describe data that actually comes from P - and it's asymmetric?",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 247876,
+    "duration_ms": 8488,
+    "end_ms": 256364
+  },
+  {
+    "index": 26,
+    "speaker": "PROFESSOR",
+    "text": "That's right.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 256364,
+    "duration_ms": 2436,
+    "end_ms": 258800
+  },
+  {
+    "index": 27,
+    "speaker": "PROFESSOR",
+    "text": "OpenAI uses KL divergence extensively in their training pipelines to ensure learned distributions match real data.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 258800,
+    "duration_ms": 8936,
+    "end_ms": 267736
+  },
+  {
+    "index": 28,
+    "speaker": "PROFESSOR",
+    "text": "The challenge is that this distribution can be incredibly complex - high-dimensional, multimodal, with intricate dependencies between timesteps. That\u2019s where deep generative models come in. They use neural networks to represent these complex distributions in tractable ways.",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 267736,
+    "duration_ms": 16500,
+    "end_ms": 284236
+  },
+  {
+    "index": 29,
+    "speaker": "STUDENT_3",
+    "text": "What are the main types of deep generative models?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 284236,
+    "duration_ms": 3524,
+    "end_ms": 287760
+  },
+  {
+    "index": 30,
+    "speaker": "PROFESSOR",
+    "text": "Energy-Based Models (define energy function), Autoregressive (generate sequentially like GPT), VAEs (encode to latent + decode), GANs (generator vs discriminator), Diffusion (iterative denoising).",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 287760,
+    "duration_ms": 16092,
+    "end_ms": 303852
+  },
+  {
+    "index": 31,
+    "speaker": "PROFESSOR",
+    "text": "ACT uses VAE. Diffusion Policy uses diffusion models. Both can work for SO-ARM101 - VAE is simpler, diffusion may have higher quality.",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 303852,
+    "duration_ms": 12848,
+    "end_ms": 316700
+  },
+  {
+    "index": 32,
+    "speaker": "STUDENT_4",
+    "text": "Energy-based models, autoregressive like GPT, VAEs, GANs, normalizing flows, and diffusion models?",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 316700,
+    "duration_ms": 8872,
+    "end_ms": 325572
+  },
+  {
+    "index": 33,
+    "speaker": "PROFESSOR",
+    "text": "Correct.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 325572,
+    "duration_ms": 2292,
+    "end_ms": 327864
+  },
+  {
+    "index": 34,
+    "speaker": "PROFESSOR",
+    "text": "Google's robotics team evaluates all these families when choosing architectures for new manipulation tasks.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 327864,
+    "duration_ms": 8120,
+    "end_ms": 335984
+  },
+  {
+    "index": 35,
+    "speaker": "STUDENT_4",
+    "text": "What are autoregressive models?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 335984,
+    "duration_ms": 2324,
+    "end_ms": 338308
+  },
+  {
+    "index": 36,
+    "speaker": "PROFESSOR",
+    "text": "Generate data one element at a time, conditioning on previously generated elements. P(x) = P(x1) \u00d7 P(x2|x1) \u00d7 P(x3|x1,x2) \u00d7 ... Like GPT generating tokens.",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 338308,
+    "duration_ms": 18660,
+    "end_ms": 356968
+  },
+  {
+    "index": 37,
+    "speaker": "PROFESSOR",
+    "text": "Autoregressive robot policy: generate action for t=1, then t=2 given t=1, etc. Action Chunking improves on this by predicting chunks of actions at once.",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 356968,
+    "duration_ms": 13760,
+    "end_ms": 370728
+  },
+  {
+    "index": 38,
+    "speaker": "STUDENT_1",
+    "text": "They generate one element at a time, each conditioned on what came before - like GPT predicting the next token?",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 370728,
+    "duration_ms": 8440,
+    "end_ms": 379168
+  },
+  {
+    "index": 39,
+    "speaker": "PROFESSOR",
+    "text": "Exactly.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 379168,
+    "duration_ms": 2460,
+    "end_ms": 381628
+  },
+  {
+    "index": 40,
+    "speaker": "PROFESSOR",
+    "text": "Action Transformer policies use this autoregressive structure to generate coherent action sequences.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 381628,
+    "duration_ms": 7976,
+    "end_ms": 389604
+  }
+]

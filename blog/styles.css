@@ -708,6 +708,10 @@ input[type="submit"] {
   background-image: url('/posts/2025-12-28-lesson-1-why-cant-robots-fold-clothes/thumbnail.jpg');
 }
 
+.sidebar-item a[href*="lesson-2-understanding-policy-learning"]::before {
+  background-image: url('/posts/2026-01-13-lesson-2-understanding-policy-learning/thumbnail.jpg');
+}
+
 /* Go2-W Training Workshop Series */
 .sidebar-item a[href*="isaac-workshop-part1"]::before {
   background-image: url('/posts/2025-12-18-isaac-workshop-part1/thumbnail.jpg');

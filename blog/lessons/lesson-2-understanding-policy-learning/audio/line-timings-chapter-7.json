@@ -1,0 +1,392 @@
+[
+  {
+    "index": 0,
+    "speaker": "PROFESSOR",
+    "text": "Chapter 7. .",
+    "line_type": "transition",
+    "chapter": 7,
+    "start_ms": 0,
+    "duration_ms": 2680,
+    "end_ms": 2680
+  },
+  {
+    "index": 1,
+    "speaker": "RAJESH",
+    "text": "You\u2019ve mentioned the \u201cvariational\u201d part several times. What exactly makes a VAE different from a regular autoencoder?",
+    "line_type": "dialogue",
+    "chapter": 7,
+    "start_ms": 2680,
+    "duration_ms": 8988,
+    "end_ms": 11668
+  },
+  {
+    "index": 2,
+    "speaker": "PROFESSOR",
+    "text": "Great question! Let me show you the problem with regular autoencoders:",
+    "line_type": "lecture",
+    "chapter": 7,
+    "start_ms": 11668,
+    "duration_ms": 5772,
+    "end_ms": 17440
+  },
+  {
+    "index": 3,
+    "speaker": "PROFESSOR",
+    "text": "A plain autoencoder maps each input to a specific point in latent space. This creates GAPS - regions with no training data. If you try to decode from a gap, you get nonsense.",
+    "line_type": "lecture",
+    "chapter": 7,
+    "start_ms": 17440,
+    "duration_ms": 12180,
+    "end_ms": 29620
+  },
+  {
+    "index": 4,
+    "speaker": "STUDENT_1",
+    "text": "Why is understanding VAEs essential for ACT?",
+    "line_type": "question",
+    "chapter": 7,
+    "start_ms": 29620,
+    "duration_ms": 3956,
+    "end_ms": 33576
+  },
+  {
+    "index": 5,
+    "speaker": "PROFESSOR",
+    "text": "ACT (Action Chunking with Transformers) uses a VAE to encode demonstration trajectories into a latent style variable. This latent captures the 'intent' or 'mode' of the demonstration.",
+    "line_type": "answer",
+    "chapter": 7,
+    "start_ms": 33576,
+    "duration_ms": 13596,
+    "end_ms": 47172
+  },
+  {
+    "index": 6,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: When ACT generates actions for SO-ARM101, it samples a latent code representing 'fold style', then the transformer decodes it into actual joint commands.",
+    "line_type": "example",
+    "chapter": 7,
+    "start_ms": 47172,
+    "duration_ms": 15008,
+    "end_ms": 62180
+  },
+  {
+    "index": 7,
+    "speaker": "STUDENT_2",
+    "text": "Because the CVAE is what allows ACT to handle multimodal demonstrations without mode averaging?",
+    "line_type": "echo",
+    "chapter": 7,
+    "start_ms": 62180,
+    "duration_ms": 7528,
+    "end_ms": 69708
+  },
+  {
+    "index": 8,
+    "speaker": "PROFESSOR",
+    "text": "Precisely.",
+    "line_type": "acknowledgment",
+    "chapter": 7,
+    "start_ms": 69708,
+    "duration_ms": 2532,
+    "end_ms": 72240
+  },
+  {
+    "index": 9,
+    "speaker": "PROFESSOR",
+    "text": "Teams at Berkeley, Stanford, and MIT all use VAE-based architectures for their imitation learning research.",
+    "line_type": "consequence",
+    "chapter": 7,
+    "start_ms": 72240,
+    "duration_ms": 8816,
+    "end_ms": 81056
+  },
+  {
+    "index": 10,
+    "speaker": "RAJESH",
+    "text": "Because the decoder never saw those latent values during training?",
+    "line_type": "dialogue",
+    "chapter": 7,
+    "start_ms": 81056,
+    "duration_ms": 5220,
+    "end_ms": 86276
+  },
+  {
+    "index": 11,
+    "speaker": "PROFESSOR",
+    "text": "Exactly! Now here\u2019s the VAE insight: instead of mapping to points, map to distributions (fuzzy blobs). Make these distributions overlap.",
+    "line_type": "lecture",
+    "chapter": 7,
+    "start_ms": 86276,
+    "duration_ms": 10308,
+    "end_ms": 96584
+  },
+  {
+    "index": 12,
+    "speaker": "PROFESSOR",
+    "text": "Now the entire latent space is \u201ccovered.\u201d Any point you sample is near training data from multiple inputs. The decoder can interpolate sensibly.",
+    "line_type": "lecture",
+    "chapter": 7,
+    "start_ms": 96584,
+    "duration_ms": 9876,
+    "end_ms": 106460
+  },
+  {
+    "index": 13,
+    "speaker": "STUDENT_2",
+    "text": "What are latent variables (Z) in a VAE?",
+    "line_type": "question",
+    "chapter": 7,
+    "start_ms": 106460,
+    "duration_ms": 4388,
+    "end_ms": 110848
+  },
+  {
+    "index": 14,
+    "speaker": "PROFESSOR",
+    "text": "Latent variables Z are a low-dimensional compressed representation of the data. They capture the essential factors of variation. The decoder generates data from Z.",
+    "line_type": "answer",
+    "chapter": 7,
+    "start_ms": 110848,
+    "duration_ms": 10812,
+    "end_ms": 121660
+  },
+  {
+    "index": 15,
+    "speaker": "PROFESSOR",
+    "text": "For a 1200D trajectory (12 joints \u00d7 100 steps), Z might be 64D. This 64D code contains everything needed to reconstruct the full trajectory.",
+    "line_type": "example",
+    "chapter": 7,
+    "start_ms": 121660,
+    "duration_ms": 13040,
+    "end_ms": 134700
+  },
+  {
+    "index": 16,
+    "speaker": "STUDENT_3",
+    "text": "The low-dimensional hidden representations that capture the essential information about the input?",
+    "line_type": "echo",
+    "chapter": 7,
+    "start_ms": 134700,
+    "duration_ms": 6832,
+    "end_ms": 141532
+  },
+  {
+    "index": 17,
+    "speaker": "PROFESSOR",
+    "text": "Precisely.",
+    "line_type": "acknowledgment",
+    "chapter": 7,
+    "start_ms": 141532,
+    "duration_ms": 2532,
+    "end_ms": 144064
+  },
+  {
+    "index": 18,
+    "speaker": "PROFESSOR",
+    "text": "Google's robotics research uses these latent codes to transfer knowledge between different robot morphologies.",
+    "line_type": "consequence",
+    "chapter": 7,
+    "start_ms": 144064,
+    "duration_ms": 8240,
+    "end_ms": 152304
+  },
+  {
+    "index": 19,
+    "speaker": "PROFESSOR",
+    "text": "From variational inference - a technique in Bayesian statistics for approximating intractable probability distributions. The VAE\u2019s training objective (ELBO) comes from variational inference theory.",
+    "line_type": "lecture",
+    "chapter": 7,
+    "start_ms": 152304,
+    "duration_ms": 13548,
+    "end_ms": 165852
+  },
+  {
+    "index": 20,
+    "speaker": "PROFESSOR",
+    "text": "But for practical purposes, just remember: \u201cvariational\u201d means we output distributions instead of points, and we regularize those distributions to be nice Gaussians. This is what enables generation!",
+    "line_type": "lecture",
+    "chapter": 7,
+    "start_ms": 165852,
+    "duration_ms": 12924,
+    "end_ms": 178776
+  },
+  {
+    "index": 21,
+    "speaker": "STUDENT_3",
+    "text": "How does moving in latent space affect decoder output?",
+    "line_type": "question",
+    "chapter": 7,
+    "start_ms": 178776,
+    "duration_ms": 4148,
+    "end_ms": 182924
+  },
+  {
+    "index": 22,
+    "speaker": "PROFESSOR",
+    "text": "Moving the yellow dot in 2D latent space smoothly changes the generated image. Moving along z1 changes slant, moving along z2 changes neatness. The space is continuous.",
+    "line_type": "answer",
+    "chapter": 7,
+    "start_ms": 182924,
+    "duration_ms": 12180,
+    "end_ms": 195104
+  },
+  {
+    "index": 23,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: Moving in latent space for folding: smooth transition from fast-fold to slow-fold, or from left-first to right-first approach.",
+    "line_type": "example",
+    "chapter": 7,
+    "start_ms": 195104,
+    "duration_ms": 12320,
+    "end_ms": 207424
+  },
+  {
+    "index": 24,
+    "speaker": "STUDENT_4",
+    "text": "Smooth movement in latent space produces smooth changes in the output - interpolation between data points?",
+    "line_type": "echo",
+    "chapter": 7,
+    "start_ms": 207424,
+    "duration_ms": 7408,
+    "end_ms": 214832
+  },
+  {
+    "index": 25,
+    "speaker": "PROFESSOR",
+    "text": "Correct.",
+    "line_type": "acknowledgment",
+    "chapter": 7,
+    "start_ms": 214832,
+    "duration_ms": 2292,
+    "end_ms": 217124
+  },
+  {
+    "index": 26,
+    "speaker": "PROFESSOR",
+    "text": "This smoothness is why Boston Dynamics can blend between different locomotion styles seamlessly.",
+    "line_type": "consequence",
+    "chapter": 7,
+    "start_ms": 217124,
+    "duration_ms": 7568,
+    "end_ms": 224692
+  },
+  {
+    "index": 27,
+    "speaker": "STUDENT_4",
+    "text": "What is the complete encode-decode process in a VAE?",
+    "line_type": "question",
+    "chapter": 7,
+    "start_ms": 224692,
+    "duration_ms": 4292,
+    "end_ms": 228984
+  },
+  {
+    "index": 28,
+    "speaker": "PROFESSOR",
+    "text": "1) Encoder: x to (\u03bc_z, \u03c3_z) 2) Sample: z = \u03bc_z + \u03c3_z \u00d7 \u03b5, where \u03b5 ~ N(0,1) 3) Decoder: z to (\u03bc_x, \u03c3_x) 4) Sample or use mean: x' = \u03bc_x. This is the reparameterization trick.",
+    "line_type": "answer",
+    "chapter": 7,
+    "start_ms": 228984,
+    "duration_ms": 26652,
+    "end_ms": 255636
+  },
+  {
+    "index": 29,
+    "speaker": "PROFESSOR",
+    "text": "Demo to encode to latent distribution to sample to decode to trajectory. The \u03b5 noise enables gradient flow through sampling.",
+    "line_type": "example",
+    "chapter": 7,
+    "start_ms": 255636,
+    "duration_ms": 9296,
+    "end_ms": 264932
+  },
+  {
+    "index": 30,
+    "speaker": "STUDENT_1",
+    "text": "Input goes to encoder, outputs mu and sigma, sample z using reparam trick, z goes to decoder, get reconstruction?",
+    "line_type": "echo",
+    "chapter": 7,
+    "start_ms": 264932,
+    "duration_ms": 10384,
+    "end_ms": 275316
+  },
+  {
+    "index": 31,
+    "speaker": "PROFESSOR",
+    "text": "Exactly.",
+    "line_type": "acknowledgment",
+    "chapter": 7,
+    "start_ms": 275316,
+    "duration_ms": 2460,
+    "end_ms": 277776
+  },
+  {
+    "index": 32,
+    "speaker": "PROFESSOR",
+    "text": "Hugging Face's LeRobot implements this exact pipeline for their ACT policy training.",
+    "line_type": "consequence",
+    "chapter": 7,
+    "start_ms": 277776,
+    "duration_ms": 7424,
+    "end_ms": 285200
+  },
+  {
+    "index": 33,
+    "speaker": "STUDENT_1",
+    "text": "What does 'continuous latent space' mean for generation?",
+    "line_type": "question",
+    "chapter": 7,
+    "start_ms": 285200,
+    "duration_ms": 4532,
+    "end_ms": 289732
+  },
+  {
+    "index": 34,
+    "speaker": "PROFESSOR",
+    "text": "Every point in latent space decodes to valid data. Moving smoothly in latent space produces smooth transitions in output. No 'dead zones' that produce garbage.",
+    "line_type": "answer",
+    "chapter": 7,
+    "start_ms": 289732,
+    "duration_ms": 11340,
+    "end_ms": 301072
+  },
+  {
+    "index": 35,
+    "speaker": "PROFESSOR",
+    "text": "Continuous latent for folding: smoothly varying z produces smoothly varying fold speeds/styles. Great for generating diverse but valid trajectories.",
+    "line_type": "example",
+    "chapter": 7,
+    "start_ms": 301072,
+    "duration_ms": 11288,
+    "end_ms": 312360
+  },
+  {
+    "index": 36,
+    "speaker": "STUDENT_2",
+    "text": "Any point in latent space maps to a valid output - no dead zones or discontinuities?",
+    "line_type": "echo",
+    "chapter": 7,
+    "start_ms": 312360,
+    "duration_ms": 6568,
+    "end_ms": 318928
+  },
+  {
+    "index": 37,
+    "speaker": "PROFESSOR",
+    "text": "That's right.",
+    "line_type": "acknowledgment",
+    "chapter": 7,
+    "start_ms": 318928,
+    "duration_ms": 2436,
+    "end_ms": 321364
+  },
+  {
+    "index": 38,
+    "speaker": "PROFESSOR",
+    "text": "This continuity is crucial for Figure 01's policies to generate smooth action sequences.",
+    "line_type": "consequence",
+    "chapter": 7,
+    "start_ms": 321364,
+    "duration_ms": 7664,
+    "end_ms": 329028
+  }
+]

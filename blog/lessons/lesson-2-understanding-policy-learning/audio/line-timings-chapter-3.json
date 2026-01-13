@@ -1,0 +1,332 @@
+[
+  {
+    "index": 0,
+    "speaker": "PROFESSOR",
+    "text": "Chapter 3. .",
+    "line_type": "transition",
+    "chapter": 3,
+    "start_ms": 0,
+    "duration_ms": 2632,
+    "end_ms": 2632
+  },
+  {
+    "index": 1,
+    "speaker": "RAJESH",
+    "text": "Okay, so we\u2019re trying to learn P_theta that matches P_data. But how do we measure if two distributions are \u201cclose\u201d to each other? It\u2019s not like we can just subtract them.",
+    "line_type": "dialogue",
+    "chapter": 3,
+    "start_ms": 2632,
+    "duration_ms": 12468,
+    "end_ms": 15100
+  },
+  {
+    "index": 2,
+    "speaker": "PROFESSOR",
+    "text": "Great question! The standard tool for this is KL Divergence - it measures how different two probability distributions are.",
+    "line_type": "lecture",
+    "chapter": 3,
+    "start_ms": 15100,
+    "duration_ms": 8796,
+    "end_ms": 23896
+  },
+  {
+    "index": 3,
+    "speaker": "STUDENT_1",
+    "text": "What does it mean to 'think in probability distributions' for robotics?",
+    "line_type": "question",
+    "chapter": 3,
+    "start_ms": 23896,
+    "duration_ms": 5132,
+    "end_ms": 29028
+  },
+  {
+    "index": 4,
+    "speaker": "PROFESSOR",
+    "text": "Instead of asking 'what is THE action?', ask 'what is the distribution of valid actions?'. Every prediction becomes a distribution with mean, variance, and potentially multiple modes.",
+    "line_type": "answer",
+    "chapter": 3,
+    "start_ms": 29028,
+    "duration_ms": 12132,
+    "end_ms": 41160
+  },
+  {
+    "index": 5,
+    "speaker": "PROFESSOR",
+    "text": "For a fabric configuration, the action distribution might be bimodal: P(left-fold) = 0.5, P(right-fold) = 0.5. Sampling picks one coherent strategy.",
+    "line_type": "example",
+    "chapter": 3,
+    "start_ms": 41160,
+    "duration_ms": 14528,
+    "end_ms": 55688
+  },
+  {
+    "index": 6,
+    "speaker": "STUDENT_2",
+    "text": "Instead of asking 'what is THE action', we ask 'what are ALL the valid actions and their likelihoods'?",
+    "line_type": "echo",
+    "chapter": 3,
+    "start_ms": 55688,
+    "duration_ms": 7600,
+    "end_ms": 63288
+  },
+  {
+    "index": 7,
+    "speaker": "PROFESSOR",
+    "text": "Precisely.",
+    "line_type": "acknowledgment",
+    "chapter": 3,
+    "start_ms": 63288,
+    "duration_ms": 2532,
+    "end_ms": 65820
+  },
+  {
+    "index": 8,
+    "speaker": "PROFESSOR",
+    "text": "This shift in thinking is why Waymo can predict multiple possible vehicle trajectories rather than just one.",
+    "line_type": "consequence",
+    "chapter": 3,
+    "start_ms": 65820,
+    "duration_ms": 8000,
+    "end_ms": 73820
+  },
+  {
+    "index": 9,
+    "speaker": "PROFESSOR",
+    "text": "\\[KL(P || Q) = \\sum P(x) \\cdot \\log\\frac{P(x)}{Q(x)}\\]",
+    "line_type": "lecture",
+    "chapter": 3,
+    "start_ms": 73820,
+    "duration_ms": 9924,
+    "end_ms": 83744
+  },
+  {
+    "index": 10,
+    "speaker": "STUDENT_2",
+    "text": "What is KL Divergence and why do we need it?",
+    "line_type": "question",
+    "chapter": 3,
+    "start_ms": 83744,
+    "duration_ms": 3380,
+    "end_ms": 87124
+  },
+  {
+    "index": 11,
+    "speaker": "PROFESSOR",
+    "text": "KL Divergence measures how different two probability distributions are. We use it to quantify how well our learned P_theta matches the true P_data. Lower KL = better model.",
+    "line_type": "answer",
+    "chapter": 3,
+    "start_ms": 87124,
+    "duration_ms": 12924,
+    "end_ms": 100048
+  },
+  {
+    "index": 12,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: KL divergence measures how well your trained VAE's distribution matches the distribution of expert demonstrations. Training minimizes this gap.",
+    "line_type": "example",
+    "chapter": 3,
+    "start_ms": 100048,
+    "duration_ms": 12704,
+    "end_ms": 112752
+  },
+  {
+    "index": 13,
+    "speaker": "STUDENT_3",
+    "text": "It quantifies how different two distributions are - so we can measure if our model matches reality?",
+    "line_type": "echo",
+    "chapter": 3,
+    "start_ms": 112752,
+    "duration_ms": 7528,
+    "end_ms": 120280
+  },
+  {
+    "index": 14,
+    "speaker": "PROFESSOR",
+    "text": "Exactly.",
+    "line_type": "acknowledgment",
+    "chapter": 3,
+    "start_ms": 120280,
+    "duration_ms": 2460,
+    "end_ms": 122740
+  },
+  {
+    "index": 15,
+    "speaker": "PROFESSOR",
+    "text": "Tesla trains Optimus using KL divergence to ensure their learned policies capture the full range of human demonstrations.",
+    "line_type": "consequence",
+    "chapter": 3,
+    "start_ms": 122740,
+    "duration_ms": 9128,
+    "end_ms": 131868
+  },
+  {
+    "index": 16,
+    "speaker": "PROFESSOR",
+    "text": "Think of it as the \u201csurprise\u201d you\u2019d experience if you assumed Q was true, but data actually came from P.",
+    "line_type": "lecture",
+    "chapter": 3,
+    "start_ms": 131868,
+    "duration_ms": 8052,
+    "end_ms": 139920
+  },
+  {
+    "index": 17,
+    "speaker": "PROFESSOR",
+    "text": "If Q assigns low probability to something P says is common, you\u2019d be very surprised when it happens - that\u2019s a high KL divergence. If Q and P agree on what\u2019s likely and unlikely, minimal surprise - low KL divergence.",
+    "line_type": "lecture",
+    "chapter": 3,
+    "start_ms": 139920,
+    "duration_ms": 14844,
+    "end_ms": 154764
+  },
+  {
+    "index": 18,
+    "speaker": "RAJESH",
+    "text": "So when we train a deep generative model, we\u2019re essentially minimizing the KL divergence between our learned distribution and the true data distribution?",
+    "line_type": "dialogue",
+    "chapter": 3,
+    "start_ms": 154764,
+    "duration_ms": 10236,
+    "end_ms": 165000
+  },
+  {
+    "index": 19,
+    "speaker": "STUDENT_3",
+    "text": "What makes modeling distributions with neural networks challenging?",
+    "line_type": "question",
+    "chapter": 3,
+    "start_ms": 165000,
+    "duration_ms": 4556,
+    "end_ms": 169556
+  },
+  {
+    "index": 20,
+    "speaker": "PROFESSOR",
+    "text": "High-dimensional data (images have millions of pixels), complex structure (multimodal, correlated), and intractable normalization constants. Direct likelihood computation is often impossible.",
+    "line_type": "answer",
+    "chapter": 3,
+    "start_ms": 169556,
+    "duration_ms": 13260,
+    "end_ms": 182816
+  },
+  {
+    "index": 21,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: Action trajectory distribution is high-dimensional (12 joints \u00d7 100 timesteps = 1200D), multimodal, and temporally correlated. VAEs handle this via latent spaces.",
+    "line_type": "example",
+    "chapter": 3,
+    "start_ms": 182816,
+    "duration_ms": 16688,
+    "end_ms": 199504
+  },
+  {
+    "index": 22,
+    "speaker": "STUDENT_4",
+    "text": "High dimensions, complex correlations, and those intractable normalization constants?",
+    "line_type": "echo",
+    "chapter": 3,
+    "start_ms": 199504,
+    "duration_ms": 6040,
+    "end_ms": 205544
+  },
+  {
+    "index": 23,
+    "speaker": "PROFESSOR",
+    "text": "That's right.",
+    "line_type": "acknowledgment",
+    "chapter": 3,
+    "start_ms": 205544,
+    "duration_ms": 2436,
+    "end_ms": 207980
+  },
+  {
+    "index": 24,
+    "speaker": "PROFESSOR",
+    "text": "This is why Boston Dynamics invests heavily in efficient approximation methods for their control policies.",
+    "line_type": "consequence",
+    "chapter": 3,
+    "start_ms": 207980,
+    "duration_ms": 8000,
+    "end_ms": 215980
+  },
+  {
+    "index": 25,
+    "speaker": "PROFESSOR",
+    "text": "That\u2019s the ideal, yes. In practice, we can\u2019t compute the true data distribution P_data directly - we only have samples from it. But clever training objectives (like the ELBO we\u2019ll discuss later) let us minimize KL divergence indirectly.",
+    "line_type": "lecture",
+    "chapter": 3,
+    "start_ms": 215980,
+    "duration_ms": 16644,
+    "end_ms": 232624
+  },
+  {
+    "index": 26,
+    "speaker": "PROFESSOR",
+    "text": "This is crucial for understanding VAEs: the regularization term in their loss function IS a KL divergence - specifically, forcing the learned latent distribution to be close to a standard Gaussian.",
+    "line_type": "lecture",
+    "chapter": 3,
+    "start_ms": 232624,
+    "duration_ms": 12804,
+    "end_ms": 245428
+  },
+  {
+    "index": 27,
+    "speaker": "STUDENT_4",
+    "text": "What are Energy-Based Models (EBMs)?",
+    "line_type": "question",
+    "chapter": 3,
+    "start_ms": 245428,
+    "duration_ms": 3260,
+    "end_ms": 248688
+  },
+  {
+    "index": 28,
+    "speaker": "PROFESSOR",
+    "text": "EBMs assign low energy to likely data, high energy to unlikely data. Probability is proportional to exp(-Energy). Training pushes down energy of real data, up for fake data.",
+    "line_type": "answer",
+    "chapter": 3,
+    "start_ms": 248688,
+    "duration_ms": 13020,
+    "end_ms": 261708
+  },
+  {
+    "index": 29,
+    "speaker": "PROFESSOR",
+    "text": "EBM for folding would assign low energy to valid folding trajectories, high energy to nonsense motions. Sampling finds low-energy trajectories.",
+    "line_type": "example",
+    "chapter": 3,
+    "start_ms": 261708,
+    "duration_ms": 10640,
+    "end_ms": 272348
+  },
+  {
+    "index": 30,
+    "speaker": "STUDENT_1",
+    "text": "They assign low energy to likely data, high energy to unlikely - and probability is proportional to negative exponential of energy?",
+    "line_type": "echo",
+    "chapter": 3,
+    "start_ms": 272348,
+    "duration_ms": 9232,
+    "end_ms": 281580
+  },
+  {
+    "index": 31,
+    "speaker": "PROFESSOR",
+    "text": "Correct.",
+    "line_type": "acknowledgment",
+    "chapter": 3,
+    "start_ms": 281580,
+    "duration_ms": 2292,
+    "end_ms": 283872
+  },
+  {
+    "index": 32,
+    "speaker": "PROFESSOR",
+    "text": "DeepMind explored EBMs for their AlphaFold protein structure predictions using similar energy landscapes.",
+    "line_type": "consequence",
+    "chapter": 3,
+    "start_ms": 283872,
+    "duration_ms": 8528,
+    "end_ms": 292400
+  }
+]

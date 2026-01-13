@@ -1,0 +1,542 @@
+[
+  {
+    "index": 0,
+    "speaker": "PROFESSOR",
+    "text": "Chapter 1. .",
+    "line_type": "transition",
+    "chapter": 1,
+    "start_ms": 0,
+    "duration_ms": 2584,
+    "end_ms": 2584
+  },
+  {
+    "index": 1,
+    "speaker": "RAJESH",
+    "text": "Dr. Nova, I\u2019ve been thinking about what we learned in Lesson 1. We said imitation learning is the practical path forward - collect demonstrations, train a neural network, deploy on the robot. But I tried implementing a simple policy that predicts actions from observations, and something weird happened.",
+    "line_type": "dialogue",
+    "chapter": 1,
+    "start_ms": 2584,
+    "duration_ms": 19044,
+    "end_ms": 21628
+  },
+  {
+    "index": 2,
+    "speaker": "PROFESSOR",
+    "text": "Ah, you\u2019ve discovered the multimodal problem! Tell me what happened.",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 21628,
+    "duration_ms": 5436,
+    "end_ms": 27064
+  },
+  {
+    "index": 3,
+    "speaker": "RAJESH",
+    "text": "I collected 50 demonstrations of reaching around an obstacle. Sometimes I went left, sometimes I went right - both worked fine. But when I trained the network and deployed it... the robot went straight INTO the obstacle!",
+    "line_type": "dialogue",
+    "chapter": 1,
+    "start_ms": 27064,
+    "duration_ms": 14268,
+    "end_ms": 41332
+  },
+  {
+    "index": 4,
+    "speaker": "STUDENT_1",
+    "text": "What is the focus of Lecture 2?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 41332,
+    "duration_ms": 2660,
+    "end_ms": 43992
+  },
+  {
+    "index": 5,
+    "speaker": "PROFESSOR",
+    "text": "Deep Generative Modeling - specifically Variational Autoencoders (VAEs). Understanding VAEs is essential because ACT (Action Chunking Transformer) uses a VAE at its core.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 43992,
+    "duration_ms": 13764,
+    "end_ms": 57756
+  },
+  {
+    "index": 6,
+    "speaker": "PROFESSOR",
+    "text": "The VAE in ACT encodes demonstrations into a latent space, allowing sampling of coherent action chunks for your SO-ARM101 manipulation tasks.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 57756,
+    "duration_ms": 11624,
+    "end_ms": 69380
+  },
+  {
+    "index": 7,
+    "speaker": "STUDENT_2",
+    "text": "So this lecture is all about VAEs - the mathematical foundation that lets robots handle multiple valid actions instead of averaging them?",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 69380,
+    "duration_ms": 8800,
+    "end_ms": 78180
+  },
+  {
+    "index": 8,
+    "speaker": "PROFESSOR",
+    "text": "Exactly.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 78180,
+    "duration_ms": 2460,
+    "end_ms": 80640
+  },
+  {
+    "index": 9,
+    "speaker": "PROFESSOR",
+    "text": "This is why Google's RT-2 and Figure 01's robots use VAE-based architectures at their core.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 80640,
+    "duration_ms": 8192,
+    "end_ms": 88832
+  },
+  {
+    "index": 10,
+    "speaker": "PROFESSOR",
+    "text": "laughs That\u2019s the classic point estimate policy failure. Let me show you exactly why this happens.",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 88832,
+    "duration_ms": 7068,
+    "end_ms": 95900
+  },
+  {
+    "index": 11,
+    "speaker": "PROFESSOR",
+    "text": "When your network outputs a single action - what we call a point estimate - it\u2019s essentially computing the average of all the actions it saw in training. For that obstacle scenario, half your demos went left, half went right. The average? Straight ahead. Directly into the obstacle.",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 95900,
+    "duration_ms": 16500,
+    "end_ms": 112400
+  },
+  {
+    "index": 12,
+    "speaker": "PROFESSOR",
+    "text": "A point estimate policy outputs a single \u201cbest\u201d action. But when expert behavior is multimodal (multiple valid solutions), averaging produces an action that may not match ANY of the valid modes - often the worst possible choice.",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 112400,
+    "duration_ms": 14892,
+    "end_ms": 127292
+  },
+  {
+    "index": 13,
+    "speaker": "STUDENT_2",
+    "text": "What were the key takeaways from Lecture 1?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 127292,
+    "duration_ms": 3044,
+    "end_ms": 130336
+  },
+  {
+    "index": 14,
+    "speaker": "PROFESSOR",
+    "text": "Classical robotics (FK/IK) fails on complex tasks. RL has safety/reward issues. Imitation learning is practical but point estimates cause mode averaging. We need distributions over actions.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 130336,
+    "duration_ms": 14676,
+    "end_ms": 145012
+  },
+  {
+    "index": 15,
+    "speaker": "PROFESSOR",
+    "text": "For SO-ARM101 folding: can't model fabric physics (classical fails), can't safely explore (RL fails), need multimodal policies from demos (IL + DGM).",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 145012,
+    "duration_ms": 13664,
+    "end_ms": 158676
+  },
+  {
+    "index": 16,
+    "speaker": "STUDENT_3",
+    "text": "So classical robotics fails on complex tasks, RL is too dangerous, and imitation learning works but has this mode averaging problem?",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 158676,
+    "duration_ms": 10216,
+    "end_ms": 168892
+  },
+  {
+    "index": 17,
+    "speaker": "PROFESSOR",
+    "text": "Precisely.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 168892,
+    "duration_ms": 2532,
+    "end_ms": 171424
+  },
+  {
+    "index": 18,
+    "speaker": "PROFESSOR",
+    "text": "Tesla's Optimus team discovered this exact limitation when their early prototypes struggled with multimodal manipulation tasks.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 171424,
+    "duration_ms": 9248,
+    "end_ms": 180672
+  },
+  {
+    "index": 19,
+    "speaker": "RAJESH",
+    "text": "So the problem isn\u2019t the neural network or the training process - it\u2019s the fundamental assumption that there\u2019s one \u201ccorrect\u201d action?",
+    "line_type": "dialogue",
+    "chapter": 1,
+    "start_ms": 180672,
+    "duration_ms": 8772,
+    "end_ms": 189444
+  },
+  {
+    "index": 20,
+    "speaker": "PROFESSOR",
+    "text": "Exactly! Let me give you another example. Imagine your SO-ARM101 bimanual setup folding a shirt. Sometimes you demonstrate folding the left side first, sometimes the right side first. Both are valid. But a point estimate policy might try to fold BOTH sides simultaneously - tangling the fabric because it\u2019s averaging over incompatible strategies.",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 189444,
+    "duration_ms": 22116,
+    "end_ms": 211560
+  },
+  {
+    "index": 21,
+    "speaker": "PROFESSOR",
+    "text": "The solution? Stop predicting THE action. Start predicting the DISTRIBUTION of possible actions.",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 211560,
+    "duration_ms": 7188,
+    "end_ms": 218748
+  },
+  {
+    "index": 22,
+    "speaker": "STUDENT_3",
+    "text": "Professor, quick review: fk vs ik?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 218748,
+    "duration_ms": 4220,
+    "end_ms": 222968
+  },
+  {
+    "index": 23,
+    "speaker": "PROFESSOR",
+    "text": "FK: joint angles to end-effector pose (easy, unique solution). IK: desired pose to joint angles (hard, multiple solutions). Both assume perfect model which doesn't exist.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 222968,
+    "duration_ms": 13236,
+    "end_ms": 236204
+  },
+  {
+    "index": 24,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: SO-ARM101 IK might find 3 different joint configurations to reach the same fabric corner. Learning-based policies sidestep this by directly predicting actions.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 236204,
+    "duration_ms": 14336,
+    "end_ms": 250540
+  },
+  {
+    "index": 25,
+    "speaker": "STUDENT_4",
+    "text": "FK is joints to position - straightforward. IK is position to joints - harder because there can be multiple solutions?",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 250540,
+    "duration_ms": 8488,
+    "end_ms": 259028
+  },
+  {
+    "index": 26,
+    "speaker": "PROFESSOR",
+    "text": "That's right.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 259028,
+    "duration_ms": 2436,
+    "end_ms": 261464
+  },
+  {
+    "index": 27,
+    "speaker": "PROFESSOR",
+    "text": "Boston Dynamics uses sophisticated IK solvers for Spot's leg movements, handling thousands of possible joint configurations.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 261464,
+    "duration_ms": 9776,
+    "end_ms": 271240
+  },
+  {
+    "index": 28,
+    "speaker": "RAJESH",
+    "text": "That\u2019s a huge shift in thinking! Instead of asking \u201cwhat action should I take?\u201d, we\u2019re asking \u201cwhat are ALL the actions I could take, and how likely is each one?\u201d",
+    "line_type": "dialogue",
+    "chapter": 1,
+    "start_ms": 271240,
+    "duration_ms": 10836,
+    "end_ms": 282076
+  },
+  {
+    "index": 29,
+    "speaker": "PROFESSOR",
+    "text": "You\u2019ve got it. And this shift from point estimates to distributions is exactly what deep generative modeling gives us. It\u2019s the key technology that makes modern robot policies like ACT (Action Chunking with Transformers) actually work.",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 282076,
+    "duration_ms": 14844,
+    "end_ms": 296920
+  },
+  {
+    "index": 30,
+    "speaker": "STUDENT_4",
+    "text": "Professor, quick review: why is rl problematic for real robot training?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 296920,
+    "duration_ms": 5588,
+    "end_ms": 302508
+  },
+  {
+    "index": 31,
+    "speaker": "PROFESSOR",
+    "text": "Safety (random exploration breaks things), reward engineering (hard to define), sparse rewards (slow learning), generalization (overfits to exact conditions), sample inefficiency (needs millions of tries).",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 302508,
+    "duration_ms": 15252,
+    "end_ms": 317760
+  },
+  {
+    "index": 32,
+    "speaker": "PROFESSOR",
+    "text": "RL on SO-ARM101 would require thousands of fabric samples destroyed during exploration. Imitation learning needs maybe 100 demos.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 317760,
+    "duration_ms": 10544,
+    "end_ms": 328304
+  },
+  {
+    "index": 33,
+    "speaker": "STUDENT_1",
+    "text": "So RL needs exploration, but exploration on real hardware means broken robots and safety issues?",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 328304,
+    "duration_ms": 7840,
+    "end_ms": 336144
+  },
+  {
+    "index": 34,
+    "speaker": "PROFESSOR",
+    "text": "Exactly.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 336144,
+    "duration_ms": 2460,
+    "end_ms": 338604
+  },
+  {
+    "index": 35,
+    "speaker": "PROFESSOR",
+    "text": "This is why Waymo does 99% of their RL training in simulation before ever touching a real car.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 338604,
+    "duration_ms": 8024,
+    "end_ms": 346628
+  },
+  {
+    "index": 36,
+    "speaker": "STUDENT_1",
+    "text": "Professor, quick review: how does imitation learning work?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 346628,
+    "duration_ms": 4556,
+    "end_ms": 351184
+  },
+  {
+    "index": 37,
+    "speaker": "PROFESSOR",
+    "text": "Expert demonstrates task to record (observation, action) pairs to train neural network to predict actions from observations to deploy policy on robot.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 351184,
+    "duration_ms": 10620,
+    "end_ms": 361804
+  },
+  {
+    "index": 38,
+    "speaker": "PROFESSOR",
+    "text": "You teleoperate Leader arms for 100 demos to train ACT on GPU to deploy to Follower arms. The policy has learned your folding technique.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 361804,
+    "duration_ms": 10640,
+    "end_ms": 372444
+  },
+  {
+    "index": 39,
+    "speaker": "STUDENT_2",
+    "text": "Expert shows how, we record state-action pairs, train a neural network to copy the behavior?",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 372444,
+    "duration_ms": 6976,
+    "end_ms": 379420
+  },
+  {
+    "index": 40,
+    "speaker": "PROFESSOR",
+    "text": "Correct.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 379420,
+    "duration_ms": 2292,
+    "end_ms": 381712
+  },
+  {
+    "index": 41,
+    "speaker": "PROFESSOR",
+    "text": "Sanctuary AI uses this exact approach - their teleoperators demonstrate tasks that robots learn to replicate.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 381712,
+    "duration_ms": 9032,
+    "end_ms": 390744
+  },
+  {
+    "index": 42,
+    "speaker": "STUDENT_2",
+    "text": "Why do point estimate policies fail for imitation learning?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 390744,
+    "duration_ms": 4148,
+    "end_ms": 394892
+  },
+  {
+    "index": 43,
+    "speaker": "PROFESSOR",
+    "text": "They output single values, averaging over multimodal expert behavior. If experts sometimes go left, sometimes right, point estimate goes straight - often invalid.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 394892,
+    "duration_ms": 11676,
+    "end_ms": 406568
+  },
+  {
+    "index": 44,
+    "speaker": "PROFESSOR",
+    "text": "Demos show both left-first and right-first folds. Point estimate outputs simultaneous both-arms motion that tangles the fabric.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 406568,
+    "duration_ms": 9440,
+    "end_ms": 416008
+  },
+  {
+    "index": 45,
+    "speaker": "STUDENT_3",
+    "text": "If experts go left sometimes and right sometimes, the average is straight ahead - which could be the worst possible action!",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 416008,
+    "duration_ms": 8512,
+    "end_ms": 424520
+  },
+  {
+    "index": 46,
+    "speaker": "PROFESSOR",
+    "text": "Exactly right.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 424520,
+    "duration_ms": 2676,
+    "end_ms": 427196
+  },
+  {
+    "index": 47,
+    "speaker": "PROFESSOR",
+    "text": "1X Technologies learned this when their point estimate policies kept generating middle-ground actions that matched no valid behavior.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 427196,
+    "duration_ms": 9368,
+    "end_ms": 436564
+  },
+  {
+    "index": 48,
+    "speaker": "STUDENT_3",
+    "text": "What is Lecture 2 Introduction?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 436564,
+    "duration_ms": 2732,
+    "end_ms": 439296
+  },
+  {
+    "index": 49,
+    "speaker": "PROFESSOR",
+    "text": "A topic covered in Deep Generative Modeling.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 439296,
+    "duration_ms": 4188,
+    "end_ms": 443484
+  },
+  {
+    "index": 50,
+    "speaker": "PROFESSOR",
+    "text": "Applies to SO-ARM101 bimanual manipulation learning.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 443484,
+    "duration_ms": 5888,
+    "end_ms": 449372
+  },
+  {
+    "index": 51,
+    "speaker": "STUDENT_4",
+    "text": "This lecture builds on Lecture 1 by diving into VAEs - the solution to that mode averaging problem?",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 449372,
+    "duration_ms": 7216,
+    "end_ms": 456588
+  },
+  {
+    "index": 52,
+    "speaker": "PROFESSOR",
+    "text": "Precisely.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 456588,
+    "duration_ms": 2532,
+    "end_ms": 459120
+  },
+  {
+    "index": 53,
+    "speaker": "PROFESSOR",
+    "text": "DeepMind's robotic manipulation research heavily relies on understanding these distribution-based approaches.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 459120,
+    "duration_ms": 8048,
+    "end_ms": 467168
+  }
+]

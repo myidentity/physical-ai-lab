@@ -1,0 +1,412 @@
+[
+  {
+    "index": 0,
+    "speaker": "PROFESSOR",
+    "text": "Chapter 6. .",
+    "line_type": "transition",
+    "chapter": 6,
+    "start_ms": 0,
+    "duration_ms": 2680,
+    "end_ms": 2680
+  },
+  {
+    "index": 1,
+    "speaker": "RAJESH",
+    "text": "So the encoder compresses data into a latent distribution. What about the decoder?",
+    "line_type": "dialogue",
+    "chapter": 6,
+    "start_ms": 2680,
+    "duration_ms": 6468,
+    "end_ms": 9148
+  },
+  {
+    "index": 2,
+    "speaker": "PROFESSOR",
+    "text": "The decoder does the reverse! It takes a point from latent space and reconstructs the original data.",
+    "line_type": "lecture",
+    "chapter": 6,
+    "start_ms": 9148,
+    "duration_ms": 7380,
+    "end_ms": 16528
+  },
+  {
+    "index": 3,
+    "speaker": "PROFESSOR",
+    "text": "For MNIST, the decoder architecture might be: - Input : 2 latent dimensions (sampled from encoder\u2019s distribution) - Hidden layer : 400 neurons - Output : 784 pixel values (reconstructed image)",
+    "line_type": "lecture",
+    "chapter": 6,
+    "start_ms": 16528,
+    "duration_ms": 14772,
+    "end_ms": 31300
+  },
+  {
+    "index": 4,
+    "speaker": "STUDENT_4",
+    "text": "What is covered in the VAE deep dive?",
+    "line_type": "question",
+    "chapter": 6,
+    "start_ms": 31300,
+    "duration_ms": 3044,
+    "end_ms": 34344
+  },
+  {
+    "index": 5,
+    "speaker": "PROFESSOR",
+    "text": "Encoder architecture (data to latent), decoder architecture (latent to data), why 'variational' matters (distributions not points), and the ELBO training objective.",
+    "line_type": "answer",
+    "chapter": 6,
+    "start_ms": 34344,
+    "duration_ms": 12636,
+    "end_ms": 46980
+  },
+  {
+    "index": 6,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: Understanding VAE internals is essential because ACT's action generation uses the same encoder-decoder structure with latent sampling.",
+    "line_type": "example",
+    "chapter": 6,
+    "start_ms": 46980,
+    "duration_ms": 12344,
+    "end_ms": 59324
+  },
+  {
+    "index": 7,
+    "speaker": "STUDENT_1",
+    "text": "Encoder architecture, decoder architecture, why variational matters, and the ELBO training objective?",
+    "line_type": "echo",
+    "chapter": 6,
+    "start_ms": 59324,
+    "duration_ms": 8584,
+    "end_ms": 67908
+  },
+  {
+    "index": 8,
+    "speaker": "PROFESSOR",
+    "text": "Exactly.",
+    "line_type": "acknowledgment",
+    "chapter": 6,
+    "start_ms": 67908,
+    "duration_ms": 2460,
+    "end_ms": 70368
+  },
+  {
+    "index": 9,
+    "speaker": "PROFESSOR",
+    "text": "Hugging Face's LeRobot library implements all these concepts as ready-to-use robotics components.",
+    "line_type": "consequence",
+    "chapter": 6,
+    "start_ms": 70368,
+    "duration_ms": 7808,
+    "end_ms": 78176
+  },
+  {
+    "index": 10,
+    "speaker": "RAJESH",
+    "text": "So if I move around in latent space, the decoder output changes smoothly?",
+    "line_type": "dialogue",
+    "chapter": 6,
+    "start_ms": 78176,
+    "duration_ms": 6420,
+    "end_ms": 84596
+  },
+  {
+    "index": 11,
+    "speaker": "PROFESSOR",
+    "text": "Exactly! Watch what happens as we traverse the latent space:",
+    "line_type": "lecture",
+    "chapter": 6,
+    "start_ms": 84596,
+    "duration_ms": 5316,
+    "end_ms": 89912
+  },
+  {
+    "index": 12,
+    "speaker": "PROFESSOR",
+    "text": "This is called latent space interpolation . You can smoothly morph between a \u201c3\u201d and an \u201c8\u201d, or between fast-writing and slow-writing styles. The transitions are continuous, not abrupt.",
+    "line_type": "lecture",
+    "chapter": 6,
+    "start_ms": 89912,
+    "duration_ms": 12540,
+    "end_ms": 102452
+  },
+  {
+    "index": 13,
+    "speaker": "STUDENT_1",
+    "text": "What is the 'secret recipe' analogy for latent variables?",
+    "line_type": "question",
+    "chapter": 6,
+    "start_ms": 102452,
+    "duration_ms": 4796,
+    "end_ms": 107248
+  },
+  {
+    "index": 14,
+    "speaker": "PROFESSOR",
+    "text": "Imagine a machine with hidden knobs. Turning knobs changes the output. Latent variables are like these knobs - they control the generated output, but we don't directly observe them.",
+    "line_type": "answer",
+    "chapter": 6,
+    "start_ms": 107248,
+    "duration_ms": 11796,
+    "end_ms": 119044
+  },
+  {
+    "index": 15,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: VAE learns hidden 'knobs' for folding: speed-knob, precision-knob, style-knob. Different latent samples turn these knobs differently.",
+    "line_type": "example",
+    "chapter": 6,
+    "start_ms": 119044,
+    "duration_ms": 13232,
+    "end_ms": 132276
+  },
+  {
+    "index": 16,
+    "speaker": "STUDENT_2",
+    "text": "The latent is like a compressed recipe that captures the essence of what you want to create?",
+    "line_type": "echo",
+    "chapter": 6,
+    "start_ms": 132276,
+    "duration_ms": 5824,
+    "end_ms": 138100
+  },
+  {
+    "index": 17,
+    "speaker": "PROFESSOR",
+    "text": "Precisely.",
+    "line_type": "acknowledgment",
+    "chapter": 6,
+    "start_ms": 138100,
+    "duration_ms": 2532,
+    "end_ms": 140632
+  },
+  {
+    "index": 18,
+    "speaker": "PROFESSOR",
+    "text": "Google's PaLM-E uses similar 'recipe' latent variables to encode task intentions for their robots.",
+    "line_type": "consequence",
+    "chapter": 6,
+    "start_ms": 140632,
+    "duration_ms": 8576,
+    "end_ms": 149208
+  },
+  {
+    "index": 19,
+    "speaker": "PROFESSOR",
+    "text": "The decoder is really a generative model : given any point z in latent space, it produces a data sample. Combined with the prior P(z), this gives us P(x) = \u222b P(x|z)P(z)dz - a full generative model over data!",
+    "line_type": "lecture",
+    "chapter": 6,
+    "start_ms": 149208,
+    "duration_ms": 18060,
+    "end_ms": 167268
+  },
+  {
+    "index": 20,
+    "speaker": "RAJESH",
+    "text": "So to generate new handwriting, I just sample a random z from a Gaussian and decode it?",
+    "line_type": "dialogue",
+    "chapter": 6,
+    "start_ms": 167268,
+    "duration_ms": 7212,
+    "end_ms": 174480
+  },
+  {
+    "index": 21,
+    "speaker": "PROFESSOR",
+    "text": "That\u2019s the idea! And this is incredibly powerful for robotics. Once you\u2019ve trained the VAE on expert demonstrations, you can:",
+    "line_type": "lecture",
+    "chapter": 6,
+    "start_ms": 174480,
+    "duration_ms": 9444,
+    "end_ms": 183924
+  },
+  {
+    "index": 22,
+    "speaker": "STUDENT_2",
+    "text": "What does the VAE decoder do?",
+    "line_type": "question",
+    "chapter": 6,
+    "start_ms": 183924,
+    "duration_ms": 2732,
+    "end_ms": 186656
+  },
+  {
+    "index": 23,
+    "speaker": "PROFESSOR",
+    "text": "The decoder maps latent variables back to data space. It takes a point z in latent space and generates a full data sample (image, trajectory, etc.) that corresponds to that latent code.",
+    "line_type": "answer",
+    "chapter": 6,
+    "start_ms": 186656,
+    "duration_ms": 13212,
+    "end_ms": 199868
+  },
+  {
+    "index": 24,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: Given 64D latent code z, decoder outputs full 1200D trajectory for SO-ARM101 to execute. Different z values produce different folding styles.",
+    "line_type": "example",
+    "chapter": 6,
+    "start_ms": 199868,
+    "duration_ms": 15272,
+    "end_ms": 215140
+  },
+  {
+    "index": 25,
+    "speaker": "STUDENT_3",
+    "text": "Takes a sample from the latent distribution and reconstructs the original data from that compressed code?",
+    "line_type": "echo",
+    "chapter": 6,
+    "start_ms": 215140,
+    "duration_ms": 7168,
+    "end_ms": 222308
+  },
+  {
+    "index": 26,
+    "speaker": "PROFESSOR",
+    "text": "That's right.",
+    "line_type": "acknowledgment",
+    "chapter": 6,
+    "start_ms": 222308,
+    "duration_ms": 2436,
+    "end_ms": 224744
+  },
+  {
+    "index": 27,
+    "speaker": "PROFESSOR",
+    "text": "Figure 01's action decoder turns latent intent codes into smooth, coordinated multi-joint trajectories.",
+    "line_type": "consequence",
+    "chapter": 6,
+    "start_ms": 224744,
+    "duration_ms": 8624,
+    "end_ms": 233368
+  },
+  {
+    "index": 28,
+    "speaker": "PROFESSOR",
+    "text": "Each sample gives you a different, but valid, way to accomplish the task.",
+    "line_type": "lecture",
+    "chapter": 6,
+    "start_ms": 233368,
+    "duration_ms": 5892,
+    "end_ms": 239260
+  },
+  {
+    "index": 29,
+    "speaker": "STUDENT_3",
+    "text": "What does the decoder output for each data dimension?",
+    "line_type": "question",
+    "chapter": 6,
+    "start_ms": 239260,
+    "duration_ms": 3764,
+    "end_ms": 243024
+  },
+  {
+    "index": 30,
+    "speaker": "PROFESSOR",
+    "text": "For each output dimension (pixel, joint angle), the decoder outputs mean \u03bc and variance \u03c3\u00b2. The reconstruction is sampled from N(\u03bc, \u03c3\u00b2). Loss is negative log-likelihood under this distribution.",
+    "line_type": "answer",
+    "chapter": 6,
+    "start_ms": 243024,
+    "duration_ms": 14892,
+    "end_ms": 257916
+  },
+  {
+    "index": 31,
+    "speaker": "PROFESSOR",
+    "text": "For each of 1200 trajectory dimensions, decoder predicts (\u03bc, \u03c3\u00b2). High \u03c3\u00b2 = model is uncertain about that joint at that timestep.",
+    "line_type": "example",
+    "chapter": 6,
+    "start_ms": 257916,
+    "duration_ms": 12080,
+    "end_ms": 269996
+  },
+  {
+    "index": 32,
+    "speaker": "STUDENT_4",
+    "text": "For each pixel or dimension, it outputs a probability distribution - typically the mean of a Gaussian?",
+    "line_type": "echo",
+    "chapter": 6,
+    "start_ms": 269996,
+    "duration_ms": 7144,
+    "end_ms": 277140
+  },
+  {
+    "index": 33,
+    "speaker": "PROFESSOR",
+    "text": "Exactly.",
+    "line_type": "acknowledgment",
+    "chapter": 6,
+    "start_ms": 277140,
+    "duration_ms": 2460,
+    "end_ms": 279600
+  },
+  {
+    "index": 34,
+    "speaker": "PROFESSOR",
+    "text": "This probabilistic output is how Nvidia's Isaac policies express confidence in their action predictions.",
+    "line_type": "consequence",
+    "chapter": 6,
+    "start_ms": 279600,
+    "duration_ms": 8048,
+    "end_ms": 287648
+  },
+  {
+    "index": 35,
+    "speaker": "STUDENT_4",
+    "text": "Why does VAE need the variational (KL) term?",
+    "line_type": "question",
+    "chapter": 6,
+    "start_ms": 287648,
+    "duration_ms": 4532,
+    "end_ms": 292180
+  },
+  {
+    "index": 36,
+    "speaker": "PROFESSOR",
+    "text": "Without KL term, encoder might collapse to point estimates with \u03c3to0. KL term forces encoder to produce actual distributions, keeping latent space smooth and enabling generation.",
+    "line_type": "answer",
+    "chapter": 6,
+    "start_ms": 292180,
+    "duration_ms": 13068,
+    "end_ms": 305248
+  },
+  {
+    "index": 37,
+    "speaker": "PROFESSOR",
+    "text": "KL term prevents SO-ARM101 policy from memorizing exact demos. Instead, it learns generalizable patterns in latent space.",
+    "line_type": "example",
+    "chapter": 6,
+    "start_ms": 305248,
+    "duration_ms": 10376,
+    "end_ms": 315624
+  },
+  {
+    "index": 38,
+    "speaker": "STUDENT_1",
+    "text": "Without it, the encoder could learn arbitrary encodings that don't generalize - KL forces structure?",
+    "line_type": "echo",
+    "chapter": 6,
+    "start_ms": 315624,
+    "duration_ms": 7504,
+    "end_ms": 323128
+  },
+  {
+    "index": 39,
+    "speaker": "PROFESSOR",
+    "text": "That's right.",
+    "line_type": "acknowledgment",
+    "chapter": 6,
+    "start_ms": 323128,
+    "duration_ms": 2436,
+    "end_ms": 325564
+  },
+  {
+    "index": 40,
+    "speaker": "PROFESSOR",
+    "text": "Tesla discovered this when removing KL regularization caused their latent spaces to become unusable.",
+    "line_type": "consequence",
+    "chapter": 6,
+    "start_ms": 325564,
+    "duration_ms": 8000,
+    "end_ms": 333564
+  }
+]

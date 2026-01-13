@@ -1,0 +1,822 @@
+[
+  {
+    "index": 0,
+    "speaker": "PROFESSOR",
+    "text": "Chapter 8. .",
+    "line_type": "transition",
+    "chapter": 8,
+    "start_ms": 0,
+    "duration_ms": 2536,
+    "end_ms": 2536
+  },
+  {
+    "index": 1,
+    "speaker": "RAJESH",
+    "text": "Okay, I understand the architecture: encoder outputs (\u03bc, \u03c3), we sample z, decoder reconstructs. But how do we actually train this? What\u2019s the loss function?",
+    "line_type": "dialogue",
+    "chapter": 8,
+    "start_ms": 2536,
+    "duration_ms": 12876,
+    "end_ms": 15412
+  },
+  {
+    "index": 2,
+    "speaker": "PROFESSOR",
+    "text": "The ideal goal is to maximize the log-likelihood: log P(x) - the probability of our training data under the model. But this requires integrating over all possible z values, which is intractable.",
+    "line_type": "lecture",
+    "chapter": 8,
+    "start_ms": 15412,
+    "duration_ms": 13092,
+    "end_ms": 28504
+  },
+  {
+    "index": 3,
+    "speaker": "PROFESSOR",
+    "text": "Instead, we maximize a lower bound on log P(x) called the ELBO (Evidence Lower Bound):",
+    "line_type": "lecture",
+    "chapter": 8,
+    "start_ms": 28504,
+    "duration_ms": 8364,
+    "end_ms": 36868
+  },
+  {
+    "index": 4,
+    "speaker": "STUDENT_2",
+    "text": "How is a VAE trained?",
+    "line_type": "question",
+    "chapter": 8,
+    "start_ms": 36868,
+    "duration_ms": 2468,
+    "end_ms": 39336
+  },
+  {
+    "index": 5,
+    "speaker": "PROFESSOR",
+    "text": "Maximize the Evidence Lower Bound (ELBO), which combines reconstruction quality with latent space regularization. Can't directly maximize likelihood due to intractable integral.",
+    "line_type": "answer",
+    "chapter": 8,
+    "start_ms": 39336,
+    "duration_ms": 12396,
+    "end_ms": 51732
+  },
+  {
+    "index": 6,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: Training on your 100 folding demos: maximize ELBO = (trajectory reconstructs well) + (latent is Gaussian-like). ~2 hours on modern GPU.",
+    "line_type": "example",
+    "chapter": 8,
+    "start_ms": 51732,
+    "duration_ms": 16136,
+    "end_ms": 67868
+  },
+  {
+    "index": 7,
+    "speaker": "STUDENT_3",
+    "text": "Minimize the ELBO loss - reconstruction error plus KL divergence - using gradient descent?",
+    "line_type": "echo",
+    "chapter": 8,
+    "start_ms": 67868,
+    "duration_ms": 8224,
+    "end_ms": 76092
+  },
+  {
+    "index": 8,
+    "speaker": "PROFESSOR",
+    "text": "Precisely.",
+    "line_type": "acknowledgment",
+    "chapter": 8,
+    "start_ms": 76092,
+    "duration_ms": 2532,
+    "end_ms": 78624
+  },
+  {
+    "index": 9,
+    "speaker": "PROFESSOR",
+    "text": "Stanford's ALOHA team trains VAEs for hours on GPUs using this exact objective.",
+    "line_type": "consequence",
+    "chapter": 8,
+    "start_ms": 78624,
+    "duration_ms": 7640,
+    "end_ms": 86264
+  },
+  {
+    "index": 10,
+    "speaker": "PROFESSOR",
+    "text": "\\[\\text{ELBO} = \\underbrace{\\mathbb{E}_{z \\sim q}[\\log P(x|z)]}_{\\text{Reconstruction}} - \\underbrace{KL(q(z|x) || P(z))}_{\\text{Regularization}}\\]",
+    "line_type": "lecture",
+    "chapter": 8,
+    "start_ms": 86264,
+    "duration_ms": 19836,
+    "end_ms": 106100
+  },
+  {
+    "index": 11,
+    "speaker": "RAJESH",
+    "text": "So there are two terms - reconstruction and regularization?",
+    "line_type": "dialogue",
+    "chapter": 8,
+    "start_ms": 106100,
+    "duration_ms": 4956,
+    "end_ms": 111056
+  },
+  {
+    "index": 12,
+    "speaker": "STUDENT_3",
+    "text": "What is the ideal objective for training deep generative models?",
+    "line_type": "question",
+    "chapter": 8,
+    "start_ms": 111056,
+    "duration_ms": 4412,
+    "end_ms": 115468
+  },
+  {
+    "index": 13,
+    "speaker": "PROFESSOR",
+    "text": "Maximize log P_theta(X_data) - the log probability of training data under the model. This is maximum likelihood: find parameters that make observed data most likely.",
+    "line_type": "answer",
+    "chapter": 8,
+    "start_ms": 115468,
+    "duration_ms": 12972,
+    "end_ms": 128440
+  },
+  {
+    "index": 14,
+    "speaker": "PROFESSOR",
+    "text": "For trajectory VAE: find weights so P(your demos) is maximized. Unfortunately, computing this exactly requires integrating over all latent z.",
+    "line_type": "example",
+    "chapter": 8,
+    "start_ms": 128440,
+    "duration_ms": 11528,
+    "end_ms": 139968
+  },
+  {
+    "index": 15,
+    "speaker": "STUDENT_4",
+    "text": "Maximize the log likelihood of the training data under the model - but this is often intractable?",
+    "line_type": "echo",
+    "chapter": 8,
+    "start_ms": 139968,
+    "duration_ms": 6304,
+    "end_ms": 146272
+  },
+  {
+    "index": 16,
+    "speaker": "PROFESSOR",
+    "text": "Correct.",
+    "line_type": "acknowledgment",
+    "chapter": 8,
+    "start_ms": 146272,
+    "duration_ms": 2292,
+    "end_ms": 148564
+  },
+  {
+    "index": 17,
+    "speaker": "PROFESSOR",
+    "text": "This intractability is why researchers at OpenAI developed variational bounds like the ELBO.",
+    "line_type": "consequence",
+    "chapter": 8,
+    "start_ms": 148564,
+    "duration_ms": 7904,
+    "end_ms": 156468
+  },
+  {
+    "index": 18,
+    "speaker": "PROFESSOR",
+    "text": "Reconstruction Loss : Does the decoder output look like the input? For images, this is typically MSE or binary cross-entropy between input and reconstruction. This term pushes the VAE to encode information that\u2019s useful for reconstruction.",
+    "line_type": "lecture",
+    "chapter": 8,
+    "start_ms": 156468,
+    "duration_ms": 15420,
+    "end_ms": 171888
+  },
+  {
+    "index": 19,
+    "speaker": "PROFESSOR",
+    "text": "KL Regularization : Is the encoder\u2019s output distribution close to a standard Gaussian N(0,1)? This term prevents the encoder from creating crazy, scattered latent representations. It forces the latent space to be organized.",
+    "line_type": "lecture",
+    "chapter": 8,
+    "start_ms": 171888,
+    "duration_ms": 15396,
+    "end_ms": 187284
+  },
+  {
+    "index": 20,
+    "speaker": "STUDENT_4",
+    "text": "Why is directly maximizing likelihood intractable for VAEs?",
+    "line_type": "question",
+    "chapter": 8,
+    "start_ms": 187284,
+    "duration_ms": 4508,
+    "end_ms": 191792
+  },
+  {
+    "index": 21,
+    "speaker": "PROFESSOR",
+    "text": "P(x) = integral of P(x|z)P(z) dz over all z. This integral has no closed form for neural network decoders. We can't compute it, so we can't directly optimize it.",
+    "line_type": "answer",
+    "chapter": 8,
+    "start_ms": 191792,
+    "duration_ms": 14196,
+    "end_ms": 205988
+  },
+  {
+    "index": 22,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: To compute P(demo trajectory), you'd need to integrate over all possible 64D latent codes - computationally impossible.",
+    "line_type": "example",
+    "chapter": 8,
+    "start_ms": 205988,
+    "duration_ms": 12824,
+    "end_ms": 218812
+  },
+  {
+    "index": 23,
+    "speaker": "STUDENT_1",
+    "text": "We'd need to integrate over all possible latent values - an impossible sum over infinite possibilities?",
+    "line_type": "echo",
+    "chapter": 8,
+    "start_ms": 218812,
+    "duration_ms": 7504,
+    "end_ms": 226316
+  },
+  {
+    "index": 24,
+    "speaker": "PROFESSOR",
+    "text": "Exactly.",
+    "line_type": "acknowledgment",
+    "chapter": 8,
+    "start_ms": 226316,
+    "duration_ms": 2460,
+    "end_ms": 228776
+  },
+  {
+    "index": 25,
+    "speaker": "PROFESSOR",
+    "text": "DeepMind's research explicitly addresses this intractability with efficient approximation methods.",
+    "line_type": "consequence",
+    "chapter": 8,
+    "start_ms": 228776,
+    "duration_ms": 7232,
+    "end_ms": 236008
+  },
+  {
+    "index": 26,
+    "speaker": "PROFESSOR",
+    "text": "\u03b2 is a hyperparameter that balances reconstruction vs regularization. Standard VAE uses \u03b2=1.",
+    "line_type": "lecture",
+    "chapter": 8,
+    "start_ms": 236008,
+    "duration_ms": 8868,
+    "end_ms": 244876
+  },
+  {
+    "index": 27,
+    "speaker": "PROFESSOR",
+    "text": "This tradeoff is explored in the \u03b2-VAE paper. For robotics, you typically tune \u03b2 based on whether you care more about accurate reproduction or diverse generation.",
+    "line_type": "lecture",
+    "chapter": 8,
+    "start_ms": 244876,
+    "duration_ms": 11196,
+    "end_ms": 256072
+  },
+  {
+    "index": 28,
+    "speaker": "STUDENT_1",
+    "text": "What is the ELBO and why do we use it?",
+    "line_type": "question",
+    "chapter": 8,
+    "start_ms": 256072,
+    "duration_ms": 3620,
+    "end_ms": 259692
+  },
+  {
+    "index": 29,
+    "speaker": "PROFESSOR",
+    "text": "ELBO (Evidence Lower Bound) is a tractable lower bound on log P(x). Maximizing ELBO also pushes up log P(x). It decomposes into reconstruction + regularization terms.",
+    "line_type": "answer",
+    "chapter": 8,
+    "start_ms": 259692,
+    "duration_ms": 14388,
+    "end_ms": 274080
+  },
+  {
+    "index": 30,
+    "speaker": "PROFESSOR",
+    "text": "Can't maximize P(demos) directly, so maximize ELBO instead. This is what your ACT training actually optimizes.",
+    "line_type": "example",
+    "chapter": 8,
+    "start_ms": 274080,
+    "duration_ms": 10256,
+    "end_ms": 284336
+  },
+  {
+    "index": 31,
+    "speaker": "STUDENT_2",
+    "text": "Evidence Lower Bound - it's a tractable approximation to the intractable log likelihood?",
+    "line_type": "echo",
+    "chapter": 8,
+    "start_ms": 284336,
+    "duration_ms": 6256,
+    "end_ms": 290592
+  },
+  {
+    "index": 32,
+    "speaker": "PROFESSOR",
+    "text": "That's right.",
+    "line_type": "acknowledgment",
+    "chapter": 8,
+    "start_ms": 290592,
+    "duration_ms": 2436,
+    "end_ms": 293028
+  },
+  {
+    "index": 33,
+    "speaker": "PROFESSOR",
+    "text": "The ELBO is the foundational objective for all VAE-based robotics policies.",
+    "line_type": "consequence",
+    "chapter": 8,
+    "start_ms": 293028,
+    "duration_ms": 7328,
+    "end_ms": 300356
+  },
+  {
+    "index": 34,
+    "speaker": "STUDENT_2",
+    "text": "How does ELBO decompose into components?",
+    "line_type": "question",
+    "chapter": 8,
+    "start_ms": 300356,
+    "duration_ms": 3620,
+    "end_ms": 303976
+  },
+  {
+    "index": 35,
+    "speaker": "PROFESSOR",
+    "text": "ELBO = E[log P(x|z)] - KL(Q(z|x) || P(z)). First term: reconstruction quality. Second term: how close encoder distribution is to prior (typically N(0,1)).",
+    "line_type": "answer",
+    "chapter": 8,
+    "start_ms": 303976,
+    "duration_ms": 16956,
+    "end_ms": 320932
+  },
+  {
+    "index": 36,
+    "speaker": "PROFESSOR",
+    "text": "VAE loss = MSE(reconstructed trajectory vs original) + KL(encoder output vs standard Gaussian). Balance both for good generation.",
+    "line_type": "example",
+    "chapter": 8,
+    "start_ms": 320932,
+    "duration_ms": 12224,
+    "end_ms": 333156
+  },
+  {
+    "index": 37,
+    "speaker": "STUDENT_3",
+    "text": "Reconstruction term measures data fidelity, KL term measures how close encoder is to prior?",
+    "line_type": "echo",
+    "chapter": 8,
+    "start_ms": 333156,
+    "duration_ms": 7768,
+    "end_ms": 340924
+  },
+  {
+    "index": 38,
+    "speaker": "PROFESSOR",
+    "text": "Precisely.",
+    "line_type": "acknowledgment",
+    "chapter": 8,
+    "start_ms": 340924,
+    "duration_ms": 2532,
+    "end_ms": 343456
+  },
+  {
+    "index": 39,
+    "speaker": "PROFESSOR",
+    "text": "Nvidia monitors both terms separately to diagnose training issues in their robot policies.",
+    "line_type": "consequence",
+    "chapter": 8,
+    "start_ms": 343456,
+    "duration_ms": 7376,
+    "end_ms": 350832
+  },
+  {
+    "index": 40,
+    "speaker": "STUDENT_3",
+    "text": "What is the reconstruction loss in ELBO?",
+    "line_type": "question",
+    "chapter": 8,
+    "start_ms": 350832,
+    "duration_ms": 3548,
+    "end_ms": 354380
+  },
+  {
+    "index": 41,
+    "speaker": "PROFESSOR",
+    "text": "E[log P(x|z)] measures how well decoder reconstructs input from latent. For continuous data, often MSE loss: ||x - decoder(z)||\u00b2. Encourages accurate encoding.",
+    "line_type": "answer",
+    "chapter": 8,
+    "start_ms": 354380,
+    "duration_ms": 14268,
+    "end_ms": 368648
+  },
+  {
+    "index": 42,
+    "speaker": "PROFESSOR",
+    "text": "Reconstruction loss for trajectory: mean squared error between original demo joint angles and VAE-reconstructed joint angles at each timestep.",
+    "line_type": "example",
+    "chapter": 8,
+    "start_ms": 368648,
+    "duration_ms": 10496,
+    "end_ms": 379144
+  },
+  {
+    "index": 43,
+    "speaker": "STUDENT_4",
+    "text": "Negative log probability of reconstructing the input - measures how well the VAE can reproduce data?",
+    "line_type": "echo",
+    "chapter": 8,
+    "start_ms": 379144,
+    "duration_ms": 7120,
+    "end_ms": 386264
+  },
+  {
+    "index": 44,
+    "speaker": "PROFESSOR",
+    "text": "Correct.",
+    "line_type": "acknowledgment",
+    "chapter": 8,
+    "start_ms": 386264,
+    "duration_ms": 2292,
+    "end_ms": 388556
+  },
+  {
+    "index": 45,
+    "speaker": "PROFESSOR",
+    "text": "1X Technologies uses reconstruction loss to ensure their policies capture demonstration details.",
+    "line_type": "consequence",
+    "chapter": 8,
+    "start_ms": 388556,
+    "duration_ms": 8048,
+    "end_ms": 396604
+  },
+  {
+    "index": 46,
+    "speaker": "STUDENT_4",
+    "text": "What is the regularization loss in ELBO?",
+    "line_type": "question",
+    "chapter": 8,
+    "start_ms": 396604,
+    "duration_ms": 3380,
+    "end_ms": 399984
+  },
+  {
+    "index": 47,
+    "speaker": "PROFESSOR",
+    "text": "KL(Q(z|x) || P(z)) measures divergence between encoder output and prior (usually N(0,1)). Forces latent representations to be close to standard Gaussian, enabling sampling.",
+    "line_type": "answer",
+    "chapter": 8,
+    "start_ms": 399984,
+    "duration_ms": 15972,
+    "end_ms": 415956
+  },
+  {
+    "index": 48,
+    "speaker": "PROFESSOR",
+    "text": "KL term prevents encoder from using crazy latent values. Keeps all demo encodings in a well-organized Gaussian blob for easy sampling.",
+    "line_type": "example",
+    "chapter": 8,
+    "start_ms": 415956,
+    "duration_ms": 10688,
+    "end_ms": 426644
+  },
+  {
+    "index": 49,
+    "speaker": "STUDENT_1",
+    "text": "KL divergence from encoder distribution to prior - prevents encoder from learning arbitrary codes?",
+    "line_type": "echo",
+    "chapter": 8,
+    "start_ms": 426644,
+    "duration_ms": 7384,
+    "end_ms": 434028
+  },
+  {
+    "index": 50,
+    "speaker": "PROFESSOR",
+    "text": "Exactly.",
+    "line_type": "acknowledgment",
+    "chapter": 8,
+    "start_ms": 434028,
+    "duration_ms": 2460,
+    "end_ms": 436488
+  },
+  {
+    "index": 51,
+    "speaker": "PROFESSOR",
+    "text": "Without this regularization, Sanctuary AI's policies would overfit to specific demonstrations.",
+    "line_type": "consequence",
+    "chapter": 8,
+    "start_ms": 436488,
+    "duration_ms": 8096,
+    "end_ms": 444584
+  },
+  {
+    "index": 52,
+    "speaker": "STUDENT_1",
+    "text": "Why use Gaussian distributions in VAEs?",
+    "line_type": "question",
+    "chapter": 8,
+    "start_ms": 444584,
+    "duration_ms": 3764,
+    "end_ms": 448348
+  },
+  {
+    "index": 53,
+    "speaker": "PROFESSOR",
+    "text": "Gaussians are: 1) Easy to parameterize (just \u03bc, \u03c3) 2) KL divergence has closed form 3) Reparameterization trick works 4) Central limit theorem makes them natural. Mathematical convenience.",
+    "line_type": "answer",
+    "chapter": 8,
+    "start_ms": 448348,
+    "duration_ms": 15156,
+    "end_ms": 463504
+  },
+  {
+    "index": 54,
+    "speaker": "PROFESSOR",
+    "text": "Encoder outputs 2 numbers per latent dim (\u03bc, \u03c3). Sampling: z = \u03bc + \u03c3\u03b5. Gradients flow through. Simple and works.",
+    "line_type": "example",
+    "chapter": 8,
+    "start_ms": 463504,
+    "duration_ms": 11264,
+    "end_ms": 474768
+  },
+  {
+    "index": 55,
+    "speaker": "STUDENT_2",
+    "text": "They have nice mathematical properties - easy to sample, easy to compute KL, and work well in practice?",
+    "line_type": "echo",
+    "chapter": 8,
+    "start_ms": 474768,
+    "duration_ms": 7792,
+    "end_ms": 482560
+  },
+  {
+    "index": 56,
+    "speaker": "PROFESSOR",
+    "text": "That's right.",
+    "line_type": "acknowledgment",
+    "chapter": 8,
+    "start_ms": 482560,
+    "duration_ms": 2436,
+    "end_ms": 484996
+  },
+  {
+    "index": 57,
+    "speaker": "PROFESSOR",
+    "text": "Most robotics VAE implementations use Gaussians, though some research explores alternatives.",
+    "line_type": "consequence",
+    "chapter": 8,
+    "start_ms": 484996,
+    "duration_ms": 8048,
+    "end_ms": 493044
+  },
+  {
+    "index": 58,
+    "speaker": "STUDENT_2",
+    "text": "How should reconstruction and KL terms be balanced?",
+    "line_type": "question",
+    "chapter": 8,
+    "start_ms": 493044,
+    "duration_ms": 3884,
+    "end_ms": 496928
+  },
+  {
+    "index": 59,
+    "speaker": "PROFESSOR",
+    "text": "Reconstruction alone to point estimates, no generation. KL alone to poor reconstruction, just samples noise. Need balance: \u03b2-VAE uses weighting. Standard VAE uses equal weight.",
+    "line_type": "answer",
+    "chapter": 8,
+    "start_ms": 496928,
+    "duration_ms": 13980,
+    "end_ms": 510908
+  },
+  {
+    "index": 60,
+    "speaker": "PROFESSOR",
+    "text": "For ACT, the \u03b2 weight on KL term affects how 'diverse' vs 'accurate' generated trajectories are. Tune for your task needs.",
+    "line_type": "example",
+    "chapter": 8,
+    "start_ms": 510908,
+    "duration_ms": 10544,
+    "end_ms": 521452
+  },
+  {
+    "index": 61,
+    "speaker": "STUDENT_3",
+    "text": "Too much reconstruction focus causes overfitting, too much KL causes blurry outputs - need careful tuning?",
+    "line_type": "echo",
+    "chapter": 8,
+    "start_ms": 521452,
+    "duration_ms": 8584,
+    "end_ms": 530036
+  },
+  {
+    "index": 62,
+    "speaker": "PROFESSOR",
+    "text": "Precisely.",
+    "line_type": "acknowledgment",
+    "chapter": 8,
+    "start_ms": 530036,
+    "duration_ms": 2532,
+    "end_ms": 532568
+  },
+  {
+    "index": 63,
+    "speaker": "PROFESSOR",
+    "text": "Google's robotics team has hyperparameter search pipelines specifically for this balance.",
+    "line_type": "consequence",
+    "chapter": 8,
+    "start_ms": 532568,
+    "duration_ms": 6872,
+    "end_ms": 539440
+  },
+  {
+    "index": 64,
+    "speaker": "STUDENT_3",
+    "text": "What is the cat teleportation analogy for VAEs?",
+    "line_type": "question",
+    "chapter": 8,
+    "start_ms": 539440,
+    "duration_ms": 4244,
+    "end_ms": 543684
+  },
+  {
+    "index": 65,
+    "speaker": "PROFESSOR",
+    "text": "To teleport a cat from Earth to Mars: encode cat to send compressed code to decode on Mars. VAE does this: encode data to latent code to decode. The code must contain all info to reconstruct.",
+    "line_type": "answer",
+    "chapter": 8,
+    "start_ms": 543684,
+    "duration_ms": 13332,
+    "end_ms": 557016
+  },
+  {
+    "index": 66,
+    "speaker": "PROFESSOR",
+    "text": "Your trajectory 'teleports' through bottleneck: 1200D to 64D to 1200D. The 64D code must encode everything about the fold.",
+    "line_type": "example",
+    "chapter": 8,
+    "start_ms": 557016,
+    "duration_ms": 11384,
+    "end_ms": 568400
+  },
+  {
+    "index": 67,
+    "speaker": "STUDENT_4",
+    "text": "Encoding compresses a cat to DNA-like information, decoding rebuilds the cat from that compressed code?",
+    "line_type": "echo",
+    "chapter": 8,
+    "start_ms": 568400,
+    "duration_ms": 7432,
+    "end_ms": 575832
+  },
+  {
+    "index": 68,
+    "speaker": "PROFESSOR",
+    "text": "Correct.",
+    "line_type": "acknowledgment",
+    "chapter": 8,
+    "start_ms": 575832,
+    "duration_ms": 2292,
+    "end_ms": 578124
+  },
+  {
+    "index": 69,
+    "speaker": "PROFESSOR",
+    "text": "This analogy helps engineers at Boston Dynamics explain VAE concepts to new team members.",
+    "line_type": "consequence",
+    "chapter": 8,
+    "start_ms": 578124,
+    "duration_ms": 7904,
+    "end_ms": 586028
+  },
+  {
+    "index": 70,
+    "speaker": "STUDENT_4",
+    "text": "What role does KL divergence play in the ELBO?",
+    "line_type": "question",
+    "chapter": 8,
+    "start_ms": 586028,
+    "duration_ms": 4292,
+    "end_ms": 590320
+  },
+  {
+    "index": 71,
+    "speaker": "PROFESSOR",
+    "text": "KL term is the 'cost' of having an informative latent representation. It penalizes deviation from prior. This creates tension with reconstruction, finding optimal information compression.",
+    "line_type": "answer",
+    "chapter": 8,
+    "start_ms": 590320,
+    "duration_ms": 12444,
+    "end_ms": 602764
+  },
+  {
+    "index": 72,
+    "speaker": "PROFESSOR",
+    "text": "High KL = encoder is using lots of latent 'bits'. Low KL = encoder outputs near-random z. Balance gives structured, useful latent space.",
+    "line_type": "example",
+    "chapter": 8,
+    "start_ms": 602764,
+    "duration_ms": 12056,
+    "end_ms": 614820
+  },
+  {
+    "index": 73,
+    "speaker": "STUDENT_1",
+    "text": "It regularizes the latent space, making it organized and smooth for generation?",
+    "line_type": "echo",
+    "chapter": 8,
+    "start_ms": 614820,
+    "duration_ms": 6400,
+    "end_ms": 621220
+  },
+  {
+    "index": 74,
+    "speaker": "PROFESSOR",
+    "text": "Exactly.",
+    "line_type": "acknowledgment",
+    "chapter": 8,
+    "start_ms": 621220,
+    "duration_ms": 2460,
+    "end_ms": 623680
+  },
+  {
+    "index": 75,
+    "speaker": "PROFESSOR",
+    "text": "The KL term is what makes VAE latent spaces useful for sampling novel robot behaviors.",
+    "line_type": "consequence",
+    "chapter": 8,
+    "start_ms": 623680,
+    "duration_ms": 7880,
+    "end_ms": 631560
+  },
+  {
+    "index": 76,
+    "speaker": "STUDENT_1",
+    "text": "How does ELBO training apply to ACT policy?",
+    "line_type": "question",
+    "chapter": 8,
+    "start_ms": 631560,
+    "duration_ms": 4436,
+    "end_ms": 635996
+  },
+  {
+    "index": 77,
+    "speaker": "PROFESSOR",
+    "text": "ACT's VAE component is trained with ELBO: action sequence reconstruction + KL regularization on style latent. The transformer decoder conditions on latent z to generate coherent action chunks.",
+    "line_type": "answer",
+    "chapter": 8,
+    "start_ms": 635996,
+    "duration_ms": 13860,
+    "end_ms": 649856
+  },
+  {
+    "index": 78,
+    "speaker": "PROFESSOR",
+    "text": "Training ACT on your demos: minimize (action prediction error) + \u03b2 \u00d7 (latent KL). Result: policy that generates diverse but valid folding trajectories.",
+    "line_type": "example",
+    "chapter": 8,
+    "start_ms": 649856,
+    "duration_ms": 12536,
+    "end_ms": 662392
+  },
+  {
+    "index": 79,
+    "speaker": "STUDENT_2",
+    "text": "ACT uses the CVAE objective - reconstruction of action sequences plus KL on the style latent?",
+    "line_type": "echo",
+    "chapter": 8,
+    "start_ms": 662392,
+    "duration_ms": 7912,
+    "end_ms": 670304
+  },
+  {
+    "index": 80,
+    "speaker": "PROFESSOR",
+    "text": "That's right.",
+    "line_type": "acknowledgment",
+    "chapter": 8,
+    "start_ms": 670304,
+    "duration_ms": 2436,
+    "end_ms": 672740
+  },
+  {
+    "index": 81,
+    "speaker": "PROFESSOR",
+    "text": "Stanford's ACT paper derives this objective step by step from the ELBO.",
+    "line_type": "consequence",
+    "chapter": 8,
+    "start_ms": 672740,
+    "duration_ms": 7136,
+    "end_ms": 679876
+  }
+]

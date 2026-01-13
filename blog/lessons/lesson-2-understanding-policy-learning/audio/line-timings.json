@@ -1,0 +1,5082 @@
+[
+  {
+    "index": 0,
+    "speaker": "AMBIENT",
+    "text": "[Classroom atmosphere begins - soft, barely audible]",
+    "line_type": "transition",
+    "chapter": 0,
+    "start_ms": 0,
+    "duration_ms": 1000,
+    "end_ms": 1000
+  },
+  {
+    "index": 1,
+    "speaker": "PROFESSOR",
+    "text": "Welcome, everyone. Find a comfortable position. Today we're going to explore a question that has puzzled roboticists for decades: Why can't robots fold your clothes?",
+    "line_type": "lecture",
+    "chapter": 0,
+    "start_ms": 1000,
+    "duration_ms": 11528,
+    "end_ms": 12528
+  },
+  {
+    "index": 2,
+    "speaker": "PROFESSOR",
+    "text": "Chapter 1. .",
+    "line_type": "transition",
+    "chapter": 1,
+    "start_ms": 12528,
+    "duration_ms": 2584,
+    "end_ms": 15112
+  },
+  {
+    "index": 3,
+    "speaker": "RAJESH",
+    "text": "Dr. Nova, I\u2019ve been thinking about what we learned in Lesson 1. We said imitation learning is the practical path forward - collect demonstrations, train a neural network, deploy on the robot. But I tried implementing a simple policy that predicts actions from observations, and something weird happened.",
+    "line_type": "dialogue",
+    "chapter": 1,
+    "start_ms": 15112,
+    "duration_ms": 19044,
+    "end_ms": 34156
+  },
+  {
+    "index": 4,
+    "speaker": "PROFESSOR",
+    "text": "Ah, you\u2019ve discovered the multimodal problem! Tell me what happened.",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 34156,
+    "duration_ms": 5436,
+    "end_ms": 39592
+  },
+  {
+    "index": 5,
+    "speaker": "RAJESH",
+    "text": "I collected 50 demonstrations of reaching around an obstacle. Sometimes I went left, sometimes I went right - both worked fine. But when I trained the network and deployed it... the robot went straight INTO the obstacle!",
+    "line_type": "dialogue",
+    "chapter": 1,
+    "start_ms": 39592,
+    "duration_ms": 14268,
+    "end_ms": 53860
+  },
+  {
+    "index": 6,
+    "speaker": "STUDENT_1",
+    "text": "What is the focus of Lecture 2?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 53860,
+    "duration_ms": 2660,
+    "end_ms": 56520
+  },
+  {
+    "index": 7,
+    "speaker": "PROFESSOR",
+    "text": "Deep Generative Modeling - specifically Variational Autoencoders (VAEs). Understanding VAEs is essential because ACT (Action Chunking Transformer) uses a VAE at its core.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 56520,
+    "duration_ms": 13764,
+    "end_ms": 70284
+  },
+  {
+    "index": 8,
+    "speaker": "PROFESSOR",
+    "text": "The VAE in ACT encodes demonstrations into a latent space, allowing sampling of coherent action chunks for your SO-ARM101 manipulation tasks.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 70284,
+    "duration_ms": 11624,
+    "end_ms": 81908
+  },
+  {
+    "index": 9,
+    "speaker": "STUDENT_2",
+    "text": "So this lecture is all about VAEs - the mathematical foundation that lets robots handle multiple valid actions instead of averaging them?",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 81908,
+    "duration_ms": 8800,
+    "end_ms": 90708
+  },
+  {
+    "index": 10,
+    "speaker": "PROFESSOR",
+    "text": "Exactly.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 90708,
+    "duration_ms": 2460,
+    "end_ms": 93168
+  },
+  {
+    "index": 11,
+    "speaker": "PROFESSOR",
+    "text": "This is why Google's RT-2 and Figure 01's robots use VAE-based architectures at their core.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 93168,
+    "duration_ms": 8192,
+    "end_ms": 101360
+  },
+  {
+    "index": 12,
+    "speaker": "PROFESSOR",
+    "text": "laughs That\u2019s the classic point estimate policy failure. Let me show you exactly why this happens.",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 101360,
+    "duration_ms": 7068,
+    "end_ms": 108428
+  },
+  {
+    "index": 13,
+    "speaker": "PROFESSOR",
+    "text": "When your network outputs a single action - what we call a point estimate - it\u2019s essentially computing the average of all the actions it saw in training. For that obstacle scenario, half your demos went left, half went right. The average? Straight ahead. Directly into the obstacle.",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 108428,
+    "duration_ms": 16500,
+    "end_ms": 124928
+  },
+  {
+    "index": 14,
+    "speaker": "PROFESSOR",
+    "text": "A point estimate policy outputs a single \u201cbest\u201d action. But when expert behavior is multimodal (multiple valid solutions), averaging produces an action that may not match ANY of the valid modes - often the worst possible choice.",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 124928,
+    "duration_ms": 14892,
+    "end_ms": 139820
+  },
+  {
+    "index": 15,
+    "speaker": "STUDENT_2",
+    "text": "What were the key takeaways from Lecture 1?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 139820,
+    "duration_ms": 3044,
+    "end_ms": 142864
+  },
+  {
+    "index": 16,
+    "speaker": "PROFESSOR",
+    "text": "Classical robotics (FK/IK) fails on complex tasks. RL has safety/reward issues. Imitation learning is practical but point estimates cause mode averaging. We need distributions over actions.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 142864,
+    "duration_ms": 14676,
+    "end_ms": 157540
+  },
+  {
+    "index": 17,
+    "speaker": "PROFESSOR",
+    "text": "For SO-ARM101 folding: can't model fabric physics (classical fails), can't safely explore (RL fails), need multimodal policies from demos (IL + DGM).",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 157540,
+    "duration_ms": 13664,
+    "end_ms": 171204
+  },
+  {
+    "index": 18,
+    "speaker": "STUDENT_3",
+    "text": "So classical robotics fails on complex tasks, RL is too dangerous, and imitation learning works but has this mode averaging problem?",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 171204,
+    "duration_ms": 10216,
+    "end_ms": 181420
+  },
+  {
+    "index": 19,
+    "speaker": "PROFESSOR",
+    "text": "Precisely.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 181420,
+    "duration_ms": 2532,
+    "end_ms": 183952
+  },
+  {
+    "index": 20,
+    "speaker": "PROFESSOR",
+    "text": "Tesla's Optimus team discovered this exact limitation when their early prototypes struggled with multimodal manipulation tasks.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 183952,
+    "duration_ms": 9248,
+    "end_ms": 193200
+  },
+  {
+    "index": 21,
+    "speaker": "RAJESH",
+    "text": "So the problem isn\u2019t the neural network or the training process - it\u2019s the fundamental assumption that there\u2019s one \u201ccorrect\u201d action?",
+    "line_type": "dialogue",
+    "chapter": 1,
+    "start_ms": 193200,
+    "duration_ms": 8772,
+    "end_ms": 201972
+  },
+  {
+    "index": 22,
+    "speaker": "PROFESSOR",
+    "text": "Exactly! Let me give you another example. Imagine your SO-ARM101 bimanual setup folding a shirt. Sometimes you demonstrate folding the left side first, sometimes the right side first. Both are valid. But a point estimate policy might try to fold BOTH sides simultaneously - tangling the fabric because it\u2019s averaging over incompatible strategies.",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 201972,
+    "duration_ms": 22116,
+    "end_ms": 224088
+  },
+  {
+    "index": 23,
+    "speaker": "PROFESSOR",
+    "text": "The solution? Stop predicting THE action. Start predicting the DISTRIBUTION of possible actions.",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 224088,
+    "duration_ms": 7188,
+    "end_ms": 231276
+  },
+  {
+    "index": 24,
+    "speaker": "STUDENT_3",
+    "text": "Professor, quick review: fk vs ik?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 231276,
+    "duration_ms": 4220,
+    "end_ms": 235496
+  },
+  {
+    "index": 25,
+    "speaker": "PROFESSOR",
+    "text": "FK: joint angles to end-effector pose (easy, unique solution). IK: desired pose to joint angles (hard, multiple solutions). Both assume perfect model which doesn't exist.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 235496,
+    "duration_ms": 13236,
+    "end_ms": 248732
+  },
+  {
+    "index": 26,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: SO-ARM101 IK might find 3 different joint configurations to reach the same fabric corner. Learning-based policies sidestep this by directly predicting actions.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 248732,
+    "duration_ms": 14336,
+    "end_ms": 263068
+  },
+  {
+    "index": 27,
+    "speaker": "STUDENT_4",
+    "text": "FK is joints to position - straightforward. IK is position to joints - harder because there can be multiple solutions?",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 263068,
+    "duration_ms": 8488,
+    "end_ms": 271556
+  },
+  {
+    "index": 28,
+    "speaker": "PROFESSOR",
+    "text": "That's right.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 271556,
+    "duration_ms": 2436,
+    "end_ms": 273992
+  },
+  {
+    "index": 29,
+    "speaker": "PROFESSOR",
+    "text": "Boston Dynamics uses sophisticated IK solvers for Spot's leg movements, handling thousands of possible joint configurations.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 273992,
+    "duration_ms": 9776,
+    "end_ms": 283768
+  },
+  {
+    "index": 30,
+    "speaker": "RAJESH",
+    "text": "That\u2019s a huge shift in thinking! Instead of asking \u201cwhat action should I take?\u201d, we\u2019re asking \u201cwhat are ALL the actions I could take, and how likely is each one?\u201d",
+    "line_type": "dialogue",
+    "chapter": 1,
+    "start_ms": 283768,
+    "duration_ms": 10836,
+    "end_ms": 294604
+  },
+  {
+    "index": 31,
+    "speaker": "PROFESSOR",
+    "text": "You\u2019ve got it. And this shift from point estimates to distributions is exactly what deep generative modeling gives us. It\u2019s the key technology that makes modern robot policies like ACT (Action Chunking with Transformers) actually work.",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 294604,
+    "duration_ms": 14844,
+    "end_ms": 309448
+  },
+  {
+    "index": 32,
+    "speaker": "STUDENT_4",
+    "text": "Professor, quick review: why is rl problematic for real robot training?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 309448,
+    "duration_ms": 5588,
+    "end_ms": 315036
+  },
+  {
+    "index": 33,
+    "speaker": "PROFESSOR",
+    "text": "Safety (random exploration breaks things), reward engineering (hard to define), sparse rewards (slow learning), generalization (overfits to exact conditions), sample inefficiency (needs millions of tries).",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 315036,
+    "duration_ms": 15252,
+    "end_ms": 330288
+  },
+  {
+    "index": 34,
+    "speaker": "PROFESSOR",
+    "text": "RL on SO-ARM101 would require thousands of fabric samples destroyed during exploration. Imitation learning needs maybe 100 demos.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 330288,
+    "duration_ms": 10544,
+    "end_ms": 340832
+  },
+  {
+    "index": 35,
+    "speaker": "STUDENT_1",
+    "text": "So RL needs exploration, but exploration on real hardware means broken robots and safety issues?",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 340832,
+    "duration_ms": 7840,
+    "end_ms": 348672
+  },
+  {
+    "index": 36,
+    "speaker": "PROFESSOR",
+    "text": "Exactly.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 348672,
+    "duration_ms": 2460,
+    "end_ms": 351132
+  },
+  {
+    "index": 37,
+    "speaker": "PROFESSOR",
+    "text": "This is why Waymo does 99% of their RL training in simulation before ever touching a real car.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 351132,
+    "duration_ms": 8024,
+    "end_ms": 359156
+  },
+  {
+    "index": 38,
+    "speaker": "STUDENT_1",
+    "text": "Professor, quick review: how does imitation learning work?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 359156,
+    "duration_ms": 4556,
+    "end_ms": 363712
+  },
+  {
+    "index": 39,
+    "speaker": "PROFESSOR",
+    "text": "Expert demonstrates task to record (observation, action) pairs to train neural network to predict actions from observations to deploy policy on robot.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 363712,
+    "duration_ms": 10620,
+    "end_ms": 374332
+  },
+  {
+    "index": 40,
+    "speaker": "PROFESSOR",
+    "text": "You teleoperate Leader arms for 100 demos to train ACT on GPU to deploy to Follower arms. The policy has learned your folding technique.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 374332,
+    "duration_ms": 10640,
+    "end_ms": 384972
+  },
+  {
+    "index": 41,
+    "speaker": "STUDENT_2",
+    "text": "Expert shows how, we record state-action pairs, train a neural network to copy the behavior?",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 384972,
+    "duration_ms": 6976,
+    "end_ms": 391948
+  },
+  {
+    "index": 42,
+    "speaker": "PROFESSOR",
+    "text": "Correct.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 391948,
+    "duration_ms": 2292,
+    "end_ms": 394240
+  },
+  {
+    "index": 43,
+    "speaker": "PROFESSOR",
+    "text": "Sanctuary AI uses this exact approach - their teleoperators demonstrate tasks that robots learn to replicate.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 394240,
+    "duration_ms": 9032,
+    "end_ms": 403272
+  },
+  {
+    "index": 44,
+    "speaker": "STUDENT_2",
+    "text": "Why do point estimate policies fail for imitation learning?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 403272,
+    "duration_ms": 4148,
+    "end_ms": 407420
+  },
+  {
+    "index": 45,
+    "speaker": "PROFESSOR",
+    "text": "They output single values, averaging over multimodal expert behavior. If experts sometimes go left, sometimes right, point estimate goes straight - often invalid.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 407420,
+    "duration_ms": 11676,
+    "end_ms": 419096
+  },
+  {
+    "index": 46,
+    "speaker": "PROFESSOR",
+    "text": "Demos show both left-first and right-first folds. Point estimate outputs simultaneous both-arms motion that tangles the fabric.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 419096,
+    "duration_ms": 9440,
+    "end_ms": 428536
+  },
+  {
+    "index": 47,
+    "speaker": "STUDENT_3",
+    "text": "If experts go left sometimes and right sometimes, the average is straight ahead - which could be the worst possible action!",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 428536,
+    "duration_ms": 8512,
+    "end_ms": 437048
+  },
+  {
+    "index": 48,
+    "speaker": "PROFESSOR",
+    "text": "Exactly right.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 437048,
+    "duration_ms": 2676,
+    "end_ms": 439724
+  },
+  {
+    "index": 49,
+    "speaker": "PROFESSOR",
+    "text": "1X Technologies learned this when their point estimate policies kept generating middle-ground actions that matched no valid behavior.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 439724,
+    "duration_ms": 9368,
+    "end_ms": 449092
+  },
+  {
+    "index": 50,
+    "speaker": "STUDENT_3",
+    "text": "What is Lecture 2 Introduction?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 449092,
+    "duration_ms": 2732,
+    "end_ms": 451824
+  },
+  {
+    "index": 51,
+    "speaker": "PROFESSOR",
+    "text": "A topic covered in Deep Generative Modeling.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 451824,
+    "duration_ms": 4188,
+    "end_ms": 456012
+  },
+  {
+    "index": 52,
+    "speaker": "PROFESSOR",
+    "text": "Applies to SO-ARM101 bimanual manipulation learning.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 456012,
+    "duration_ms": 5888,
+    "end_ms": 461900
+  },
+  {
+    "index": 53,
+    "speaker": "STUDENT_4",
+    "text": "This lecture builds on Lecture 1 by diving into VAEs - the solution to that mode averaging problem?",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 461900,
+    "duration_ms": 7216,
+    "end_ms": 469116
+  },
+  {
+    "index": 54,
+    "speaker": "PROFESSOR",
+    "text": "Precisely.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 469116,
+    "duration_ms": 2532,
+    "end_ms": 471648
+  },
+  {
+    "index": 55,
+    "speaker": "PROFESSOR",
+    "text": "DeepMind's robotic manipulation research heavily relies on understanding these distribution-based approaches.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 471648,
+    "duration_ms": 8048,
+    "end_ms": 479696
+  },
+  {
+    "index": 56,
+    "speaker": "PROFESSOR",
+    "text": "Chapter 2. .",
+    "line_type": "transition",
+    "chapter": 2,
+    "start_ms": 479696,
+    "duration_ms": 2584,
+    "end_ms": 482280
+  },
+  {
+    "index": 57,
+    "speaker": "RAJESH",
+    "text": "Okay, I understand WHY we need distributions. But how do we actually work with them? A probability distribution seems so... abstract.",
+    "line_type": "dialogue",
+    "chapter": 2,
+    "start_ms": 482280,
+    "duration_ms": 10188,
+    "end_ms": 492468
+  },
+  {
+    "index": 58,
+    "speaker": "PROFESSOR",
+    "text": "Let\u2019s build your intuition from something familiar. Imagine I measure the heights of 100 students in a classroom and plot them on a histogram.",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 492468,
+    "duration_ms": 9228,
+    "end_ms": 501696
+  },
+  {
+    "index": 59,
+    "speaker": "PROFESSOR",
+    "text": "What you\u2019ll see is that most students cluster around the average height, with fewer at the extremes. That histogram approximates a probability distribution - specifically, a Gaussian or \u201cbell curve.\u201d",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 501696,
+    "duration_ms": 12540,
+    "end_ms": 514236
+  },
+  {
+    "index": 60,
+    "speaker": "STUDENT_4",
+    "text": "What is Deep Generative Modeling?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 514236,
+    "duration_ms": 2468,
+    "end_ms": 516704
+  },
+  {
+    "index": 61,
+    "speaker": "PROFESSOR",
+    "text": "Using deep neural networks to learn probability distributions over data. Given training samples, learn P_theta that approximates the true distribution. Then sample new data from P_theta.",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 516704,
+    "duration_ms": 13428,
+    "end_ms": 530132
+  },
+  {
+    "index": 62,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: Learn P(folding trajectories) from demos. Sample from this distribution to generate new, valid folding trajectories that the robot can execute.",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 530132,
+    "duration_ms": 13784,
+    "end_ms": 543916
+  },
+  {
+    "index": 63,
+    "speaker": "STUDENT_1",
+    "text": "So instead of predicting single values, we're learning entire probability distributions over possible outputs?",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 543916,
+    "duration_ms": 7984,
+    "end_ms": 551900
+  },
+  {
+    "index": 64,
+    "speaker": "PROFESSOR",
+    "text": "Exactly.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 551900,
+    "duration_ms": 2460,
+    "end_ms": 554360
+  },
+  {
+    "index": 65,
+    "speaker": "PROFESSOR",
+    "text": "This is the foundation of how Nvidia Isaac trains manipulation policies that can handle real-world variability.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 554360,
+    "duration_ms": 8288,
+    "end_ms": 562648
+  },
+  {
+    "index": 66,
+    "speaker": "RAJESH",
+    "text": "So the distribution tells us: \u201cIf I pick a random student, what\u2019s the probability they\u2019re between 5\u20196\u201d and 5\u20198\u201d?\u201d",
+    "line_type": "dialogue",
+    "chapter": 2,
+    "start_ms": 562648,
+    "duration_ms": 9324,
+    "end_ms": 571972
+  },
+  {
+    "index": 67,
+    "speaker": "PROFESSOR",
+    "text": "Precisely! Now here\u2019s the key insight: we can think about almost ANYTHING as having an underlying probability distribution. Images. Text. Robot trajectories.",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 571972,
+    "duration_ms": 11340,
+    "end_ms": 583312
+  },
+  {
+    "index": 68,
+    "speaker": "PROFESSOR",
+    "text": "Consider all possible images of cats. There\u2019s some incredibly complex, high-dimensional distribution over \u201cvalid cat images.\u201d Most random pixel arrangements are NOT cats - they have zero probability under this distribution. But actual cat photos have high probability.",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 583312,
+    "duration_ms": 17244,
+    "end_ms": 600556
+  },
+  {
+    "index": 69,
+    "speaker": "STUDENT_1",
+    "text": "How is a deep generative model formally defined?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 600556,
+    "duration_ms": 3668,
+    "end_ms": 604224
+  },
+  {
+    "index": 70,
+    "speaker": "PROFESSOR",
+    "text": "A DGM defines P_theta(x) - a probability distribution over data x, parameterized by neural network weights theta. Training adjusts theta so P_theta approximates the true data distribution P_data.",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 604224,
+    "duration_ms": 16428,
+    "end_ms": 620652
+  },
+  {
+    "index": 71,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: P_theta(trajectory | observation) is the VAE's learned distribution. Theta are the encoder/decoder network weights trained on your demos.",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 620652,
+    "duration_ms": 14336,
+    "end_ms": 634988
+  },
+  {
+    "index": 72,
+    "speaker": "STUDENT_2",
+    "text": "It's a neural network that outputs P_theta of x - a probability distribution parameterized by the network weights?",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 634988,
+    "duration_ms": 8128,
+    "end_ms": 643116
+  },
+  {
+    "index": 73,
+    "speaker": "PROFESSOR",
+    "text": "Precisely.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 643116,
+    "duration_ms": 2532,
+    "end_ms": 645648
+  },
+  {
+    "index": 74,
+    "speaker": "PROFESSOR",
+    "text": "Hugging Face's diffusion policy implementations use exactly this formulation for their robotics models.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 645648,
+    "duration_ms": 8096,
+    "end_ms": 653744
+  },
+  {
+    "index": 75,
+    "speaker": "PROFESSOR",
+    "text": "Deep Generative Modeling uses neural networks to learn probability distributions from data. Given training samples, we learn P_theta (a parameterized distribution) that approximates the true data distribution P_data. We can then sample from P_theta to generate new, valid data.",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 653744,
+    "duration_ms": 19716,
+    "end_ms": 673460
+  },
+  {
+    "index": 76,
+    "speaker": "RAJESH",
+    "text": "So for robot learning, we want to learn the distribution of \u201cvalid expert trajectories\u201d?",
+    "line_type": "dialogue",
+    "chapter": 2,
+    "start_ms": 673460,
+    "duration_ms": 7044,
+    "end_ms": 680504
+  },
+  {
+    "index": 77,
+    "speaker": "PROFESSOR",
+    "text": "Exactly! And more specifically, we want to learn P(actions | observations) - given what the robot currently sees, what\u2019s the distribution of appropriate actions?",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 680504,
+    "duration_ms": 11580,
+    "end_ms": 692084
+  },
+  {
+    "index": 78,
+    "speaker": "STUDENT_2",
+    "text": "What is the formula and intuition for KL Divergence?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 692084,
+    "duration_ms": 4028,
+    "end_ms": 696112
+  },
+  {
+    "index": 79,
+    "speaker": "PROFESSOR",
+    "text": "KL(P||Q) = sum P(x) * log(P(x)/Q(x)). Intuition: 'expected surprise when using Q to encode data from P'. It's asymmetric - KL(P||Q) != KL(Q||P).",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 696112,
+    "duration_ms": 17484,
+    "end_ms": 713596
+  },
+  {
+    "index": 80,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: If demos have bimodal trajectories but VAE learns unimodal, KL divergence is high - the model is 'surprised' by trajectories it can't explain.",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 713596,
+    "duration_ms": 13976,
+    "end_ms": 727572
+  },
+  {
+    "index": 81,
+    "speaker": "STUDENT_3",
+    "text": "It measures the 'surprise' when we use Q to describe data that actually comes from P - and it's asymmetric?",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 727572,
+    "duration_ms": 8488,
+    "end_ms": 736060
+  },
+  {
+    "index": 82,
+    "speaker": "PROFESSOR",
+    "text": "That's right.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 736060,
+    "duration_ms": 2436,
+    "end_ms": 738496
+  },
+  {
+    "index": 83,
+    "speaker": "PROFESSOR",
+    "text": "OpenAI uses KL divergence extensively in their training pipelines to ensure learned distributions match real data.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 738496,
+    "duration_ms": 8936,
+    "end_ms": 747432
+  },
+  {
+    "index": 84,
+    "speaker": "PROFESSOR",
+    "text": "The challenge is that this distribution can be incredibly complex - high-dimensional, multimodal, with intricate dependencies between timesteps. That\u2019s where deep generative models come in. They use neural networks to represent these complex distributions in tractable ways.",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 747432,
+    "duration_ms": 16500,
+    "end_ms": 763932
+  },
+  {
+    "index": 85,
+    "speaker": "STUDENT_3",
+    "text": "What are the main types of deep generative models?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 763932,
+    "duration_ms": 3524,
+    "end_ms": 767456
+  },
+  {
+    "index": 86,
+    "speaker": "PROFESSOR",
+    "text": "Energy-Based Models (define energy function), Autoregressive (generate sequentially like GPT), VAEs (encode to latent + decode), GANs (generator vs discriminator), Diffusion (iterative denoising).",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 767456,
+    "duration_ms": 16092,
+    "end_ms": 783548
+  },
+  {
+    "index": 87,
+    "speaker": "PROFESSOR",
+    "text": "ACT uses VAE. Diffusion Policy uses diffusion models. Both can work for SO-ARM101 - VAE is simpler, diffusion may have higher quality.",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 783548,
+    "duration_ms": 12848,
+    "end_ms": 796396
+  },
+  {
+    "index": 88,
+    "speaker": "STUDENT_4",
+    "text": "Energy-based models, autoregressive like GPT, VAEs, GANs, normalizing flows, and diffusion models?",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 796396,
+    "duration_ms": 8872,
+    "end_ms": 805268
+  },
+  {
+    "index": 89,
+    "speaker": "PROFESSOR",
+    "text": "Correct.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 805268,
+    "duration_ms": 2292,
+    "end_ms": 807560
+  },
+  {
+    "index": 90,
+    "speaker": "PROFESSOR",
+    "text": "Google's robotics team evaluates all these families when choosing architectures for new manipulation tasks.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 807560,
+    "duration_ms": 8120,
+    "end_ms": 815680
+  },
+  {
+    "index": 91,
+    "speaker": "STUDENT_4",
+    "text": "What are autoregressive models?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 815680,
+    "duration_ms": 2324,
+    "end_ms": 818004
+  },
+  {
+    "index": 92,
+    "speaker": "PROFESSOR",
+    "text": "Generate data one element at a time, conditioning on previously generated elements. P(x) = P(x1) \u00d7 P(x2|x1) \u00d7 P(x3|x1,x2) \u00d7 ... Like GPT generating tokens.",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 818004,
+    "duration_ms": 18660,
+    "end_ms": 836664
+  },
+  {
+    "index": 93,
+    "speaker": "PROFESSOR",
+    "text": "Autoregressive robot policy: generate action for t=1, then t=2 given t=1, etc. Action Chunking improves on this by predicting chunks of actions at once.",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 836664,
+    "duration_ms": 13760,
+    "end_ms": 850424
+  },
+  {
+    "index": 94,
+    "speaker": "STUDENT_1",
+    "text": "They generate one element at a time, each conditioned on what came before - like GPT predicting the next token?",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 850424,
+    "duration_ms": 8440,
+    "end_ms": 858864
+  },
+  {
+    "index": 95,
+    "speaker": "PROFESSOR",
+    "text": "Exactly.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 858864,
+    "duration_ms": 2460,
+    "end_ms": 861324
+  },
+  {
+    "index": 96,
+    "speaker": "PROFESSOR",
+    "text": "Action Transformer policies use this autoregressive structure to generate coherent action sequences.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 861324,
+    "duration_ms": 7976,
+    "end_ms": 869300
+  },
+  {
+    "index": 97,
+    "speaker": "PROFESSOR",
+    "text": "Chapter 3. .",
+    "line_type": "transition",
+    "chapter": 3,
+    "start_ms": 869300,
+    "duration_ms": 2632,
+    "end_ms": 871932
+  },
+  {
+    "index": 98,
+    "speaker": "RAJESH",
+    "text": "Okay, so we\u2019re trying to learn P_theta that matches P_data. But how do we measure if two distributions are \u201cclose\u201d to each other? It\u2019s not like we can just subtract them.",
+    "line_type": "dialogue",
+    "chapter": 3,
+    "start_ms": 871932,
+    "duration_ms": 12468,
+    "end_ms": 884400
+  },
+  {
+    "index": 99,
+    "speaker": "PROFESSOR",
+    "text": "Great question! The standard tool for this is KL Divergence - it measures how different two probability distributions are.",
+    "line_type": "lecture",
+    "chapter": 3,
+    "start_ms": 884400,
+    "duration_ms": 8796,
+    "end_ms": 893196
+  },
+  {
+    "index": 100,
+    "speaker": "STUDENT_1",
+    "text": "What does it mean to 'think in probability distributions' for robotics?",
+    "line_type": "question",
+    "chapter": 3,
+    "start_ms": 893196,
+    "duration_ms": 5132,
+    "end_ms": 898328
+  },
+  {
+    "index": 101,
+    "speaker": "PROFESSOR",
+    "text": "Instead of asking 'what is THE action?', ask 'what is the distribution of valid actions?'. Every prediction becomes a distribution with mean, variance, and potentially multiple modes.",
+    "line_type": "answer",
+    "chapter": 3,
+    "start_ms": 898328,
+    "duration_ms": 12132,
+    "end_ms": 910460
+  },
+  {
+    "index": 102,
+    "speaker": "PROFESSOR",
+    "text": "For a fabric configuration, the action distribution might be bimodal: P(left-fold) = 0.5, P(right-fold) = 0.5. Sampling picks one coherent strategy.",
+    "line_type": "example",
+    "chapter": 3,
+    "start_ms": 910460,
+    "duration_ms": 14528,
+    "end_ms": 924988
+  },
+  {
+    "index": 103,
+    "speaker": "STUDENT_2",
+    "text": "Instead of asking 'what is THE action', we ask 'what are ALL the valid actions and their likelihoods'?",
+    "line_type": "echo",
+    "chapter": 3,
+    "start_ms": 924988,
+    "duration_ms": 7600,
+    "end_ms": 932588
+  },
+  {
+    "index": 104,
+    "speaker": "PROFESSOR",
+    "text": "Precisely.",
+    "line_type": "acknowledgment",
+    "chapter": 3,
+    "start_ms": 932588,
+    "duration_ms": 2532,
+    "end_ms": 935120
+  },
+  {
+    "index": 105,
+    "speaker": "PROFESSOR",
+    "text": "This shift in thinking is why Waymo can predict multiple possible vehicle trajectories rather than just one.",
+    "line_type": "consequence",
+    "chapter": 3,
+    "start_ms": 935120,
+    "duration_ms": 8000,
+    "end_ms": 943120
+  },
+  {
+    "index": 106,
+    "speaker": "PROFESSOR",
+    "text": "\\[KL(P || Q) = \\sum P(x) \\cdot \\log\\frac{P(x)}{Q(x)}\\]",
+    "line_type": "lecture",
+    "chapter": 3,
+    "start_ms": 943120,
+    "duration_ms": 9924,
+    "end_ms": 953044
+  },
+  {
+    "index": 107,
+    "speaker": "STUDENT_2",
+    "text": "What is KL Divergence and why do we need it?",
+    "line_type": "question",
+    "chapter": 3,
+    "start_ms": 953044,
+    "duration_ms": 3380,
+    "end_ms": 956424
+  },
+  {
+    "index": 108,
+    "speaker": "PROFESSOR",
+    "text": "KL Divergence measures how different two probability distributions are. We use it to quantify how well our learned P_theta matches the true P_data. Lower KL = better model.",
+    "line_type": "answer",
+    "chapter": 3,
+    "start_ms": 956424,
+    "duration_ms": 12924,
+    "end_ms": 969348
+  },
+  {
+    "index": 109,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: KL divergence measures how well your trained VAE's distribution matches the distribution of expert demonstrations. Training minimizes this gap.",
+    "line_type": "example",
+    "chapter": 3,
+    "start_ms": 969348,
+    "duration_ms": 12704,
+    "end_ms": 982052
+  },
+  {
+    "index": 110,
+    "speaker": "STUDENT_3",
+    "text": "It quantifies how different two distributions are - so we can measure if our model matches reality?",
+    "line_type": "echo",
+    "chapter": 3,
+    "start_ms": 982052,
+    "duration_ms": 7528,
+    "end_ms": 989580
+  },
+  {
+    "index": 111,
+    "speaker": "PROFESSOR",
+    "text": "Exactly.",
+    "line_type": "acknowledgment",
+    "chapter": 3,
+    "start_ms": 989580,
+    "duration_ms": 2460,
+    "end_ms": 992040
+  },
+  {
+    "index": 112,
+    "speaker": "PROFESSOR",
+    "text": "Tesla trains Optimus using KL divergence to ensure their learned policies capture the full range of human demonstrations.",
+    "line_type": "consequence",
+    "chapter": 3,
+    "start_ms": 992040,
+    "duration_ms": 9128,
+    "end_ms": 1001168
+  },
+  {
+    "index": 113,
+    "speaker": "PROFESSOR",
+    "text": "Think of it as the \u201csurprise\u201d you\u2019d experience if you assumed Q was true, but data actually came from P.",
+    "line_type": "lecture",
+    "chapter": 3,
+    "start_ms": 1001168,
+    "duration_ms": 8052,
+    "end_ms": 1009220
+  },
+  {
+    "index": 114,
+    "speaker": "PROFESSOR",
+    "text": "If Q assigns low probability to something P says is common, you\u2019d be very surprised when it happens - that\u2019s a high KL divergence. If Q and P agree on what\u2019s likely and unlikely, minimal surprise - low KL divergence.",
+    "line_type": "lecture",
+    "chapter": 3,
+    "start_ms": 1009220,
+    "duration_ms": 14844,
+    "end_ms": 1024064
+  },
+  {
+    "index": 115,
+    "speaker": "RAJESH",
+    "text": "So when we train a deep generative model, we\u2019re essentially minimizing the KL divergence between our learned distribution and the true data distribution?",
+    "line_type": "dialogue",
+    "chapter": 3,
+    "start_ms": 1024064,
+    "duration_ms": 10236,
+    "end_ms": 1034300
+  },
+  {
+    "index": 116,
+    "speaker": "STUDENT_3",
+    "text": "What makes modeling distributions with neural networks challenging?",
+    "line_type": "question",
+    "chapter": 3,
+    "start_ms": 1034300,
+    "duration_ms": 4556,
+    "end_ms": 1038856
+  },
+  {
+    "index": 117,
+    "speaker": "PROFESSOR",
+    "text": "High-dimensional data (images have millions of pixels), complex structure (multimodal, correlated), and intractable normalization constants. Direct likelihood computation is often impossible.",
+    "line_type": "answer",
+    "chapter": 3,
+    "start_ms": 1038856,
+    "duration_ms": 13260,
+    "end_ms": 1052116
+  },
+  {
+    "index": 118,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: Action trajectory distribution is high-dimensional (12 joints \u00d7 100 timesteps = 1200D), multimodal, and temporally correlated. VAEs handle this via latent spaces.",
+    "line_type": "example",
+    "chapter": 3,
+    "start_ms": 1052116,
+    "duration_ms": 16688,
+    "end_ms": 1068804
+  },
+  {
+    "index": 119,
+    "speaker": "STUDENT_4",
+    "text": "High dimensions, complex correlations, and those intractable normalization constants?",
+    "line_type": "echo",
+    "chapter": 3,
+    "start_ms": 1068804,
+    "duration_ms": 6040,
+    "end_ms": 1074844
+  },
+  {
+    "index": 120,
+    "speaker": "PROFESSOR",
+    "text": "That's right.",
+    "line_type": "acknowledgment",
+    "chapter": 3,
+    "start_ms": 1074844,
+    "duration_ms": 2436,
+    "end_ms": 1077280
+  },
+  {
+    "index": 121,
+    "speaker": "PROFESSOR",
+    "text": "This is why Boston Dynamics invests heavily in efficient approximation methods for their control policies.",
+    "line_type": "consequence",
+    "chapter": 3,
+    "start_ms": 1077280,
+    "duration_ms": 8000,
+    "end_ms": 1085280
+  },
+  {
+    "index": 122,
+    "speaker": "PROFESSOR",
+    "text": "That\u2019s the ideal, yes. In practice, we can\u2019t compute the true data distribution P_data directly - we only have samples from it. But clever training objectives (like the ELBO we\u2019ll discuss later) let us minimize KL divergence indirectly.",
+    "line_type": "lecture",
+    "chapter": 3,
+    "start_ms": 1085280,
+    "duration_ms": 16644,
+    "end_ms": 1101924
+  },
+  {
+    "index": 123,
+    "speaker": "PROFESSOR",
+    "text": "This is crucial for understanding VAEs: the regularization term in their loss function IS a KL divergence - specifically, forcing the learned latent distribution to be close to a standard Gaussian.",
+    "line_type": "lecture",
+    "chapter": 3,
+    "start_ms": 1101924,
+    "duration_ms": 12804,
+    "end_ms": 1114728
+  },
+  {
+    "index": 124,
+    "speaker": "STUDENT_4",
+    "text": "What are Energy-Based Models (EBMs)?",
+    "line_type": "question",
+    "chapter": 3,
+    "start_ms": 1114728,
+    "duration_ms": 3260,
+    "end_ms": 1117988
+  },
+  {
+    "index": 125,
+    "speaker": "PROFESSOR",
+    "text": "EBMs assign low energy to likely data, high energy to unlikely data. Probability is proportional to exp(-Energy). Training pushes down energy of real data, up for fake data.",
+    "line_type": "answer",
+    "chapter": 3,
+    "start_ms": 1117988,
+    "duration_ms": 13020,
+    "end_ms": 1131008
+  },
+  {
+    "index": 126,
+    "speaker": "PROFESSOR",
+    "text": "EBM for folding would assign low energy to valid folding trajectories, high energy to nonsense motions. Sampling finds low-energy trajectories.",
+    "line_type": "example",
+    "chapter": 3,
+    "start_ms": 1131008,
+    "duration_ms": 10640,
+    "end_ms": 1141648
+  },
+  {
+    "index": 127,
+    "speaker": "STUDENT_1",
+    "text": "They assign low energy to likely data, high energy to unlikely - and probability is proportional to negative exponential of energy?",
+    "line_type": "echo",
+    "chapter": 3,
+    "start_ms": 1141648,
+    "duration_ms": 9232,
+    "end_ms": 1150880
+  },
+  {
+    "index": 128,
+    "speaker": "PROFESSOR",
+    "text": "Correct.",
+    "line_type": "acknowledgment",
+    "chapter": 3,
+    "start_ms": 1150880,
+    "duration_ms": 2292,
+    "end_ms": 1153172
+  },
+  {
+    "index": 129,
+    "speaker": "PROFESSOR",
+    "text": "DeepMind explored EBMs for their AlphaFold protein structure predictions using similar energy landscapes.",
+    "line_type": "consequence",
+    "chapter": 3,
+    "start_ms": 1153172,
+    "duration_ms": 8528,
+    "end_ms": 1161700
+  },
+  {
+    "index": 130,
+    "speaker": "PROFESSOR",
+    "text": "Chapter 4. .",
+    "line_type": "transition",
+    "chapter": 4,
+    "start_ms": 1161700,
+    "duration_ms": 2608,
+    "end_ms": 1164308
+  },
+  {
+    "index": 131,
+    "speaker": "RAJESH",
+    "text": "Before we dive into VAEs specifically, can you explain this concept of \u201clatent variables\u201d I keep seeing? What are they?",
+    "line_type": "dialogue",
+    "chapter": 4,
+    "start_ms": 1164308,
+    "duration_ms": 8508,
+    "end_ms": 1172816
+  },
+  {
+    "index": 132,
+    "speaker": "PROFESSOR",
+    "text": "Let me explain with a thought experiment. Imagine you collect handwriting samples from 100 students - everyone writes the word \u201chello.\u201d Each sample looks different. Now, here\u2019s the question: what hidden factors determine each person\u2019s handwriting style?",
+    "line_type": "lecture",
+    "chapter": 4,
+    "start_ms": 1172816,
+    "duration_ms": 16020,
+    "end_ms": 1188836
+  },
+  {
+    "index": 133,
+    "speaker": "RAJESH",
+    "text": "Hmm... maybe how much pressure they apply, whether they slant left or right, how fast they write, how neat they are?",
+    "line_type": "dialogue",
+    "chapter": 4,
+    "start_ms": 1188836,
+    "duration_ms": 8556,
+    "end_ms": 1197392
+  },
+  {
+    "index": 134,
+    "speaker": "STUDENT_1",
+    "text": "What is a Variational Autoencoder (VAE)?",
+    "line_type": "question",
+    "chapter": 4,
+    "start_ms": 1197392,
+    "duration_ms": 4052,
+    "end_ms": 1201444
+  },
+  {
+    "index": 135,
+    "speaker": "PROFESSOR",
+    "text": "VAE encodes data to a low-dimensional latent space (compression), then decodes back. The 'variational' part means the latent representation is a distribution, not a point - enabling generation.",
+    "line_type": "answer",
+    "chapter": 4,
+    "start_ms": 1201444,
+    "duration_ms": 13740,
+    "end_ms": 1215184
+  },
+  {
+    "index": 136,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: VAE compresses 100-step folding trajectory to 64D latent code, then decodes to reconstruct trajectory. The latent space is continuous and generative.",
+    "line_type": "example",
+    "chapter": 4,
+    "start_ms": 1215184,
+    "duration_ms": 14456,
+    "end_ms": 1229640
+  },
+  {
+    "index": 137,
+    "speaker": "STUDENT_2",
+    "text": "It compresses data to a latent space, but the compression is a distribution, not a point - and we can sample from it?",
+    "line_type": "echo",
+    "chapter": 4,
+    "start_ms": 1229640,
+    "duration_ms": 7768,
+    "end_ms": 1237408
+  },
+  {
+    "index": 138,
+    "speaker": "PROFESSOR",
+    "text": "Exactly.",
+    "line_type": "acknowledgment",
+    "chapter": 4,
+    "start_ms": 1237408,
+    "duration_ms": 2460,
+    "end_ms": 1239868
+  },
+  {
+    "index": 139,
+    "speaker": "PROFESSOR",
+    "text": "ACT uses this exact architecture - the latent captures the 'style' of how demonstrations are performed.",
+    "line_type": "consequence",
+    "chapter": 4,
+    "start_ms": 1239868,
+    "duration_ms": 8600,
+    "end_ms": 1248468
+  },
+  {
+    "index": 140,
+    "speaker": "PROFESSOR",
+    "text": "Exactly! These hidden factors - pressure, slant, speed, neatness - are not directly visible in the final image. But they CAUSE the differences we observe. In machine learning, we call these latent variables .",
+    "line_type": "lecture",
+    "chapter": 4,
+    "start_ms": 1248468,
+    "duration_ms": 13644,
+    "end_ms": 1262112
+  },
+  {
+    "index": 141,
+    "speaker": "RAJESH",
+    "text": "So every handwriting sample can be described by a \u201csecret recipe\u201d of these hidden factors?",
+    "line_type": "dialogue",
+    "chapter": 4,
+    "start_ms": 1262112,
+    "duration_ms": 7452,
+    "end_ms": 1269564
+  },
+  {
+    "index": 142,
+    "speaker": "PROFESSOR",
+    "text": "I love that analogy! Yes, think of it like a machine with hidden knobs:",
+    "line_type": "lecture",
+    "chapter": 4,
+    "start_ms": 1269564,
+    "duration_ms": 5988,
+    "end_ms": 1275552
+  },
+  {
+    "index": 143,
+    "speaker": "STUDENT_2",
+    "text": "How does the handwriting example illustrate VAE concepts?",
+    "line_type": "question",
+    "chapter": 4,
+    "start_ms": 1275552,
+    "duration_ms": 4220,
+    "end_ms": 1279772
+  },
+  {
+    "index": 144,
+    "speaker": "PROFESSOR",
+    "text": "100 people write 'hello' differently - same content, different styles. VAE learns a latent space where each point represents a style (slant, pressure, speed). Sampling generates new handwriting styles.",
+    "line_type": "answer",
+    "chapter": 4,
+    "start_ms": 1279772,
+    "duration_ms": 14628,
+    "end_ms": 1294400
+  },
+  {
+    "index": 145,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: Same analogy for folding: different demos have different styles (speed, grip force, sequence). VAE captures this variation in latent space.",
+    "line_type": "example",
+    "chapter": 4,
+    "start_ms": 1294400,
+    "duration_ms": 13688,
+    "end_ms": 1308088
+  },
+  {
+    "index": 146,
+    "speaker": "STUDENT_3",
+    "text": "A hundred people write 'hello' differently - the latent space captures slant, pressure, all those style factors?",
+    "line_type": "echo",
+    "chapter": 4,
+    "start_ms": 1308088,
+    "duration_ms": 8752,
+    "end_ms": 1316840
+  },
+  {
+    "index": 147,
+    "speaker": "PROFESSOR",
+    "text": "Precisely.",
+    "line_type": "acknowledgment",
+    "chapter": 4,
+    "start_ms": 1316840,
+    "duration_ms": 2532,
+    "end_ms": 1319372
+  },
+  {
+    "index": 148,
+    "speaker": "PROFESSOR",
+    "text": "Figure 01 uses similar latent representations to capture the 'personality' of different human demonstrations.",
+    "line_type": "consequence",
+    "chapter": 4,
+    "start_ms": 1319372,
+    "duration_ms": 8720,
+    "end_ms": 1328092
+  },
+  {
+    "index": 149,
+    "speaker": "PROFESSOR",
+    "text": "If I know Rohan writes with: - Slant: slightly right - Pressure: medium - Speed: fast - Neatness: low",
+    "line_type": "lecture",
+    "chapter": 4,
+    "start_ms": 1328092,
+    "duration_ms": 8868,
+    "end_ms": 1336960
+  },
+  {
+    "index": 150,
+    "speaker": "PROFESSOR",
+    "text": "Then I can uniquely identify his handwriting style. These knob settings ARE the latent variables.",
+    "line_type": "lecture",
+    "chapter": 4,
+    "start_ms": 1336960,
+    "duration_ms": 6924,
+    "end_ms": 1343884
+  },
+  {
+    "index": 151,
+    "speaker": "PROFESSOR",
+    "text": "Latent variables are low-dimensional hidden factors that explain the variation in high-dimensional data. They\u2019re not directly observed but are inferred during training. The decoder can generate data from any point in latent space.",
+    "line_type": "lecture",
+    "chapter": 4,
+    "start_ms": 1343884,
+    "duration_ms": 13476,
+    "end_ms": 1357360
+  },
+  {
+    "index": 152,
+    "speaker": "STUDENT_3",
+    "text": "What does the VAE encoder do?",
+    "line_type": "question",
+    "chapter": 4,
+    "start_ms": 1357360,
+    "duration_ms": 2876,
+    "end_ms": 1360236
+  },
+  {
+    "index": 153,
+    "speaker": "PROFESSOR",
+    "text": "The encoder maps high-dimensional data to low-dimensional latent distribution. It outputs mean (\u03bc) and variance (\u03c3\u00b2) of a Gaussian in latent space, not a point.",
+    "line_type": "answer",
+    "chapter": 4,
+    "start_ms": 1360236,
+    "duration_ms": 12756,
+    "end_ms": 1372992
+  },
+  {
+    "index": 154,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: Encoder takes 100-step trajectory from your demo, outputs (\u03bc, \u03c3) in 64D latent space. This represents where your demo 'lives' in style space.",
+    "line_type": "example",
+    "chapter": 4,
+    "start_ms": 1372992,
+    "duration_ms": 15176,
+    "end_ms": 1388168
+  },
+  {
+    "index": 155,
+    "speaker": "STUDENT_4",
+    "text": "It takes input data and outputs the parameters of a distribution in latent space - mean and variance?",
+    "line_type": "echo",
+    "chapter": 4,
+    "start_ms": 1388168,
+    "duration_ms": 6976,
+    "end_ms": 1395144
+  },
+  {
+    "index": 156,
+    "speaker": "PROFESSOR",
+    "text": "That's right.",
+    "line_type": "acknowledgment",
+    "chapter": 4,
+    "start_ms": 1395144,
+    "duration_ms": 2436,
+    "end_ms": 1397580
+  },
+  {
+    "index": 157,
+    "speaker": "PROFESSOR",
+    "text": "Google's RT-2 uses transformer encoders that produce these distributional embeddings for robotic actions.",
+    "line_type": "consequence",
+    "chapter": 4,
+    "start_ms": 1397580,
+    "duration_ms": 8504,
+    "end_ms": 1406084
+  },
+  {
+    "index": 158,
+    "speaker": "RAJESH",
+    "text": "And for robotics, the latent variables would capture things like... folding style? Speed preference? Which arm moves first?",
+    "line_type": "dialogue",
+    "chapter": 4,
+    "start_ms": 1406084,
+    "duration_ms": 8748,
+    "end_ms": 1414832
+  },
+  {
+    "index": 159,
+    "speaker": "PROFESSOR",
+    "text": "Precisely! For your SO-ARM101 folding task, the latent space might encode: - Overall movement speed - Grip force preference - Left-first vs right-first tendency - Precision vs speed tradeoff",
+    "line_type": "lecture",
+    "chapter": 4,
+    "start_ms": 1414832,
+    "duration_ms": 14124,
+    "end_ms": 1428956
+  },
+  {
+    "index": 160,
+    "speaker": "PROFESSOR",
+    "text": "Different demonstrations from different people would map to different regions of this latent space. And crucially - you can SAMPLE from this space to generate new, valid trajectories with different styles!",
+    "line_type": "lecture",
+    "chapter": 4,
+    "start_ms": 1428956,
+    "duration_ms": 12180,
+    "end_ms": 1441136
+  },
+  {
+    "index": 161,
+    "speaker": "STUDENT_4",
+    "text": "Why is MNIST a good example for understanding VAEs?",
+    "line_type": "question",
+    "chapter": 4,
+    "start_ms": 1441136,
+    "duration_ms": 3980,
+    "end_ms": 1445116
+  },
+  {
+    "index": 162,
+    "speaker": "PROFESSOR",
+    "text": "MNIST digits are simple (28\u00d728 grayscale) but have variation (10 classes, different styles). VAE learns a 2D latent space where different digits cluster separately, and interpolation generates valid digits.",
+    "line_type": "answer",
+    "chapter": 4,
+    "start_ms": 1445116,
+    "duration_ms": 15540,
+    "end_ms": 1460656
+  },
+  {
+    "index": 163,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: Just as VAE learns digit structure, it can learn trajectory structure for folding - what makes a valid fold vs random motion.",
+    "line_type": "example",
+    "chapter": 4,
+    "start_ms": 1460656,
+    "duration_ms": 12248,
+    "end_ms": 1472904
+  },
+  {
+    "index": 164,
+    "speaker": "STUDENT_1",
+    "text": "Simple enough to visualize the latent space, but complex enough to show meaningful structure?",
+    "line_type": "echo",
+    "chapter": 4,
+    "start_ms": 1472904,
+    "duration_ms": 6904,
+    "end_ms": 1479808
+  },
+  {
+    "index": 165,
+    "speaker": "PROFESSOR",
+    "text": "Correct.",
+    "line_type": "acknowledgment",
+    "chapter": 4,
+    "start_ms": 1479808,
+    "duration_ms": 2292,
+    "end_ms": 1482100
+  },
+  {
+    "index": 166,
+    "speaker": "PROFESSOR",
+    "text": "Most robotics papers still use MNIST-like simple tasks to validate VAE architectures before scaling to manipulation.",
+    "line_type": "consequence",
+    "chapter": 4,
+    "start_ms": 1482100,
+    "duration_ms": 9176,
+    "end_ms": 1491276
+  },
+  {
+    "index": 167,
+    "speaker": "STUDENT_1",
+    "text": "What makes a VAE 'variational' vs a regular autoencoder?",
+    "line_type": "question",
+    "chapter": 4,
+    "start_ms": 1491276,
+    "duration_ms": 5684,
+    "end_ms": 1496960
+  },
+  {
+    "index": 168,
+    "speaker": "PROFESSOR",
+    "text": "Regular AE encodes to a point. VAE encodes to a distribution (mean + variance). This enables: 1) Sampling new points 2) Continuous latent space 3) Regularization via KL term.",
+    "line_type": "answer",
+    "chapter": 4,
+    "start_ms": 1496960,
+    "duration_ms": 14676,
+    "end_ms": 1511636
+  },
+  {
+    "index": 169,
+    "speaker": "PROFESSOR",
+    "text": "AE would memorize exact demos. VAE learns a smooth space where you can sample new, valid trajectories that weren't in training data.",
+    "line_type": "example",
+    "chapter": 4,
+    "start_ms": 1511636,
+    "duration_ms": 10136,
+    "end_ms": 1521772
+  },
+  {
+    "index": 170,
+    "speaker": "STUDENT_2",
+    "text": "Regular autoencoders encode to points. VAEs encode to distributions, which enables sampling and prevents overfitting?",
+    "line_type": "echo",
+    "chapter": 4,
+    "start_ms": 1521772,
+    "duration_ms": 9160,
+    "end_ms": 1530932
+  },
+  {
+    "index": 171,
+    "speaker": "PROFESSOR",
+    "text": "Exactly.",
+    "line_type": "acknowledgment",
+    "chapter": 4,
+    "start_ms": 1530932,
+    "duration_ms": 2460,
+    "end_ms": 1533392
+  },
+  {
+    "index": 172,
+    "speaker": "PROFESSOR",
+    "text": "This variational property is why Sanctuary AI chose VAEs over autoencoders for their dexterous manipulation policies.",
+    "line_type": "consequence",
+    "chapter": 4,
+    "start_ms": 1533392,
+    "duration_ms": 9512,
+    "end_ms": 1542904
+  },
+  {
+    "index": 173,
+    "speaker": "STUDENT_2",
+    "text": "What are all the components of a complete VAE?",
+    "line_type": "question",
+    "chapter": 4,
+    "start_ms": 1542904,
+    "duration_ms": 3380,
+    "end_ms": 1546284
+  },
+  {
+    "index": 174,
+    "speaker": "PROFESSOR",
+    "text": "Encoder network (outputs \u03bc, \u03c3), reparameterization (z = \u03bc + \u03c3\u03b5), decoder network (outputs reconstruction distribution), loss function (reconstruction + KL divergence).",
+    "line_type": "answer",
+    "chapter": 4,
+    "start_ms": 1546284,
+    "duration_ms": 14724,
+    "end_ms": 1561008
+  },
+  {
+    "index": 175,
+    "speaker": "PROFESSOR",
+    "text": "Your ACT uses: trajectory encoder to latent (\u03bc, \u03c3) to sample z to transformer decoder to action sequence. Same VAE principles throughout.",
+    "line_type": "example",
+    "chapter": 4,
+    "start_ms": 1561008,
+    "duration_ms": 12224,
+    "end_ms": 1573232
+  },
+  {
+    "index": 176,
+    "speaker": "STUDENT_3",
+    "text": "Encoder network, reparameterization trick, decoder network, reconstruction loss, and KL loss?",
+    "line_type": "echo",
+    "chapter": 4,
+    "start_ms": 1573232,
+    "duration_ms": 8392,
+    "end_ms": 1581624
+  },
+  {
+    "index": 177,
+    "speaker": "PROFESSOR",
+    "text": "Precisely.",
+    "line_type": "acknowledgment",
+    "chapter": 4,
+    "start_ms": 1581624,
+    "duration_ms": 2532,
+    "end_ms": 1584156
+  },
+  {
+    "index": 178,
+    "speaker": "PROFESSOR",
+    "text": "Nvidia Isaac Lab provides all these components as modular building blocks for custom policy development.",
+    "line_type": "consequence",
+    "chapter": 4,
+    "start_ms": 1584156,
+    "duration_ms": 8072,
+    "end_ms": 1592228
+  },
+  {
+    "index": 179,
+    "speaker": "PROFESSOR",
+    "text": "Chapter 5. .",
+    "line_type": "transition",
+    "chapter": 5,
+    "start_ms": 1592228,
+    "duration_ms": 2632,
+    "end_ms": 1594860
+  },
+  {
+    "index": 180,
+    "speaker": "RAJESH",
+    "text": "Okay, so latent variables are the \u201csecret recipe.\u201d But how do we find them? Given a handwriting sample, how do we know its slant and neatness values?",
+    "line_type": "dialogue",
+    "chapter": 5,
+    "start_ms": 1594860,
+    "duration_ms": 11148,
+    "end_ms": 1606008
+  },
+  {
+    "index": 181,
+    "speaker": "PROFESSOR",
+    "text": "That\u2019s the job of the encoder ! The encoder is a neural network that takes high-dimensional data (like a 28\u00d728 pixel image = 784 dimensions) and compresses it down to the latent representation.",
+    "line_type": "lecture",
+    "chapter": 5,
+    "start_ms": 1606008,
+    "duration_ms": 14292,
+    "end_ms": 1620300
+  },
+  {
+    "index": 182,
+    "speaker": "RAJESH",
+    "text": "Wait, 784 dimensions down to 2? That\u2019s an insane compression ratio!",
+    "line_type": "dialogue",
+    "chapter": 5,
+    "start_ms": 1620300,
+    "duration_ms": 7068,
+    "end_ms": 1627368
+  },
+  {
+    "index": 183,
+    "speaker": "STUDENT_3",
+    "text": "What hardware considerations were discussed?",
+    "line_type": "question",
+    "chapter": 5,
+    "start_ms": 1627368,
+    "duration_ms": 3260,
+    "end_ms": 1630628
+  },
+  {
+    "index": 184,
+    "speaker": "PROFESSOR",
+    "text": "SO-ARM101 ordering through Vizuara, bimanual kit options, servo specifications, camera requirements. The 4-arm setup enables Leader-Follower teleoperation for data collection.",
+    "line_type": "answer",
+    "chapter": 5,
+    "start_ms": 1630628,
+    "duration_ms": 12924,
+    "end_ms": 1643552
+  },
+  {
+    "index": 185,
+    "speaker": "PROFESSOR",
+    "text": "Your Blue kit (right arm) and Orange kit (left arm) form the bimanual setup. Each has Leader and Follower - 4 arms total, 48 servos.",
+    "line_type": "example",
+    "chapter": 5,
+    "start_ms": 1643552,
+    "duration_ms": 11360,
+    "end_ms": 1654912
+  },
+  {
+    "index": 186,
+    "speaker": "STUDENT_4",
+    "text": "SO-ARM101 ordering, bimanual setup with four arms total, servo specs, and camera integration for teleoperation?",
+    "line_type": "echo",
+    "chapter": 5,
+    "start_ms": 1654912,
+    "duration_ms": 9136,
+    "end_ms": 1664048
+  },
+  {
+    "index": 187,
+    "speaker": "PROFESSOR",
+    "text": "That's right.",
+    "line_type": "acknowledgment",
+    "chapter": 5,
+    "start_ms": 1664048,
+    "duration_ms": 2436,
+    "end_ms": 1666484
+  },
+  {
+    "index": 188,
+    "speaker": "PROFESSOR",
+    "text": "This leader-follower architecture mirrors how 1X Technologies trains their humanoid robots.",
+    "line_type": "consequence",
+    "chapter": 5,
+    "start_ms": 1666484,
+    "duration_ms": 7808,
+    "end_ms": 1674292
+  },
+  {
+    "index": 189,
+    "speaker": "PROFESSOR",
+    "text": "It is! And that\u2019s exactly the point. The encoder learns to extract only the ESSENTIAL information - the factors that actually matter for reconstruction. All the redundancy, all the noise, gets thrown away.",
+    "line_type": "lecture",
+    "chapter": 5,
+    "start_ms": 1674292,
+    "duration_ms": 12972,
+    "end_ms": 1687264
+  },
+  {
+    "index": 190,
+    "speaker": "PROFESSOR",
+    "text": "For MNIST digits, you can capture the essential identity of a digit in just 2-10 dimensions. For robot trajectories (12 joints \u00d7 100 timesteps = 1200 dimensions), you might use 64 or 128 latent dimensions.",
+    "line_type": "lecture",
+    "chapter": 5,
+    "start_ms": 1687264,
+    "duration_ms": 16380,
+    "end_ms": 1703644
+  },
+  {
+    "index": 191,
+    "speaker": "RAJESH",
+    "text": "Hold on - you said the encoder outputs mean AND variance? Not just a point in latent space?",
+    "line_type": "dialogue",
+    "chapter": 5,
+    "start_ms": 1703644,
+    "duration_ms": 7068,
+    "end_ms": 1710712
+  },
+  {
+    "index": 192,
+    "speaker": "STUDENT_4",
+    "text": "What are hidden factors of variation?",
+    "line_type": "question",
+    "chapter": 5,
+    "start_ms": 1710712,
+    "duration_ms": 2660,
+    "end_ms": 1713372
+  },
+  {
+    "index": 193,
+    "speaker": "PROFESSOR",
+    "text": "Underlying properties that cause observed differences in data. For handwriting: pressure, slant, speed. For images: lighting, pose, expression. These aren't directly observed but explain variation.",
+    "line_type": "answer",
+    "chapter": 5,
+    "start_ms": 1713372,
+    "duration_ms": 13548,
+    "end_ms": 1726920
+  },
+  {
+    "index": 194,
+    "speaker": "PROFESSOR",
+    "text": "For folding demos: your personal style, fabric grip preference, speed profile. These hidden factors are what the latent space captures.",
+    "line_type": "example",
+    "chapter": 5,
+    "start_ms": 1726920,
+    "duration_ms": 9872,
+    "end_ms": 1736792
+  },
+  {
+    "index": 195,
+    "speaker": "STUDENT_1",
+    "text": "The underlying causes that explain why data varies - like writing style, lighting conditions, or manipulation intent?",
+    "line_type": "echo",
+    "chapter": 5,
+    "start_ms": 1736792,
+    "duration_ms": 8704,
+    "end_ms": 1745496
+  },
+  {
+    "index": 196,
+    "speaker": "PROFESSOR",
+    "text": "Exactly.",
+    "line_type": "acknowledgment",
+    "chapter": 5,
+    "start_ms": 1745496,
+    "duration_ms": 2460,
+    "end_ms": 1747956
+  },
+  {
+    "index": 197,
+    "speaker": "PROFESSOR",
+    "text": "Understanding these factors is how Tesla disentangles different driving styles in their training data.",
+    "line_type": "consequence",
+    "chapter": 5,
+    "start_ms": 1747956,
+    "duration_ms": 7472,
+    "end_ms": 1755428
+  },
+  {
+    "index": 198,
+    "speaker": "PROFESSOR",
+    "text": "Ah, you\u2019ve noticed the crucial detail! This is what makes it a Variational Autoencoder. The encoder doesn\u2019t output a single point - it outputs a DISTRIBUTION.",
+    "line_type": "lecture",
+    "chapter": 5,
+    "start_ms": 1755428,
+    "duration_ms": 10860,
+    "end_ms": 1766288
+  },
+  {
+    "index": 199,
+    "speaker": "PROFESSOR",
+    "text": "It says: \u201cThis image probably came from somewhere in THIS REGION of latent space\u201d - not \u201cit came from exactly THIS point.\u201d",
+    "line_type": "lecture",
+    "chapter": 5,
+    "start_ms": 1766288,
+    "duration_ms": 8484,
+    "end_ms": 1774772
+  },
+  {
+    "index": 200,
+    "speaker": "RAJESH",
+    "text": "But why? What\u2019s wrong with just outputting a point?",
+    "line_type": "dialogue",
+    "chapter": 5,
+    "start_ms": 1774772,
+    "duration_ms": 4596,
+    "end_ms": 1779368
+  },
+  {
+    "index": 201,
+    "speaker": "STUDENT_1",
+    "text": "How can we visualize latent space?",
+    "line_type": "question",
+    "chapter": 5,
+    "start_ms": 1779368,
+    "duration_ms": 3044,
+    "end_ms": 1782412
+  },
+  {
+    "index": 202,
+    "speaker": "PROFESSOR",
+    "text": "For 2D latent space: each point is (z1, z2). z1 might represent 'slant', z2 might represent 'neatness'. Similar data points cluster together. Moving in latent space smoothly changes output.",
+    "line_type": "answer",
+    "chapter": 5,
+    "start_ms": 1782412,
+    "duration_ms": 15084,
+    "end_ms": 1797496
+  },
+  {
+    "index": 203,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: Trained on folding demos, 2D latent might have z1='speed' and z2='precision'. Fast-sloppy demos cluster separately from slow-careful ones.",
+    "line_type": "example",
+    "chapter": 5,
+    "start_ms": 1797496,
+    "duration_ms": 15056,
+    "end_ms": 1812552
+  },
+  {
+    "index": 204,
+    "speaker": "STUDENT_2",
+    "text": "Plot 2D projections and see that similar inputs cluster together - digits organize by shape, styles form continuous paths?",
+    "line_type": "echo",
+    "chapter": 5,
+    "start_ms": 1812552,
+    "duration_ms": 8872,
+    "end_ms": 1821424
+  },
+  {
+    "index": 205,
+    "speaker": "PROFESSOR",
+    "text": "Precisely.",
+    "line_type": "acknowledgment",
+    "chapter": 5,
+    "start_ms": 1821424,
+    "duration_ms": 2532,
+    "end_ms": 1823956
+  },
+  {
+    "index": 206,
+    "speaker": "PROFESSOR",
+    "text": "Agility Robotics uses latent space visualization to debug why their walking policies sometimes produce unexpected gaits.",
+    "line_type": "consequence",
+    "chapter": 5,
+    "start_ms": 1823956,
+    "duration_ms": 9464,
+    "end_ms": 1833420
+  },
+  {
+    "index": 207,
+    "speaker": "PROFESSOR",
+    "text": "If every image maps to a single point, you get GAPS in your latent space. If you try to sample from those gaps, you get garbage - the decoder doesn\u2019t know what to do with latent values it\u2019s never seen.",
+    "line_type": "lecture",
+    "chapter": 5,
+    "start_ms": 1833420,
+    "duration_ms": 12540,
+    "end_ms": 1845960
+  },
+  {
+    "index": 208,
+    "speaker": "PROFESSOR",
+    "text": "But if images map to overlapping distributions (fuzzy blobs), the entire space gets \u201ccovered.\u201d Every point in latent space is near something meaningful, so sampling works everywhere. That\u2019s the magic of VAEs!",
+    "line_type": "lecture",
+    "chapter": 5,
+    "start_ms": 1845960,
+    "duration_ms": 14460,
+    "end_ms": 1860420
+  },
+  {
+    "index": 209,
+    "speaker": "STUDENT_2",
+    "text": "Why does the VAE decoder output probability distributions, not just values?",
+    "line_type": "question",
+    "chapter": 5,
+    "start_ms": 1860420,
+    "duration_ms": 5684,
+    "end_ms": 1866104
+  },
+  {
+    "index": 210,
+    "speaker": "PROFESSOR",
+    "text": "The decoder outputs a distribution (typically Gaussian) for each pixel. This captures uncertainty - some pixels are more predictable than others. The mean is the expected value, variance is uncertainty.",
+    "line_type": "answer",
+    "chapter": 5,
+    "start_ms": 1866104,
+    "duration_ms": 13236,
+    "end_ms": 1879340
+  },
+  {
+    "index": 211,
+    "speaker": "PROFESSOR",
+    "text": "For trajectory prediction, some timesteps are more certain than others. The decoder might be confident about initial positions, uncertain about exact timing of fold.",
+    "line_type": "example",
+    "chapter": 5,
+    "start_ms": 1879340,
+    "duration_ms": 11456,
+    "end_ms": 1890796
+  },
+  {
+    "index": 212,
+    "speaker": "STUDENT_3",
+    "text": "To model uncertainty - some reconstructions should be more confident than others?",
+    "line_type": "echo",
+    "chapter": 5,
+    "start_ms": 1890796,
+    "duration_ms": 6184,
+    "end_ms": 1896980
+  },
+  {
+    "index": 213,
+    "speaker": "PROFESSOR",
+    "text": "Correct.",
+    "line_type": "acknowledgment",
+    "chapter": 5,
+    "start_ms": 1896980,
+    "duration_ms": 2292,
+    "end_ms": 1899272
+  },
+  {
+    "index": 214,
+    "speaker": "PROFESSOR",
+    "text": "This uncertainty modeling is crucial for Waymo's prediction systems when vehicles are partially occluded.",
+    "line_type": "consequence",
+    "chapter": 5,
+    "start_ms": 1899272,
+    "duration_ms": 7736,
+    "end_ms": 1907008
+  },
+  {
+    "index": 215,
+    "speaker": "STUDENT_3",
+    "text": "Why encode to a distribution instead of a point?",
+    "line_type": "question",
+    "chapter": 5,
+    "start_ms": 1907008,
+    "duration_ms": 3716,
+    "end_ms": 1910724
+  },
+  {
+    "index": 216,
+    "speaker": "PROFESSOR",
+    "text": "Points create gaps in latent space where decoding produces garbage. Distributions (blobs) fill the space continuously. Any point between two encodings still decodes to valid data.",
+    "line_type": "answer",
+    "chapter": 5,
+    "start_ms": 1910724,
+    "duration_ms": 12396,
+    "end_ms": 1923120
+  },
+  {
+    "index": 217,
+    "speaker": "PROFESSOR",
+    "text": "With points, sampling between two demos might produce invalid motion. With distributions, interpolation stays in 'valid trajectory' region.",
+    "line_type": "example",
+    "chapter": 5,
+    "start_ms": 1923120,
+    "duration_ms": 10664,
+    "end_ms": 1933784
+  },
+  {
+    "index": 218,
+    "speaker": "STUDENT_4",
+    "text": "It regularizes the latent space, prevents overfitting, and allows meaningful sampling for generation?",
+    "line_type": "echo",
+    "chapter": 5,
+    "start_ms": 1933784,
+    "duration_ms": 7048,
+    "end_ms": 1940832
+  },
+  {
+    "index": 219,
+    "speaker": "PROFESSOR",
+    "text": "That's right.",
+    "line_type": "acknowledgment",
+    "chapter": 5,
+    "start_ms": 1940832,
+    "duration_ms": 2436,
+    "end_ms": 1943268
+  },
+  {
+    "index": 220,
+    "speaker": "PROFESSOR",
+    "text": "OpenAI's DALL-E and GPT use similar distributional encodings to enable creative generation from latent codes.",
+    "line_type": "consequence",
+    "chapter": 5,
+    "start_ms": 1943268,
+    "duration_ms": 9056,
+    "end_ms": 1952324
+  },
+  {
+    "index": 221,
+    "speaker": "PROFESSOR",
+    "text": "Chapter 6. .",
+    "line_type": "transition",
+    "chapter": 6,
+    "start_ms": 1952324,
+    "duration_ms": 2680,
+    "end_ms": 1955004
+  },
+  {
+    "index": 222,
+    "speaker": "RAJESH",
+    "text": "So the encoder compresses data into a latent distribution. What about the decoder?",
+    "line_type": "dialogue",
+    "chapter": 6,
+    "start_ms": 1955004,
+    "duration_ms": 6468,
+    "end_ms": 1961472
+  },
+  {
+    "index": 223,
+    "speaker": "PROFESSOR",
+    "text": "The decoder does the reverse! It takes a point from latent space and reconstructs the original data.",
+    "line_type": "lecture",
+    "chapter": 6,
+    "start_ms": 1961472,
+    "duration_ms": 7380,
+    "end_ms": 1968852
+  },
+  {
+    "index": 224,
+    "speaker": "PROFESSOR",
+    "text": "For MNIST, the decoder architecture might be: - Input : 2 latent dimensions (sampled from encoder\u2019s distribution) - Hidden layer : 400 neurons - Output : 784 pixel values (reconstructed image)",
+    "line_type": "lecture",
+    "chapter": 6,
+    "start_ms": 1968852,
+    "duration_ms": 14772,
+    "end_ms": 1983624
+  },
+  {
+    "index": 225,
+    "speaker": "STUDENT_4",
+    "text": "What is covered in the VAE deep dive?",
+    "line_type": "question",
+    "chapter": 6,
+    "start_ms": 1983624,
+    "duration_ms": 3044,
+    "end_ms": 1986668
+  },
+  {
+    "index": 226,
+    "speaker": "PROFESSOR",
+    "text": "Encoder architecture (data to latent), decoder architecture (latent to data), why 'variational' matters (distributions not points), and the ELBO training objective.",
+    "line_type": "answer",
+    "chapter": 6,
+    "start_ms": 1986668,
+    "duration_ms": 12636,
+    "end_ms": 1999304
+  },
+  {
+    "index": 227,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: Understanding VAE internals is essential because ACT's action generation uses the same encoder-decoder structure with latent sampling.",
+    "line_type": "example",
+    "chapter": 6,
+    "start_ms": 1999304,
+    "duration_ms": 12344,
+    "end_ms": 2011648
+  },
+  {
+    "index": 228,
+    "speaker": "STUDENT_1",
+    "text": "Encoder architecture, decoder architecture, why variational matters, and the ELBO training objective?",
+    "line_type": "echo",
+    "chapter": 6,
+    "start_ms": 2011648,
+    "duration_ms": 8584,
+    "end_ms": 2020232
+  },
+  {
+    "index": 229,
+    "speaker": "PROFESSOR",
+    "text": "Exactly.",
+    "line_type": "acknowledgment",
+    "chapter": 6,
+    "start_ms": 2020232,
+    "duration_ms": 2460,
+    "end_ms": 2022692
+  },
+  {
+    "index": 230,
+    "speaker": "PROFESSOR",
+    "text": "Hugging Face's LeRobot library implements all these concepts as ready-to-use robotics components.",
+    "line_type": "consequence",
+    "chapter": 6,
+    "start_ms": 2022692,
+    "duration_ms": 7808,
+    "end_ms": 2030500
+  },
+  {
+    "index": 231,
+    "speaker": "RAJESH",
+    "text": "So if I move around in latent space, the decoder output changes smoothly?",
+    "line_type": "dialogue",
+    "chapter": 6,
+    "start_ms": 2030500,
+    "duration_ms": 6420,
+    "end_ms": 2036920
+  },
+  {
+    "index": 232,
+    "speaker": "PROFESSOR",
+    "text": "Exactly! Watch what happens as we traverse the latent space:",
+    "line_type": "lecture",
+    "chapter": 6,
+    "start_ms": 2036920,
+    "duration_ms": 5316,
+    "end_ms": 2042236
+  },
+  {
+    "index": 233,
+    "speaker": "PROFESSOR",
+    "text": "This is called latent space interpolation . You can smoothly morph between a \u201c3\u201d and an \u201c8\u201d, or between fast-writing and slow-writing styles. The transitions are continuous, not abrupt.",
+    "line_type": "lecture",
+    "chapter": 6,
+    "start_ms": 2042236,
+    "duration_ms": 12540,
+    "end_ms": 2054776
+  },
+  {
+    "index": 234,
+    "speaker": "STUDENT_1",
+    "text": "What is the 'secret recipe' analogy for latent variables?",
+    "line_type": "question",
+    "chapter": 6,
+    "start_ms": 2054776,
+    "duration_ms": 4796,
+    "end_ms": 2059572
+  },
+  {
+    "index": 235,
+    "speaker": "PROFESSOR",
+    "text": "Imagine a machine with hidden knobs. Turning knobs changes the output. Latent variables are like these knobs - they control the generated output, but we don't directly observe them.",
+    "line_type": "answer",
+    "chapter": 6,
+    "start_ms": 2059572,
+    "duration_ms": 11796,
+    "end_ms": 2071368
+  },
+  {
+    "index": 236,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: VAE learns hidden 'knobs' for folding: speed-knob, precision-knob, style-knob. Different latent samples turn these knobs differently.",
+    "line_type": "example",
+    "chapter": 6,
+    "start_ms": 2071368,
+    "duration_ms": 13232,
+    "end_ms": 2084600
+  },
+  {
+    "index": 237,
+    "speaker": "STUDENT_2",
+    "text": "The latent is like a compressed recipe that captures the essence of what you want to create?",
+    "line_type": "echo",
+    "chapter": 6,
+    "start_ms": 2084600,
+    "duration_ms": 5824,
+    "end_ms": 2090424
+  },
+  {
+    "index": 238,
+    "speaker": "PROFESSOR",
+    "text": "Precisely.",
+    "line_type": "acknowledgment",
+    "chapter": 6,
+    "start_ms": 2090424,
+    "duration_ms": 2532,
+    "end_ms": 2092956
+  },
+  {
+    "index": 239,
+    "speaker": "PROFESSOR",
+    "text": "Google's PaLM-E uses similar 'recipe' latent variables to encode task intentions for their robots.",
+    "line_type": "consequence",
+    "chapter": 6,
+    "start_ms": 2092956,
+    "duration_ms": 8576,
+    "end_ms": 2101532
+  },
+  {
+    "index": 240,
+    "speaker": "PROFESSOR",
+    "text": "The decoder is really a generative model : given any point z in latent space, it produces a data sample. Combined with the prior P(z), this gives us P(x) = \u222b P(x|z)P(z)dz - a full generative model over data!",
+    "line_type": "lecture",
+    "chapter": 6,
+    "start_ms": 2101532,
+    "duration_ms": 18060,
+    "end_ms": 2119592
+  },
+  {
+    "index": 241,
+    "speaker": "RAJESH",
+    "text": "So to generate new handwriting, I just sample a random z from a Gaussian and decode it?",
+    "line_type": "dialogue",
+    "chapter": 6,
+    "start_ms": 2119592,
+    "duration_ms": 7212,
+    "end_ms": 2126804
+  },
+  {
+    "index": 242,
+    "speaker": "PROFESSOR",
+    "text": "That\u2019s the idea! And this is incredibly powerful for robotics. Once you\u2019ve trained the VAE on expert demonstrations, you can:",
+    "line_type": "lecture",
+    "chapter": 6,
+    "start_ms": 2126804,
+    "duration_ms": 9444,
+    "end_ms": 2136248
+  },
+  {
+    "index": 243,
+    "speaker": "STUDENT_2",
+    "text": "What does the VAE decoder do?",
+    "line_type": "question",
+    "chapter": 6,
+    "start_ms": 2136248,
+    "duration_ms": 2732,
+    "end_ms": 2138980
+  },
+  {
+    "index": 244,
+    "speaker": "PROFESSOR",
+    "text": "The decoder maps latent variables back to data space. It takes a point z in latent space and generates a full data sample (image, trajectory, etc.) that corresponds to that latent code.",
+    "line_type": "answer",
+    "chapter": 6,
+    "start_ms": 2138980,
+    "duration_ms": 13212,
+    "end_ms": 2152192
+  },
+  {
+    "index": 245,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: Given 64D latent code z, decoder outputs full 1200D trajectory for SO-ARM101 to execute. Different z values produce different folding styles.",
+    "line_type": "example",
+    "chapter": 6,
+    "start_ms": 2152192,
+    "duration_ms": 15272,
+    "end_ms": 2167464
+  },
+  {
+    "index": 246,
+    "speaker": "STUDENT_3",
+    "text": "Takes a sample from the latent distribution and reconstructs the original data from that compressed code?",
+    "line_type": "echo",
+    "chapter": 6,
+    "start_ms": 2167464,
+    "duration_ms": 7168,
+    "end_ms": 2174632
+  },
+  {
+    "index": 247,
+    "speaker": "PROFESSOR",
+    "text": "That's right.",
+    "line_type": "acknowledgment",
+    "chapter": 6,
+    "start_ms": 2174632,
+    "duration_ms": 2436,
+    "end_ms": 2177068
+  },
+  {
+    "index": 248,
+    "speaker": "PROFESSOR",
+    "text": "Figure 01's action decoder turns latent intent codes into smooth, coordinated multi-joint trajectories.",
+    "line_type": "consequence",
+    "chapter": 6,
+    "start_ms": 2177068,
+    "duration_ms": 8624,
+    "end_ms": 2185692
+  },
+  {
+    "index": 249,
+    "speaker": "PROFESSOR",
+    "text": "Each sample gives you a different, but valid, way to accomplish the task.",
+    "line_type": "lecture",
+    "chapter": 6,
+    "start_ms": 2185692,
+    "duration_ms": 5892,
+    "end_ms": 2191584
+  },
+  {
+    "index": 250,
+    "speaker": "STUDENT_3",
+    "text": "What does the decoder output for each data dimension?",
+    "line_type": "question",
+    "chapter": 6,
+    "start_ms": 2191584,
+    "duration_ms": 3764,
+    "end_ms": 2195348
+  },
+  {
+    "index": 251,
+    "speaker": "PROFESSOR",
+    "text": "For each output dimension (pixel, joint angle), the decoder outputs mean \u03bc and variance \u03c3\u00b2. The reconstruction is sampled from N(\u03bc, \u03c3\u00b2). Loss is negative log-likelihood under this distribution.",
+    "line_type": "answer",
+    "chapter": 6,
+    "start_ms": 2195348,
+    "duration_ms": 14892,
+    "end_ms": 2210240
+  },
+  {
+    "index": 252,
+    "speaker": "PROFESSOR",
+    "text": "For each of 1200 trajectory dimensions, decoder predicts (\u03bc, \u03c3\u00b2). High \u03c3\u00b2 = model is uncertain about that joint at that timestep.",
+    "line_type": "example",
+    "chapter": 6,
+    "start_ms": 2210240,
+    "duration_ms": 12080,
+    "end_ms": 2222320
+  },
+  {
+    "index": 253,
+    "speaker": "STUDENT_4",
+    "text": "For each pixel or dimension, it outputs a probability distribution - typically the mean of a Gaussian?",
+    "line_type": "echo",
+    "chapter": 6,
+    "start_ms": 2222320,
+    "duration_ms": 7144,
+    "end_ms": 2229464
+  },
+  {
+    "index": 254,
+    "speaker": "PROFESSOR",
+    "text": "Exactly.",
+    "line_type": "acknowledgment",
+    "chapter": 6,
+    "start_ms": 2229464,
+    "duration_ms": 2460,
+    "end_ms": 2231924
+  },
+  {
+    "index": 255,
+    "speaker": "PROFESSOR",
+    "text": "This probabilistic output is how Nvidia's Isaac policies express confidence in their action predictions.",
+    "line_type": "consequence",
+    "chapter": 6,
+    "start_ms": 2231924,
+    "duration_ms": 8048,
+    "end_ms": 2239972
+  },
+  {
+    "index": 256,
+    "speaker": "STUDENT_4",
+    "text": "Why does VAE need the variational (KL) term?",
+    "line_type": "question",
+    "chapter": 6,
+    "start_ms": 2239972,
+    "duration_ms": 4532,
+    "end_ms": 2244504
+  },
+  {
+    "index": 257,
+    "speaker": "PROFESSOR",
+    "text": "Without KL term, encoder might collapse to point estimates with \u03c3to0. KL term forces encoder to produce actual distributions, keeping latent space smooth and enabling generation.",
+    "line_type": "answer",
+    "chapter": 6,
+    "start_ms": 2244504,
+    "duration_ms": 13068,
+    "end_ms": 2257572
+  },
+  {
+    "index": 258,
+    "speaker": "PROFESSOR",
+    "text": "KL term prevents SO-ARM101 policy from memorizing exact demos. Instead, it learns generalizable patterns in latent space.",
+    "line_type": "example",
+    "chapter": 6,
+    "start_ms": 2257572,
+    "duration_ms": 10376,
+    "end_ms": 2267948
+  },
+  {
+    "index": 259,
+    "speaker": "STUDENT_1",
+    "text": "Without it, the encoder could learn arbitrary encodings that don't generalize - KL forces structure?",
+    "line_type": "echo",
+    "chapter": 6,
+    "start_ms": 2267948,
+    "duration_ms": 7504,
+    "end_ms": 2275452
+  },
+  {
+    "index": 260,
+    "speaker": "PROFESSOR",
+    "text": "That's right.",
+    "line_type": "acknowledgment",
+    "chapter": 6,
+    "start_ms": 2275452,
+    "duration_ms": 2436,
+    "end_ms": 2277888
+  },
+  {
+    "index": 261,
+    "speaker": "PROFESSOR",
+    "text": "Tesla discovered this when removing KL regularization caused their latent spaces to become unusable.",
+    "line_type": "consequence",
+    "chapter": 6,
+    "start_ms": 2277888,
+    "duration_ms": 8000,
+    "end_ms": 2285888
+  },
+  {
+    "index": 262,
+    "speaker": "PROFESSOR",
+    "text": "Chapter 7. .",
+    "line_type": "transition",
+    "chapter": 7,
+    "start_ms": 2285888,
+    "duration_ms": 2680,
+    "end_ms": 2288568
+  },
+  {
+    "index": 263,
+    "speaker": "RAJESH",
+    "text": "You\u2019ve mentioned the \u201cvariational\u201d part several times. What exactly makes a VAE different from a regular autoencoder?",
+    "line_type": "dialogue",
+    "chapter": 7,
+    "start_ms": 2288568,
+    "duration_ms": 8988,
+    "end_ms": 2297556
+  },
+  {
+    "index": 264,
+    "speaker": "PROFESSOR",
+    "text": "Great question! Let me show you the problem with regular autoencoders:",
+    "line_type": "lecture",
+    "chapter": 7,
+    "start_ms": 2297556,
+    "duration_ms": 5772,
+    "end_ms": 2303328
+  },
+  {
+    "index": 265,
+    "speaker": "PROFESSOR",
+    "text": "A plain autoencoder maps each input to a specific point in latent space. This creates GAPS - regions with no training data. If you try to decode from a gap, you get nonsense.",
+    "line_type": "lecture",
+    "chapter": 7,
+    "start_ms": 2303328,
+    "duration_ms": 12180,
+    "end_ms": 2315508
+  },
+  {
+    "index": 266,
+    "speaker": "STUDENT_1",
+    "text": "Why is understanding VAEs essential for ACT?",
+    "line_type": "question",
+    "chapter": 7,
+    "start_ms": 2315508,
+    "duration_ms": 3956,
+    "end_ms": 2319464
+  },
+  {
+    "index": 267,
+    "speaker": "PROFESSOR",
+    "text": "ACT (Action Chunking with Transformers) uses a VAE to encode demonstration trajectories into a latent style variable. This latent captures the 'intent' or 'mode' of the demonstration.",
+    "line_type": "answer",
+    "chapter": 7,
+    "start_ms": 2319464,
+    "duration_ms": 13596,
+    "end_ms": 2333060
+  },
+  {
+    "index": 268,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: When ACT generates actions for SO-ARM101, it samples a latent code representing 'fold style', then the transformer decodes it into actual joint commands.",
+    "line_type": "example",
+    "chapter": 7,
+    "start_ms": 2333060,
+    "duration_ms": 15008,
+    "end_ms": 2348068
+  },
+  {
+    "index": 269,
+    "speaker": "STUDENT_2",
+    "text": "Because the CVAE is what allows ACT to handle multimodal demonstrations without mode averaging?",
+    "line_type": "echo",
+    "chapter": 7,
+    "start_ms": 2348068,
+    "duration_ms": 7528,
+    "end_ms": 2355596
+  },
+  {
+    "index": 270,
+    "speaker": "PROFESSOR",
+    "text": "Precisely.",
+    "line_type": "acknowledgment",
+    "chapter": 7,
+    "start_ms": 2355596,
+    "duration_ms": 2532,
+    "end_ms": 2358128
+  },
+  {
+    "index": 271,
+    "speaker": "PROFESSOR",
+    "text": "Teams at Berkeley, Stanford, and MIT all use VAE-based architectures for their imitation learning research.",
+    "line_type": "consequence",
+    "chapter": 7,
+    "start_ms": 2358128,
+    "duration_ms": 8816,
+    "end_ms": 2366944
+  },
+  {
+    "index": 272,
+    "speaker": "RAJESH",
+    "text": "Because the decoder never saw those latent values during training?",
+    "line_type": "dialogue",
+    "chapter": 7,
+    "start_ms": 2366944,
+    "duration_ms": 5220,
+    "end_ms": 2372164
+  },
+  {
+    "index": 273,
+    "speaker": "PROFESSOR",
+    "text": "Exactly! Now here\u2019s the VAE insight: instead of mapping to points, map to distributions (fuzzy blobs). Make these distributions overlap.",
+    "line_type": "lecture",
+    "chapter": 7,
+    "start_ms": 2372164,
+    "duration_ms": 10308,
+    "end_ms": 2382472
+  },
+  {
+    "index": 274,
+    "speaker": "PROFESSOR",
+    "text": "Now the entire latent space is \u201ccovered.\u201d Any point you sample is near training data from multiple inputs. The decoder can interpolate sensibly.",
+    "line_type": "lecture",
+    "chapter": 7,
+    "start_ms": 2382472,
+    "duration_ms": 9876,
+    "end_ms": 2392348
+  },
+  {
+    "index": 275,
+    "speaker": "STUDENT_2",
+    "text": "What are latent variables (Z) in a VAE?",
+    "line_type": "question",
+    "chapter": 7,
+    "start_ms": 2392348,
+    "duration_ms": 4388,
+    "end_ms": 2396736
+  },
+  {
+    "index": 276,
+    "speaker": "PROFESSOR",
+    "text": "Latent variables Z are a low-dimensional compressed representation of the data. They capture the essential factors of variation. The decoder generates data from Z.",
+    "line_type": "answer",
+    "chapter": 7,
+    "start_ms": 2396736,
+    "duration_ms": 10812,
+    "end_ms": 2407548
+  },
+  {
+    "index": 277,
+    "speaker": "PROFESSOR",
+    "text": "For a 1200D trajectory (12 joints \u00d7 100 steps), Z might be 64D. This 64D code contains everything needed to reconstruct the full trajectory.",
+    "line_type": "example",
+    "chapter": 7,
+    "start_ms": 2407548,
+    "duration_ms": 13040,
+    "end_ms": 2420588
+  },
+  {
+    "index": 278,
+    "speaker": "STUDENT_3",
+    "text": "The low-dimensional hidden representations that capture the essential information about the input?",
+    "line_type": "echo",
+    "chapter": 7,
+    "start_ms": 2420588,
+    "duration_ms": 6832,
+    "end_ms": 2427420
+  },
+  {
+    "index": 279,
+    "speaker": "PROFESSOR",
+    "text": "Precisely.",
+    "line_type": "acknowledgment",
+    "chapter": 7,
+    "start_ms": 2427420,
+    "duration_ms": 2532,
+    "end_ms": 2429952
+  },
+  {
+    "index": 280,
+    "speaker": "PROFESSOR",
+    "text": "Google's robotics research uses these latent codes to transfer knowledge between different robot morphologies.",
+    "line_type": "consequence",
+    "chapter": 7,
+    "start_ms": 2429952,
+    "duration_ms": 8240,
+    "end_ms": 2438192
+  },
+  {
+    "index": 281,
+    "speaker": "PROFESSOR",
+    "text": "From variational inference - a technique in Bayesian statistics for approximating intractable probability distributions. The VAE\u2019s training objective (ELBO) comes from variational inference theory.",
+    "line_type": "lecture",
+    "chapter": 7,
+    "start_ms": 2438192,
+    "duration_ms": 13548,
+    "end_ms": 2451740
+  },
+  {
+    "index": 282,
+    "speaker": "PROFESSOR",
+    "text": "But for practical purposes, just remember: \u201cvariational\u201d means we output distributions instead of points, and we regularize those distributions to be nice Gaussians. This is what enables generation!",
+    "line_type": "lecture",
+    "chapter": 7,
+    "start_ms": 2451740,
+    "duration_ms": 12924,
+    "end_ms": 2464664
+  },
+  {
+    "index": 283,
+    "speaker": "STUDENT_3",
+    "text": "How does moving in latent space affect decoder output?",
+    "line_type": "question",
+    "chapter": 7,
+    "start_ms": 2464664,
+    "duration_ms": 4148,
+    "end_ms": 2468812
+  },
+  {
+    "index": 284,
+    "speaker": "PROFESSOR",
+    "text": "Moving the yellow dot in 2D latent space smoothly changes the generated image. Moving along z1 changes slant, moving along z2 changes neatness. The space is continuous.",
+    "line_type": "answer",
+    "chapter": 7,
+    "start_ms": 2468812,
+    "duration_ms": 12180,
+    "end_ms": 2480992
+  },
+  {
+    "index": 285,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: Moving in latent space for folding: smooth transition from fast-fold to slow-fold, or from left-first to right-first approach.",
+    "line_type": "example",
+    "chapter": 7,
+    "start_ms": 2480992,
+    "duration_ms": 12320,
+    "end_ms": 2493312
+  },
+  {
+    "index": 286,
+    "speaker": "STUDENT_4",
+    "text": "Smooth movement in latent space produces smooth changes in the output - interpolation between data points?",
+    "line_type": "echo",
+    "chapter": 7,
+    "start_ms": 2493312,
+    "duration_ms": 7408,
+    "end_ms": 2500720
+  },
+  {
+    "index": 287,
+    "speaker": "PROFESSOR",
+    "text": "Correct.",
+    "line_type": "acknowledgment",
+    "chapter": 7,
+    "start_ms": 2500720,
+    "duration_ms": 2292,
+    "end_ms": 2503012
+  },
+  {
+    "index": 288,
+    "speaker": "PROFESSOR",
+    "text": "This smoothness is why Boston Dynamics can blend between different locomotion styles seamlessly.",
+    "line_type": "consequence",
+    "chapter": 7,
+    "start_ms": 2503012,
+    "duration_ms": 7568,
+    "end_ms": 2510580
+  },
+  {
+    "index": 289,
+    "speaker": "STUDENT_4",
+    "text": "What is the complete encode-decode process in a VAE?",
+    "line_type": "question",
+    "chapter": 7,
+    "start_ms": 2510580,
+    "duration_ms": 4292,
+    "end_ms": 2514872
+  },
+  {
+    "index": 290,
+    "speaker": "PROFESSOR",
+    "text": "1) Encoder: x to (\u03bc_z, \u03c3_z) 2) Sample: z = \u03bc_z + \u03c3_z \u00d7 \u03b5, where \u03b5 ~ N(0,1) 3) Decoder: z to (\u03bc_x, \u03c3_x) 4) Sample or use mean: x' = \u03bc_x. This is the reparameterization trick.",
+    "line_type": "answer",
+    "chapter": 7,
+    "start_ms": 2514872,
+    "duration_ms": 26652,
+    "end_ms": 2541524
+  },
+  {
+    "index": 291,
+    "speaker": "PROFESSOR",
+    "text": "Demo to encode to latent distribution to sample to decode to trajectory. The \u03b5 noise enables gradient flow through sampling.",
+    "line_type": "example",
+    "chapter": 7,
+    "start_ms": 2541524,
+    "duration_ms": 9296,
+    "end_ms": 2550820
+  },
+  {
+    "index": 292,
+    "speaker": "STUDENT_1",
+    "text": "Input goes to encoder, outputs mu and sigma, sample z using reparam trick, z goes to decoder, get reconstruction?",
+    "line_type": "echo",
+    "chapter": 7,
+    "start_ms": 2550820,
+    "duration_ms": 10384,
+    "end_ms": 2561204
+  },
+  {
+    "index": 293,
+    "speaker": "PROFESSOR",
+    "text": "Exactly.",
+    "line_type": "acknowledgment",
+    "chapter": 7,
+    "start_ms": 2561204,
+    "duration_ms": 2460,
+    "end_ms": 2563664
+  },
+  {
+    "index": 294,
+    "speaker": "PROFESSOR",
+    "text": "Hugging Face's LeRobot implements this exact pipeline for their ACT policy training.",
+    "line_type": "consequence",
+    "chapter": 7,
+    "start_ms": 2563664,
+    "duration_ms": 7424,
+    "end_ms": 2571088
+  },
+  {
+    "index": 295,
+    "speaker": "STUDENT_1",
+    "text": "What does 'continuous latent space' mean for generation?",
+    "line_type": "question",
+    "chapter": 7,
+    "start_ms": 2571088,
+    "duration_ms": 4532,
+    "end_ms": 2575620
+  },
+  {
+    "index": 296,
+    "speaker": "PROFESSOR",
+    "text": "Every point in latent space decodes to valid data. Moving smoothly in latent space produces smooth transitions in output. No 'dead zones' that produce garbage.",
+    "line_type": "answer",
+    "chapter": 7,
+    "start_ms": 2575620,
+    "duration_ms": 11340,
+    "end_ms": 2586960
+  },
+  {
+    "index": 297,
+    "speaker": "PROFESSOR",
+    "text": "Continuous latent for folding: smoothly varying z produces smoothly varying fold speeds/styles. Great for generating diverse but valid trajectories.",
+    "line_type": "example",
+    "chapter": 7,
+    "start_ms": 2586960,
+    "duration_ms": 11288,
+    "end_ms": 2598248
+  },
+  {
+    "index": 298,
+    "speaker": "STUDENT_2",
+    "text": "Any point in latent space maps to a valid output - no dead zones or discontinuities?",
+    "line_type": "echo",
+    "chapter": 7,
+    "start_ms": 2598248,
+    "duration_ms": 6568,
+    "end_ms": 2604816
+  },
+  {
+    "index": 299,
+    "speaker": "PROFESSOR",
+    "text": "That's right.",
+    "line_type": "acknowledgment",
+    "chapter": 7,
+    "start_ms": 2604816,
+    "duration_ms": 2436,
+    "end_ms": 2607252
+  },
+  {
+    "index": 300,
+    "speaker": "PROFESSOR",
+    "text": "This continuity is crucial for Figure 01's policies to generate smooth action sequences.",
+    "line_type": "consequence",
+    "chapter": 7,
+    "start_ms": 2607252,
+    "duration_ms": 7664,
+    "end_ms": 2614916
+  },
+  {
+    "index": 301,
+    "speaker": "PROFESSOR",
+    "text": "Chapter 8. .",
+    "line_type": "transition",
+    "chapter": 8,
+    "start_ms": 2614916,
+    "duration_ms": 2536,
+    "end_ms": 2617452
+  },
+  {
+    "index": 302,
+    "speaker": "RAJESH",
+    "text": "Okay, I understand the architecture: encoder outputs (\u03bc, \u03c3), we sample z, decoder reconstructs. But how do we actually train this? What\u2019s the loss function?",
+    "line_type": "dialogue",
+    "chapter": 8,
+    "start_ms": 2617452,
+    "duration_ms": 12876,
+    "end_ms": 2630328
+  },
+  {
+    "index": 303,
+    "speaker": "PROFESSOR",
+    "text": "The ideal goal is to maximize the log-likelihood: log P(x) - the probability of our training data under the model. But this requires integrating over all possible z values, which is intractable.",
+    "line_type": "lecture",
+    "chapter": 8,
+    "start_ms": 2630328,
+    "duration_ms": 13092,
+    "end_ms": 2643420
+  },
+  {
+    "index": 304,
+    "speaker": "PROFESSOR",
+    "text": "Instead, we maximize a lower bound on log P(x) called the ELBO (Evidence Lower Bound):",
+    "line_type": "lecture",
+    "chapter": 8,
+    "start_ms": 2643420,
+    "duration_ms": 8364,
+    "end_ms": 2651784
+  },
+  {
+    "index": 305,
+    "speaker": "STUDENT_2",
+    "text": "How is a VAE trained?",
+    "line_type": "question",
+    "chapter": 8,
+    "start_ms": 2651784,
+    "duration_ms": 2468,
+    "end_ms": 2654252
+  },
+  {
+    "index": 306,
+    "speaker": "PROFESSOR",
+    "text": "Maximize the Evidence Lower Bound (ELBO), which combines reconstruction quality with latent space regularization. Can't directly maximize likelihood due to intractable integral.",
+    "line_type": "answer",
+    "chapter": 8,
+    "start_ms": 2654252,
+    "duration_ms": 12396,
+    "end_ms": 2666648
+  },
+  {
+    "index": 307,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: Training on your 100 folding demos: maximize ELBO = (trajectory reconstructs well) + (latent is Gaussian-like). ~2 hours on modern GPU.",
+    "line_type": "example",
+    "chapter": 8,
+    "start_ms": 2666648,
+    "duration_ms": 16136,
+    "end_ms": 2682784
+  },
+  {
+    "index": 308,
+    "speaker": "STUDENT_3",
+    "text": "Minimize the ELBO loss - reconstruction error plus KL divergence - using gradient descent?",
+    "line_type": "echo",
+    "chapter": 8,
+    "start_ms": 2682784,
+    "duration_ms": 8224,
+    "end_ms": 2691008
+  },
+  {
+    "index": 309,
+    "speaker": "PROFESSOR",
+    "text": "Precisely.",
+    "line_type": "acknowledgment",
+    "chapter": 8,
+    "start_ms": 2691008,
+    "duration_ms": 2532,
+    "end_ms": 2693540
+  },
+  {
+    "index": 310,
+    "speaker": "PROFESSOR",
+    "text": "Stanford's ALOHA team trains VAEs for hours on GPUs using this exact objective.",
+    "line_type": "consequence",
+    "chapter": 8,
+    "start_ms": 2693540,
+    "duration_ms": 7640,
+    "end_ms": 2701180
+  },
+  {
+    "index": 311,
+    "speaker": "PROFESSOR",
+    "text": "\\[\\text{ELBO} = \\underbrace{\\mathbb{E}_{z \\sim q}[\\log P(x|z)]}_{\\text{Reconstruction}} - \\underbrace{KL(q(z|x) || P(z))}_{\\text{Regularization}}\\]",
+    "line_type": "lecture",
+    "chapter": 8,
+    "start_ms": 2701180,
+    "duration_ms": 19836,
+    "end_ms": 2721016
+  },
+  {
+    "index": 312,
+    "speaker": "RAJESH",
+    "text": "So there are two terms - reconstruction and regularization?",
+    "line_type": "dialogue",
+    "chapter": 8,
+    "start_ms": 2721016,
+    "duration_ms": 4956,
+    "end_ms": 2725972
+  },
+  {
+    "index": 313,
+    "speaker": "STUDENT_3",
+    "text": "What is the ideal objective for training deep generative models?",
+    "line_type": "question",
+    "chapter": 8,
+    "start_ms": 2725972,
+    "duration_ms": 4412,
+    "end_ms": 2730384
+  },
+  {
+    "index": 314,
+    "speaker": "PROFESSOR",
+    "text": "Maximize log P_theta(X_data) - the log probability of training data under the model. This is maximum likelihood: find parameters that make observed data most likely.",
+    "line_type": "answer",
+    "chapter": 8,
+    "start_ms": 2730384,
+    "duration_ms": 12972,
+    "end_ms": 2743356
+  },
+  {
+    "index": 315,
+    "speaker": "PROFESSOR",
+    "text": "For trajectory VAE: find weights so P(your demos) is maximized. Unfortunately, computing this exactly requires integrating over all latent z.",
+    "line_type": "example",
+    "chapter": 8,
+    "start_ms": 2743356,
+    "duration_ms": 11528,
+    "end_ms": 2754884
+  },
+  {
+    "index": 316,
+    "speaker": "STUDENT_4",
+    "text": "Maximize the log likelihood of the training data under the model - but this is often intractable?",
+    "line_type": "echo",
+    "chapter": 8,
+    "start_ms": 2754884,
+    "duration_ms": 6304,
+    "end_ms": 2761188
+  },
+  {
+    "index": 317,
+    "speaker": "PROFESSOR",
+    "text": "Correct.",
+    "line_type": "acknowledgment",
+    "chapter": 8,
+    "start_ms": 2761188,
+    "duration_ms": 2292,
+    "end_ms": 2763480
+  },
+  {
+    "index": 318,
+    "speaker": "PROFESSOR",
+    "text": "This intractability is why researchers at OpenAI developed variational bounds like the ELBO.",
+    "line_type": "consequence",
+    "chapter": 8,
+    "start_ms": 2763480,
+    "duration_ms": 7904,
+    "end_ms": 2771384
+  },
+  {
+    "index": 319,
+    "speaker": "PROFESSOR",
+    "text": "Reconstruction Loss : Does the decoder output look like the input? For images, this is typically MSE or binary cross-entropy between input and reconstruction. This term pushes the VAE to encode information that\u2019s useful for reconstruction.",
+    "line_type": "lecture",
+    "chapter": 8,
+    "start_ms": 2771384,
+    "duration_ms": 15420,
+    "end_ms": 2786804
+  },
+  {
+    "index": 320,
+    "speaker": "PROFESSOR",
+    "text": "KL Regularization : Is the encoder\u2019s output distribution close to a standard Gaussian N(0,1)? This term prevents the encoder from creating crazy, scattered latent representations. It forces the latent space to be organized.",
+    "line_type": "lecture",
+    "chapter": 8,
+    "start_ms": 2786804,
+    "duration_ms": 15396,
+    "end_ms": 2802200
+  },
+  {
+    "index": 321,
+    "speaker": "STUDENT_4",
+    "text": "Why is directly maximizing likelihood intractable for VAEs?",
+    "line_type": "question",
+    "chapter": 8,
+    "start_ms": 2802200,
+    "duration_ms": 4508,
+    "end_ms": 2806708
+  },
+  {
+    "index": 322,
+    "speaker": "PROFESSOR",
+    "text": "P(x) = integral of P(x|z)P(z) dz over all z. This integral has no closed form for neural network decoders. We can't compute it, so we can't directly optimize it.",
+    "line_type": "answer",
+    "chapter": 8,
+    "start_ms": 2806708,
+    "duration_ms": 14196,
+    "end_ms": 2820904
+  },
+  {
+    "index": 323,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: To compute P(demo trajectory), you'd need to integrate over all possible 64D latent codes - computationally impossible.",
+    "line_type": "example",
+    "chapter": 8,
+    "start_ms": 2820904,
+    "duration_ms": 12824,
+    "end_ms": 2833728
+  },
+  {
+    "index": 324,
+    "speaker": "STUDENT_1",
+    "text": "We'd need to integrate over all possible latent values - an impossible sum over infinite possibilities?",
+    "line_type": "echo",
+    "chapter": 8,
+    "start_ms": 2833728,
+    "duration_ms": 7504,
+    "end_ms": 2841232
+  },
+  {
+    "index": 325,
+    "speaker": "PROFESSOR",
+    "text": "Exactly.",
+    "line_type": "acknowledgment",
+    "chapter": 8,
+    "start_ms": 2841232,
+    "duration_ms": 2460,
+    "end_ms": 2843692
+  },
+  {
+    "index": 326,
+    "speaker": "PROFESSOR",
+    "text": "DeepMind's research explicitly addresses this intractability with efficient approximation methods.",
+    "line_type": "consequence",
+    "chapter": 8,
+    "start_ms": 2843692,
+    "duration_ms": 7232,
+    "end_ms": 2850924
+  },
+  {
+    "index": 327,
+    "speaker": "PROFESSOR",
+    "text": "\u03b2 is a hyperparameter that balances reconstruction vs regularization. Standard VAE uses \u03b2=1.",
+    "line_type": "lecture",
+    "chapter": 8,
+    "start_ms": 2850924,
+    "duration_ms": 8868,
+    "end_ms": 2859792
+  },
+  {
+    "index": 328,
+    "speaker": "PROFESSOR",
+    "text": "This tradeoff is explored in the \u03b2-VAE paper. For robotics, you typically tune \u03b2 based on whether you care more about accurate reproduction or diverse generation.",
+    "line_type": "lecture",
+    "chapter": 8,
+    "start_ms": 2859792,
+    "duration_ms": 11196,
+    "end_ms": 2870988
+  },
+  {
+    "index": 329,
+    "speaker": "STUDENT_1",
+    "text": "What is the ELBO and why do we use it?",
+    "line_type": "question",
+    "chapter": 8,
+    "start_ms": 2870988,
+    "duration_ms": 3620,
+    "end_ms": 2874608
+  },
+  {
+    "index": 330,
+    "speaker": "PROFESSOR",
+    "text": "ELBO (Evidence Lower Bound) is a tractable lower bound on log P(x). Maximizing ELBO also pushes up log P(x). It decomposes into reconstruction + regularization terms.",
+    "line_type": "answer",
+    "chapter": 8,
+    "start_ms": 2874608,
+    "duration_ms": 14388,
+    "end_ms": 2888996
+  },
+  {
+    "index": 331,
+    "speaker": "PROFESSOR",
+    "text": "Can't maximize P(demos) directly, so maximize ELBO instead. This is what your ACT training actually optimizes.",
+    "line_type": "example",
+    "chapter": 8,
+    "start_ms": 2888996,
+    "duration_ms": 10256,
+    "end_ms": 2899252
+  },
+  {
+    "index": 332,
+    "speaker": "STUDENT_2",
+    "text": "Evidence Lower Bound - it's a tractable approximation to the intractable log likelihood?",
+    "line_type": "echo",
+    "chapter": 8,
+    "start_ms": 2899252,
+    "duration_ms": 6256,
+    "end_ms": 2905508
+  },
+  {
+    "index": 333,
+    "speaker": "PROFESSOR",
+    "text": "That's right.",
+    "line_type": "acknowledgment",
+    "chapter": 8,
+    "start_ms": 2905508,
+    "duration_ms": 2436,
+    "end_ms": 2907944
+  },
+  {
+    "index": 334,
+    "speaker": "PROFESSOR",
+    "text": "The ELBO is the foundational objective for all VAE-based robotics policies.",
+    "line_type": "consequence",
+    "chapter": 8,
+    "start_ms": 2907944,
+    "duration_ms": 7328,
+    "end_ms": 2915272
+  },
+  {
+    "index": 335,
+    "speaker": "STUDENT_2",
+    "text": "How does ELBO decompose into components?",
+    "line_type": "question",
+    "chapter": 8,
+    "start_ms": 2915272,
+    "duration_ms": 3620,
+    "end_ms": 2918892
+  },
+  {
+    "index": 336,
+    "speaker": "PROFESSOR",
+    "text": "ELBO = E[log P(x|z)] - KL(Q(z|x) || P(z)). First term: reconstruction quality. Second term: how close encoder distribution is to prior (typically N(0,1)).",
+    "line_type": "answer",
+    "chapter": 8,
+    "start_ms": 2918892,
+    "duration_ms": 16956,
+    "end_ms": 2935848
+  },
+  {
+    "index": 337,
+    "speaker": "PROFESSOR",
+    "text": "VAE loss = MSE(reconstructed trajectory vs original) + KL(encoder output vs standard Gaussian). Balance both for good generation.",
+    "line_type": "example",
+    "chapter": 8,
+    "start_ms": 2935848,
+    "duration_ms": 12224,
+    "end_ms": 2948072
+  },
+  {
+    "index": 338,
+    "speaker": "STUDENT_3",
+    "text": "Reconstruction term measures data fidelity, KL term measures how close encoder is to prior?",
+    "line_type": "echo",
+    "chapter": 8,
+    "start_ms": 2948072,
+    "duration_ms": 7768,
+    "end_ms": 2955840
+  },
+  {
+    "index": 339,
+    "speaker": "PROFESSOR",
+    "text": "Precisely.",
+    "line_type": "acknowledgment",
+    "chapter": 8,
+    "start_ms": 2955840,
+    "duration_ms": 2532,
+    "end_ms": 2958372
+  },
+  {
+    "index": 340,
+    "speaker": "PROFESSOR",
+    "text": "Nvidia monitors both terms separately to diagnose training issues in their robot policies.",
+    "line_type": "consequence",
+    "chapter": 8,
+    "start_ms": 2958372,
+    "duration_ms": 7376,
+    "end_ms": 2965748
+  },
+  {
+    "index": 341,
+    "speaker": "STUDENT_3",
+    "text": "What is the reconstruction loss in ELBO?",
+    "line_type": "question",
+    "chapter": 8,
+    "start_ms": 2965748,
+    "duration_ms": 3548,
+    "end_ms": 2969296
+  },
+  {
+    "index": 342,
+    "speaker": "PROFESSOR",
+    "text": "E[log P(x|z)] measures how well decoder reconstructs input from latent. For continuous data, often MSE loss: ||x - decoder(z)||\u00b2. Encourages accurate encoding.",
+    "line_type": "answer",
+    "chapter": 8,
+    "start_ms": 2969296,
+    "duration_ms": 14268,
+    "end_ms": 2983564
+  },
+  {
+    "index": 343,
+    "speaker": "PROFESSOR",
+    "text": "Reconstruction loss for trajectory: mean squared error between original demo joint angles and VAE-reconstructed joint angles at each timestep.",
+    "line_type": "example",
+    "chapter": 8,
+    "start_ms": 2983564,
+    "duration_ms": 10496,
+    "end_ms": 2994060
+  },
+  {
+    "index": 344,
+    "speaker": "STUDENT_4",
+    "text": "Negative log probability of reconstructing the input - measures how well the VAE can reproduce data?",
+    "line_type": "echo",
+    "chapter": 8,
+    "start_ms": 2994060,
+    "duration_ms": 7120,
+    "end_ms": 3001180
+  },
+  {
+    "index": 345,
+    "speaker": "PROFESSOR",
+    "text": "Correct.",
+    "line_type": "acknowledgment",
+    "chapter": 8,
+    "start_ms": 3001180,
+    "duration_ms": 2292,
+    "end_ms": 3003472
+  },
+  {
+    "index": 346,
+    "speaker": "PROFESSOR",
+    "text": "1X Technologies uses reconstruction loss to ensure their policies capture demonstration details.",
+    "line_type": "consequence",
+    "chapter": 8,
+    "start_ms": 3003472,
+    "duration_ms": 8048,
+    "end_ms": 3011520
+  },
+  {
+    "index": 347,
+    "speaker": "STUDENT_4",
+    "text": "What is the regularization loss in ELBO?",
+    "line_type": "question",
+    "chapter": 8,
+    "start_ms": 3011520,
+    "duration_ms": 3380,
+    "end_ms": 3014900
+  },
+  {
+    "index": 348,
+    "speaker": "PROFESSOR",
+    "text": "KL(Q(z|x) || P(z)) measures divergence between encoder output and prior (usually N(0,1)). Forces latent representations to be close to standard Gaussian, enabling sampling.",
+    "line_type": "answer",
+    "chapter": 8,
+    "start_ms": 3014900,
+    "duration_ms": 15972,
+    "end_ms": 3030872
+  },
+  {
+    "index": 349,
+    "speaker": "PROFESSOR",
+    "text": "KL term prevents encoder from using crazy latent values. Keeps all demo encodings in a well-organized Gaussian blob for easy sampling.",
+    "line_type": "example",
+    "chapter": 8,
+    "start_ms": 3030872,
+    "duration_ms": 10688,
+    "end_ms": 3041560
+  },
+  {
+    "index": 350,
+    "speaker": "STUDENT_1",
+    "text": "KL divergence from encoder distribution to prior - prevents encoder from learning arbitrary codes?",
+    "line_type": "echo",
+    "chapter": 8,
+    "start_ms": 3041560,
+    "duration_ms": 7384,
+    "end_ms": 3048944
+  },
+  {
+    "index": 351,
+    "speaker": "PROFESSOR",
+    "text": "Exactly.",
+    "line_type": "acknowledgment",
+    "chapter": 8,
+    "start_ms": 3048944,
+    "duration_ms": 2460,
+    "end_ms": 3051404
+  },
+  {
+    "index": 352,
+    "speaker": "PROFESSOR",
+    "text": "Without this regularization, Sanctuary AI's policies would overfit to specific demonstrations.",
+    "line_type": "consequence",
+    "chapter": 8,
+    "start_ms": 3051404,
+    "duration_ms": 8096,
+    "end_ms": 3059500
+  },
+  {
+    "index": 353,
+    "speaker": "STUDENT_1",
+    "text": "Why use Gaussian distributions in VAEs?",
+    "line_type": "question",
+    "chapter": 8,
+    "start_ms": 3059500,
+    "duration_ms": 3764,
+    "end_ms": 3063264
+  },
+  {
+    "index": 354,
+    "speaker": "PROFESSOR",
+    "text": "Gaussians are: 1) Easy to parameterize (just \u03bc, \u03c3) 2) KL divergence has closed form 3) Reparameterization trick works 4) Central limit theorem makes them natural. Mathematical convenience.",
+    "line_type": "answer",
+    "chapter": 8,
+    "start_ms": 3063264,
+    "duration_ms": 15156,
+    "end_ms": 3078420
+  },
+  {
+    "index": 355,
+    "speaker": "PROFESSOR",
+    "text": "Encoder outputs 2 numbers per latent dim (\u03bc, \u03c3). Sampling: z = \u03bc + \u03c3\u03b5. Gradients flow through. Simple and works.",
+    "line_type": "example",
+    "chapter": 8,
+    "start_ms": 3078420,
+    "duration_ms": 11264,
+    "end_ms": 3089684
+  },
+  {
+    "index": 356,
+    "speaker": "STUDENT_2",
+    "text": "They have nice mathematical properties - easy to sample, easy to compute KL, and work well in practice?",
+    "line_type": "echo",
+    "chapter": 8,
+    "start_ms": 3089684,
+    "duration_ms": 7792,
+    "end_ms": 3097476
+  },
+  {
+    "index": 357,
+    "speaker": "PROFESSOR",
+    "text": "That's right.",
+    "line_type": "acknowledgment",
+    "chapter": 8,
+    "start_ms": 3097476,
+    "duration_ms": 2436,
+    "end_ms": 3099912
+  },
+  {
+    "index": 358,
+    "speaker": "PROFESSOR",
+    "text": "Most robotics VAE implementations use Gaussians, though some research explores alternatives.",
+    "line_type": "consequence",
+    "chapter": 8,
+    "start_ms": 3099912,
+    "duration_ms": 8048,
+    "end_ms": 3107960
+  },
+  {
+    "index": 359,
+    "speaker": "STUDENT_2",
+    "text": "How should reconstruction and KL terms be balanced?",
+    "line_type": "question",
+    "chapter": 8,
+    "start_ms": 3107960,
+    "duration_ms": 3884,
+    "end_ms": 3111844
+  },
+  {
+    "index": 360,
+    "speaker": "PROFESSOR",
+    "text": "Reconstruction alone to point estimates, no generation. KL alone to poor reconstruction, just samples noise. Need balance: \u03b2-VAE uses weighting. Standard VAE uses equal weight.",
+    "line_type": "answer",
+    "chapter": 8,
+    "start_ms": 3111844,
+    "duration_ms": 13980,
+    "end_ms": 3125824
+  },
+  {
+    "index": 361,
+    "speaker": "PROFESSOR",
+    "text": "For ACT, the \u03b2 weight on KL term affects how 'diverse' vs 'accurate' generated trajectories are. Tune for your task needs.",
+    "line_type": "example",
+    "chapter": 8,
+    "start_ms": 3125824,
+    "duration_ms": 10544,
+    "end_ms": 3136368
+  },
+  {
+    "index": 362,
+    "speaker": "STUDENT_3",
+    "text": "Too much reconstruction focus causes overfitting, too much KL causes blurry outputs - need careful tuning?",
+    "line_type": "echo",
+    "chapter": 8,
+    "start_ms": 3136368,
+    "duration_ms": 8584,
+    "end_ms": 3144952
+  },
+  {
+    "index": 363,
+    "speaker": "PROFESSOR",
+    "text": "Precisely.",
+    "line_type": "acknowledgment",
+    "chapter": 8,
+    "start_ms": 3144952,
+    "duration_ms": 2532,
+    "end_ms": 3147484
+  },
+  {
+    "index": 364,
+    "speaker": "PROFESSOR",
+    "text": "Google's robotics team has hyperparameter search pipelines specifically for this balance.",
+    "line_type": "consequence",
+    "chapter": 8,
+    "start_ms": 3147484,
+    "duration_ms": 6872,
+    "end_ms": 3154356
+  },
+  {
+    "index": 365,
+    "speaker": "STUDENT_3",
+    "text": "What is the cat teleportation analogy for VAEs?",
+    "line_type": "question",
+    "chapter": 8,
+    "start_ms": 3154356,
+    "duration_ms": 4244,
+    "end_ms": 3158600
+  },
+  {
+    "index": 366,
+    "speaker": "PROFESSOR",
+    "text": "To teleport a cat from Earth to Mars: encode cat to send compressed code to decode on Mars. VAE does this: encode data to latent code to decode. The code must contain all info to reconstruct.",
+    "line_type": "answer",
+    "chapter": 8,
+    "start_ms": 3158600,
+    "duration_ms": 13332,
+    "end_ms": 3171932
+  },
+  {
+    "index": 367,
+    "speaker": "PROFESSOR",
+    "text": "Your trajectory 'teleports' through bottleneck: 1200D to 64D to 1200D. The 64D code must encode everything about the fold.",
+    "line_type": "example",
+    "chapter": 8,
+    "start_ms": 3171932,
+    "duration_ms": 11384,
+    "end_ms": 3183316
+  },
+  {
+    "index": 368,
+    "speaker": "STUDENT_4",
+    "text": "Encoding compresses a cat to DNA-like information, decoding rebuilds the cat from that compressed code?",
+    "line_type": "echo",
+    "chapter": 8,
+    "start_ms": 3183316,
+    "duration_ms": 7432,
+    "end_ms": 3190748
+  },
+  {
+    "index": 369,
+    "speaker": "PROFESSOR",
+    "text": "Correct.",
+    "line_type": "acknowledgment",
+    "chapter": 8,
+    "start_ms": 3190748,
+    "duration_ms": 2292,
+    "end_ms": 3193040
+  },
+  {
+    "index": 370,
+    "speaker": "PROFESSOR",
+    "text": "This analogy helps engineers at Boston Dynamics explain VAE concepts to new team members.",
+    "line_type": "consequence",
+    "chapter": 8,
+    "start_ms": 3193040,
+    "duration_ms": 7904,
+    "end_ms": 3200944
+  },
+  {
+    "index": 371,
+    "speaker": "STUDENT_4",
+    "text": "What role does KL divergence play in the ELBO?",
+    "line_type": "question",
+    "chapter": 8,
+    "start_ms": 3200944,
+    "duration_ms": 4292,
+    "end_ms": 3205236
+  },
+  {
+    "index": 372,
+    "speaker": "PROFESSOR",
+    "text": "KL term is the 'cost' of having an informative latent representation. It penalizes deviation from prior. This creates tension with reconstruction, finding optimal information compression.",
+    "line_type": "answer",
+    "chapter": 8,
+    "start_ms": 3205236,
+    "duration_ms": 12444,
+    "end_ms": 3217680
+  },
+  {
+    "index": 373,
+    "speaker": "PROFESSOR",
+    "text": "High KL = encoder is using lots of latent 'bits'. Low KL = encoder outputs near-random z. Balance gives structured, useful latent space.",
+    "line_type": "example",
+    "chapter": 8,
+    "start_ms": 3217680,
+    "duration_ms": 12056,
+    "end_ms": 3229736
+  },
+  {
+    "index": 374,
+    "speaker": "STUDENT_1",
+    "text": "It regularizes the latent space, making it organized and smooth for generation?",
+    "line_type": "echo",
+    "chapter": 8,
+    "start_ms": 3229736,
+    "duration_ms": 6400,
+    "end_ms": 3236136
+  },
+  {
+    "index": 375,
+    "speaker": "PROFESSOR",
+    "text": "Exactly.",
+    "line_type": "acknowledgment",
+    "chapter": 8,
+    "start_ms": 3236136,
+    "duration_ms": 2460,
+    "end_ms": 3238596
+  },
+  {
+    "index": 376,
+    "speaker": "PROFESSOR",
+    "text": "The KL term is what makes VAE latent spaces useful for sampling novel robot behaviors.",
+    "line_type": "consequence",
+    "chapter": 8,
+    "start_ms": 3238596,
+    "duration_ms": 7880,
+    "end_ms": 3246476
+  },
+  {
+    "index": 377,
+    "speaker": "STUDENT_1",
+    "text": "How does ELBO training apply to ACT policy?",
+    "line_type": "question",
+    "chapter": 8,
+    "start_ms": 3246476,
+    "duration_ms": 4436,
+    "end_ms": 3250912
+  },
+  {
+    "index": 378,
+    "speaker": "PROFESSOR",
+    "text": "ACT's VAE component is trained with ELBO: action sequence reconstruction + KL regularization on style latent. The transformer decoder conditions on latent z to generate coherent action chunks.",
+    "line_type": "answer",
+    "chapter": 8,
+    "start_ms": 3250912,
+    "duration_ms": 13860,
+    "end_ms": 3264772
+  },
+  {
+    "index": 379,
+    "speaker": "PROFESSOR",
+    "text": "Training ACT on your demos: minimize (action prediction error) + \u03b2 \u00d7 (latent KL). Result: policy that generates diverse but valid folding trajectories.",
+    "line_type": "example",
+    "chapter": 8,
+    "start_ms": 3264772,
+    "duration_ms": 12536,
+    "end_ms": 3277308
+  },
+  {
+    "index": 380,
+    "speaker": "STUDENT_2",
+    "text": "ACT uses the CVAE objective - reconstruction of action sequences plus KL on the style latent?",
+    "line_type": "echo",
+    "chapter": 8,
+    "start_ms": 3277308,
+    "duration_ms": 7912,
+    "end_ms": 3285220
+  },
+  {
+    "index": 381,
+    "speaker": "PROFESSOR",
+    "text": "That's right.",
+    "line_type": "acknowledgment",
+    "chapter": 8,
+    "start_ms": 3285220,
+    "duration_ms": 2436,
+    "end_ms": 3287656
+  },
+  {
+    "index": 382,
+    "speaker": "PROFESSOR",
+    "text": "Stanford's ACT paper derives this objective step by step from the ELBO.",
+    "line_type": "consequence",
+    "chapter": 8,
+    "start_ms": 3287656,
+    "duration_ms": 7136,
+    "end_ms": 3294792
+  },
+  {
+    "index": 383,
+    "speaker": "PROFESSOR",
+    "text": "Chapter 9. Homework.",
+    "line_type": "transition",
+    "chapter": 9,
+    "start_ms": 3294792,
+    "duration_ms": 3160,
+    "end_ms": 3297952
+  },
+  {
+    "index": 384,
+    "speaker": "RAJESH",
+    "text": "This all makes sense for MNIST digits. But how does it apply to robot learning?",
+    "line_type": "dialogue",
+    "chapter": 9,
+    "start_ms": 3297952,
+    "duration_ms": 6204,
+    "end_ms": 3304156
+  },
+  {
+    "index": 385,
+    "speaker": "PROFESSOR",
+    "text": "Great question! Let\u2019s make the connection explicit. For robot policy learning, we want to learn:",
+    "line_type": "lecture",
+    "chapter": 9,
+    "start_ms": 3304156,
+    "duration_ms": 7404,
+    "end_ms": 3311560
+  },
+  {
+    "index": 386,
+    "speaker": "STUDENT_2",
+    "text": "What practical implementation is demonstrated?",
+    "line_type": "question",
+    "chapter": 9,
+    "start_ms": 3311560,
+    "duration_ms": 3260,
+    "end_ms": 3314820
+  },
+  {
+    "index": 387,
+    "speaker": "PROFESSOR",
+    "text": "A PyTorch VAE trained on MNIST digits. Shows encoder architecture, decoder architecture, ELBO loss implementation, training loop, and visualization of latent space.",
+    "line_type": "answer",
+    "chapter": 9,
+    "start_ms": 3314820,
+    "duration_ms": 12900,
+    "end_ms": 3327720
+  },
+  {
+    "index": 388,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: Same PyTorch patterns apply to trajectory VAE: just change input (images to trajectories) and output dimensions.",
+    "line_type": "example",
+    "chapter": 9,
+    "start_ms": 3327720,
+    "duration_ms": 12344,
+    "end_ms": 3340064
+  },
+  {
+    "index": 389,
+    "speaker": "STUDENT_3",
+    "text": "A PyTorch VAE trained on MNIST - encoder, decoder, ELBO loss, and visualizations of latent space?",
+    "line_type": "echo",
+    "chapter": 9,
+    "start_ms": 3340064,
+    "duration_ms": 9424,
+    "end_ms": 3349488
+  },
+  {
+    "index": 390,
+    "speaker": "PROFESSOR",
+    "text": "Precisely.",
+    "line_type": "acknowledgment",
+    "chapter": 9,
+    "start_ms": 3349488,
+    "duration_ms": 2532,
+    "end_ms": 3352020
+  },
+  {
+    "index": 391,
+    "speaker": "PROFESSOR",
+    "text": "This MNIST example is the starting point for LeRobot's VAE tutorials.",
+    "line_type": "consequence",
+    "chapter": 9,
+    "start_ms": 3352020,
+    "duration_ms": 6728,
+    "end_ms": 3358748
+  },
+  {
+    "index": 392,
+    "speaker": "PROFESSOR",
+    "text": "This is EXACTLY what a Conditional VAE (CVAE) does! Instead of just generating data, we generate data CONDITIONED on some input.",
+    "line_type": "lecture",
+    "chapter": 9,
+    "start_ms": 3358748,
+    "duration_ms": 10356,
+    "end_ms": 3369104
+  },
+  {
+    "index": 393,
+    "speaker": "RAJESH",
+    "text": "So the observation is like a \u201cprompt\u201d that tells the VAE what kind of output to generate?",
+    "line_type": "dialogue",
+    "chapter": 9,
+    "start_ms": 3369104,
+    "duration_ms": 7284,
+    "end_ms": 3376388
+  },
+  {
+    "index": 394,
+    "speaker": "PROFESSOR",
+    "text": "Exactly! Here\u2019s how ACT (Action Chunking with Transformers) uses these ideas:",
+    "line_type": "lecture",
+    "chapter": 9,
+    "start_ms": 3376388,
+    "duration_ms": 7764,
+    "end_ms": 3384152
+  },
+  {
+    "index": 395,
+    "speaker": "STUDENT_3",
+    "text": "What dataset is used for the VAE implementation example?",
+    "line_type": "question",
+    "chapter": 9,
+    "start_ms": 3384152,
+    "duration_ms": 4412,
+    "end_ms": 3388564
+  },
+  {
+    "index": 396,
+    "speaker": "PROFESSOR",
+    "text": "MNIST: 60,000 training images, 10,000 test images of handwritten digits (0-9). Each image is 28\u00d728 grayscale (784 pixels). Perfect for learning VAE concepts.",
+    "line_type": "answer",
+    "chapter": 9,
+    "start_ms": 3388564,
+    "duration_ms": 14892,
+    "end_ms": 3403456
+  },
+  {
+    "index": 397,
+    "speaker": "PROFESSOR",
+    "text": "Your trajectory dataset: ~100 demos, each 100 timesteps \u00d7 12 joints = 1200D. Same principles, different data shape.",
+    "line_type": "example",
+    "chapter": 9,
+    "start_ms": 3403456,
+    "duration_ms": 11744,
+    "end_ms": 3415200
+  },
+  {
+    "index": 398,
+    "speaker": "STUDENT_4",
+    "text": "MNIST - 28x28 grayscale handwritten digits - simple enough to understand but shows real VAE behavior?",
+    "line_type": "echo",
+    "chapter": 9,
+    "start_ms": 3415200,
+    "duration_ms": 8224,
+    "end_ms": 3423424
+  },
+  {
+    "index": 399,
+    "speaker": "PROFESSOR",
+    "text": "Correct.",
+    "line_type": "acknowledgment",
+    "chapter": 9,
+    "start_ms": 3423424,
+    "duration_ms": 2292,
+    "end_ms": 3425716
+  },
+  {
+    "index": 400,
+    "speaker": "PROFESSOR",
+    "text": "MNIST is the 'Hello World' of deep learning and perfect for VAE intuition.",
+    "line_type": "consequence",
+    "chapter": 9,
+    "start_ms": 3425716,
+    "duration_ms": 6776,
+    "end_ms": 3432492
+  },
+  {
+    "index": 401,
+    "speaker": "PROFESSOR",
+    "text": "The VAE latent captures things like \u201cfold left first vs right first\u201d or \u201cfast vs careful.\u201d Sampling different z values at inference gives you different valid strategies!",
+    "line_type": "lecture",
+    "chapter": 9,
+    "start_ms": 3432492,
+    "duration_ms": 12180,
+    "end_ms": 3444672
+  },
+  {
+    "index": 402,
+    "speaker": "RAJESH",
+    "text": "So understanding VAEs is essential for understanding ACT?",
+    "line_type": "dialogue",
+    "chapter": 9,
+    "start_ms": 3444672,
+    "duration_ms": 5988,
+    "end_ms": 3450660
+  },
+  {
+    "index": 403,
+    "speaker": "PROFESSOR",
+    "text": "Absolutely! ACT is built on VAE foundations. The encoder-decoder structure, the latent sampling, the ELBO training - it\u2019s all there. The difference is:",
+    "line_type": "lecture",
+    "chapter": 9,
+    "start_ms": 3450660,
+    "duration_ms": 11796,
+    "end_ms": 3462456
+  },
+  {
+    "index": 404,
+    "speaker": "STUDENT_4",
+    "text": "What is the encoder architecture for MNIST VAE?",
+    "line_type": "question",
+    "chapter": 9,
+    "start_ms": 3462456,
+    "duration_ms": 3812,
+    "end_ms": 3466268
+  },
+  {
+    "index": 405,
+    "speaker": "PROFESSOR",
+    "text": "784 (flattened image) to 400 (hidden) to 4 (2 for \u03bc, 2 for \u03c3). The latent space is 2D for easy visualization. ReLU activation, linear final layer.",
+    "line_type": "answer",
+    "chapter": 9,
+    "start_ms": 3466268,
+    "duration_ms": 13980,
+    "end_ms": 3480248
+  },
+  {
+    "index": 406,
+    "speaker": "PROFESSOR",
+    "text": "For trajectory VAE: 1200 to 512 to 256 to 128 (64 \u03bc + 64 \u03c3). Larger latent space for more complex data.",
+    "line_type": "example",
+    "chapter": 9,
+    "start_ms": 3480248,
+    "duration_ms": 13088,
+    "end_ms": 3493336
+  },
+  {
+    "index": 407,
+    "speaker": "STUDENT_1",
+    "text": "Flatten input, linear layers with ReLU, output two vectors for mean and log variance?",
+    "line_type": "echo",
+    "chapter": 9,
+    "start_ms": 3493336,
+    "duration_ms": 7528,
+    "end_ms": 3500864
+  },
+  {
+    "index": 408,
+    "speaker": "PROFESSOR",
+    "text": "Exactly.",
+    "line_type": "acknowledgment",
+    "chapter": 9,
+    "start_ms": 3500864,
+    "duration_ms": 2460,
+    "end_ms": 3503324
+  },
+  {
+    "index": 409,
+    "speaker": "PROFESSOR",
+    "text": "This simple MLP encoder is enough for MNIST but scales to CNNs for images.",
+    "line_type": "consequence",
+    "chapter": 9,
+    "start_ms": 3503324,
+    "duration_ms": 7232,
+    "end_ms": 3510556
+  },
+  {
+    "index": 410,
+    "speaker": "PROFESSOR",
+    "text": "But the core insight - learning distributions over outputs using latent variables - is exactly what we covered today. When you look at the ACT paper, you\u2019ll recognize every component!",
+    "line_type": "lecture",
+    "chapter": 9,
+    "start_ms": 3510556,
+    "duration_ms": 11988,
+    "end_ms": 3522544
+  },
+  {
+    "index": 411,
+    "speaker": "RAJESH",
+    "text": "This is incredible. So the mode-averaging problem we started with - where going left AND right averages to going straight into the obstacle - is solved because...",
+    "line_type": "dialogue",
+    "chapter": 9,
+    "start_ms": 3522544,
+    "duration_ms": 10572,
+    "end_ms": 3533116
+  },
+  {
+    "index": 412,
+    "speaker": "PROFESSOR",
+    "text": "Because we sample ONE coherent trajectory from the learned distribution! The distribution might have two modes (left and right), but when we sample, we commit to one of them. No averaging, no compromise, no crashing into obstacles.",
+    "line_type": "lecture",
+    "chapter": 9,
+    "start_ms": 3533116,
+    "duration_ms": 14676,
+    "end_ms": 3547792
+  },
+  {
+    "index": 413,
+    "speaker": "STUDENT_1",
+    "text": "What is the decoder architecture for MNIST VAE?",
+    "line_type": "question",
+    "chapter": 9,
+    "start_ms": 3547792,
+    "duration_ms": 4028,
+    "end_ms": 3551820
+  },
+  {
+    "index": 414,
+    "speaker": "PROFESSOR",
+    "text": "2 (latent z) to 400 (hidden) to 784 (pixels). Mirror of encoder. Sigmoid final activation for pixel values [0,1]. Output is reconstruction of input image.",
+    "line_type": "answer",
+    "chapter": 9,
+    "start_ms": 3551820,
+    "duration_ms": 14172,
+    "end_ms": 3565992
+  },
+  {
+    "index": 415,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: Trajectory decoder: 64 to 256 to 512 to 1200. Output is joint angles, so no sigmoid (angles can be negative).",
+    "line_type": "example",
+    "chapter": 9,
+    "start_ms": 3565992,
+    "duration_ms": 14600,
+    "end_ms": 3580592
+  },
+  {
+    "index": 416,
+    "speaker": "STUDENT_2",
+    "text": "Linear layers with ReLU, final sigmoid to bound outputs between 0 and 1 for image pixels?",
+    "line_type": "echo",
+    "chapter": 9,
+    "start_ms": 3580592,
+    "duration_ms": 7360,
+    "end_ms": 3587952
+  },
+  {
+    "index": 417,
+    "speaker": "PROFESSOR",
+    "text": "That's right.",
+    "line_type": "acknowledgment",
+    "chapter": 9,
+    "start_ms": 3587952,
+    "duration_ms": 2436,
+    "end_ms": 3590388
+  },
+  {
+    "index": 418,
+    "speaker": "PROFESSOR",
+    "text": "The sigmoid at the end matches the binary cross entropy loss for MNIST.",
+    "line_type": "consequence",
+    "chapter": 9,
+    "start_ms": 3590388,
+    "duration_ms": 6512,
+    "end_ms": 3596900
+  },
+  {
+    "index": 419,
+    "speaker": "PROFESSOR",
+    "text": "That\u2019s the power of deep generative modeling for robot learning. Next lesson, we\u2019ll dive into the transformer architecture that makes ACT so powerful for generating coherent action sequences. But the foundation - thinking in distributions, learning with VAEs - that\u2019s what you learned today.",
+    "line_type": "lecture",
+    "chapter": 9,
+    "start_ms": 3596900,
+    "duration_ms": 17748,
+    "end_ms": 3614648
+  },
+  {
+    "index": 420,
+    "speaker": "PROFESSOR",
+    "text": "Point estimate policies fail on multimodal behavior - averaging incompatible modes produces invalid actions",
+    "line_type": "lecture",
+    "chapter": 9,
+    "start_ms": 3614648,
+    "duration_ms": 8460,
+    "end_ms": 3623108
+  },
+  {
+    "index": 421,
+    "speaker": "PROFESSOR",
+    "text": "Deep generative models learn probability distributions, enabling sampling of coherent outputs",
+    "line_type": "lecture",
+    "chapter": 9,
+    "start_ms": 3623108,
+    "duration_ms": 7524,
+    "end_ms": 3630632
+  },
+  {
+    "index": 422,
+    "speaker": "STUDENT_2",
+    "text": "How is ELBO loss implemented in code?",
+    "line_type": "question",
+    "chapter": 9,
+    "start_ms": 3630632,
+    "duration_ms": 3500,
+    "end_ms": 3634132
+  },
+  {
+    "index": 423,
+    "speaker": "PROFESSOR",
+    "text": "loss = reconstruction_loss + kl_loss. Reconstruction: BCE(input, output). KL: -0.5 * sum(1 + log(\u03c3\u00b2) - \u03bc\u00b2 - \u03c3\u00b2). Closed-form KL for Gaussian prior.",
+    "line_type": "answer",
+    "chapter": 9,
+    "start_ms": 3634132,
+    "duration_ms": 19476,
+    "end_ms": 3653608
+  },
+  {
+    "index": 424,
+    "speaker": "PROFESSOR",
+    "text": "For trajectory VAE: MSE instead of BCE (continuous values). Same KL formula. Total loss backward() updates all weights.",
+    "line_type": "example",
+    "chapter": 9,
+    "start_ms": 3653608,
+    "duration_ms": 11408,
+    "end_ms": 3665016
+  },
+  {
+    "index": 425,
+    "speaker": "STUDENT_3",
+    "text": "Reconstruction BCE plus 0.5 times sum of 1 plus log variance minus mean squared minus variance?",
+    "line_type": "echo",
+    "chapter": 9,
+    "start_ms": 3665016,
+    "duration_ms": 9208,
+    "end_ms": 3674224
+  },
+  {
+    "index": 426,
+    "speaker": "PROFESSOR",
+    "text": "Precisely.",
+    "line_type": "acknowledgment",
+    "chapter": 9,
+    "start_ms": 3674224,
+    "duration_ms": 2532,
+    "end_ms": 3676756
+  },
+  {
+    "index": 427,
+    "speaker": "PROFESSOR",
+    "text": "Hugging Face's implementation uses this exact closed-form KL formula.",
+    "line_type": "consequence",
+    "chapter": 9,
+    "start_ms": 3676756,
+    "duration_ms": 6488,
+    "end_ms": 3683244
+  },
+  {
+    "index": 428,
+    "speaker": "STUDENT_3",
+    "text": "Why use Binary Cross-Entropy for MNIST reconstruction?",
+    "line_type": "question",
+    "chapter": 9,
+    "start_ms": 3683244,
+    "duration_ms": 4388,
+    "end_ms": 3687632
+  },
+  {
+    "index": 429,
+    "speaker": "PROFESSOR",
+    "text": "MNIST pixels are treated as Bernoulli random variables (black or white probability). BCE: -sum(x*log(x') + (1-x)*log(1-x')). Appropriate for [0,1] values.",
+    "line_type": "answer",
+    "chapter": 9,
+    "start_ms": 3687632,
+    "duration_ms": 15252,
+    "end_ms": 3702884
+  },
+  {
+    "index": 430,
+    "speaker": "PROFESSOR",
+    "text": "For continuous trajectories, use MSE instead: mean((x - x')\u00b2). BCE is for probability-like outputs.",
+    "line_type": "example",
+    "chapter": 9,
+    "start_ms": 3702884,
+    "duration_ms": 9944,
+    "end_ms": 3712828
+  },
+  {
+    "index": 431,
+    "speaker": "STUDENT_4",
+    "text": "MNIST pixels are treated as probabilities between 0 and 1 - BCE is the natural loss for that?",
+    "line_type": "echo",
+    "chapter": 9,
+    "start_ms": 3712828,
+    "duration_ms": 7288,
+    "end_ms": 3720116
+  },
+  {
+    "index": 432,
+    "speaker": "PROFESSOR",
+    "text": "Correct.",
+    "line_type": "acknowledgment",
+    "chapter": 9,
+    "start_ms": 3720116,
+    "duration_ms": 2292,
+    "end_ms": 3722408
+  },
+  {
+    "index": 433,
+    "speaker": "PROFESSOR",
+    "text": "For continuous data like robot actions, you'd use mean squared error instead.",
+    "line_type": "consequence",
+    "chapter": 9,
+    "start_ms": 3722408,
+    "duration_ms": 6848,
+    "end_ms": 3729256
+  },
+  {
+    "index": 434,
+    "speaker": "STUDENT_4",
+    "text": "What does the VAE training loop look like?",
+    "line_type": "question",
+    "chapter": 9,
+    "start_ms": 3729256,
+    "duration_ms": 2924,
+    "end_ms": 3732180
+  },
+  {
+    "index": 435,
+    "speaker": "PROFESSOR",
+    "text": "For each epoch: batch images to encode to sample z to decode to compute ELBO loss to backward() to optimizer.step(). Track loss, visualize latent space periodically.",
+    "line_type": "answer",
+    "chapter": 9,
+    "start_ms": 3732180,
+    "duration_ms": 12204,
+    "end_ms": 3744384
+  },
+  {
+    "index": 436,
+    "speaker": "PROFESSOR",
+    "text": "Same loop for ACT: batch trajectories to encode to sample to decode to ELBO loss to update. Typically 100-500 epochs.",
+    "line_type": "example",
+    "chapter": 9,
+    "start_ms": 3744384,
+    "duration_ms": 10544,
+    "end_ms": 3754928
+  },
+  {
+    "index": 437,
+    "speaker": "STUDENT_1",
+    "text": "Forward pass, compute ELBO loss, backward pass, optimizer step - same as any neural network?",
+    "line_type": "echo",
+    "chapter": 9,
+    "start_ms": 3754928,
+    "duration_ms": 8824,
+    "end_ms": 3763752
+  },
+  {
+    "index": 438,
+    "speaker": "PROFESSOR",
+    "text": "Exactly.",
+    "line_type": "acknowledgment",
+    "chapter": 9,
+    "start_ms": 3763752,
+    "duration_ms": 2460,
+    "end_ms": 3766212
+  },
+  {
+    "index": 439,
+    "speaker": "PROFESSOR",
+    "text": "The magic is in the loss function, not the training procedure.",
+    "line_type": "consequence",
+    "chapter": 9,
+    "start_ms": 3766212,
+    "duration_ms": 5792,
+    "end_ms": 3772004
+  },
+  {
+    "index": 440,
+    "speaker": "STUDENT_1",
+    "text": "How does latent space evolve during training?",
+    "line_type": "question",
+    "chapter": 9,
+    "start_ms": 3772004,
+    "duration_ms": 3284,
+    "end_ms": 3775288
+  },
+  {
+    "index": 441,
+    "speaker": "PROFESSOR",
+    "text": "Initially: random encodings, no structure. During training: similar digits cluster, space becomes organized. Final: digits separated into regions, continuous interpolation between them.",
+    "line_type": "answer",
+    "chapter": 9,
+    "start_ms": 3775288,
+    "duration_ms": 13092,
+    "end_ms": 3788380
+  },
+  {
+    "index": 442,
+    "speaker": "PROFESSOR",
+    "text": "For trajectories: initially random, then 'fast-folds' separate from 'slow-folds', different styles form clusters.",
+    "line_type": "example",
+    "chapter": 9,
+    "start_ms": 3788380,
+    "duration_ms": 9248,
+    "end_ms": 3797628
+  },
+  {
+    "index": 443,
+    "speaker": "STUDENT_2",
+    "text": "Starts random and scattered, gradually organizes with similar digits clustering together?",
+    "line_type": "echo",
+    "chapter": 9,
+    "start_ms": 3797628,
+    "duration_ms": 6376,
+    "end_ms": 3804004
+  },
+  {
+    "index": 444,
+    "speaker": "PROFESSOR",
+    "text": "That's right.",
+    "line_type": "acknowledgment",
+    "chapter": 9,
+    "start_ms": 3804004,
+    "duration_ms": 2436,
+    "end_ms": 3806440
+  },
+  {
+    "index": 445,
+    "speaker": "PROFESSOR",
+    "text": "Visualizing this evolution helps debug VAE training issues.",
+    "line_type": "consequence",
+    "chapter": 9,
+    "start_ms": 3806440,
+    "duration_ms": 5888,
+    "end_ms": 3812328
+  },
+  {
+    "index": 446,
+    "speaker": "STUDENT_2",
+    "text": "What does a well-trained VAE latent space look like?",
+    "line_type": "question",
+    "chapter": 9,
+    "start_ms": 3812328,
+    "duration_ms": 4196,
+    "end_ms": 3816524
+  },
+  {
+    "index": 447,
+    "speaker": "PROFESSOR",
+    "text": "Scatter plot of encodings shows: 1) Different classes in different regions 2) Overall Gaussian-ish shape 3) Smooth transitions between regions 4) No large gaps or dead zones.",
+    "line_type": "answer",
+    "chapter": 9,
+    "start_ms": 3816524,
+    "duration_ms": 12996,
+    "end_ms": 3829520
+  },
+  {
+    "index": 448,
+    "speaker": "PROFESSOR",
+    "text": "Good trajectory latent: fold-styles cluster, overall blob is Gaussian, sampling anywhere produces valid motion.",
+    "line_type": "example",
+    "chapter": 9,
+    "start_ms": 3829520,
+    "duration_ms": 9752,
+    "end_ms": 3839272
+  },
+  {
+    "index": 449,
+    "speaker": "STUDENT_3",
+    "text": "Digits of the same class cluster together, smooth transitions between classes, no empty regions?",
+    "line_type": "echo",
+    "chapter": 9,
+    "start_ms": 3839272,
+    "duration_ms": 7648,
+    "end_ms": 3846920
+  },
+  {
+    "index": 450,
+    "speaker": "PROFESSOR",
+    "text": "Precisely.",
+    "line_type": "acknowledgment",
+    "chapter": 9,
+    "start_ms": 3846920,
+    "duration_ms": 2532,
+    "end_ms": 3849452
+  },
+  {
+    "index": 451,
+    "speaker": "PROFESSOR",
+    "text": "Google's robotics team uses t-SNE plots to verify their action VAEs have learned good structure.",
+    "line_type": "consequence",
+    "chapter": 9,
+    "start_ms": 3849452,
+    "duration_ms": 8336,
+    "end_ms": 3857788
+  },
+  {
+    "index": 452,
+    "speaker": "STUDENT_3",
+    "text": "How good are VAE reconstructions?",
+    "line_type": "question",
+    "chapter": 9,
+    "start_ms": 3857788,
+    "duration_ms": 3092,
+    "end_ms": 3860880
+  },
+  {
+    "index": 453,
+    "speaker": "PROFESSOR",
+    "text": "VAE reconstructions capture overall structure but lose fine details. Original vs reconstruction: shape is right, but edges are blurry. This is the VAE trade-off: compression loses information.",
+    "line_type": "answer",
+    "chapter": 9,
+    "start_ms": 3860880,
+    "duration_ms": 14004,
+    "end_ms": 3874884
+  },
+  {
+    "index": 454,
+    "speaker": "PROFESSOR",
+    "text": "Trajectory reconstruction: overall motion pattern is correct, but exact joint angles might be slightly off. Usually good enough for robot execution.",
+    "line_type": "example",
+    "chapter": 9,
+    "start_ms": 3874884,
+    "duration_ms": 10856,
+    "end_ms": 3885740
+  },
+  {
+    "index": 455,
+    "speaker": "STUDENT_4",
+    "text": "Good enough to recognize the digit, but slightly blurry compared to original - that's the KL tradeoff?",
+    "line_type": "echo",
+    "chapter": 9,
+    "start_ms": 3885740,
+    "duration_ms": 6976,
+    "end_ms": 3892716
+  },
+  {
+    "index": 456,
+    "speaker": "PROFESSOR",
+    "text": "Correct.",
+    "line_type": "acknowledgment",
+    "chapter": 9,
+    "start_ms": 3892716,
+    "duration_ms": 2292,
+    "end_ms": 3895008
+  },
+  {
+    "index": 457,
+    "speaker": "PROFESSOR",
+    "text": "This blurriness motivates newer architectures like VQ-VAE and diffusion models.",
+    "line_type": "consequence",
+    "chapter": 9,
+    "start_ms": 3895008,
+    "duration_ms": 7472,
+    "end_ms": 3902480
+  },
+  {
+    "index": 458,
+    "speaker": "STUDENT_4",
+    "text": "What is the main drawback of VAEs?",
+    "line_type": "question",
+    "chapter": 9,
+    "start_ms": 3902480,
+    "duration_ms": 2948,
+    "end_ms": 3905428
+  },
+  {
+    "index": 459,
+    "speaker": "PROFESSOR",
+    "text": "VAEs produce blurry outputs because: 1) MSE loss averages over possible reconstructions 2) Latent compression loses details 3) Gaussian decoder smooths variations. Diffusion models fix this.",
+    "line_type": "answer",
+    "chapter": 9,
+    "start_ms": 3905428,
+    "duration_ms": 14604,
+    "end_ms": 3920032
+  },
+  {
+    "index": 460,
+    "speaker": "PROFESSOR",
+    "text": "For trajectories, 'blur' means slightly less precise joint angles. Usually acceptable, but Diffusion Policy can be sharper if needed.",
+    "line_type": "example",
+    "chapter": 9,
+    "start_ms": 3920032,
+    "duration_ms": 10064,
+    "end_ms": 3930096
+  },
+  {
+    "index": 461,
+    "speaker": "STUDENT_1",
+    "text": "They tend to produce blurry outputs because they optimize for average likelihood, not sharpness?",
+    "line_type": "echo",
+    "chapter": 9,
+    "start_ms": 3930096,
+    "duration_ms": 6976,
+    "end_ms": 3937072
+  },
+  {
+    "index": 462,
+    "speaker": "PROFESSOR",
+    "text": "Exactly.",
+    "line_type": "acknowledgment",
+    "chapter": 9,
+    "start_ms": 3937072,
+    "duration_ms": 2460,
+    "end_ms": 3939532
+  },
+  {
+    "index": 463,
+    "speaker": "PROFESSOR",
+    "text": "This is why Tesla is exploring diffusion-based policies as a VAE alternative.",
+    "line_type": "consequence",
+    "chapter": 9,
+    "start_ms": 3939532,
+    "duration_ms": 6944,
+    "end_ms": 3946476
+  },
+  {
+    "index": 464,
+    "speaker": "STUDENT_1",
+    "text": "What is a Conditional VAE (CVAE)?",
+    "line_type": "question",
+    "chapter": 9,
+    "start_ms": 3946476,
+    "duration_ms": 4436,
+    "end_ms": 3950912
+  },
+  {
+    "index": 465,
+    "speaker": "PROFESSOR",
+    "text": "CVAE conditions generation on additional input. P(x|z) becomes P(x|z, c) where c is condition. For digits: c = digit label to generate specific digit. For robots: c = observation.",
+    "line_type": "answer",
+    "chapter": 9,
+    "start_ms": 3950912,
+    "duration_ms": 17148,
+    "end_ms": 3968060
+  },
+  {
+    "index": 466,
+    "speaker": "PROFESSOR",
+    "text": "ACT is a CVAE: conditions on current observation (camera + joints) to generate action sequence. Same latent, different conditioning.",
+    "line_type": "example",
+    "chapter": 9,
+    "start_ms": 3968060,
+    "duration_ms": 11024,
+    "end_ms": 3979084
+  },
+  {
+    "index": 467,
+    "speaker": "STUDENT_2",
+    "text": "A VAE that conditions on additional information - so the latent only captures residual variation?",
+    "line_type": "echo",
+    "chapter": 9,
+    "start_ms": 3979084,
+    "duration_ms": 7144,
+    "end_ms": 3986228
+  },
+  {
+    "index": 468,
+    "speaker": "PROFESSOR",
+    "text": "That's right.",
+    "line_type": "acknowledgment",
+    "chapter": 9,
+    "start_ms": 3986228,
+    "duration_ms": 2436,
+    "end_ms": 3988664
+  },
+  {
+    "index": 469,
+    "speaker": "PROFESSOR",
+    "text": "ACT uses a CVAE conditioned on observations so the latent captures just the style.",
+    "line_type": "consequence",
+    "chapter": 9,
+    "start_ms": 3988664,
+    "duration_ms": 7808,
+    "end_ms": 3996472
+  },
+  {
+    "index": 470,
+    "speaker": "STUDENT_2",
+    "text": "How do VAEs connect to robot policy learning?",
+    "line_type": "question",
+    "chapter": 9,
+    "start_ms": 3996472,
+    "duration_ms": 3716,
+    "end_ms": 4000188
+  },
+  {
+    "index": 471,
+    "speaker": "PROFESSOR",
+    "text": "For robot policies, we want P(actions | observations). VAE learns this distribution. Latent z captures 'style' or 'intent'. Given observation + sampled z, decoder generates action sequence.",
+    "line_type": "answer",
+    "chapter": 9,
+    "start_ms": 4000188,
+    "duration_ms": 15204,
+    "end_ms": 4015392
+  },
+  {
+    "index": 472,
+    "speaker": "PROFESSOR",
+    "text": "ACT: observation (what SO-ARM101 sees) + latent z (fold style) to transformer decoder to action chunk (next 100 joint commands).",
+    "line_type": "example",
+    "chapter": 9,
+    "start_ms": 4015392,
+    "duration_ms": 12656,
+    "end_ms": 4028048
+  },
+  {
+    "index": 473,
+    "speaker": "STUDENT_3",
+    "text": "Actions become the data we encode and decode - latent captures the 'intent' behind actions?",
+    "line_type": "echo",
+    "chapter": 9,
+    "start_ms": 4028048,
+    "duration_ms": 7240,
+    "end_ms": 4035288
+  },
+  {
+    "index": 474,
+    "speaker": "PROFESSOR",
+    "text": "Precisely.",
+    "line_type": "acknowledgment",
+    "chapter": 9,
+    "start_ms": 4035288,
+    "duration_ms": 2532,
+    "end_ms": 4037820
+  },
+  {
+    "index": 475,
+    "speaker": "PROFESSOR",
+    "text": "This connection is the core insight that makes ACT work for manipulation tasks.",
+    "line_type": "consequence",
+    "chapter": 9,
+    "start_ms": 4037820,
+    "duration_ms": 6944,
+    "end_ms": 4044764
+  },
+  {
+    "index": 476,
+    "speaker": "STUDENT_3",
+    "text": "Why predict action distributions instead of single actions?",
+    "line_type": "question",
+    "chapter": 9,
+    "start_ms": 4044764,
+    "duration_ms": 4388,
+    "end_ms": 4049152
+  },
+  {
+    "index": 477,
+    "speaker": "PROFESSOR",
+    "text": "Distributions handle multimodal behavior (multiple valid actions for same observation). Sampling commits to one mode. This solves the mode-averaging problem that breaks point-estimate policies.",
+    "line_type": "answer",
+    "chapter": 9,
+    "start_ms": 4049152,
+    "duration_ms": 12588,
+    "end_ms": 4061740
+  },
+  {
+    "index": 478,
+    "speaker": "PROFESSOR",
+    "text": "For ambiguous fabric state: distribution might be bimodal (left-fold, right-fold). Sampling picks one coherent strategy for SO-ARM101 to execute.",
+    "line_type": "example",
+    "chapter": 9,
+    "start_ms": 4061740,
+    "duration_ms": 11960,
+    "end_ms": 4073700
+  },
+  {
+    "index": 479,
+    "speaker": "STUDENT_4",
+    "text": "It solves the multimodal problem - sampling from a distribution picks one coherent mode?",
+    "line_type": "echo",
+    "chapter": 9,
+    "start_ms": 4073700,
+    "duration_ms": 6400,
+    "end_ms": 4080100
+  },
+  {
+    "index": 480,
+    "speaker": "PROFESSOR",
+    "text": "Correct.",
+    "line_type": "acknowledgment",
+    "chapter": 9,
+    "start_ms": 4080100,
+    "duration_ms": 2292,
+    "end_ms": 4082392
+  },
+  {
+    "index": 481,
+    "speaker": "PROFESSOR",
+    "text": "This is the key architectural decision that separates modern IL from point estimate failures.",
+    "line_type": "consequence",
+    "chapter": 9,
+    "start_ms": 4082392,
+    "duration_ms": 7232,
+    "end_ms": 4089624
+  },
+  {
+    "index": 482,
+    "speaker": "STUDENT_4",
+    "text": "What is the homework for Lecture 2?",
+    "line_type": "question",
+    "chapter": 9,
+    "start_ms": 4089624,
+    "duration_ms": 2516,
+    "end_ms": 4092140
+  },
+  {
+    "index": 483,
+    "speaker": "PROFESSOR",
+    "text": "Run the MNIST VAE Colab notebook, understand each component. Study Conditional VAEs. Prepare for Lecture 3 on Transformers - review attention mechanism basics.",
+    "line_type": "answer",
+    "chapter": 9,
+    "start_ms": 4092140,
+    "duration_ms": 12108,
+    "end_ms": 4104248
+  },
+  {
+    "index": 484,
+    "speaker": "PROFESSOR",
+    "text": "Understanding this VAE prepares you for ACT architecture: same VAE concepts, but conditioned on observations and outputting action chunks.",
+    "line_type": "example",
+    "chapter": 9,
+    "start_ms": 4104248,
+    "duration_ms": 10832,
+    "end_ms": 4115080
+  },
+  {
+    "index": 485,
+    "speaker": "STUDENT_1",
+    "text": "Build a VAE on MNIST, experiment with latent dimensions, and prepare for the ACT deep dive?",
+    "line_type": "echo",
+    "chapter": 9,
+    "start_ms": 4115080,
+    "duration_ms": 8056,
+    "end_ms": 4123136
+  },
+  {
+    "index": 486,
+    "speaker": "PROFESSOR",
+    "text": "Exactly.",
+    "line_type": "acknowledgment",
+    "chapter": 9,
+    "start_ms": 4123136,
+    "duration_ms": 2460,
+    "end_ms": 4125596
+  },
+  {
+    "index": 487,
+    "speaker": "PROFESSOR",
+    "text": "Hands-on implementation is essential for truly understanding these concepts.",
+    "line_type": "consequence",
+    "chapter": 9,
+    "start_ms": 4125596,
+    "duration_ms": 6272,
+    "end_ms": 4131868
+  },
+  {
+    "index": 488,
+    "speaker": "STUDENT_1",
+    "text": "Why study 'Build an LLM from Scratch' for robotics?",
+    "line_type": "question",
+    "chapter": 9,
+    "start_ms": 4131868,
+    "duration_ms": 5108,
+    "end_ms": 4136976
+  },
+  {
+    "index": 489,
+    "speaker": "PROFESSOR",
+    "text": "ACT uses transformer decoder architecture, similar to GPT. Understanding transformer internals (attention, Q/K/V, positional encoding) is essential for understanding how ACT generates action sequences.",
+    "line_type": "answer",
+    "chapter": 9,
+    "start_ms": 4136976,
+    "duration_ms": 16068,
+    "end_ms": 4153044
+  },
+  {
+    "index": 490,
+    "speaker": "PROFESSOR",
+    "text": "ACT's action generation uses the same attention mechanism as GPT - just outputting joint angles instead of text tokens.",
+    "line_type": "example",
+    "chapter": 9,
+    "start_ms": 4153044,
+    "duration_ms": 9464,
+    "end_ms": 4162508
+  },
+  {
+    "index": 491,
+    "speaker": "STUDENT_2",
+    "text": "Transformers are the backbone of modern policies - understanding them from scratch helps debugging?",
+    "line_type": "echo",
+    "chapter": 9,
+    "start_ms": 4162508,
+    "duration_ms": 6664,
+    "end_ms": 4169172
+  },
+  {
+    "index": 492,
+    "speaker": "PROFESSOR",
+    "text": "That's right.",
+    "line_type": "acknowledgment",
+    "chapter": 9,
+    "start_ms": 4169172,
+    "duration_ms": 2436,
+    "end_ms": 4171608
+  },
+  {
+    "index": 493,
+    "speaker": "PROFESSOR",
+    "text": "Many robotics researchers started by implementing transformers for language before applying them to actions.",
+    "line_type": "consequence",
+    "chapter": 9,
+    "start_ms": 4171608,
+    "duration_ms": 8072,
+    "end_ms": 4179680
+  },
+  {
+    "index": 494,
+    "speaker": "STUDENT_2",
+    "text": "What transformer concepts are needed for Lecture 3?",
+    "line_type": "question",
+    "chapter": 9,
+    "start_ms": 4179680,
+    "duration_ms": 3692,
+    "end_ms": 4183372
+  },
+  {
+    "index": 495,
+    "speaker": "PROFESSOR",
+    "text": "Self-attention mechanism, Query-Key-Value computation, encoder-decoder architecture, positional encoding. These are how ACT processes observations and generates coherent action sequences.",
+    "line_type": "answer",
+    "chapter": 9,
+    "start_ms": 4183372,
+    "duration_ms": 13548,
+    "end_ms": 4196920
+  },
+  {
+    "index": 496,
+    "speaker": "PROFESSOR",
+    "text": "Transformer decoder in ACT attends to observation embeddings to decide what actions SO-ARM101 should take at each timestep.",
+    "line_type": "example",
+    "chapter": 9,
+    "start_ms": 4196920,
+    "duration_ms": 9632,
+    "end_ms": 4206552
+  },
+  {
+    "index": 497,
+    "speaker": "STUDENT_3",
+    "text": "Attention mechanisms, positional encoding, encoder-decoder architecture, and training dynamics?",
+    "line_type": "echo",
+    "chapter": 9,
+    "start_ms": 4206552,
+    "duration_ms": 7816,
+    "end_ms": 4214368
+  },
+  {
+    "index": 498,
+    "speaker": "PROFESSOR",
+    "text": "Precisely.",
+    "line_type": "acknowledgment",
+    "chapter": 9,
+    "start_ms": 4214368,
+    "duration_ms": 2532,
+    "end_ms": 4216900
+  },
+  {
+    "index": 499,
+    "speaker": "PROFESSOR",
+    "text": "ACT uses the transformer decoder architecture we'll explore next lecture.",
+    "line_type": "consequence",
+    "chapter": 9,
+    "start_ms": 4216900,
+    "duration_ms": 7040,
+    "end_ms": 4223940
+  },
+  {
+    "index": 500,
+    "speaker": "STUDENT_3",
+    "text": "What is Vision Transformer (ViT) and why is it relevant?",
+    "line_type": "question",
+    "chapter": 9,
+    "start_ms": 4223940,
+    "duration_ms": 4868,
+    "end_ms": 4228808
+  },
+  {
+    "index": 501,
+    "speaker": "PROFESSOR",
+    "text": "ViT applies transformer architecture to images by treating image patches as tokens. It's the vision encoder in ACT - converting camera images into embeddings that the action decoder can attend to.",
+    "line_type": "answer",
+    "chapter": 9,
+    "start_ms": 4228808,
+    "duration_ms": 12660,
+    "end_ms": 4241468
+  },
+  {
+    "index": 502,
+    "speaker": "PROFESSOR",
+    "text": "Your SO-ARM101 camera images are processed by ViT into patch embeddings. The transformer decoder attends to these to understand the scene for action generation.",
+    "line_type": "example",
+    "chapter": 9,
+    "start_ms": 4241468,
+    "duration_ms": 11384,
+    "end_ms": 4252852
+  },
+  {
+    "index": 503,
+    "speaker": "STUDENT_4",
+    "text": "ViT applies transformers to image patches - relevant because robot policies process visual observations?",
+    "line_type": "echo",
+    "chapter": 9,
+    "start_ms": 4252852,
+    "duration_ms": 7480,
+    "end_ms": 4260332
+  },
+  {
+    "index": 504,
+    "speaker": "PROFESSOR",
+    "text": "Correct.",
+    "line_type": "acknowledgment",
+    "chapter": 9,
+    "start_ms": 4260332,
+    "duration_ms": 2292,
+    "end_ms": 4262624
+  },
+  {
+    "index": 505,
+    "speaker": "PROFESSOR",
+    "text": "Google's RT-2 uses ViT-style visual encoders to process camera inputs for their robots.",
+    "line_type": "consequence",
+    "chapter": 9,
+    "start_ms": 4262624,
+    "duration_ms": 7928,
+    "end_ms": 4270552
+  },
+  {
+    "index": 506,
+    "speaker": "PROFESSOR",
+    "text": "And that concludes today's lecture. You've journeyed through the landscape of robot learning - from classical robotics, through reinforcement learning, to imitation learning and generative policies. Take a moment to let these insights settle. When you're ready, open your eyes. The journey continues in Lesson Two.",
+    "line_type": "transition",
+    "chapter": 9,
+    "start_ms": 4270552,
+    "duration_ms": 19392,
+    "end_ms": 4289944
+  },
+  {
+    "index": 507,
+    "speaker": "AMBIENT",
+    "text": "[Classroom atmosphere fades out slowly]",
+    "line_type": "transition",
+    "chapter": 9,
+    "start_ms": 4289944,
+    "duration_ms": 2000,
+    "end_ms": 4291944
+  }
+]
