@@ -1,0 +1,812 @@
+[
+  {
+    "index": 2,
+    "speaker": "PROFESSOR",
+    "text": "Chapter 1. .",
+    "line_type": "transition",
+    "chapter": 1,
+    "start_ms": 0,
+    "duration_ms": 2584,
+    "end_ms": 2584
+  },
+  {
+    "index": 3,
+    "speaker": "RAJESH",
+    "text": "Dr. Nova, I\u2019ve been reviewing the architectures you mentioned at the end of Lesson 2 - OpenVLA, ACT, SmallVA, GRoot. And honestly? I\u2019m intimidated. There are all these boxes labeled \u201cself-attention,\u201d \u201ccross-attention,\u201d \u201cQ, K, V\u201d... I feel like everyone speaks a language I don\u2019t understand.",
+    "line_type": "dialogue",
+    "chapter": 1,
+    "start_ms": 2584,
+    "duration_ms": 21684,
+    "end_ms": 24268
+  },
+  {
+    "index": 4,
+    "speaker": "PROFESSOR",
+    "text": "smiles That intimidation is exactly why I wanted to dedicate an entire lesson to transformers. Let me show you something.",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 24268,
+    "duration_ms": 8292,
+    "end_ms": 32560
+  },
+  {
+    "index": 5,
+    "speaker": "PROFESSOR",
+    "text": "Look at these four architectures. Different teams, different companies, different years. But what do they all have in common?",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 32560,
+    "duration_ms": 8364,
+    "end_ms": 40924
+  },
+  {
+    "index": 6,
+    "speaker": "STUDENT_1",
+    "text": "What is the encoder-decoder architecture and why do robots need both parts?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 40924,
+    "duration_ms": 5636,
+    "end_ms": 46560
+  },
+  {
+    "index": 7,
+    "speaker": "PROFESSOR",
+    "text": "Think of it like a translator at the UN. The encoder is like deeply understanding a speech in French - absorbing all the meaning, context, and nuance into your brain. The decoder is then expressing that understanding as fluent Japanese, word by word. The encoder compresses input into rich understanding; the decoder generates output step-by-step from that understanding.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 46560,
+    "duration_ms": 21876,
+    "end_ms": 68436
+  },
+  {
+    "index": 8,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: When your SO-ARM101 watches a demonstration of folding a shirt, the encoder absorbs the ENTIRE video - understanding 'first flatten, then fold sleeves, then fold in half.' The decoder then generates YOUR robot's specific motor commands one timestep at a time, translating that compressed understanding into 'move left gripper to position X, then Y, then Z...'",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 68436,
+    "duration_ms": 26048,
+    "end_ms": 94484
+  },
+  {
+    "index": 9,
+    "speaker": "STUDENT_3",
+    "text": "So the encoder is like deeply studying a whole book, and the decoder is writing your own summary one sentence at a time - the robot needs both to go from watching a demo to actually doing it.",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 94484,
+    "duration_ms": 12040,
+    "end_ms": 106524
+  },
+  {
+    "index": 10,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. Understanding and generating are fundamentally different skills.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 106524,
+    "duration_ms": 5892,
+    "end_ms": 112416
+  },
+  {
+    "index": 11,
+    "speaker": "PROFESSOR",
+    "text": "This is why Google's RT-2 and Figure 01's robots use encoder-decoder architectures - they need to comprehend entire scenes before generating precise motor commands.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 112416,
+    "duration_ms": 11720,
+    "end_ms": 124136
+  },
+  {
+    "index": 12,
+    "speaker": "RAJESH",
+    "text": "They all mention \u201ctransformer\u201d or \u201cattention\u201d somewhere...",
+    "line_type": "dialogue",
+    "chapter": 1,
+    "start_ms": 124136,
+    "duration_ms": 5364,
+    "end_ms": 129500
+  },
+  {
+    "index": 13,
+    "speaker": "PROFESSOR",
+    "text": "Exactly! The transformer architecture is like the Latin of modern AI - once you learn it, you can read almost any architecture diagram. Let\u2019s do a quick recap of where we are in our journey.",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 129500,
+    "duration_ms": 12348,
+    "end_ms": 141848
+  },
+  {
+    "index": 14,
+    "speaker": "PROFESSOR",
+    "text": "In Lesson 1, we discovered that point estimate policies fail when there are multiple valid solutions. Averaging \u201cgo left\u201d and \u201cgo right\u201d gives you \u201cgo straight into the obstacle.\u201d",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 141848,
+    "duration_ms": 12228,
+    "end_ms": 154076
+  },
+  {
+    "index": 15,
+    "speaker": "STUDENT_2",
+    "text": "What are Query, Key, and Value in attention, and how do they work together?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 154076,
+    "duration_ms": 5348,
+    "end_ms": 159424
+  },
+  {
+    "index": 16,
+    "speaker": "PROFESSOR",
+    "text": "Imagine a library. The Query is your question ('books about cooking'). Keys are like the titles/descriptions on every book spine. Values are the actual book contents. You compare your Query to all Keys to find matches, then retrieve those Values. Attention works identically: each token asks a question, compares to all other tokens, and gathers relevant information.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 159424,
+    "duration_ms": 22740,
+    "end_ms": 182164
+  },
+  {
+    "index": 17,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: At timestep 50 of folding, your SO-ARM101's left gripper generates a Query: 'what should I do next?' It compares against Keys from ALL other timesteps (including what the right gripper did at timestep 30). Finding a strong match, it retrieves that Value - 'when right gripper was here, left gripper moved up.' Now it knows its next action.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 182164,
+    "duration_ms": 24632,
+    "end_ms": 206796
+  },
+  {
+    "index": 18,
+    "speaker": "STUDENT_4",
+    "text": "So Query is what I'm searching for, Key is the label on each item, and Value is the actual content I retrieve when there's a match - like a smart search engine inside the network.",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 206796,
+    "duration_ms": 10600,
+    "end_ms": 217396
+  },
+  {
+    "index": 19,
+    "speaker": "PROFESSOR",
+    "text": "Precisely. The elegance is that these are all learned, not hand-coded.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 217396,
+    "duration_ms": 6132,
+    "end_ms": 223528
+  },
+  {
+    "index": 20,
+    "speaker": "PROFESSOR",
+    "text": "Tesla's FSD uses this exact mechanism - each camera frame queries relevant information from other cameras and past timesteps to build a complete driving picture.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 223528,
+    "duration_ms": 11336,
+    "end_ms": 234864
+  },
+  {
+    "index": 21,
+    "speaker": "PROFESSOR",
+    "text": "In Lesson 2, we learned that deep generative models solve this by predicting probability distributions instead of single values. And we dove deep into Variational Autoencoders - how they compress data into a latent space and reconstruct it.",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 234864,
+    "duration_ms": 14892,
+    "end_ms": 249756
+  },
+  {
+    "index": 22,
+    "speaker": "RAJESH",
+    "text": "Right - the encoder compresses images into latent variables Z, and the decoder reconstructs from Z. We even talked about how for robotics, our observations include both images AND joint angles from the SO-ARM101.",
+    "line_type": "dialogue",
+    "chapter": 1,
+    "start_ms": 249756,
+    "duration_ms": 15420,
+    "end_ms": 265176
+  },
+  {
+    "index": 23,
+    "speaker": "PROFESSOR",
+    "text": "Perfect recall! Now here\u2019s the thing - VAEs are great for capturing hidden factors of variation. But they were designed for independent samples, not sequences . And robotics is fundamentally about sequences.",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 265176,
+    "duration_ms": 13548,
+    "end_ms": 278724
+  },
+  {
+    "index": 24,
+    "speaker": "STUDENT_3",
+    "text": "What does the feed-forward network do after attention, and why is it needed?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 278724,
+    "duration_ms": 5444,
+    "end_ms": 284168
+  },
+  {
+    "index": 25,
+    "speaker": "PROFESSOR",
+    "text": "If attention is 'gathering information from friends,' the feed-forward network is 'thinking deeply by yourself.' It's two dense layers that process each token independently, adding non-linear reasoning that attention alone can't provide. Think of attention as collecting ingredients and the FFN as actually cooking them into something new. Both are essential.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 284168,
+    "duration_ms": 20388,
+    "end_ms": 304556
+  },
+  {
+    "index": 26,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: After attention gathers that 'gripper is near fabric edge' and 'target is the fold line,' the feed-forward network does the actual REASONING: combining these facts into 'therefore, close gripper and move toward fold line.' It transforms collected context into actionable decisions for your SO-ARM101's next motor command.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 304556,
+    "duration_ms": 23720,
+    "end_ms": 328276
+  },
+  {
+    "index": 27,
+    "speaker": "STUDENT_1",
+    "text": "Attention gathers the ingredients from everywhere, but the FFN is where the actual cooking happens - transforming collected information into new insights.",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 328276,
+    "duration_ms": 10360,
+    "end_ms": 338636
+  },
+  {
+    "index": 28,
+    "speaker": "PROFESSOR",
+    "text": "That's right. Attention alone can't do the nonlinear reasoning we need.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 338636,
+    "duration_ms": 5628,
+    "end_ms": 344264
+  },
+  {
+    "index": 29,
+    "speaker": "PROFESSOR",
+    "text": "NVIDIA's Isaac Lab simulations rely on this - after attention gathers sensor readings, the FFN computes actual physics-aware decisions for robot movement.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 344264,
+    "duration_ms": 12176,
+    "end_ms": 356440
+  },
+  {
+    "index": 30,
+    "speaker": "PROFESSOR",
+    "text": "Think about it: robot actions form a trajectory over time. Language is a sequence of words. Even images, as we\u2019ll see, can be treated as sequences. And sequences have a special property - the elements are related to each other .",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 356440,
+    "duration_ms": 14892,
+    "end_ms": 371332
+  },
+  {
+    "index": 31,
+    "speaker": "RAJESH",
+    "text": "So \u201cI am in India\u201d has relationships between the words - \u201cI\u201d relates to \u201cam,\u201d \u201cIndia\u201d relates to the whole sentence...",
+    "line_type": "dialogue",
+    "chapter": 1,
+    "start_ms": 371332,
+    "duration_ms": 9948,
+    "end_ms": 381280
+  },
+  {
+    "index": 32,
+    "speaker": "PROFESSOR",
+    "text": "Exactly! And capturing those relationships - those dependencies between elements in a sequence - is what transformers do brilliantly. Before transformers, people used Recurrent Neural Networks (RNNs), but they were slow and struggled with long sequences.",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 381280,
+    "duration_ms": 16356,
+    "end_ms": 397636
+  },
+  {
+    "index": 33,
+    "speaker": "STUDENT_4",
+    "text": "How does 'next token prediction' work, and why is this simple idea so powerful?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 397636,
+    "duration_ms": 5828,
+    "end_ms": 403464
+  },
+  {
+    "index": 34,
+    "speaker": "PROFESSOR",
+    "text": "It's like the world's most sophisticated autocomplete. Given 'The robot picked up the...' the model predicts 'shirt' is likely next. But here's the magic: by training on billions of examples of 'what comes next', the model learns grammar, facts, reasoning - all as a side effect of this simple guessing game. One prediction at a time, chained together, creates entire paragraphs.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 403464,
+    "duration_ms": 23292,
+    "end_ms": 426756
+  },
+  {
+    "index": 35,
+    "speaker": "PROFESSOR",
+    "text": "Your SO-ARM101 learns folding the same way! Given the sequence 'reach toward fabric to grasp corner to lift...', it predicts 'to move toward center' comes next. Train on thousands of human demonstrations, and the robot learns not just individual moves, but the LOGIC of folding - that corners meet middles, that you smooth before creasing. Each prediction builds on all previous context.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 426756,
+    "duration_ms": 23912,
+    "end_ms": 450668
+  },
+  {
+    "index": 36,
+    "speaker": "STUDENT_2",
+    "text": "It's just really sophisticated autocomplete - predict the next thing given everything before. And somehow this simple objective learns everything from grammar to physics!",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 450668,
+    "duration_ms": 10192,
+    "end_ms": 460860
+  },
+  {
+    "index": 37,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. The simplicity is deceptive - the complexity emerges from scale.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 460860,
+    "duration_ms": 6228,
+    "end_ms": 467088
+  },
+  {
+    "index": 38,
+    "speaker": "PROFESSOR",
+    "text": "This is literally how ChatGPT works, and now how RT-2 generates robot actions - one motor command at a time, each conditioned on everything before it.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 467088,
+    "duration_ms": 11504,
+    "end_ms": 478592
+  },
+  {
+    "index": 39,
+    "speaker": "PROFESSOR",
+    "text": "In 2017, a paper changed everything. It was titled \u201cAttention Is All You Need,\u201d and it has over 210,000 citations. That\u2019s more than most professors accumulate in their entire careers, combined!",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 478592,
+    "duration_ms": 14172,
+    "end_ms": 492764
+  },
+  {
+    "index": 40,
+    "speaker": "PROFESSOR",
+    "text": "By the end of today, you\u2019ll look at that architecture diagram and understand every single component. You\u2019ll be able to read robotics papers like a native speaker. Ready?",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 492764,
+    "duration_ms": 10404,
+    "end_ms": 503168
+  },
+  {
+    "index": 41,
+    "speaker": "STUDENT_1",
+    "text": "Why is reading original transformer papers valuable even when tutorials exist?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 503168,
+    "duration_ms": 5684,
+    "end_ms": 508852
+  },
+  {
+    "index": 42,
+    "speaker": "PROFESSOR",
+    "text": "Tutorials are like watching cooking shows - you get the highlights. Reading papers is like apprenticing in the kitchen - you see the failed experiments, the specific choices, and the reasoning behind every decision. 'Attention Is All You Need' reveals WHY transformers were designed this way, not just WHAT they do.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 508852,
+    "duration_ms": 17844,
+    "end_ms": 526696
+  },
+  {
+    "index": 43,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: When your SO-ARM101's folding fails mysteriously, understanding the original transformer design helps you debug. Maybe you'll realize 'oh, my sequence is too long for the positional encoding they designed' - insight you'd only get from reading how Vaswani et al. thought about sequence length limits in their original paper.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 526696,
+    "duration_ms": 22256,
+    "end_ms": 548952
+  },
+  {
+    "index": 44,
+    "speaker": "STUDENT_4",
+    "text": "Tutorials show you the recipe, but papers show you the failed experiments and design choices - that's where real debugging intuition comes from.",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 548952,
+    "duration_ms": 9016,
+    "end_ms": 557968
+  },
+  {
+    "index": 45,
+    "speaker": "PROFESSOR",
+    "text": "Precisely. Understanding WHY decisions were made helps when things go wrong.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 557968,
+    "duration_ms": 6180,
+    "end_ms": 564148
+  },
+  {
+    "index": 46,
+    "speaker": "PROFESSOR",
+    "text": "Boston Dynamics engineers famously study original papers - when Atlas falls unexpectedly, understanding the fundamental architecture helps them trace the bug.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 564148,
+    "duration_ms": 11120,
+    "end_ms": 575268
+  },
+  {
+    "index": 47,
+    "speaker": "STUDENT_2",
+    "text": "What are BOS, EOS, and PAD tokens, and why do transformers need these 'traffic signals'?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 575268,
+    "duration_ms": 6596,
+    "end_ms": 581864
+  },
+  {
+    "index": 48,
+    "speaker": "PROFESSOR",
+    "text": "BOS (Beginning Of Sequence), EOS (End Of Sequence), and PAD (Padding) are special markers that tell the model where things start, stop, and where there's just empty filler. They're like the green light, checkered flag, and orange cones in a race - without them, the model wouldn't know when to start generating, when it's done, or what to ignore.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 581864,
+    "duration_ms": 21492,
+    "end_ms": 603356
+  },
+  {
+    "index": 49,
+    "speaker": "PROFESSOR",
+    "text": "When your SO-ARM101 processes a folding demonstration, BOS says 'demonstration starts NOW,' EOS marks 'folding complete, arms back to rest.' If one demo has 50 actions and another has 30, PAD tokens fill the gap so batches are equal length - like blank frames at the end of a short video to match a longer one's runtime.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 603356,
+    "duration_ms": 21584,
+    "end_ms": 624940
+  },
+  {
+    "index": 50,
+    "speaker": "STUDENT_3",
+    "text": "They're like punctuation for sequences - BOS is the capital letter, EOS is the period, and PAD fills in the blanks when sequences have different lengths.",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 624940,
+    "duration_ms": 10840,
+    "end_ms": 635780
+  },
+  {
+    "index": 51,
+    "speaker": "PROFESSOR",
+    "text": "That's right. Without these markers, the model wouldn't know where tasks begin and end.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 635780,
+    "duration_ms": 6612,
+    "end_ms": 642392
+  },
+  {
+    "index": 52,
+    "speaker": "PROFESSOR",
+    "text": "When Waymo's self-driving system processes sensor streams of varying lengths, PAD tokens ensure batched processing works correctly across different scenario durations.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 642392,
+    "duration_ms": 11312,
+    "end_ms": 653704
+  },
+  {
+    "index": 53,
+    "speaker": "STUDENT_3",
+    "text": "What can you learn from interactively visualizing attention weights?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 653704,
+    "duration_ms": 4484,
+    "end_ms": 658188
+  },
+  {
+    "index": 54,
+    "speaker": "PROFESSOR",
+    "text": "Attention visualization tools show you which parts of the input the model focused on for each output - like a heat map of 'what influenced what.' You might discover the model looks at punctuation when you expected it to look at nouns, revealing bugs or unexpected learning. It's like having X-ray vision into the model's decision-making process.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 658188,
+    "duration_ms": 19596,
+    "end_ms": 677784
+  },
+  {
+    "index": 55,
+    "speaker": "PROFESSOR",
+    "text": "If your SO-ARM101 keeps failing when shirts have patterns, attention visualization might reveal it's focusing on the print rather than the garment edges. You'd see bright attention spots on decorations instead of on collar and sleeve boundaries. This 'aha moment' tells you to train on more patterned shirts so the robot learns to attend to structure, not decoration.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 677784,
+    "duration_ms": 21632,
+    "end_ms": 699416
+  },
+  {
+    "index": 56,
+    "speaker": "STUDENT_1",
+    "text": "It's like having X-ray vision into the model's brain - you can see exactly what it's focusing on and catch when it's looking at the wrong things.",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 699416,
+    "duration_ms": 8848,
+    "end_ms": 708264
+  },
+  {
+    "index": 57,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. Visualization turns black boxes into glass boxes.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 708264,
+    "duration_ms": 5940,
+    "end_ms": 714204
+  },
+  {
+    "index": 58,
+    "speaker": "PROFESSOR",
+    "text": "Google's robotics team uses attention visualization to debug RT-2 - when a robot fails a task, they can literally see if it was attending to the cup or the distractor object.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 714204,
+    "duration_ms": 12176,
+    "end_ms": 726380
+  },
+  {
+    "index": 59,
+    "speaker": "STUDENT_4",
+    "text": "Why do we need VAEs instead of regular autoencoders for robotics?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 726380,
+    "duration_ms": 5060,
+    "end_ms": 731440
+  },
+  {
+    "index": 60,
+    "speaker": "PROFESSOR",
+    "text": "Regular autoencoders memorize exact reconstructions - like a photocopier. VAEs learn to capture the 'essence' in a smooth space where you can explore variations. Think of it like learning to draw faces vs. tracing photos - VAEs understand the underlying rules.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 731440,
+    "duration_ms": 17604,
+    "end_ms": 749044
+  },
+  {
+    "index": 61,
+    "speaker": "PROFESSOR",
+    "text": "Your SO-ARM101 sees 100 demonstrations of folding shirts. A regular autoencoder might just memorize those exact trajectories. A VAE learns the 'style space' of folding - smooth trajectories, gentle gripper movements, symmetric arm coordination - so it can generate NEW valid folding motions it never saw before.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 749044,
+    "duration_ms": 21392,
+    "end_ms": 770436
+  },
+  {
+    "index": 62,
+    "speaker": "STUDENT_2",
+    "text": "Regular autoencoders just memorize exact copies, but VAEs learn the essence - a smooth space where you can explore variations and generate new valid solutions.",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 770436,
+    "duration_ms": 11200,
+    "end_ms": 781636
+  },
+  {
+    "index": 63,
+    "speaker": "PROFESSOR",
+    "text": "Precisely. The smoothness of the latent space is key for generalization.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 781636,
+    "duration_ms": 6012,
+    "end_ms": 787648
+  },
+  {
+    "index": 64,
+    "speaker": "PROFESSOR",
+    "text": "This is why Stanford's ALOHA system uses VAEs - when humans demonstrate different styles of folding, the VAE learns a smooth 'style space' rather than memorizing each demo exactly.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 787648,
+    "duration_ms": 13376,
+    "end_ms": 801024
+  },
+  {
+    "index": 65,
+    "speaker": "STUDENT_1",
+    "text": "What makes Transformers particularly well-suited for robot control?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 801024,
+    "duration_ms": 4652,
+    "end_ms": 805676
+  },
+  {
+    "index": 66,
+    "speaker": "PROFESSOR",
+    "text": "Transformers excel at finding relationships between things - any things! They don't care if they're relating words, image patches, or robot observations. They handle variable-length sequences naturally and can attend to whatever's relevant. It's like having a really flexible brain that can connect any dots.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 805676,
+    "duration_ms": 18300,
+    "end_ms": 823976
+  },
+  {
+    "index": 67,
+    "speaker": "PROFESSOR",
+    "text": "When your SO-ARM101 is folding clothes, it needs to relate many things: 'How does what I see in the camera relate to where my arms are? How does the current fabric position relate to my goal? How does what I did 5 steps ago affect what I should do now?' Transformers handle ALL these relationships with the same elegant mechanism - self-attention. No special architecture needed for each type of connection.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 823976,
+    "duration_ms": 23624,
+    "end_ms": 847600
+  },
+  {
+    "index": 68,
+    "speaker": "STUDENT_3",
+    "text": "Transformers don't care what type of data they're relating - images, joint angles, language commands - they just find patterns across any kind of sequence.",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 847600,
+    "duration_ms": 10792,
+    "end_ms": 858392
+  },
+  {
+    "index": 69,
+    "speaker": "PROFESSOR",
+    "text": "That's right. The architecture is remarkably domain-agnostic.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 858392,
+    "duration_ms": 5388,
+    "end_ms": 863780
+  },
+  {
+    "index": 70,
+    "speaker": "PROFESSOR",
+    "text": "This flexibility is why Google chose Transformers for PaLM-E - one architecture that seamlessly combines camera feeds, robot proprioception, and language instructions.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 863780,
+    "duration_ms": 12056,
+    "end_ms": 875836
+  },
+  {
+    "index": 71,
+    "speaker": "STUDENT_2",
+    "text": "What is a 'vocabulary' in the context of Transformers, and why does it matter?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 875836,
+    "duration_ms": 5828,
+    "end_ms": 881664
+  },
+  {
+    "index": 72,
+    "speaker": "PROFESSOR",
+    "text": "Vocabulary is the set of all possible 'words' (tokens) your Transformer can understand - its complete dictionary. For language, it's word pieces. For robotics, it might be discretized actions or sensor readings. The size and design of your vocabulary determines what concepts your model can express.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 881664,
+    "duration_ms": 19452,
+    "end_ms": 901116
+  },
+  {
+    "index": 73,
+    "speaker": "PROFESSOR",
+    "text": "For your SO-ARM101, you need to define what 'tokens' exist. Option 1: Continuous - each joint angle is a number (infinite vocabulary). Option 2: Discretized - joint angles binned into 256 levels per joint (fixed vocabulary of 256 tokens per joint). The vocabulary choice affects everything: can the robot make fine adjustments? How big is the model? For precise shirt folding, you might need finer bins than for rough object pushing.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 901116,
+    "duration_ms": 30464,
+    "end_ms": 931580
+  },
+  {
+    "index": 74,
+    "speaker": "STUDENT_4",
+    "text": "The vocabulary defines what 'words' the Transformer can speak - for robots, that might be discretized actions or binned sensor values. The choice changes everything about how the model learns.",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 931580,
+    "duration_ms": 12040,
+    "end_ms": 943620
+  },
+  {
+    "index": 75,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. Vocabulary design is often underappreciated but crucial.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 943620,
+    "duration_ms": 6036,
+    "end_ms": 949656
+  },
+  {
+    "index": 76,
+    "speaker": "PROFESSOR",
+    "text": "OpenAI's robotics team found that vocabulary choice dramatically affected manipulation success - discretizing into 256 action bins worked far better than continuous outputs.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 949656,
+    "duration_ms": 12704,
+    "end_ms": 962360
+  },
+  {
+    "index": 77,
+    "speaker": "STUDENT_3",
+    "text": "How does Vision Transformer (ViT) actually process an image step by step?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 962360,
+    "duration_ms": 6140,
+    "end_ms": 968500
+  },
+  {
+    "index": 78,
+    "speaker": "PROFESSOR",
+    "text": "ViT chops your image into a grid of patches (like 14\u00d714), flattens each patch into a vector, adds position embeddings, prepends a special [CLS] token, then runs everything through standard Transformer layers. The [CLS] token at the end summarizes the whole image. It's like cutting a photo into tiles, describing each tile, then having a committee discussion to understand the whole scene.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 968500,
+    "duration_ms": 25092,
+    "end_ms": 993592
+  },
+  {
+    "index": 79,
+    "speaker": "PROFESSOR",
+    "text": "Your SO-ARM101's camera captures a 224\u00d7224 image of a shirt to fold. ViT cuts it into 196 patches (14\u00d714 grid, each 16\u00d716 pixels). Each patch becomes a 768-dim vector. Position embeddings tell the model 'patch 0 is top-left, patch 195 is bottom-right.' After 12 Transformer layers of patches attending to each other, the [CLS] token contains a rich understanding: 'wrinkled blue shirt, collar at top, sleeves extended, ready for first fold.' This representation feeds into the action prediction head.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 993592,
+    "duration_ms": 39176,
+    "end_ms": 1032768
+  },
+  {
+    "index": 80,
+    "speaker": "STUDENT_1",
+    "text": "Chop the image into patches, turn each patch into a vector, add position info, stick a CLS token in front, run it all through transformer layers, and the CLS token emerges with the answer.",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 1032768,
+    "duration_ms": 14848,
+    "end_ms": 1047616
+  },
+  {
+    "index": 81,
+    "speaker": "PROFESSOR",
+    "text": "That's the complete pipeline. Simple in principle, powerful in practice.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 1047616,
+    "duration_ms": 6036,
+    "end_ms": 1053652
+  },
+  {
+    "index": 82,
+    "speaker": "PROFESSOR",
+    "text": "This exact process runs inside Figure 01's humanoid robots - their cameras feed ViTs that turn raw pixels into scene understanding in milliseconds.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 1053652,
+    "duration_ms": 10808,
+    "end_ms": 1064460
+  }
+]

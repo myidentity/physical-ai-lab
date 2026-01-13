@@ -1,0 +1,372 @@
+[
+  {
+    "index": 279,
+    "speaker": "PROFESSOR",
+    "text": "Chapter 5. .",
+    "line_type": "transition",
+    "chapter": 5,
+    "start_ms": 0,
+    "duration_ms": 2632,
+    "end_ms": 2632
+  },
+  {
+    "index": 280,
+    "speaker": "PROFESSOR",
+    "text": "The encoder creates understanding. The decoder creates output. Let\u2019s see how it generates \u201ccar red\u201d from understanding \u201cred car.\u201d",
+    "line_type": "lecture",
+    "chapter": 5,
+    "start_ms": 2632,
+    "duration_ms": 9708,
+    "end_ms": 12340
+  },
+  {
+    "index": 281,
+    "speaker": "PROFESSOR",
+    "text": "The decoder is where the autoregressive magic happens - generating one token at a time. Let\u2019s trace through it step by step.",
+    "line_type": "lecture",
+    "chapter": 5,
+    "start_ms": 12340,
+    "duration_ms": 8292,
+    "end_ms": 20632
+  },
+  {
+    "index": 282,
+    "speaker": "STUDENT_2",
+    "text": "Why do transformers need positional embeddings when processing sequences?",
+    "line_type": "question",
+    "chapter": 5,
+    "start_ms": 20632,
+    "duration_ms": 4892,
+    "end_ms": 25524
+  },
+  {
+    "index": 283,
+    "speaker": "PROFESSOR",
+    "text": "Here's a weird quirk: transformers see everything at once, but this means they're ORDER-BLIND! 'Dog bites man' and 'Man bites dog' would look identical without positional embeddings. It's like reading a shuffled deck of recipe cards - you need someone to number them so you know step 1 comes before step 10. Positional embeddings add this 'timestamp' to each piece of data.",
+    "line_type": "answer",
+    "chapter": 5,
+    "start_ms": 25524,
+    "duration_ms": 22140,
+    "end_ms": 47664
+  },
+  {
+    "index": 284,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: If your SO-ARM101 sees folding steps [grab collar, fold sleeve, flatten shirt] but has no positional info, it might think these can happen in ANY order - disaster! Positional embeddings tell the transformer 'grab collar is timestep 1, fold sleeve is timestep 47, flatten is timestep 23.' Now it understands the choreography, not just the moves.",
+    "line_type": "example",
+    "chapter": 5,
+    "start_ms": 47664,
+    "duration_ms": 27248,
+    "end_ms": 74912
+  },
+  {
+    "index": 285,
+    "speaker": "STUDENT_3",
+    "text": "Transformers process everything in parallel, which means they're naturally order-blind. Positional embeddings are like seat numbers - they tell the model where each token sits in the sequence.",
+    "line_type": "echo",
+    "chapter": 5,
+    "start_ms": 74912,
+    "duration_ms": 12712,
+    "end_ms": 87624
+  },
+  {
+    "index": 286,
+    "speaker": "PROFESSOR",
+    "text": "That's right. Without positions, 'dog bites man' equals 'man bites dog.'",
+    "line_type": "acknowledgment",
+    "chapter": 5,
+    "start_ms": 87624,
+    "duration_ms": 7284,
+    "end_ms": 94908
+  },
+  {
+    "index": 287,
+    "speaker": "PROFESSOR",
+    "text": "This insight led to RoPE and other improved positional encodings that let modern models handle much longer sequences - crucial for robot trajectories spanning thousands of timesteps.",
+    "line_type": "consequence",
+    "chapter": 5,
+    "start_ms": 94908,
+    "duration_ms": 11888,
+    "end_ms": 106796
+  },
+  {
+    "index": 288,
+    "speaker": "RAJESH",
+    "text": "So the decoder input starts with just BOS, and we want it to predict \u201ccar\u201d?",
+    "line_type": "dialogue",
+    "chapter": 5,
+    "start_ms": 106796,
+    "duration_ms": 6516,
+    "end_ms": 113312
+  },
+  {
+    "index": 289,
+    "speaker": "PROFESSOR",
+    "text": "Exactly! First, BOS goes through self-attention (with just itself, since it\u2019s the only token so far). But here\u2019s the key - the decoder needs to know about the INPUT sequence \u201cthe red car.\u201d",
+    "line_type": "lecture",
+    "chapter": 5,
+    "start_ms": 113312,
+    "duration_ms": 12852,
+    "end_ms": 126164
+  },
+  {
+    "index": 290,
+    "speaker": "STUDENT_3",
+    "text": "Why do transformers use multiple attention heads instead of just one?",
+    "line_type": "question",
+    "chapter": 5,
+    "start_ms": 126164,
+    "duration_ms": 5012,
+    "end_ms": 131176
+  },
+  {
+    "index": 291,
+    "speaker": "PROFESSOR",
+    "text": "One attention head is like having one detective investigate a case - they'll find SOME connections but miss others. Multi-head attention is like having 8 detectives, each with different specialties: one tracks people, another tracks weapons, another tracks timelines. Each head learns to find DIFFERENT types of relationships, then they combine findings. More perspectives = richer understanding.",
+    "line_type": "answer",
+    "chapter": 5,
+    "start_ms": 131176,
+    "duration_ms": 22308,
+    "end_ms": 153484
+  },
+  {
+    "index": 292,
+    "speaker": "PROFESSOR",
+    "text": "Your SO-ARM101 might have 8 attention heads. Head 1 learns to track left-arm-to-right-arm coordination. Head 2 focuses on gripper-to-fabric relationships. Head 3 watches timing patterns. Head 4 monitors spatial distances. Together, they capture the full complexity of bimanual folding that no single attention pattern could understand alone.",
+    "line_type": "example",
+    "chapter": 5,
+    "start_ms": 153484,
+    "duration_ms": 22664,
+    "end_ms": 176148
+  },
+  {
+    "index": 293,
+    "speaker": "STUDENT_1",
+    "text": "One head captures one type of relationship. Multiple heads are like having specialists - one tracks timing, another tracks spatial relationships, another tracks object types. Together they see everything.",
+    "line_type": "echo",
+    "chapter": 5,
+    "start_ms": 176148,
+    "duration_ms": 13768,
+    "end_ms": 189916
+  },
+  {
+    "index": 294,
+    "speaker": "PROFESSOR",
+    "text": "Precisely. Different heads learn to attend to different aspects automatically.",
+    "line_type": "acknowledgment",
+    "chapter": 5,
+    "start_ms": 189916,
+    "duration_ms": 5868,
+    "end_ms": 195784
+  },
+  {
+    "index": 295,
+    "speaker": "PROFESSOR",
+    "text": "Researchers analyzing GPT-4 found specialized heads - some track syntax, others semantics, others co-reference. The model self-organizes its attention resources.",
+    "line_type": "consequence",
+    "chapter": 5,
+    "start_ms": 195784,
+    "duration_ms": 12512,
+    "end_ms": 208296
+  },
+  {
+    "index": 296,
+    "speaker": "PROFESSOR",
+    "text": "In cross-attention: - Queries come from the decoder (BOS) - Keys and Values come from the encoder\u2019s output (the context vectors for \u201cthe,\u201d \u201cred,\u201d \u201ccar\u201d)",
+    "line_type": "lecture",
+    "chapter": 5,
+    "start_ms": 208296,
+    "duration_ms": 11172,
+    "end_ms": 219468
+  },
+  {
+    "index": 297,
+    "speaker": "PROFESSOR",
+    "text": "The decoder token asks: \u201cGiven what the encoder understood, what should I generate next?\u201d",
+    "line_type": "lecture",
+    "chapter": 5,
+    "start_ms": 219468,
+    "duration_ms": 6804,
+    "end_ms": 226272
+  },
+  {
+    "index": 298,
+    "speaker": "RAJESH",
+    "text": "Oh! So the query is \u201cwhat should come first?\u201d and it attends to the encoder\u2019s understanding of the input. Since we want to swap, it should attend most to \u201ccar\u201d!",
+    "line_type": "dialogue",
+    "chapter": 5,
+    "start_ms": 226272,
+    "duration_ms": 11316,
+    "end_ms": 237588
+  },
+  {
+    "index": 299,
+    "speaker": "STUDENT_4",
+    "text": "What is vocabulary projection and why does a Transformer need it?",
+    "line_type": "question",
+    "chapter": 5,
+    "start_ms": 237588,
+    "duration_ms": 4196,
+    "end_ms": 241784
+  },
+  {
+    "index": 300,
+    "speaker": "PROFESSOR",
+    "text": "Think of the Transformer's hidden state as thoughts in a foreign language that needs translation back to words everyone understands. Vocabulary projection is like a massive dictionary lookup - it takes the abstract 'thought vector' (maybe 768 numbers) and scores how likely each word in the vocabulary (maybe 50,000 words) is to come next. The highest-scoring word wins.",
+    "line_type": "answer",
+    "chapter": 5,
+    "start_ms": 241784,
+    "duration_ms": 23268,
+    "end_ms": 265052
+  },
+  {
+    "index": 301,
+    "speaker": "PROFESSOR",
+    "text": "For your SO-ARM101, instead of words, the 'vocabulary' might be discrete actions: 'move-left-5mm', 'close-gripper-10%', 'rotate-wrist-2-degrees'. After processing camera frames and joint positions through attention layers, the final projection asks: 'of all 1000 possible micro-actions, which one should happen NOW to continue this shirt fold?' The projection layer votes on every option simultaneously.",
+    "line_type": "example",
+    "chapter": 5,
+    "start_ms": 265052,
+    "duration_ms": 27368,
+    "end_ms": 292420
+  },
+  {
+    "index": 302,
+    "speaker": "STUDENT_2",
+    "text": "The Transformer thinks in hidden vectors, but needs to output actual words or actions. Vocabulary projection is the final translation from internal representation back to concrete predictions.",
+    "line_type": "echo",
+    "chapter": 5,
+    "start_ms": 292420,
+    "duration_ms": 12424,
+    "end_ms": 304844
+  },
+  {
+    "index": 303,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. It's converting thoughts back into language everyone understands.",
+    "line_type": "acknowledgment",
+    "chapter": 5,
+    "start_ms": 304844,
+    "duration_ms": 5916,
+    "end_ms": 310760
+  },
+  {
+    "index": 304,
+    "speaker": "PROFESSOR",
+    "text": "For robot control, this projection might convert hidden states into discretized motor commands - Google's RT-2 projects to 256 possible action tokens per joint.",
+    "line_type": "consequence",
+    "chapter": 5,
+    "start_ms": 310760,
+    "duration_ms": 12296,
+    "end_ms": 323056
+  },
+  {
+    "index": 305,
+    "speaker": "PROFESSOR",
+    "text": "Exactly! The cross-attention scores tell the decoder to focus on \u201ccar\u201d (since that should come first in the output).",
+    "line_type": "lecture",
+    "chapter": 5,
+    "start_ms": 323056,
+    "duration_ms": 8580,
+    "end_ms": 331636
+  },
+  {
+    "index": 306,
+    "speaker": "PROFESSOR",
+    "text": "The decoder\u2019s context vector becomes a weighted combination of the encoder\u2019s value vectors. High attention to \u201ccar\u201d means the decoder\u2019s representation shifts toward \u201ccar\u2019s\u201d meaning.",
+    "line_type": "lecture",
+    "chapter": 5,
+    "start_ms": 331636,
+    "duration_ms": 12132,
+    "end_ms": 343768
+  },
+  {
+    "index": 307,
+    "speaker": "STUDENT_1",
+    "text": "What does attention look like geometrically, and why is this visualization helpful?",
+    "line_type": "question",
+    "chapter": 5,
+    "start_ms": 343768,
+    "duration_ms": 5876,
+    "end_ms": 349644
+  },
+  {
+    "index": 308,
+    "speaker": "PROFESSOR",
+    "text": "Geometrically, attention is about measuring angles between vectors in high-dimensional space. Query and Key vectors that point in similar directions (small angle) produce high attention scores. It's like compass needles - if two needles point the same way, they're 'attending' to the same direction. This view helps explain why certain words cluster and how meaning gets combined.",
+    "line_type": "answer",
+    "chapter": 5,
+    "start_ms": 349644,
+    "duration_ms": 22260,
+    "end_ms": 371904
+  },
+  {
+    "index": 309,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: In your SO-ARM101's embedding space, the Query vector for 'sleeve' points toward fabric-manipulation concepts. Key vectors for 'cuff' and 'collar' point in similar directions, getting high attention. The Key for 'tablecloth' points elsewhere, getting low attention. Geometrically, the robot is finding actions that 'point the same way' as what it needs.",
+    "line_type": "example",
+    "chapter": 5,
+    "start_ms": 371904,
+    "duration_ms": 26264,
+    "end_ms": 398168
+  },
+  {
+    "index": 310,
+    "speaker": "STUDENT_4",
+    "text": "Attention compares angles between vectors - similar directions mean high attention. Geometrically, queries and keys are like arrows in space, and we measure how aligned they are.",
+    "line_type": "echo",
+    "chapter": 5,
+    "start_ms": 398168,
+    "duration_ms": 11440,
+    "end_ms": 409608
+  },
+  {
+    "index": 311,
+    "speaker": "PROFESSOR",
+    "text": "That's right. The geometry gives intuition for why similar concepts attend to each other.",
+    "line_type": "acknowledgment",
+    "chapter": 5,
+    "start_ms": 409608,
+    "duration_ms": 6948,
+    "end_ms": 416556
+  },
+  {
+    "index": 312,
+    "speaker": "PROFESSOR",
+    "text": "This geometric view helped researchers understand why transformers sometimes fail - vectors can collapse to similar directions, causing attention to become uniform and useless.",
+    "line_type": "consequence",
+    "chapter": 5,
+    "start_ms": 416556,
+    "duration_ms": 11768,
+    "end_ms": 428324
+  },
+  {
+    "index": 313,
+    "speaker": "RAJESH",
+    "text": "And then after all the attention and feed-forward layers, how do we actually get the word \u201ccar\u201d out?",
+    "line_type": "dialogue",
+    "chapter": 5,
+    "start_ms": 428324,
+    "duration_ms": 7644,
+    "end_ms": 435968
+  },
+  {
+    "index": 314,
+    "speaker": "PROFESSOR",
+    "text": "Vocabulary projection ! We take the final context vector and project it to the size of our vocabulary using a linear layer + softmax.",
+    "line_type": "lecture",
+    "chapter": 5,
+    "start_ms": 435968,
+    "duration_ms": 9924,
+    "end_ms": 445892
+  },
+  {
+    "index": 315,
+    "speaker": "PROFESSOR",
+    "text": "Each vocabulary word gets a probability. We pick the highest one - \u201ccar\u201d with 0.92 probability. That becomes our first output token.",
+    "line_type": "lecture",
+    "chapter": 5,
+    "start_ms": 445892,
+    "duration_ms": 10428,
+    "end_ms": 456320
+  }
+]

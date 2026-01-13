@@ -1,0 +1,482 @@
+[
+  {
+    "index": 231,
+    "speaker": "PROFESSOR",
+    "text": "Chapter 4. .",
+    "line_type": "transition",
+    "chapter": 4,
+    "start_ms": 0,
+    "duration_ms": 2608,
+    "end_ms": 2608
+  },
+  {
+    "index": 232,
+    "speaker": "PROFESSOR",
+    "text": "Now let\u2019s assemble the complete transformer encoder . We\u2019ve seen the pieces - let me show you how they fit together.",
+    "line_type": "lecture",
+    "chapter": 4,
+    "start_ms": 2608,
+    "duration_ms": 7884,
+    "end_ms": 10492
+  },
+  {
+    "index": 233,
+    "speaker": "RAJESH",
+    "text": "What does the feed-forward network do? I thought we already have context vectors from attention.",
+    "line_type": "dialogue",
+    "chapter": 4,
+    "start_ms": 10492,
+    "duration_ms": 6732,
+    "end_ms": 17224
+  },
+  {
+    "index": 234,
+    "speaker": "STUDENT_4",
+    "text": "What are token embeddings and why can't we just feed raw data into a transformer?",
+    "line_type": "question",
+    "chapter": 4,
+    "start_ms": 17224,
+    "duration_ms": 5180,
+    "end_ms": 22404
+  },
+  {
+    "index": 235,
+    "speaker": "PROFESSOR",
+    "text": "Imagine trying to explain colors to a computer using just the words 'red' and 'blue' - meaningless symbols! Token embeddings convert these symbols into rich numerical 'fingerprints' where similar things have similar fingerprints. 'Red' and 'orange' end up as nearby numbers, while 'red' and 'democracy' are far apart. It's giving meaning to meaningless symbols.",
+    "line_type": "answer",
+    "chapter": 4,
+    "start_ms": 22404,
+    "duration_ms": 22332,
+    "end_ms": 44736
+  },
+  {
+    "index": 236,
+    "speaker": "PROFESSOR",
+    "text": "Your SO-ARM101's raw joint positions are just 14 numbers (7 per arm). Token embeddings transform each timestep's joint positions into a rich 256-dimensional vector that captures MEANING - 'arm extended forward' becomes a fingerprint similar to 'reaching pose' but different from 'arm tucked in.' The transformer can then reason about poses, not just raw angles.",
+    "line_type": "example",
+    "chapter": 4,
+    "start_ms": 44736,
+    "duration_ms": 24896,
+    "end_ms": 69632
+  },
+  {
+    "index": 237,
+    "speaker": "STUDENT_2",
+    "text": "Raw symbols are meaningless to a neural network - 'red' and 'blue' are just strings. Embeddings convert them into numerical fingerprints where similar concepts have similar vectors.",
+    "line_type": "echo",
+    "chapter": 4,
+    "start_ms": 69632,
+    "duration_ms": 11848,
+    "end_ms": 81480
+  },
+  {
+    "index": 238,
+    "speaker": "PROFESSOR",
+    "text": "That's right. Embeddings are how meaning becomes geometry.",
+    "line_type": "acknowledgment",
+    "chapter": 4,
+    "start_ms": 81480,
+    "duration_ms": 5124,
+    "end_ms": 86604
+  },
+  {
+    "index": 239,
+    "speaker": "PROFESSOR",
+    "text": "OpenAI's CLIP learns embeddings that put images and their text descriptions nearby - this is what allows robots to understand language commands about visual scenes.",
+    "line_type": "consequence",
+    "chapter": 4,
+    "start_ms": 86604,
+    "duration_ms": 10736,
+    "end_ms": 97340
+  },
+  {
+    "index": 240,
+    "speaker": "PROFESSOR",
+    "text": "Good question! The feed-forward network adds non-linearity and allows the model to transform the context vectors further. It\u2019s typically:",
+    "line_type": "lecture",
+    "chapter": 4,
+    "start_ms": 97340,
+    "duration_ms": 9204,
+    "end_ms": 106544
+  },
+  {
+    "index": 241,
+    "speaker": "PROFESSOR",
+    "text": "Input dimension to 4\u00d7 larger hidden dimension to Back to input dimension",
+    "line_type": "lecture",
+    "chapter": 4,
+    "start_ms": 106544,
+    "duration_ms": 6300,
+    "end_ms": 112844
+  },
+  {
+    "index": 242,
+    "speaker": "PROFESSOR",
+    "text": "So if our embeddings are 512-dimensional, the FFN goes 512 to 2048 to 512.",
+    "line_type": "lecture",
+    "chapter": 4,
+    "start_ms": 112844,
+    "duration_ms": 8988,
+    "end_ms": 121832
+  },
+  {
+    "index": 243,
+    "speaker": "STUDENT_1",
+    "text": "What are context vectors and why are they more useful than the original embeddings?",
+    "line_type": "question",
+    "chapter": 4,
+    "start_ms": 121832,
+    "duration_ms": 5348,
+    "end_ms": 127180
+  },
+  {
+    "index": 244,
+    "speaker": "PROFESSOR",
+    "text": "Original embeddings are like dictionary definitions - 'bank' means the same thing everywhere. Context vectors are like understanding 'bank' IN a sentence: 'river bank' vs 'bank account.' After self-attention, each token's vector has been enriched with information from its surroundings. It's no longer just 'what am I' but 'what am I given everything around me.'",
+    "line_type": "answer",
+    "chapter": 4,
+    "start_ms": 127180,
+    "duration_ms": 21996,
+    "end_ms": 149176
+  },
+  {
+    "index": 245,
+    "speaker": "PROFESSOR",
+    "text": "Your SO-ARM101's gripper position embedding starts as generic 'gripper at coordinates X,Y,Z.' After self-attention produces a context vector, it becomes 'gripper at X,Y,Z WHILE holding fabric edge, AFTER completing first fold, PREPARING for second fold.' Same position, but now richly understood in context of the whole task.",
+    "line_type": "example",
+    "chapter": 4,
+    "start_ms": 149176,
+    "duration_ms": 23528,
+    "end_ms": 172704
+  },
+  {
+    "index": 246,
+    "speaker": "STUDENT_3",
+    "text": "Original embeddings are dictionary definitions - 'bank' means the same everywhere. Context vectors are like understanding 'bank' IN a sentence - river bank or money bank. Same word, different meaning.",
+    "line_type": "echo",
+    "chapter": 4,
+    "start_ms": 172704,
+    "duration_ms": 13720,
+    "end_ms": 186424
+  },
+  {
+    "index": 247,
+    "speaker": "PROFESSOR",
+    "text": "Precisely. Contextualization is what makes language understanding work.",
+    "line_type": "acknowledgment",
+    "chapter": 4,
+    "start_ms": 186424,
+    "duration_ms": 5988,
+    "end_ms": 192412
+  },
+  {
+    "index": 248,
+    "speaker": "PROFESSOR",
+    "text": "This is why BERT revolutionized NLP - before contextualized embeddings, 'apple' the fruit and 'Apple' the company looked identical to models.",
+    "line_type": "consequence",
+    "chapter": 4,
+    "start_ms": 192412,
+    "duration_ms": 10904,
+    "end_ms": 203316
+  },
+  {
+    "index": 249,
+    "speaker": "PROFESSOR",
+    "text": "Now, one thing I glossed over - in practice, we don\u2019t use just ONE attention head. We use multi-head attention .",
+    "line_type": "lecture",
+    "chapter": 4,
+    "start_ms": 203316,
+    "duration_ms": 8268,
+    "end_ms": 211584
+  },
+  {
+    "index": 250,
+    "speaker": "PROFESSOR",
+    "text": "Instead of one attention matrix, we compute MULTIPLE attention matrices in parallel - typically 8 or 12 \u201cheads.\u201d Each head can learn to attend to different relationship types (syntactic, semantic, positional, etc.). The outputs are concatenated and projected back.",
+    "line_type": "lecture",
+    "chapter": 4,
+    "start_ms": 211584,
+    "duration_ms": 17052,
+    "end_ms": 228636
+  },
+  {
+    "index": 251,
+    "speaker": "RAJESH",
+    "text": "So one head might learn \u201cwhat adjectives modify which nouns\u201d while another learns \u201cwhat verbs connect to what subjects\u201d?",
+    "line_type": "dialogue",
+    "chapter": 4,
+    "start_ms": 228636,
+    "duration_ms": 9108,
+    "end_ms": 237744
+  },
+  {
+    "index": 252,
+    "speaker": "STUDENT_2",
+    "text": "What is cross-attention and how does it connect the encoder and decoder?",
+    "line_type": "question",
+    "chapter": 4,
+    "start_ms": 237744,
+    "duration_ms": 4628,
+    "end_ms": 242372
+  },
+  {
+    "index": 253,
+    "speaker": "PROFESSOR",
+    "text": "Cross-attention is the bridge between understanding and generating. The decoder asks questions (Queries) about what to generate, but instead of only consulting itself, it reaches across to the encoder's rich representation (Keys and Values). It's like a writer constantly referring back to their research notes while drafting. The decoder generates new content while staying grounded in the encoded input.",
+    "line_type": "answer",
+    "chapter": 4,
+    "start_ms": 242372,
+    "duration_ms": 23004,
+    "end_ms": 265376
+  },
+  {
+    "index": 254,
+    "speaker": "PROFESSOR",
+    "text": "Your SO-ARM101's decoder is generating folding actions, but WHERE does it know what fold to do? Cross-attention! The decoder's Query 'what should my next action be?' reaches into the encoder's representation of the demonstration. It retrieves 'at this stage of the demo, the human moved left gripper up.' The decoder stays faithful to the demonstration through this constant cross-referencing.",
+    "line_type": "example",
+    "chapter": 4,
+    "start_ms": 265376,
+    "duration_ms": 24176,
+    "end_ms": 289552
+  },
+  {
+    "index": 255,
+    "speaker": "STUDENT_4",
+    "text": "Cross-attention is the decoder asking the encoder 'what did you understand that's relevant to what I'm generating?' It's the bridge between comprehension and creation.",
+    "line_type": "echo",
+    "chapter": 4,
+    "start_ms": 289552,
+    "duration_ms": 9808,
+    "end_ms": 299360
+  },
+  {
+    "index": 256,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. Without cross-attention, the decoder would be generating blind.",
+    "line_type": "acknowledgment",
+    "chapter": 4,
+    "start_ms": 299360,
+    "duration_ms": 6036,
+    "end_ms": 305396
+  },
+  {
+    "index": 257,
+    "speaker": "PROFESSOR",
+    "text": "Google Translate uses cross-attention - the decoder generating French constantly consults the encoder's English understanding to stay faithful to the original meaning.",
+    "line_type": "consequence",
+    "chapter": 4,
+    "start_ms": 305396,
+    "duration_ms": 10952,
+    "end_ms": 316348
+  },
+  {
+    "index": 258,
+    "speaker": "PROFESSOR",
+    "text": "Exactly! Different heads specialize in different relationship patterns.",
+    "line_type": "lecture",
+    "chapter": 4,
+    "start_ms": 316348,
+    "duration_ms": 5748,
+    "end_ms": 322096
+  },
+  {
+    "index": 259,
+    "speaker": "PROFESSOR",
+    "text": "Now, the encoder\u2019s job is to create a rich representation of the input sequence. It reads \u201cthe red car\u201d and produces context vectors that understand: \u201cred\u201d modifies \u201ccar,\u201d \u201cthe\u201d is an article, and together they describe a colored vehicle.",
+    "line_type": "lecture",
+    "chapter": 4,
+    "start_ms": 322096,
+    "duration_ms": 15804,
+    "end_ms": 337900
+  },
+  {
+    "index": 260,
+    "speaker": "PROFESSOR",
+    "text": "But the encoder doesn\u2019t generate output. It only encodes. For generation, we need the decoder .",
+    "line_type": "lecture",
+    "chapter": 4,
+    "start_ms": 337900,
+    "duration_ms": 7572,
+    "end_ms": 345472
+  },
+  {
+    "index": 261,
+    "speaker": "STUDENT_3",
+    "text": "How does the ACT architecture combine a VAE with a Transformer, and why bother with both?",
+    "line_type": "question",
+    "chapter": 4,
+    "start_ms": 345472,
+    "duration_ms": 7100,
+    "end_ms": 352572
+  },
+  {
+    "index": 262,
+    "speaker": "PROFESSOR",
+    "text": "Think of it as a two-stage system. The VAE handles the 'many right answers' problem - there are multiple valid ways to fold a shirt, and the VAE's latent code captures WHICH style you're doing. The Transformer then takes that style choice plus current observations and generates a smooth sequence of actions. VAE picks the strategy; Transformer executes it skillfully.",
+    "line_type": "answer",
+    "chapter": 4,
+    "start_ms": 352572,
+    "duration_ms": 21804,
+    "end_ms": 374376
+  },
+  {
+    "index": 263,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: When your SO-ARM101 sees an unfolded shirt, there are multiple valid approaches: fold sleeves first? Or fold in half first? The VAE samples a latent code that implicitly chooses a strategy. The Transformer decoder then attends to camera images, robot state, AND that strategy code to output 'action chunks' - maybe 50-100 future joint positions at once. This avoids jerky single-step predictions and produces smooth, human-like folding motions.",
+    "line_type": "example",
+    "chapter": 4,
+    "start_ms": 374376,
+    "duration_ms": 31784,
+    "end_ms": 406160
+  },
+  {
+    "index": 264,
+    "speaker": "STUDENT_1",
+    "text": "The VAE handles 'which of the many valid approaches' by sampling a style code. The Transformer then executes that style across time. VAE picks the path, Transformer walks it smoothly.",
+    "line_type": "echo",
+    "chapter": 4,
+    "start_ms": 406160,
+    "duration_ms": 13720,
+    "end_ms": 419880
+  },
+  {
+    "index": 265,
+    "speaker": "PROFESSOR",
+    "text": "That's right. Each component solves a different problem that the other can't.",
+    "line_type": "acknowledgment",
+    "chapter": 4,
+    "start_ms": 419880,
+    "duration_ms": 5604,
+    "end_ms": 425484
+  },
+  {
+    "index": 266,
+    "speaker": "PROFESSOR",
+    "text": "Stanford's ALOHA uses exactly this architecture - the VAE captures demonstration variety while the Transformer ensures smooth, temporally coherent action sequences.",
+    "line_type": "consequence",
+    "chapter": 4,
+    "start_ms": 425484,
+    "duration_ms": 11912,
+    "end_ms": 437396
+  },
+  {
+    "index": 267,
+    "speaker": "STUDENT_4",
+    "text": "Professor, in attention, what are 'value' vectors and why do we need them alongside query and key?",
+    "line_type": "question",
+    "chapter": 4,
+    "start_ms": 437396,
+    "duration_ms": 6860,
+    "end_ms": 444256
+  },
+  {
+    "index": 268,
+    "speaker": "PROFESSOR",
+    "text": "If Query is 'what am I looking for?' and Key is 'what do I have to offer?', then Value is 'here's my actual content to share.' Keys help find relevant items (like book titles in a library), but Values are the actual books you read. The attention scores from Query-Key matching decide how much of each Value to blend together.",
+    "line_type": "answer",
+    "chapter": 4,
+    "start_ms": 444256,
+    "duration_ms": 19908,
+    "end_ms": 464164
+  },
+  {
+    "index": 269,
+    "speaker": "PROFESSOR",
+    "text": "When your SO-ARM101 processes 'fold then smooth,' the word 'smooth' (Query) finds 'fold' (Key) as relevant. But the robot doesn't copy the word 'fold' - it copies fold's Value vector, which encodes rich meaning like 'crease-making motion, fabric manipulation, precedes flattening steps.' Values carry the useful information; Keys just help find it.",
+    "line_type": "example",
+    "chapter": 4,
+    "start_ms": 464164,
+    "duration_ms": 24224,
+    "end_ms": 488388
+  },
+  {
+    "index": 270,
+    "speaker": "STUDENT_2",
+    "text": "Keys are like book titles that help you find matches, but Values are the actual book contents you retrieve. You search by Key, but you read the Value.",
+    "line_type": "echo",
+    "chapter": 4,
+    "start_ms": 488388,
+    "duration_ms": 9352,
+    "end_ms": 497740
+  },
+  {
+    "index": 271,
+    "speaker": "PROFESSOR",
+    "text": "Precisely. The separation of search and retrieval is elegant and powerful.",
+    "line_type": "acknowledgment",
+    "chapter": 4,
+    "start_ms": 497740,
+    "duration_ms": 5964,
+    "end_ms": 503704
+  },
+  {
+    "index": 272,
+    "speaker": "PROFESSOR",
+    "text": "Database systems have used this separation forever - you index by key but store the actual data in values. Transformers borrowed this wisdom.",
+    "line_type": "consequence",
+    "chapter": 4,
+    "start_ms": 503704,
+    "duration_ms": 10112,
+    "end_ms": 513816
+  },
+  {
+    "index": 273,
+    "speaker": "STUDENT_1",
+    "text": "Why do translation models need both an encoder AND a decoder, not just one or the other?",
+    "line_type": "question",
+    "chapter": 4,
+    "start_ms": 513816,
+    "duration_ms": 6236,
+    "end_ms": 520052
+  },
+  {
+    "index": 274,
+    "speaker": "PROFESSOR",
+    "text": "The encoder reads and deeply understands the entire source sentence first - like reading a French paragraph completely before translating. The decoder then generates the English output word by word, consulting the encoder's understanding through cross-attention. You need both: one to comprehend fully, one to produce fluently. Neither alone can translate well.",
+    "line_type": "answer",
+    "chapter": 4,
+    "start_ms": 520052,
+    "duration_ms": 20772,
+    "end_ms": 540824
+  },
+  {
+    "index": 275,
+    "speaker": "PROFESSOR",
+    "text": "For your SO-ARM101, the encoder fully processes the camera image and language command ('fold the blue shirt') into a rich understanding. The decoder then generates actions step by step, constantly asking the encoder 'given what I've done so far, what should come next according to that image and instruction?' The encoder comprehends; the decoder executes - teamwork.",
+    "line_type": "example",
+    "chapter": 4,
+    "start_ms": 540824,
+    "duration_ms": 23216,
+    "end_ms": 564040
+  },
+  {
+    "index": 276,
+    "speaker": "STUDENT_4",
+    "text": "You need to fully understand the source before generating the target. The encoder reads the whole French sentence, then the decoder writes English word by word while consulting that understanding.",
+    "line_type": "echo",
+    "chapter": 4,
+    "start_ms": 564040,
+    "duration_ms": 11464,
+    "end_ms": 575504
+  },
+  {
+    "index": 277,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. Understanding and generation are sequential, not simultaneous.",
+    "line_type": "acknowledgment",
+    "chapter": 4,
+    "start_ms": 575504,
+    "duration_ms": 6324,
+    "end_ms": 581828
+  },
+  {
+    "index": 278,
+    "speaker": "PROFESSOR",
+    "text": "This is why Google Translate improved dramatically when they added attention-based encoder-decoder models - machine translation finally became usable.",
+    "line_type": "consequence",
+    "chapter": 4,
+    "start_ms": 581828,
+    "duration_ms": 10256,
+    "end_ms": 592084
+  }
+]

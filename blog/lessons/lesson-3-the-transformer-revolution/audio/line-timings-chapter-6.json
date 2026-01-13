@@ -1,0 +1,692 @@
+[
+  {
+    "index": 316,
+    "speaker": "PROFESSOR",
+    "text": "Chapter 6. .",
+    "line_type": "transition",
+    "chapter": 6,
+    "start_ms": 0,
+    "duration_ms": 2680,
+    "end_ms": 2680
+  },
+  {
+    "index": 317,
+    "speaker": "RAJESH",
+    "text": "This all makes sense for text - words are naturally sequential. But images? How do you apply transformers to something that\u2019s a 2D grid of pixels?",
+    "line_type": "dialogue",
+    "chapter": 6,
+    "start_ms": 2680,
+    "duration_ms": 10692,
+    "end_ms": 13372
+  },
+  {
+    "index": 318,
+    "speaker": "PROFESSOR",
+    "text": "That\u2019s exactly what researchers asked after the transformer paper. And in 2020, the Vision Transformer (ViT) paper answered: \u201cAn image is worth 16x16 words.\u201d",
+    "line_type": "lecture",
+    "chapter": 6,
+    "start_ms": 13372,
+    "duration_ms": 11916,
+    "end_ms": 25288
+  },
+  {
+    "index": 319,
+    "speaker": "PROFESSOR",
+    "text": "The trick is beautifully simple: treat image patches as tokens .",
+    "line_type": "lecture",
+    "chapter": 6,
+    "start_ms": 25288,
+    "duration_ms": 5172,
+    "end_ms": 30460
+  },
+  {
+    "index": 320,
+    "speaker": "STUDENT_2",
+    "text": "Why were Vision Transformers created when CNNs already worked well for images?",
+    "line_type": "question",
+    "chapter": 6,
+    "start_ms": 30460,
+    "duration_ms": 5660,
+    "end_ms": 36120
+  },
+  {
+    "index": 321,
+    "speaker": "PROFESSOR",
+    "text": "CNNs are like examining an image with a magnifying glass - they slide small filters across, building up local patterns into global understanding. But Transformers' attention mechanism can directly ask 'how does this corner relate to THAT corner?' regardless of distance. The motivation: what if we could treat images like sentences and let every part of the image talk to every other part directly? Turns out, with enough data, this beats CNNs.",
+    "line_type": "answer",
+    "chapter": 6,
+    "start_ms": 36120,
+    "duration_ms": 25788,
+    "end_ms": 61908
+  },
+  {
+    "index": 322,
+    "speaker": "PROFESSOR",
+    "text": "For your SO-ARM101, distant image regions often need to communicate: 'that's the LEFT gripper over there, and HERE's the shirt collar - are they about to meet?' CNNs struggle with such long-range relationships unless very deep. A Vision Transformer lets the 'gripper patch' and 'collar patch' directly attend to each other, making it easier to understand spatial relationships crucial for bimanual coordination in folding tasks.",
+    "line_type": "example",
+    "chapter": 6,
+    "start_ms": 61908,
+    "duration_ms": 25952,
+    "end_ms": 87860
+  },
+  {
+    "index": 323,
+    "speaker": "STUDENT_3",
+    "text": "CNNs see locally through sliding windows, building up gradually. Transformers can directly ask 'how does this corner relate to that corner?' - long-range relationships in one step.",
+    "line_type": "echo",
+    "chapter": 6,
+    "start_ms": 87860,
+    "duration_ms": 12592,
+    "end_ms": 100452
+  },
+  {
+    "index": 324,
+    "speaker": "PROFESSOR",
+    "text": "Precisely. Global attention complements local convolutions.",
+    "line_type": "acknowledgment",
+    "chapter": 6,
+    "start_ms": 100452,
+    "duration_ms": 5676,
+    "end_ms": 106128
+  },
+  {
+    "index": 325,
+    "speaker": "PROFESSOR",
+    "text": "Tesla switched to Transformers for FSD precisely because camera relationships matter - 'is that pedestrian on the left camera about to enter the right camera's view?'",
+    "line_type": "consequence",
+    "chapter": 6,
+    "start_ms": 106128,
+    "duration_ms": 11000,
+    "end_ms": 117128
+  },
+  {
+    "index": 326,
+    "speaker": "PROFESSOR",
+    "text": "Take a 224\u00d7224 image, divide it into 16\u00d716 pixel patches. You get 14\u00d714 = 196 patches. Each patch becomes a \u201ctoken\u201d with its own embedding.",
+    "line_type": "lecture",
+    "chapter": 6,
+    "start_ms": 117128,
+    "duration_ms": 15396,
+    "end_ms": 132524
+  },
+  {
+    "index": 327,
+    "speaker": "RAJESH",
+    "text": "So instead of words, we have image patches? And each patch gets embedded into a vector?",
+    "line_type": "dialogue",
+    "chapter": 6,
+    "start_ms": 132524,
+    "duration_ms": 6612,
+    "end_ms": 139136
+  },
+  {
+    "index": 328,
+    "speaker": "PROFESSOR",
+    "text": "Exactly! Each patch is flattened (16\u00d716\u00d73 = 768 values for RGB) and passed through a linear layer to create a patch embedding of whatever dimension we want (e.g., 512).",
+    "line_type": "lecture",
+    "chapter": 6,
+    "start_ms": 139136,
+    "duration_ms": 15492,
+    "end_ms": 154628
+  },
+  {
+    "index": 329,
+    "speaker": "STUDENT_3",
+    "text": "Why split images into patches instead of processing pixel-by-pixel?",
+    "line_type": "question",
+    "chapter": 6,
+    "start_ms": 154628,
+    "duration_ms": 5036,
+    "end_ms": 159664
+  },
+  {
+    "index": 330,
+    "speaker": "PROFESSOR",
+    "text": "Imagine trying to understand a jigsaw puzzle. You don't analyze each tiny dot of color - you look at whole pieces and how they fit together. Vision Transformers do the same: chop the image into meaningful patches (like 16x16 pixel tiles), then let each patch 'talk to' other patches to understand the whole picture. This also makes computation tractable - attention on 1000 patches is feasible; attention on 1 million pixels is not.",
+    "line_type": "answer",
+    "chapter": 6,
+    "start_ms": 159664,
+    "duration_ms": 26748,
+    "end_ms": 186412
+  },
+  {
+    "index": 331,
+    "speaker": "PROFESSOR",
+    "text": "Your SO-ARM101's camera captures a 480x640 image. Instead of analyzing 307,200 individual pixels (computationally impossible for attention!), it splits the frame into ~600 patches of 16x16 pixels. One patch shows the left gripper, another shows shirt fabric, another shows the table edge. Now the transformer can efficiently ask: 'does the gripper patch relate to the fabric patch?' - exactly the question needed for coordinated folding!",
+    "line_type": "example",
+    "chapter": 6,
+    "start_ms": 186412,
+    "duration_ms": 31568,
+    "end_ms": 217980
+  },
+  {
+    "index": 332,
+    "speaker": "STUDENT_1",
+    "text": "Attention scales quadratically with sequence length. A million pixels would be computationally impossible, but 196 patches is totally manageable - and patches still capture meaningful structure.",
+    "line_type": "echo",
+    "chapter": 6,
+    "start_ms": 217980,
+    "duration_ms": 14248,
+    "end_ms": 232228
+  },
+  {
+    "index": 333,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. Patches are the right granularity for efficiency and meaning.",
+    "line_type": "acknowledgment",
+    "chapter": 6,
+    "start_ms": 232228,
+    "duration_ms": 5724,
+    "end_ms": 237952
+  },
+  {
+    "index": 334,
+    "speaker": "PROFESSOR",
+    "text": "Every vision transformer uses patches - Google's ViT, Meta's DINOv2, and all robot vision systems. It's the standard way to make transformers work on images.",
+    "line_type": "consequence",
+    "chapter": 6,
+    "start_ms": 237952,
+    "duration_ms": 11960,
+    "end_ms": 249912
+  },
+  {
+    "index": 335,
+    "speaker": "PROFESSOR",
+    "text": "And just like text, position matters ! Shuffling the patches gives a very different image.",
+    "line_type": "lecture",
+    "chapter": 6,
+    "start_ms": 249912,
+    "duration_ms": 6660,
+    "end_ms": 256572
+  },
+  {
+    "index": 336,
+    "speaker": "PROFESSOR",
+    "text": "So we add positional embeddings to patches too. Patch at position (0,0) has a different positional embedding than patch at (2,3).",
+    "line_type": "lecture",
+    "chapter": 6,
+    "start_ms": 256572,
+    "duration_ms": 10668,
+    "end_ms": 267240
+  },
+  {
+    "index": 337,
+    "speaker": "RAJESH",
+    "text": "Okay, but here\u2019s my question. For text, we\u2019re predicting the next token. For images... what\u2019s the output? We\u2019re not predicting \u201cthe next patch.\u201d",
+    "line_type": "dialogue",
+    "chapter": 6,
+    "start_ms": 267240,
+    "duration_ms": 10116,
+    "end_ms": 277356
+  },
+  {
+    "index": 338,
+    "speaker": "STUDENT_4",
+    "text": "How do image patches become the vectors that Transformers can process?",
+    "line_type": "question",
+    "chapter": 6,
+    "start_ms": 277356,
+    "duration_ms": 4460,
+    "end_ms": 281816
+  },
+  {
+    "index": 339,
+    "speaker": "PROFESSOR",
+    "text": "Each patch starts as a tiny image (say 16x16 pixels \u00d7 3 colors = 768 raw numbers). A patch embedding is just a learned linear transformation that converts this raw pixel grid into a 'meaning vector' of the same size the Transformer expects (maybe 768 dimensions). It's like giving each puzzle piece a description tag. Add positional embeddings so the model knows WHERE each patch came from, and you're ready for attention.",
+    "line_type": "answer",
+    "chapter": 6,
+    "start_ms": 281816,
+    "duration_ms": 28308,
+    "end_ms": 310124
+  },
+  {
+    "index": 340,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: When your SO-ARM101's camera sees the folding scene, each 16x16 patch gets multiplied by a learned weight matrix. The patch showing 'blue fabric texture' becomes a 768-dimensional vector that means something like 'cotton shirt material.' The patch showing 'black gripper fingers' becomes a different vector. These embeddings are learned during training - the robot figures out what visual features matter for predicting good folding actions.",
+    "line_type": "example",
+    "chapter": 6,
+    "start_ms": 310124,
+    "duration_ms": 30416,
+    "end_ms": 340540
+  },
+  {
+    "index": 341,
+    "speaker": "STUDENT_2",
+    "text": "Each patch is just pixels - flatten them into a long vector, then multiply by a learned matrix. The network learns what features to extract during training.",
+    "line_type": "echo",
+    "chapter": 6,
+    "start_ms": 340540,
+    "duration_ms": 10048,
+    "end_ms": 350588
+  },
+  {
+    "index": 342,
+    "speaker": "PROFESSOR",
+    "text": "That's right. Linear projection is surprisingly effective as patch embedding.",
+    "line_type": "acknowledgment",
+    "chapter": 6,
+    "start_ms": 350588,
+    "duration_ms": 6012,
+    "end_ms": 356600
+  },
+  {
+    "index": 343,
+    "speaker": "PROFESSOR",
+    "text": "This simplicity is why ViTs work so well - no fancy convolutions needed, just a linear layer. The transformer layers do the heavy lifting.",
+    "line_type": "consequence",
+    "chapter": 6,
+    "start_ms": 356600,
+    "duration_ms": 10112,
+    "end_ms": 366712
+  },
+  {
+    "index": 344,
+    "speaker": "PROFESSOR",
+    "text": "Great observation! For classification tasks, we need a single vector representing the ENTIRE image. But self-attention gives us context vectors for EACH patch. How do we get one summary vector?",
+    "line_type": "lecture",
+    "chapter": 6,
+    "start_ms": 366712,
+    "duration_ms": 12612,
+    "end_ms": 379324
+  },
+  {
+    "index": 345,
+    "speaker": "PROFESSOR",
+    "text": "The solution is the CLS token - a special learnable token prepended to the sequence.",
+    "line_type": "lecture",
+    "chapter": 6,
+    "start_ms": 379324,
+    "duration_ms": 6948,
+    "end_ms": 386272
+  },
+  {
+    "index": 346,
+    "speaker": "RAJESH",
+    "text": "Wait - we just ADD a fake token? And it magically summarizes the image?",
+    "line_type": "dialogue",
+    "chapter": 6,
+    "start_ms": 386272,
+    "duration_ms": 6252,
+    "end_ms": 392524
+  },
+  {
+    "index": 347,
+    "speaker": "STUDENT_1",
+    "text": "What is the CLS token and why do Vision Transformers add this special token?",
+    "line_type": "question",
+    "chapter": 6,
+    "start_ms": 392524,
+    "duration_ms": 5732,
+    "end_ms": 398256
+  },
+  {
+    "index": 348,
+    "speaker": "PROFESSOR",
+    "text": "CLS (classification) token is like adding a 'summary reporter' to a group discussion. It starts as a learnable vector with no specific meaning, attends to ALL the image patches through multiple layers, and gradually accumulates a 'gist' of the entire image. At the end, instead of looking at all 196 patch outputs, you just read the CLS token's final state - it's become a single vector summarizing everything important.",
+    "line_type": "answer",
+    "chapter": 6,
+    "start_ms": 398256,
+    "duration_ms": 26772,
+    "end_ms": 425028
+  },
+  {
+    "index": 349,
+    "speaker": "PROFESSOR",
+    "text": "Your SO-ARM101 needs to quickly answer: 'Is the shirt currently folded or unfolded?' Instead of aggregating information from 600 patch embeddings somehow, the CLS token does this automatically. Through 12 transformer layers, it attends to every patch - gripper positions, fabric state, table clutter - and its final representation becomes a compact 768-dimensional 'scene summary' that a simple classifier can read to answer folding-state questions.",
+    "line_type": "example",
+    "chapter": 6,
+    "start_ms": 425028,
+    "duration_ms": 29504,
+    "end_ms": 454532
+  },
+  {
+    "index": 350,
+    "speaker": "STUDENT_3",
+    "text": "CLS is like a roving reporter at a party - it has no content of its own, but attends to everyone and collects the summary. After all layers, it contains the whole image's essence.",
+    "line_type": "echo",
+    "chapter": 6,
+    "start_ms": 454532,
+    "duration_ms": 12304,
+    "end_ms": 466836
+  },
+  {
+    "index": 351,
+    "speaker": "PROFESSOR",
+    "text": "Precisely. CLS aggregates information from all patches into one vector.",
+    "line_type": "acknowledgment",
+    "chapter": 6,
+    "start_ms": 466836,
+    "duration_ms": 6492,
+    "end_ms": 473328
+  },
+  {
+    "index": 352,
+    "speaker": "PROFESSOR",
+    "text": "CLIP uses CLS tokens for both images and text - comparing their CLS vectors tells you if an image matches a description. This powers text-to-image search.",
+    "line_type": "consequence",
+    "chapter": 6,
+    "start_ms": 473328,
+    "duration_ms": 11240,
+    "end_ms": 484568
+  },
+  {
+    "index": 353,
+    "speaker": "PROFESSOR",
+    "text": "It\u2019s not magic - it\u2019s learned! The CLS token is initialized randomly but trained end-to-end. Through self-attention, it learns to attend to ALL the important patches.",
+    "line_type": "lecture",
+    "chapter": 6,
+    "start_ms": 484568,
+    "duration_ms": 11388,
+    "end_ms": 495956
+  },
+  {
+    "index": 354,
+    "speaker": "PROFESSOR",
+    "text": "The CLS token\u2019s attention scores determine how much information it takes from each patch. For a \u201cdog vs cat\u201d classifier, CLS learns to attend heavily to patches containing the animal\u2019s face and body.",
+    "line_type": "lecture",
+    "chapter": 6,
+    "start_ms": 495956,
+    "duration_ms": 14220,
+    "end_ms": 510176
+  },
+  {
+    "index": 355,
+    "speaker": "STUDENT_2",
+    "text": "How does the CLS token actually gather information from all the image patches?",
+    "line_type": "question",
+    "chapter": 6,
+    "start_ms": 510176,
+    "duration_ms": 5468,
+    "end_ms": 515644
+  },
+  {
+    "index": 356,
+    "speaker": "PROFESSOR",
+    "text": "Picture the CLS token as a curious detective at a party, allowed to ask questions to everyone. In early transformer layers, it might ask ALL patches 'what do you see?' (broadly distributed attention). In later layers, it gets more selective, paying heavy attention to the most informative patches while ignoring boring background. Through many rounds of questioning, it builds comprehensive understanding while learning to focus on what matters.",
+    "line_type": "answer",
+    "chapter": 6,
+    "start_ms": 515644,
+    "duration_ms": 25236,
+    "end_ms": 540880
+  },
+  {
+    "index": 357,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: In your SO-ARM101's vision system, early layers might show the CLS token attending fairly uniformly - gathering basic info from everywhere. By layer 10, attention sharpens dramatically: the CLS token focuses 80% of attention on patches containing the grippers and fabric contact points, barely glancing at the plain table background. It's learned that gripper-fabric interaction is what determines successful folding.",
+    "line_type": "example",
+    "chapter": 6,
+    "start_ms": 540880,
+    "duration_ms": 28688,
+    "end_ms": 569568
+  },
+  {
+    "index": 358,
+    "speaker": "STUDENT_4",
+    "text": "Through many layers of attention, the CLS token's queries reach out to patches, pulling in relevant information. Early layers gather broadly, later layers focus on what matters for the task.",
+    "line_type": "echo",
+    "chapter": 6,
+    "start_ms": 569568,
+    "duration_ms": 12160,
+    "end_ms": 581728
+  },
+  {
+    "index": 359,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. The information aggregation is learned, not hand-designed.",
+    "line_type": "acknowledgment",
+    "chapter": 6,
+    "start_ms": 581728,
+    "duration_ms": 5844,
+    "end_ms": 587572
+  },
+  {
+    "index": 360,
+    "speaker": "PROFESSOR",
+    "text": "Researchers found that early ViT layers attend broadly while later layers focus sharply on task-relevant regions - the network learns hierarchical attention automatically.",
+    "line_type": "consequence",
+    "chapter": 6,
+    "start_ms": 587572,
+    "duration_ms": 11144,
+    "end_ms": 598716
+  },
+  {
+    "index": 361,
+    "speaker": "STUDENT_3",
+    "text": "What is the classification head and why is it so simple compared to the rest of the model?",
+    "line_type": "question",
+    "chapter": 6,
+    "start_ms": 598716,
+    "duration_ms": 6020,
+    "end_ms": 604736
+  },
+  {
+    "index": 362,
+    "speaker": "PROFESSOR",
+    "text": "The classification head is like the final judge after a long competition. All the hard work (understanding the image through attention layers) is already done and captured in the CLS token's vector. The head is typically just 1-2 fully connected layers that convert this rich representation to class scores: 'this 768-dim vector to 80% cat, 15% dog, 5% other.' Simple because the heavy lifting is complete.",
+    "line_type": "answer",
+    "chapter": 6,
+    "start_ms": 604736,
+    "duration_ms": 26316,
+    "end_ms": 631052
+  },
+  {
+    "index": 363,
+    "speaker": "PROFESSOR",
+    "text": "For your SO-ARM101, the CLS token after 12 ViT layers contains deep understanding of the current scene. The classification head might be a simple 768 to 256 to 4 MLP that outputs: 'shirt_unfolded: 0.9, shirt_half_folded: 0.08, shirt_folded: 0.01, no_shirt: 0.01'. This tells the policy network what folding stage we're in, enabling stage-appropriate action selection. The MLP is tiny because all perception happened in the ViT backbone.",
+    "line_type": "example",
+    "chapter": 6,
+    "start_ms": 631052,
+    "duration_ms": 36920,
+    "end_ms": 667972
+  },
+  {
+    "index": 364,
+    "speaker": "STUDENT_1",
+    "text": "All the hard work is done by the transformer layers - the CLS token already contains rich understanding. The classification head is just a simple MLP that reads the answer from that compressed knowledge.",
+    "line_type": "echo",
+    "chapter": 6,
+    "start_ms": 667972,
+    "duration_ms": 13528,
+    "end_ms": 681500
+  },
+  {
+    "index": 365,
+    "speaker": "PROFESSOR",
+    "text": "That's right. Simple heads work because the representations are so good.",
+    "line_type": "acknowledgment",
+    "chapter": 6,
+    "start_ms": 681500,
+    "duration_ms": 5772,
+    "end_ms": 687272
+  },
+  {
+    "index": 366,
+    "speaker": "PROFESSOR",
+    "text": "This is why transfer learning works so well - swap the tiny head for your task while keeping the massive pretrained encoder. CLIP does exactly this for zero-shot classification.",
+    "line_type": "consequence",
+    "chapter": 6,
+    "start_ms": 687272,
+    "duration_ms": 11600,
+    "end_ms": 698872
+  },
+  {
+    "index": 367,
+    "speaker": "STUDENT_4",
+    "text": "Professor, can you describe the complete vision transformer pipeline from image input to classification output?",
+    "line_type": "question",
+    "chapter": 6,
+    "start_ms": 698872,
+    "duration_ms": 7028,
+    "end_ms": 705900
+  },
+  {
+    "index": 368,
+    "speaker": "PROFESSOR",
+    "text": "It's a beautiful assembly line: (1) Split image into patches, (2) Flatten each patch and linearly embed it, (3) Add positional embeddings so the model knows spatial layout, (4) Prepend the learnable CLS token, (5) Pass all tokens through N transformer blocks (attention + MLP, repeated), (6) Take the CLS token's final output, (7) Feed through classification MLP head to get class probabilities. That's it - images as sequences!",
+    "line_type": "answer",
+    "chapter": 6,
+    "start_ms": 705900,
+    "duration_ms": 30444,
+    "end_ms": 736344
+  },
+  {
+    "index": 369,
+    "speaker": "PROFESSOR",
+    "text": "Your SO-ARM101's vision pipeline: 480x640 camera image to split into 30x40 = 1200 patches of 16x16 to embed each to 768 dimensions to add positional encodings to prepend CLS token (now 1201 tokens) to through 12 transformer layers of self-attention to extract CLS token (768-dim scene summary) to MLP head outputs either class labels OR this embedding feeds into the action-generating transformer. A single architecture for both understanding scenes and guiding folding!",
+    "line_type": "example",
+    "chapter": 6,
+    "start_ms": 736344,
+    "duration_ms": 36224,
+    "end_ms": 772568
+  },
+  {
+    "index": 370,
+    "speaker": "STUDENT_2",
+    "text": "Split into patches, embed each patch, add positions, prepend CLS token, run through transformer layers, extract the final CLS vector, and pass through the classification head. Done!",
+    "line_type": "echo",
+    "chapter": 6,
+    "start_ms": 772568,
+    "duration_ms": 13096,
+    "end_ms": 785664
+  },
+  {
+    "index": 371,
+    "speaker": "PROFESSOR",
+    "text": "Precisely. The whole pipeline in one breath - that's mastery.",
+    "line_type": "acknowledgment",
+    "chapter": 6,
+    "start_ms": 785664,
+    "duration_ms": 5604,
+    "end_ms": 791268
+  },
+  {
+    "index": 372,
+    "speaker": "PROFESSOR",
+    "text": "This exact pipeline runs billions of times per day across Google, Meta, and every robot vision system. Understanding it means understanding modern computer vision.",
+    "line_type": "consequence",
+    "chapter": 6,
+    "start_ms": 791268,
+    "duration_ms": 11288,
+    "end_ms": 802556
+  },
+  {
+    "index": 373,
+    "speaker": "STUDENT_1",
+    "text": "Why fine-tune a pre-trained Vision Transformer instead of training from scratch?",
+    "line_type": "question",
+    "chapter": 6,
+    "start_ms": 802556,
+    "duration_ms": 5564,
+    "end_ms": 808120
+  },
+  {
+    "index": 374,
+    "speaker": "PROFESSOR",
+    "text": "Pre-trained ViTs have already seen millions of images and learned universal visual features: edges, textures, object parts, spatial relationships. This is like hiring someone who already speaks the visual language. Fine-tuning teaches them your specific dialect (your robot's camera, your folding task) while keeping their foundational knowledge. Training from scratch on your small robot dataset would take forever and produce worse results.",
+    "line_type": "answer",
+    "chapter": 6,
+    "start_ms": 808120,
+    "duration_ms": 25572,
+    "end_ms": 833692
+  },
+  {
+    "index": 375,
+    "speaker": "PROFESSOR",
+    "text": "You have maybe 1000 hours of SO-ARM101 folding demonstrations - a lot for robotics, tiny for vision models. A ViT pre-trained on ImageNet already knows 'this texture is fabric,' 'this shape is a gripping tool.' Fine-tuning on your data teaches it 'specifically, THIS is a SO-ARM101 gripper' and 'THIS wrinkle pattern means the fold is misaligned.' You get powerful visual understanding in hours instead of weeks, using a fraction of the compute.",
+    "line_type": "example",
+    "chapter": 6,
+    "start_ms": 833692,
+    "duration_ms": 28928,
+    "end_ms": 862620
+  },
+  {
+    "index": 376,
+    "speaker": "STUDENT_4",
+    "text": "Pre-trained models already know universal visual concepts - edges, textures, objects. Fine-tuning just teaches task-specific patterns on top. Way faster and works with less data.",
+    "line_type": "echo",
+    "chapter": 6,
+    "start_ms": 862620,
+    "duration_ms": 12256,
+    "end_ms": 874876
+  },
+  {
+    "index": 377,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. Standing on shoulders of giants beats starting from scratch.",
+    "line_type": "acknowledgment",
+    "chapter": 6,
+    "start_ms": 874876,
+    "duration_ms": 5868,
+    "end_ms": 880744
+  },
+  {
+    "index": 378,
+    "speaker": "PROFESSOR",
+    "text": "This is why robot learning is finally practical - you don't need millions of robot demos, just thousands. The pre-trained vision model brings most of the intelligence.",
+    "line_type": "consequence",
+    "chapter": 6,
+    "start_ms": 880744,
+    "duration_ms": 11120,
+    "end_ms": 891864
+  },
+  {
+    "index": 379,
+    "speaker": "STUDENT_2",
+    "text": "Why do image patches need position embeddings, and how do they work?",
+    "line_type": "question",
+    "chapter": 6,
+    "start_ms": 891864,
+    "duration_ms": 4700,
+    "end_ms": 896564
+  },
+  {
+    "index": 380,
+    "speaker": "PROFESSOR",
+    "text": "When you chop an image into patches, you lose the 'where' information - like cutting a photo into puzzle pieces and shuffling them. Position embeddings add a unique 'address label' to each patch so the Transformer knows that patch #1 is top-left and patch #16 is bottom-right. It's like numbering puzzle pieces on the back.",
+    "line_type": "answer",
+    "chapter": 6,
+    "start_ms": 896564,
+    "duration_ms": 19236,
+    "end_ms": 915800
+  },
+  {
+    "index": 381,
+    "speaker": "PROFESSOR",
+    "text": "Your SO-ARM101 has a camera looking at a shirt to fold. The image gets cut into a 14x14 grid of patches. Without position embeddings, the robot couldn't tell if the collar patch is at the top or bottom of the image! The position embedding tells it 'patch 23 is upper-middle' so when the arms plan their folding motion, they know WHERE in space each feature actually is.",
+    "line_type": "example",
+    "chapter": 6,
+    "start_ms": 915800,
+    "duration_ms": 23576,
+    "end_ms": 939376
+  },
+  {
+    "index": 382,
+    "speaker": "STUDENT_3",
+    "text": "Without positions, the transformer doesn't know top from bottom or left from right. Position embeddings add unique 'addresses' so spatial layout is preserved - patch 1 is top-left, patch 196 is bottom-right.",
+    "line_type": "echo",
+    "chapter": 6,
+    "start_ms": 939376,
+    "duration_ms": 15616,
+    "end_ms": 954992
+  },
+  {
+    "index": 383,
+    "speaker": "PROFESSOR",
+    "text": "That's right. Spatial awareness requires explicit position information.",
+    "line_type": "acknowledgment",
+    "chapter": 6,
+    "start_ms": 954992,
+    "duration_ms": 5892,
+    "end_ms": 960884
+  },
+  {
+    "index": 384,
+    "speaker": "PROFESSOR",
+    "text": "Interestingly, ViTs learn 2D structure from 1D position embeddings - the model discovers that adjacent positions correspond to spatially adjacent patches.",
+    "line_type": "consequence",
+    "chapter": 6,
+    "start_ms": 960884,
+    "duration_ms": 11288,
+    "end_ms": 972172
+  }
+]

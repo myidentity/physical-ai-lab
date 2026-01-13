@@ -1,0 +1,56 @@
+[
+  {
+    "chapter": 0,
+    "title": "Chapter 0",
+    "start_ms": 0,
+    "start_formatted": "0:00"
+  },
+  {
+    "chapter": 1,
+    "title": "The Revolution Arrives",
+    "start_ms": 12528,
+    "start_formatted": "0:12"
+  },
+  {
+    "chapter": 2,
+    "title": "Speaking the Language",
+    "start_ms": 1076988,
+    "start_formatted": "17:56"
+  },
+  {
+    "chapter": 3,
+    "title": "The Attention Mechanism",
+    "start_ms": 1999988,
+    "start_formatted": "33:19"
+  },
+  {
+    "chapter": 4,
+    "title": "The Encoder",
+    "start_ms": 2949868,
+    "start_formatted": "49:09"
+  },
+  {
+    "chapter": 5,
+    "title": "The Decoder",
+    "start_ms": 3541952,
+    "start_formatted": "59:01"
+  },
+  {
+    "chapter": 6,
+    "title": "Vision Transformers",
+    "start_ms": 3998272,
+    "start_formatted": "66:38"
+  },
+  {
+    "chapter": 7,
+    "title": "Transformers Meet Robots",
+    "start_ms": 4970444,
+    "start_formatted": "82:50"
+  },
+  {
+    "chapter": 9,
+    "title": "Chapter 9",
+    "start_ms": 5409508,
+    "start_formatted": "90:09"
+  }
+]

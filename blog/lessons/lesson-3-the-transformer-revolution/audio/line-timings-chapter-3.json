@@ -1,0 +1,752 @@
+[
+  {
+    "index": 156,
+    "speaker": "PROFESSOR",
+    "text": "Chapter 3. .",
+    "line_type": "transition",
+    "chapter": 3,
+    "start_ms": 0,
+    "duration_ms": 2632,
+    "end_ms": 2632
+  },
+  {
+    "index": 157,
+    "speaker": "PROFESSOR",
+    "text": "Now for the magic - the attention mechanism. This is THE innovation that makes transformers work.",
+    "line_type": "lecture",
+    "chapter": 3,
+    "start_ms": 2632,
+    "duration_ms": 6828,
+    "end_ms": 9460
+  },
+  {
+    "index": 158,
+    "speaker": "PROFESSOR",
+    "text": "After embedding, each token has a vector. But here\u2019s the question: does the token \u201cred\u201d care about where it appears? Does it care about \u201cthe\u201d or \u201ccar\u201d?",
+    "line_type": "lecture",
+    "chapter": 3,
+    "start_ms": 9460,
+    "duration_ms": 10692,
+    "end_ms": 20152
+  },
+  {
+    "index": 159,
+    "speaker": "STUDENT_2",
+    "text": "What made the 2017 'Attention Is All You Need' paper revolutionary?",
+    "line_type": "question",
+    "chapter": 3,
+    "start_ms": 20152,
+    "duration_ms": 5228,
+    "end_ms": 25380
+  },
+  {
+    "index": 160,
+    "speaker": "PROFESSOR",
+    "text": "Before this paper, everyone assumed you NEEDED recurrence (processing sequences one-by-one) or convolutions (sliding windows) to understand sequences. This Google team said 'actually, no - attention mechanisms alone are enough, and they're WAY faster because everything can be computed in parallel.' It was like discovering you don't need wheels to move - you can just teleport.",
+    "line_type": "answer",
+    "chapter": 3,
+    "start_ms": 25380,
+    "duration_ms": 23100,
+    "end_ms": 48480
+  },
+  {
+    "index": 161,
+    "speaker": "PROFESSOR",
+    "text": "For your SO-ARM101 learning from demonstrations, this breakthrough meant training could happen 10-100x faster. Instead of slowly processing each timestep of a folding demo sequentially, the transformer processes ALL timesteps simultaneously on a GPU. A training run that took a week now takes hours - you can iterate on your folding policy much faster.",
+    "line_type": "example",
+    "chapter": 3,
+    "start_ms": 48480,
+    "duration_ms": 22328,
+    "end_ms": 70808
+  },
+  {
+    "index": 162,
+    "speaker": "STUDENT_3",
+    "text": "Everyone assumed you needed recurrence or convolutions to process sequences. This paper proved attention alone is enough - and it's faster because everything can run in parallel!",
+    "line_type": "echo",
+    "chapter": 3,
+    "start_ms": 70808,
+    "duration_ms": 11896,
+    "end_ms": 82704
+  },
+  {
+    "index": 163,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. That single insight unlocked everything that followed.",
+    "line_type": "acknowledgment",
+    "chapter": 3,
+    "start_ms": 82704,
+    "duration_ms": 5412,
+    "end_ms": 88116
+  },
+  {
+    "index": 164,
+    "speaker": "PROFESSOR",
+    "text": "This paper birthed GPT, BERT, and every modern robot foundation model. Google's original authors couldn't have predicted their translation research would revolutionize robotics.",
+    "line_type": "consequence",
+    "chapter": 3,
+    "start_ms": 88116,
+    "duration_ms": 12200,
+    "end_ms": 100316
+  },
+  {
+    "index": 165,
+    "speaker": "RAJESH",
+    "text": "Well... \u201cred\u201d describes \u201ccar,\u201d so they\u2019re definitely related. And \u201cthe\u201d kind of connects to both.",
+    "line_type": "dialogue",
+    "chapter": 3,
+    "start_ms": 100316,
+    "duration_ms": 7740,
+    "end_ms": 108056
+  },
+  {
+    "index": 166,
+    "speaker": "PROFESSOR",
+    "text": "Exactly! Your brain instantly forms these connections. In a split second, you understand which words are related to which. The attention mechanism is our attempt to capture this computationally.",
+    "line_type": "lecture",
+    "chapter": 3,
+    "start_ms": 108056,
+    "duration_ms": 12372,
+    "end_ms": 120428
+  },
+  {
+    "index": 167,
+    "speaker": "PROFESSOR",
+    "text": "Let\u2019s build an attention matrix for \u201cthe dog chased the car\u201d:",
+    "line_type": "lecture",
+    "chapter": 3,
+    "start_ms": 120428,
+    "duration_ms": 5364,
+    "end_ms": 125792
+  },
+  {
+    "index": 168,
+    "speaker": "STUDENT_3",
+    "text": "How does self-attention let a sequence understand itself?",
+    "line_type": "question",
+    "chapter": 3,
+    "start_ms": 125792,
+    "duration_ms": 4172,
+    "end_ms": 129964
+  },
+  {
+    "index": 169,
+    "speaker": "PROFESSOR",
+    "text": "Self-attention is like a group of friends at dinner where everyone can whisper to everyone else simultaneously. Each person (token) broadcasts 'here's what I know' and listens to everyone else, then updates their own understanding. A word like 'it' figures out it refers to 'the robot' by attending to earlier context. Every token enriches itself by consulting all others.",
+    "line_type": "answer",
+    "chapter": 3,
+    "start_ms": 129964,
+    "duration_ms": 22140,
+    "end_ms": 152104
+  },
+  {
+    "index": 170,
+    "speaker": "PROFESSOR",
+    "text": "Your SO-ARM101 processes a sequence of observations: [see shirt, move left arm, touch fabric, move right arm]. Through self-attention, 'touch fabric' can attend back to 'see shirt' and forward to 'move right arm' - understanding that THIS fabric touch leads to THAT arm movement. Each observation becomes contextualized by the entire sequence.",
+    "line_type": "example",
+    "chapter": 3,
+    "start_ms": 152104,
+    "duration_ms": 22016,
+    "end_ms": 174120
+  },
+  {
+    "index": 171,
+    "speaker": "STUDENT_1",
+    "text": "Every token gets to whisper to every other token simultaneously, asking 'what do you know that's relevant to me?' Then they all update based on what they learned.",
+    "line_type": "echo",
+    "chapter": 3,
+    "start_ms": 174120,
+    "duration_ms": 10504,
+    "end_ms": 184624
+  },
+  {
+    "index": 172,
+    "speaker": "PROFESSOR",
+    "text": "That's right. It's like parallel gossip that builds collective understanding.",
+    "line_type": "acknowledgment",
+    "chapter": 3,
+    "start_ms": 184624,
+    "duration_ms": 5772,
+    "end_ms": 190396
+  },
+  {
+    "index": 173,
+    "speaker": "PROFESSOR",
+    "text": "This is how RT-2 processes robot trajectories - each timestep can attend to every other timestep, finding patterns like 'when I saw this before, I moved like that.'",
+    "line_type": "consequence",
+    "chapter": 3,
+    "start_ms": 190396,
+    "duration_ms": 11768,
+    "end_ms": 202164
+  },
+  {
+    "index": 174,
+    "speaker": "PROFESSOR",
+    "text": "Every row is a query asking: \u201cHow important are you to me?\u201d Every column is a key answering: \u201cHere\u2019s how relevant I am.\u201d",
+    "line_type": "lecture",
+    "chapter": 3,
+    "start_ms": 202164,
+    "duration_ms": 8988,
+    "end_ms": 211152
+  },
+  {
+    "index": 175,
+    "speaker": "PROFESSOR",
+    "text": "The values in the matrix are attention scores - how much each token should focus on each other token.",
+    "line_type": "lecture",
+    "chapter": 3,
+    "start_ms": 211152,
+    "duration_ms": 7140,
+    "end_ms": 218292
+  },
+  {
+    "index": 176,
+    "speaker": "RAJESH",
+    "text": "So \u201cdog\u201d has high attention to \u201cchased\u201d because the dog is doing the chasing, and \u201cchased\u201d has high attention to \u201ccar\u201d because that\u2019s what\u2019s being chased?",
+    "line_type": "dialogue",
+    "chapter": 3,
+    "start_ms": 218292,
+    "duration_ms": 12204,
+    "end_ms": 230496
+  },
+  {
+    "index": 177,
+    "speaker": "STUDENT_4",
+    "text": "How does the transformer decoder generate outputs step-by-step?",
+    "line_type": "question",
+    "chapter": 3,
+    "start_ms": 230496,
+    "duration_ms": 4268,
+    "end_ms": 234764
+  },
+  {
+    "index": 178,
+    "speaker": "PROFESSOR",
+    "text": "The decoder is like a storyteller who can only write one word at a time, but can look back at everything they've written so far. Crucially, it CANNOT peek at future words (that would be cheating!). This is called 'causal masking' - each position only attends to previous positions. The decoder generates sequences autoregressively: predict one token, add it to history, predict next, repeat.",
+    "line_type": "answer",
+    "chapter": 3,
+    "start_ms": 234764,
+    "duration_ms": 23364,
+    "end_ms": 258128
+  },
+  {
+    "index": 179,
+    "speaker": "PROFESSOR",
+    "text": "Your SO-ARM101's policy network uses a decoder to generate actions. At timestep 50, it sees all PAST observations (timesteps 1-49) but is masked from future ones. It predicts 'move left gripper 2cm right.' That action executes, becomes part of history, and timestep 51 prediction begins. One action at a time, building the complete folding trajectory.",
+    "line_type": "example",
+    "chapter": 3,
+    "start_ms": 258128,
+    "duration_ms": 25328,
+    "end_ms": 283456
+  },
+  {
+    "index": 180,
+    "speaker": "STUDENT_2",
+    "text": "It's like a storyteller who can only write one word at a time while looking back at everything they've written. No peeking ahead - just generate, then use that output to generate the next.",
+    "line_type": "echo",
+    "chapter": 3,
+    "start_ms": 283456,
+    "duration_ms": 11176,
+    "end_ms": 294632
+  },
+  {
+    "index": 181,
+    "speaker": "PROFESSOR",
+    "text": "Precisely. Autoregressive generation is the key to handling variable-length outputs.",
+    "line_type": "acknowledgment",
+    "chapter": 3,
+    "start_ms": 294632,
+    "duration_ms": 6780,
+    "end_ms": 301412
+  },
+  {
+    "index": 182,
+    "speaker": "PROFESSOR",
+    "text": "This is exactly how ChatGPT produces responses and how Google's robot policies generate action sequences - one token at a time, each conditioned on all previous ones.",
+    "line_type": "consequence",
+    "chapter": 3,
+    "start_ms": 301412,
+    "duration_ms": 12296,
+    "end_ms": 313708
+  },
+  {
+    "index": 183,
+    "speaker": "PROFESSOR",
+    "text": "You\u2019re getting it! Now, to compute these attention scores, each token embedding is transformed into THREE vectors:",
+    "line_type": "lecture",
+    "chapter": 3,
+    "start_ms": 313708,
+    "duration_ms": 8340,
+    "end_ms": 322048
+  },
+  {
+    "index": 184,
+    "speaker": "PROFESSOR",
+    "text": "The attention score between token A and token B is computed by comparing A\u2019s Query with B\u2019s Key. It\u2019s like asking a question and seeing how well someone\u2019s expertise matches.",
+    "line_type": "lecture",
+    "chapter": 3,
+    "start_ms": 322048,
+    "duration_ms": 11292,
+    "end_ms": 333340
+  },
+  {
+    "index": 185,
+    "speaker": "RAJESH",
+    "text": "I think I understand Query and Key - they determine the attention scores. But what\u2019s the purpose of Value? Why not just use the original embeddings?",
+    "line_type": "dialogue",
+    "chapter": 3,
+    "start_ms": 333340,
+    "duration_ms": 9924,
+    "end_ms": 343264
+  },
+  {
+    "index": 186,
+    "speaker": "STUDENT_1",
+    "text": "Why can robot control be treated as a sequence modeling problem?",
+    "line_type": "question",
+    "chapter": 3,
+    "start_ms": 343264,
+    "duration_ms": 4412,
+    "end_ms": 347676
+  },
+  {
+    "index": 187,
+    "speaker": "PROFESSOR",
+    "text": "Robot behavior IS a sequence: see to think to act to see to think to act, repeating at maybe 50Hz. Just like sentences are sequences of words with patterns and grammar, robot trajectories are sequences of observations and actions with patterns and 'physics grammar.' If Transformers can learn that 'the cat sat on the...' predicts 'mat', they can learn that 'gripper approaching fabric at angle X' predicts 'close gripper with force Y.'",
+    "line_type": "answer",
+    "chapter": 3,
+    "start_ms": 347676,
+    "duration_ms": 26436,
+    "end_ms": 374112
+  },
+  {
+    "index": 188,
+    "speaker": "PROFESSOR",
+    "text": "Your SO-ARM101 folding a shirt generates a sequence: [camera_frame_1, joint_angles_1, action_1, camera_frame_2, joint_angles_2, action_2, ...]. This is just 'robot language'! The Transformer reads this sequence and predicts: given everything that happened in this folding attempt so far, what action comes next? Treating it as language lets us use all the tricks that made ChatGPT work.",
+    "line_type": "example",
+    "chapter": 3,
+    "start_ms": 374112,
+    "duration_ms": 31712,
+    "end_ms": 405824
+  },
+  {
+    "index": 189,
+    "speaker": "STUDENT_4",
+    "text": "Robot behavior IS a sequence - see, think, act, repeat. Just like sentences have grammar and patterns, robot trajectories have their own 'syntax' of smooth, physically plausible movements.",
+    "line_type": "echo",
+    "chapter": 3,
+    "start_ms": 405824,
+    "duration_ms": 12808,
+    "end_ms": 418632
+  },
+  {
+    "index": 190,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. Once you see it as language, all the NLP breakthroughs apply.",
+    "line_type": "acknowledgment",
+    "chapter": 3,
+    "start_ms": 418632,
+    "duration_ms": 6588,
+    "end_ms": 425220
+  },
+  {
+    "index": 191,
+    "speaker": "PROFESSOR",
+    "text": "This insight is why OpenVLA treats robot control as 'robot language' - the same architectures that mastered English can master arm movements.",
+    "line_type": "consequence",
+    "chapter": 3,
+    "start_ms": 425220,
+    "duration_ms": 10520,
+    "end_ms": 435740
+  },
+  {
+    "index": 192,
+    "speaker": "PROFESSOR",
+    "text": "Excellent question - this confused me too when I first learned transformers!",
+    "line_type": "lecture",
+    "chapter": 3,
+    "start_ms": 435740,
+    "duration_ms": 6156,
+    "end_ms": 441896
+  },
+  {
+    "index": 193,
+    "speaker": "PROFESSOR",
+    "text": "The Value vector encodes the semantic information that gets shared. It\u2019s learned separately from Q and K, allowing the model to distinguish between \u201cwho to attend to\u201d (Q, K) and \u201cwhat to take from them\u201d (V).",
+    "line_type": "lecture",
+    "chapter": 3,
+    "start_ms": 441896,
+    "duration_ms": 13884,
+    "end_ms": 455780
+  },
+  {
+    "index": 194,
+    "speaker": "PROFESSOR",
+    "text": "Empirically, having a separate learnable Value matrix works much better than using raw embeddings. It gives the model more expressiveness.",
+    "line_type": "lecture",
+    "chapter": 3,
+    "start_ms": 455780,
+    "duration_ms": 9132,
+    "end_ms": 464912
+  },
+  {
+    "index": 195,
+    "speaker": "STUDENT_2",
+    "text": "What is attention really doing, and why is it like a spotlight at a concert?",
+    "line_type": "question",
+    "chapter": 3,
+    "start_ms": 464912,
+    "duration_ms": 4916,
+    "end_ms": 469828
+  },
+  {
+    "index": 196,
+    "speaker": "PROFESSOR",
+    "text": "Attention lets the model dynamically decide what to focus on. Imagine you're at a crowded concert trying to hear your friend - your brain automatically 'attends' to their voice while filtering out others. The transformer does this mathematically: for each word or image patch, it asks 'what else in this sequence should I pay attention to right now?'",
+    "line_type": "answer",
+    "chapter": 3,
+    "start_ms": 469828,
+    "duration_ms": 19524,
+    "end_ms": 489352
+  },
+  {
+    "index": 197,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: When your SO-ARM101 sees a messy pile of laundry and hears 'fold the blue shirt,' attention is the mechanism that makes the robot's visual processing zoom in on blue fabric while dimming the red socks nearby. It's asking 'given the word blue, which pixels deserve my focus?' - dynamically directing the spotlight.",
+    "line_type": "example",
+    "chapter": 3,
+    "start_ms": 489352,
+    "duration_ms": 21752,
+    "end_ms": 511104
+  },
+  {
+    "index": 198,
+    "speaker": "STUDENT_3",
+    "text": "Attention is dynamic focus - your brain at a concert automatically filters out crowd noise to hear your friend. The model learns where to point its mental spotlight for each task.",
+    "line_type": "echo",
+    "chapter": 3,
+    "start_ms": 511104,
+    "duration_ms": 11680,
+    "end_ms": 522784
+  },
+  {
+    "index": 199,
+    "speaker": "PROFESSOR",
+    "text": "That's right. Selective attention is what makes processing tractable.",
+    "line_type": "acknowledgment",
+    "chapter": 3,
+    "start_ms": 522784,
+    "duration_ms": 5508,
+    "end_ms": 528292
+  },
+  {
+    "index": 200,
+    "speaker": "PROFESSOR",
+    "text": "Waymo's self-driving cars use attention to focus on pedestrians about to cross rather than parked cars - dynamically allocating compute to what matters most.",
+    "line_type": "consequence",
+    "chapter": 3,
+    "start_ms": 528292,
+    "duration_ms": 10664,
+    "end_ms": 538956
+  },
+  {
+    "index": 201,
+    "speaker": "STUDENT_3",
+    "text": "How is cross-attention different from self-attention, and what does it look like geometrically?",
+    "line_type": "question",
+    "chapter": 3,
+    "start_ms": 538956,
+    "duration_ms": 6236,
+    "end_ms": 545192
+  },
+  {
+    "index": 202,
+    "speaker": "PROFESSOR",
+    "text": "Self-attention is like a group discussing among themselves; cross-attention is like that group consulting an expert from outside. Geometrically, the Query vectors come from one sequence (like the decoder) but search through Key-Value pairs from a different sequence (like the encoder). It's two separate clouds of points, with arrows reaching from one cloud to find relevant points in the other.",
+    "line_type": "answer",
+    "chapter": 3,
+    "start_ms": 545192,
+    "duration_ms": 22860,
+    "end_ms": 568052
+  },
+  {
+    "index": 203,
+    "speaker": "PROFESSOR",
+    "text": "Your SO-ARM101's decoder generates arm movements (one cloud of vectors) but uses cross-attention to consult the encoded camera image (another cloud). The Query 'where should I move next?' reaches into the image encoding to find Keys like 'sleeve location here' and retrieves Values about that region. Two separate information sources connecting through geometric similarity.",
+    "line_type": "example",
+    "chapter": 3,
+    "start_ms": 568052,
+    "duration_ms": 23744,
+    "end_ms": 591796
+  },
+  {
+    "index": 204,
+    "speaker": "STUDENT_1",
+    "text": "Self-attention is one group discussing among themselves. Cross-attention is that group consulting an outside expert. Geometrically, queries from one cloud of vectors reach into a different cloud.",
+    "line_type": "echo",
+    "chapter": 3,
+    "start_ms": 591796,
+    "duration_ms": 13312,
+    "end_ms": 605108
+  },
+  {
+    "index": 205,
+    "speaker": "PROFESSOR",
+    "text": "Precisely. Cross-attention is the bridge between different representations.",
+    "line_type": "acknowledgment",
+    "chapter": 3,
+    "start_ms": 605108,
+    "duration_ms": 5892,
+    "end_ms": 611000
+  },
+  {
+    "index": 206,
+    "speaker": "PROFESSOR",
+    "text": "This is how language-conditioned robots work - the decoder's queries about 'what action next' reach into the encoder's representation of 'pick up the red cup.'",
+    "line_type": "consequence",
+    "chapter": 3,
+    "start_ms": 611000,
+    "duration_ms": 10616,
+    "end_ms": 621616
+  },
+  {
+    "index": 207,
+    "speaker": "STUDENT_4",
+    "text": "What do deep generative models give us that regular neural networks don't?",
+    "line_type": "question",
+    "chapter": 3,
+    "start_ms": 621616,
+    "duration_ms": 4796,
+    "end_ms": 626412
+  },
+  {
+    "index": 208,
+    "speaker": "PROFESSOR",
+    "text": "Regular networks are like translators - input goes in, one output comes out. Generative models are like creative writers - they learn the 'recipe' for creating new, realistic examples. Instead of just classifying cats, they can DRAW new cats that never existed.",
+    "line_type": "answer",
+    "chapter": 3,
+    "start_ms": 626412,
+    "duration_ms": 16788,
+    "end_ms": 643200
+  },
+  {
+    "index": 209,
+    "speaker": "PROFESSOR",
+    "text": "For your SO-ARM101, a regular network might predict 'the next gripper position should be here.' A generative model learns the entire DISTRIBUTION of possible folding trajectories - all the different valid ways to approach a fold. When you sample from it, you get diverse, creative solutions: sometimes the robot folds fast, sometimes slow, sometimes left-first, sometimes right-first - all valid!",
+    "line_type": "example",
+    "chapter": 3,
+    "start_ms": 643200,
+    "duration_ms": 25160,
+    "end_ms": 668360
+  },
+  {
+    "index": 210,
+    "speaker": "STUDENT_2",
+    "text": "Regular networks translate one input to one output. Generative models learn the whole distribution - all possible valid outputs and their probabilities. They're creative, not just reactive.",
+    "line_type": "echo",
+    "chapter": 3,
+    "start_ms": 668360,
+    "duration_ms": 12064,
+    "end_ms": 680424
+  },
+  {
+    "index": 211,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. Learning distributions instead of point estimates changes everything.",
+    "line_type": "acknowledgment",
+    "chapter": 3,
+    "start_ms": 680424,
+    "duration_ms": 6228,
+    "end_ms": 686652
+  },
+  {
+    "index": 212,
+    "speaker": "PROFESSOR",
+    "text": "This is why Stable Diffusion can generate infinite variations of images, and why diffusion policy can generate diverse valid robot trajectories for the same task.",
+    "line_type": "consequence",
+    "chapter": 3,
+    "start_ms": 686652,
+    "duration_ms": 11360,
+    "end_ms": 698012
+  },
+  {
+    "index": 213,
+    "speaker": "STUDENT_1",
+    "text": "What are the main architecture families used in modern robot learning?",
+    "line_type": "question",
+    "chapter": 3,
+    "start_ms": 698012,
+    "duration_ms": 4436,
+    "end_ms": 702448
+  },
+  {
+    "index": 214,
+    "speaker": "PROFESSOR",
+    "text": "Modern robotics uses three main approaches: CNNs for processing images (like seeing the shirt), Transformers for understanding relationships and sequences (like planning multi-step folds), and diffusion models for generating diverse action trajectories. Often they're combined - vision backbone plus Transformer plus diffusion head.",
+    "line_type": "answer",
+    "chapter": 3,
+    "start_ms": 702448,
+    "duration_ms": 20436,
+    "end_ms": 722884
+  },
+  {
+    "index": 215,
+    "speaker": "PROFESSOR",
+    "text": "Your SO-ARM101 might use a ViT (Vision Transformer) to look at the camera feed and understand 'there's a wrinkled shirt on the table.' Then a Transformer processes the sequence of observations to understand context ('I already folded the left side'). Finally, a diffusion model generates the actual motor commands for the next fold. Each architecture has its superpower!",
+    "line_type": "example",
+    "chapter": 3,
+    "start_ms": 722884,
+    "duration_ms": 23024,
+    "end_ms": 745908
+  },
+  {
+    "index": 216,
+    "speaker": "STUDENT_3",
+    "text": "CNNs for seeing, Transformers for relating and planning, Diffusion for generating diverse solutions. Most modern systems stack all three together.",
+    "line_type": "echo",
+    "chapter": 3,
+    "start_ms": 745908,
+    "duration_ms": 10888,
+    "end_ms": 756796
+  },
+  {
+    "index": 217,
+    "speaker": "PROFESSOR",
+    "text": "That's right. Each family has strengths, and combining them is state-of-the-art.",
+    "line_type": "acknowledgment",
+    "chapter": 3,
+    "start_ms": 756796,
+    "duration_ms": 6348,
+    "end_ms": 763144
+  },
+  {
+    "index": 218,
+    "speaker": "PROFESSOR",
+    "text": "Google's RT-2 uses exactly this stack - ViT for vision, Transformer for reasoning, and diffusion for action generation. The combination is more powerful than any single approach.",
+    "line_type": "consequence",
+    "chapter": 3,
+    "start_ms": 763144,
+    "duration_ms": 12320,
+    "end_ms": 775464
+  },
+  {
+    "index": 219,
+    "speaker": "STUDENT_2",
+    "text": "Why is a 'swap task' a useful example for understanding robot learning architectures?",
+    "line_type": "question",
+    "chapter": 3,
+    "start_ms": 775464,
+    "duration_ms": 6524,
+    "end_ms": 781988
+  },
+  {
+    "index": 220,
+    "speaker": "PROFESSOR",
+    "text": "A swap task - picking up two objects and switching their positions - is simple enough to understand but complex enough to show real challenges. It requires: seeing both objects, planning a sequence (pick A, move it, pick B, move it), and not colliding. It's the 'Hello World' of bimanual manipulation.",
+    "line_type": "answer",
+    "chapter": 3,
+    "start_ms": 781988,
+    "duration_ms": 19404,
+    "end_ms": 801392
+  },
+  {
+    "index": 221,
+    "speaker": "PROFESSOR",
+    "text": "Imagine your SO-ARM101 with a red block on the left and blue block on the right - goal is to swap them. Sounds easy? But the robot must: identify which is which (vision), decide which arm grabs which (planning), coordinate so arms don't collide (timing), and handle both arms simultaneously (bimanual control). Every architecture decision affects how well it handles these challenges. Perfect test case!",
+    "line_type": "example",
+    "chapter": 3,
+    "start_ms": 801392,
+    "duration_ms": 25784,
+    "end_ms": 827176
+  },
+  {
+    "index": 222,
+    "speaker": "STUDENT_4",
+    "text": "It's simple enough to understand but complex enough to reveal real challenges - vision, planning sequences, avoiding collisions, coordinating two arms. The minimal viable hard problem.",
+    "line_type": "echo",
+    "chapter": 3,
+    "start_ms": 827176,
+    "duration_ms": 11752,
+    "end_ms": 838928
+  },
+  {
+    "index": 223,
+    "speaker": "PROFESSOR",
+    "text": "Precisely. Swap tasks expose architecture weaknesses without overwhelming complexity.",
+    "line_type": "acknowledgment",
+    "chapter": 3,
+    "start_ms": 838928,
+    "duration_ms": 6972,
+    "end_ms": 845900
+  },
+  {
+    "index": 224,
+    "speaker": "PROFESSOR",
+    "text": "DeepMind uses swap tasks as standard benchmarks for new architectures - if your model can't swap two blocks, it definitely can't do complex manipulation.",
+    "line_type": "consequence",
+    "chapter": 3,
+    "start_ms": 845900,
+    "duration_ms": 11024,
+    "end_ms": 856924
+  },
+  {
+    "index": 225,
+    "speaker": "STUDENT_3",
+    "text": "How does a complete self-attention layer let tokens 'communicate'?",
+    "line_type": "question",
+    "chapter": 3,
+    "start_ms": 856924,
+    "duration_ms": 4724,
+    "end_ms": 861648
+  },
+  {
+    "index": 226,
+    "speaker": "PROFESSOR",
+    "text": "Each token creates three things: a Query ('what am I looking for?'), Key ('what do I have to offer?'), and Value ('here's my information'). Queries match with Keys to decide who talks to whom, then Values get shared based on those matches. It's like a networking event where everyone wears tags about what they need and offer.",
+    "line_type": "answer",
+    "chapter": 3,
+    "start_ms": 861648,
+    "duration_ms": 19284,
+    "end_ms": 880932
+  },
+  {
+    "index": 227,
+    "speaker": "PROFESSOR",
+    "text": "During a fold, your SO-ARM101's image patch showing a shirt corner creates: Query='I need to know where gripper is', Key='I contain corner position info', Value='corner at pixel (120,340)'. Meanwhile, the proprioception token creates: Query='I need to know target', Key='I know current arm position', Value='arm at (0.3, 0.2, 0.1)'. Through attention, the corner patch and arm position token exchange information, so the robot knows 'my arm is 5cm from the corner I need to grab!'",
+    "line_type": "example",
+    "chapter": 3,
+    "start_ms": 880932,
+    "duration_ms": 39896,
+    "end_ms": 920828
+  },
+  {
+    "index": 228,
+    "speaker": "STUDENT_1",
+    "text": "Each token makes a Query, Key, and Value. Queries match with Keys to decide who talks to whom, then Values get mixed based on those attention weights. It's structured parallel communication.",
+    "line_type": "echo",
+    "chapter": 3,
+    "start_ms": 920828,
+    "duration_ms": 13168,
+    "end_ms": 933996
+  },
+  {
+    "index": 229,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. The QKV mechanism is the complete communication protocol.",
+    "line_type": "acknowledgment",
+    "chapter": 3,
+    "start_ms": 933996,
+    "duration_ms": 6108,
+    "end_ms": 940104
+  },
+  {
+    "index": 230,
+    "speaker": "PROFESSOR",
+    "text": "Every modern language model and robot policy uses this exact mechanism - it's become the fundamental unit of neural network communication.",
+    "line_type": "consequence",
+    "chapter": 3,
+    "start_ms": 940104,
+    "duration_ms": 9776,
+    "end_ms": 949880
+  }
+]

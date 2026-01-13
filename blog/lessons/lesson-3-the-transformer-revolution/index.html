@@ -1,0 +1,1713 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.26">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Rajesh">
+<meta name="dcterms.date" content="2026-01-11">
+
+<title>Lesson 3: The Transformer Revolution</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="index_files/libs/clipboard/clipboard.min.js"></script>
+<script src="index_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="index_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="index_files/libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="index_files/libs/quarto-html/popper.min.js"></script>
+<script src="index_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="index_files/libs/quarto-html/anchor.min.js"></script>
+<link href="index_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="index_files/libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="index_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="index_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="index_files/libs/bootstrap/bootstrap-e007bce483b956d7405b75f3ca8bd93c.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="index_files/libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="index_files/libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="index_files/libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
+
+
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul class="collapse">
+  <li><a href="#chapter-1" id="toc-chapter-1" class="nav-link active" data-scroll-target="#chapter-1">Chapter 1: The Revolution Arrives</a></li>
+  <li><a href="#chapter-2" id="toc-chapter-2" class="nav-link" data-scroll-target="#chapter-2">Chapter 2: Speaking the Language</a></li>
+  <li><a href="#chapter-3" id="toc-chapter-3" class="nav-link" data-scroll-target="#chapter-3">Chapter 3: The Attention Mechanism</a></li>
+  <li><a href="#chapter-4" id="toc-chapter-4" class="nav-link" data-scroll-target="#chapter-4">Chapter 4: The Encoder</a></li>
+  <li><a href="#chapter-5" id="toc-chapter-5" class="nav-link" data-scroll-target="#chapter-5">Chapter 5: The Decoder</a></li>
+  <li><a href="#chapter-6" id="toc-chapter-6" class="nav-link" data-scroll-target="#chapter-6">Chapter 6: Vision Transformers</a></li>
+  <li><a href="#chapter-7" id="toc-chapter-7" class="nav-link" data-scroll-target="#chapter-7">Chapter 7: Transformers Meet Robots</a></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Lesson 3: The Transformer Revolution</h1>
+<p class="subtitle lead">The Architecture That Changed Everything</p>
+  <div class="quarto-categories">
+    <div class="quarto-category">robot-learning</div>
+    <div class="quarto-category">transformers</div>
+    <div class="quarto-category">vision-transformers</div>
+    <div class="quarto-category">attention</div>
+  </div>
+  </div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Rajesh </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">January 11, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/thumbnail.png" class="hero-image img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></p>
+</figure>
+</div>
+<p><em>In this lesson, we unlock the transformer architecture - the breakthrough that powers ChatGPT, modern robot policies, and nearly every frontier AI system. By the end, you’ll read architecture diagrams like a native speaker.</em></p>
+<div class="audio-cta">
+<p>🎧 <strong>Prefer to listen?</strong> Experience this lesson as an immersive classroom audio.</p>
+<p><a href="./lessons/lesson-3-the-transformer-revolution/classroom-player.html" class="cta-button-secondary">Listen to Audio Version →</a></p>
+</div>
+<section id="chapter-1" class="level1">
+<h1>Chapter 1: The Revolution Arrives</h1>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Rajesh
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Dr.&nbsp;Nova, I’ve been reviewing the architectures you mentioned at the end of Lesson 2 - OpenVLA, ACT, SmallVA, GRoot. And honestly? I’m intimidated. There are all these boxes labeled “self-attention,” “cross-attention,” “Q, K, V”… I feel like everyone speaks a language I don’t understand.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><em>smiles</em> That intimidation is exactly why I wanted to dedicate an entire lesson to transformers. Let me show you something.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/chapter-1-architecture-overview.png" class="img-fluid figure-img"></p>
+<figcaption>[1] Modern robotics architectures all share a common foundation - the transformer. OpenVLA, ACT, SmallVA, GRoot - they all speak the same language.</figcaption>
+</figure>
+</div>
+<p>Look at these four architectures. Different teams, different companies, different years. But what do they all have in common?</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Rajesh
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>They all mention “transformer” or “attention” somewhere…</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Exactly! The transformer architecture is like the Latin of modern AI - once you learn it, you can read almost any architecture diagram. Let’s do a quick recap of where we are in our journey.</p>
+<p>In Lesson 1, we discovered that <strong>point estimate policies</strong> fail when there are multiple valid solutions. Averaging “go left” and “go right” gives you “go straight into the obstacle.”</p>
+<p>In Lesson 2, we learned that <strong>deep generative models</strong> solve this by predicting probability distributions instead of single values. And we dove deep into <strong>Variational Autoencoders</strong> - how they compress data into a latent space and reconstruct it.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Rajesh
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Right - the encoder compresses images into latent variables Z, and the decoder reconstructs from Z. We even talked about how for robotics, our observations include both images AND joint angles from the SO-ARM101.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Perfect recall! Now here’s the thing - VAEs are great for capturing hidden factors of variation. But they were designed for independent samples, not <strong>sequences</strong>. And robotics is fundamentally about sequences.</p>
+<p>Think about it: robot actions form a trajectory over time. Language is a sequence of words. Even images, as we’ll see, can be treated as sequences. And sequences have a special property - <strong>the elements are related to each other</strong>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Rajesh
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>So “I am in India” has relationships between the words - “I” relates to “am,” “India” relates to the whole sentence…</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Exactly! And capturing those relationships - those dependencies between elements in a sequence - is what transformers do brilliantly. Before transformers, people used Recurrent Neural Networks (RNNs), but they were slow and struggled with long sequences.</p>
+<p>In 2017, a paper changed everything. It was titled “Attention Is All You Need,” and it has over 210,000 citations. That’s more than most professors accumulate in their entire careers, combined!</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/chapter-1-attention-paper.png" class="img-fluid figure-img"></p>
+<figcaption>[2] The “Attention Is All You Need” paper - the most influential AI paper of the decade. The transformer architecture diagram that we’ll fully decode by the end of this lesson.</figcaption>
+</figure>
+</div>
+<p>By the end of today, you’ll look at that architecture diagram and understand every single component. You’ll be able to read robotics papers like a native speaker. Ready?</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Rajesh
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Absolutely. Let’s do this!</p>
+</div>
+</div>
+</section>
+<section id="chapter-2" class="level1">
+<h1>Chapter 2: Speaking the Language</h1>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Let’s start with a simple task that will help us understand every piece of the transformer. Imagine we want to teach an AI to <strong>swap adjectives and nouns</strong>.</p>
+<p>Input: “red car” → Output: “car red”</p>
+<p>Input: “blue bike” → Output: “bike blue”</p>
+<p>Sounds trivial, right? But this simple task will teach us everything about transformers.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Rajesh
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Why such a simple example? Wouldn’t a real NLP task be more relevant?</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Because simplicity reveals the mechanics. Once you understand how transformers swap “red car” to “car red,” understanding how they translate English to Hindi, or generate robot trajectories, becomes almost trivial.</p>
+<p>First, we need to define our <strong>vocabulary</strong> - the set of all possible tokens our model can work with.</p>
+</div>
+</div>
+<pre><code>VOCABULARY (18 tokens):
+Colors:  white, blue, green, yellow, black, red, orange, purple
+Objects: car, bike, tree, house, ball, bird, cat
+
+Special: BOS (beginning of sentence)
+         EOS (end of sentence)
+         PAD (padding)</code></pre>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Rajesh
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>What are those special tokens for?</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Great question! <strong>BOS</strong> tells the model “start generating now.” <strong>EOS</strong> tells it “stop generating.” And <strong>PAD</strong> makes all sequences the same length for batch processing.</p>
+<p>Think about ChatGPT - when you ask a question, how does it know when to stop answering? It generates tokens until it produces an EOS token. Without it, LLMs would ramble forever!</p>
+<p>Now, here’s the first key insight: computers can’t directly process words like “red” or “car.” We need to convert them to numbers. This is called <strong>embedding</strong>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Token Embeddings
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>An <strong>embedding</strong> is a vector representation of a token that captures its semantic meaning. Similar words have similar embeddings - “king” and “crown” are close together, while “king” and “banana” are far apart.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Imagine each token wearing a uniform - a vector of numbers that represents everything about that word. In our simple example, we might use 3-dimensional embeddings. In reality, models use 512, 768, or even higher dimensions.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/chapter-2-embedding-space.png" class="img-fluid figure-img"></p>
+<figcaption>[3] Token embeddings place semantically similar words near each other in vector space. “King” and “crown” cluster together, while unrelated words are distant.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Rajesh
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>So “red” gets mapped to something like [0.2, 0.8, 0.1] and “car” gets [0.7, 0.3, 0.5]?</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Exactly! But there’s a problem. Consider these two sentences:</p>
+<p>“The dog chased the car”</p>
+<p>“The car chased the dog”</p>
+<p>Same words, same token embeddings - but completely different meanings! The first is normal, the second is bizarre (unless it’s a self-driving car with road rage).</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Rajesh
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Oh! The position of each word matters. “Dog” in position 2 versus position 5 changes everything.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Brilliant! That’s why we add <strong>positional embeddings</strong> - vectors that encode WHERE each token appears in the sequence. Position 0, position 1, position 2, and so on.</p>
+<p>The final <strong>input embedding</strong> is: Token Embedding + Positional Embedding</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/chapter-2-input-embedding.png" class="img-fluid figure-img"></p>
+<figcaption>[4] The complete input embedding: token semantics plus positional information. Each token knows what it means AND where it is in the sequence.</figcaption>
+</figure>
+</div>
+<p>This was actually known before transformers. The embedding layer is standard practice in NLP. What transformers contributed is what happens NEXT.</p>
+</div>
+</div>
+</section>
+<section id="chapter-3" class="level1">
+<h1>Chapter 3: The Attention Mechanism</h1>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Now for the magic - the attention mechanism. This is THE innovation that makes transformers work.</p>
+<p>Consider our input: “the red car”</p>
+<p>After embedding, each token has a vector. But here’s the question: does the token “red” care about where it appears? Does it care about “the” or “car”?</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Rajesh
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Well… “red” describes “car,” so they’re definitely related. And “the” kind of connects to both.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Exactly! Your brain instantly forms these connections. In a split second, you understand which words are related to which. The attention mechanism is our attempt to capture this computationally.</p>
+<p>Let’s build an <strong>attention matrix</strong> for “the dog chased the car”:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/chapter-3-attention-matrix.png" class="img-fluid figure-img"></p>
+<figcaption>[5] The attention matrix - every token asks “how much do I care about you?” to every other token. Darker colors indicate stronger relationships.</figcaption>
+</figure>
+</div>
+<p>Every row is a <strong>query</strong> asking: “How important are you to me?” Every column is a <strong>key</strong> answering: “Here’s how relevant I am.”</p>
+<p>The values in the matrix are <strong>attention scores</strong> - how much each token should focus on each other token.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Rajesh
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>So “dog” has high attention to “chased” because the dog is doing the chasing, and “chased” has high attention to “car” because that’s what’s being chased?</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>You’re getting it! Now, to compute these attention scores, each token embedding is transformed into THREE vectors:</p>
+<ul>
+<li><strong>Query (Q)</strong>: “What am I looking for?”</li>
+<li><strong>Key (K)</strong>: “What do I contain?”</li>
+<li><strong>Value (V)</strong>: “What information should I share?”</li>
+</ul>
+<p>The attention score between token A and token B is computed by comparing A’s Query with B’s Key. It’s like asking a question and seeing how well someone’s expertise matches.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>The QKV Intuition
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><strong>Query</strong>: The question a token asks - “Who should I pay attention to?”</li>
+<li><strong>Key</strong>: The label each token wears - “Here’s what I’m about”</li>
+<li><strong>Value</strong>: The actual content each token shares when attended to</li>
+</ul>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Rajesh
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>I think I understand Query and Key - they determine the attention scores. But what’s the purpose of Value? Why not just use the original embeddings?</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Excellent question - this confused me too when I first learned transformers!</p>
+<p>The Value vector encodes the <strong>semantic information</strong> that gets shared. It’s learned separately from Q and K, allowing the model to distinguish between “who to attend to” (Q, K) and “what to take from them” (V).</p>
+<p>Empirically, having a separate learnable Value matrix works much better than using raw embeddings. It gives the model more expressiveness.</p>
+<p>Now, once we have attention scores, we use them to create <strong>context vectors</strong>. Here’s the geometric intuition:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/chapter-3-context-vectors.png" class="img-fluid figure-img"></p>
+<figcaption>[6] Computing the context vector - a weighted sum of Value vectors, where weights come from attention scores. High attention = more influence.</figcaption>
+</figure>
+</div>
+<p>For each token, we take a weighted sum of all Value vectors. The weights are the attention scores. If “dog” attends 80% to “chased” and 20% to everything else, its context vector is 80% influenced by “chased’s” Value.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Rajesh
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>So the context vector is like an updated version of the token that now “knows about” the other tokens it should care about?</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Perfectly said! Before attention, each token only knows about itself - its uniform. After attention, each token has been transformed to incorporate information from related tokens.</p>
+<p>Let me show you an interactive visualization that makes this crystal clear:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/chapter-3-attention-visualization.png" class="img-fluid figure-img"></p>
+<figcaption>[7] Interactive attention visualization - watch how tokens update their representations by attending to relevant neighbors.</figcaption>
+</figure>
+</div>
+<p>You can see here that “visualization” strongly attends to “data” and “users” - because data visualization is FOR users. The attention mechanism discovers these relationships automatically through training!</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Rajesh
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This is beautiful. One question - you called this “self-attention.” Why “self”?</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Because every token attends to every OTHER token in the SAME sequence. The sequence is attending to itself. Later, we’ll see “cross-attention” where tokens from one sequence attend to tokens from a DIFFERENT sequence.</p>
+<p>And that completes the <strong>self-attention layer</strong>! Input: token embeddings. Output: context vectors that capture relationships.</p>
+</div>
+</div>
+</section>
+<section id="chapter-4" class="level1">
+<h1>Chapter 4: The Encoder</h1>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Now let’s assemble the complete <strong>transformer encoder</strong>. We’ve seen the pieces - let me show you how they fit together.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/chapter-4-encoder-block.png" class="img-fluid figure-img"></p>
+<figcaption>[8] The transformer encoder block - embeddings flow through self-attention and feed-forward layers to produce rich context vectors.</figcaption>
+</figure>
+</div>
+<p>The encoder has three main components:</p>
+<ol type="1">
+<li><strong>Input Embedding Layer</strong>: Token embeddings + positional embeddings</li>
+<li><strong>Self-Attention Layer</strong>: Computes Q, K, V and creates context vectors</li>
+<li><strong>Feed-Forward Network</strong>: A simple MLP that processes each context vector independently</li>
+</ol>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Rajesh
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>What does the feed-forward network do? I thought we already have context vectors from attention.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Good question! The feed-forward network adds non-linearity and allows the model to transform the context vectors further. It’s typically:</p>
+<p>Input dimension → 4× larger hidden dimension → Back to input dimension</p>
+<p>So if our embeddings are 512-dimensional, the FFN goes 512 → 2048 → 512.</p>
+<p>Now, one thing I glossed over - in practice, we don’t use just ONE attention head. We use <strong>multi-head attention</strong>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Multi-Head Attention
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Instead of one attention matrix, we compute MULTIPLE attention matrices in parallel - typically 8 or 12 “heads.” Each head can learn to attend to different relationship types (syntactic, semantic, positional, etc.). The outputs are concatenated and projected back.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Rajesh
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>So one head might learn “what adjectives modify which nouns” while another learns “what verbs connect to what subjects”?</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Exactly! Different heads specialize in different relationship patterns.</p>
+<p>Now, the encoder’s job is to create a <strong>rich representation</strong> of the input sequence. It reads “the red car” and produces context vectors that understand: “red” modifies “car,” “the” is an article, and together they describe a colored vehicle.</p>
+<p>But the encoder doesn’t generate output. It only encodes. For generation, we need the <strong>decoder</strong>.</p>
+</div>
+</div>
+</section>
+<section id="chapter-5" class="level1">
+<h1>Chapter 5: The Decoder</h1>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The encoder creates understanding. The decoder creates output. Let’s see how it generates “car red” from understanding “red car.”</p>
+<p>The decoder is where the <strong>autoregressive magic</strong> happens - generating one token at a time. Let’s trace through it step by step.</p>
+<p><strong>Step 1</strong>: We start with just the BOS token.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/chapter-5-decoder-step1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Decoder Step 1: Starting with BOS token"><img src="images/chapter-5-decoder-step1.png" class="img-fluid figure-img" alt="Decoder Step 1: Starting with BOS token"></a></p>
+<figcaption>Decoder Step 1: Starting with BOS token</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Rajesh
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>So the decoder input starts with just BOS, and we want it to predict “car”?</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Exactly! First, BOS goes through self-attention (with just itself, since it’s the only token so far). But here’s the key - the decoder needs to know about the INPUT sequence “the red car.”</p>
+<p>This is where <strong>cross-attention</strong> comes in.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/chapter-5-cross-attention.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Cross-Attention: Decoder queries attend to encoder outputs"><img src="images/chapter-5-cross-attention.png" class="img-fluid figure-img" alt="Cross-Attention: Decoder queries attend to encoder outputs"></a></p>
+<figcaption>Cross-Attention: Decoder queries attend to encoder outputs</figcaption>
+</figure>
+</div>
+<p>In cross-attention: - <strong>Queries</strong> come from the decoder (BOS) - <strong>Keys and Values</strong> come from the encoder’s output (the context vectors for “the,” “red,” “car”)</p>
+<p>The decoder token asks: “Given what the encoder understood, what should I generate next?”</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Rajesh
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Oh! So the query is “what should come first?” and it attends to the encoder’s understanding of the input. Since we want to swap, it should attend most to “car”!</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Exactly! The cross-attention scores tell the decoder to focus on “car” (since that should come first in the output).</p>
+<p>Let me show you the geometric interpretation:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/chapter-5-cross-attention-geometric.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Cross-Attention Geometric View: Decoder pulls from encoder space"><img src="images/chapter-5-cross-attention-geometric.png" class="img-fluid figure-img" alt="Cross-Attention Geometric View: Decoder pulls from encoder space"></a></p>
+<figcaption>Cross-Attention Geometric View: Decoder pulls from encoder space</figcaption>
+</figure>
+</div>
+<p>The decoder’s context vector becomes a weighted combination of the encoder’s value vectors. High attention to “car” means the decoder’s representation shifts toward “car’s” meaning.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Rajesh
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>And then after all the attention and feed-forward layers, how do we actually get the word “car” out?</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Vocabulary projection</strong>! We take the final context vector and project it to the size of our vocabulary using a linear layer + softmax.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/chapter-5-next-token-prediction.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Next Token Prediction: Vocabulary projection with softmax"><img src="images/chapter-5-next-token-prediction.png" class="img-fluid figure-img" alt="Next Token Prediction: Vocabulary projection with softmax"></a></p>
+<figcaption>Next Token Prediction: Vocabulary projection with softmax</figcaption>
+</figure>
+</div>
+<p>Each vocabulary word gets a probability. We pick the highest one - “car” with 0.92 probability. That becomes our first output token.</p>
+<p><strong>Step 2</strong>: Now we have “BOS car” as input to the decoder. We repeat the process to predict “red.”</p>
+<p><strong>Step 3</strong>: With “BOS car red” as input, the model predicts EOS, signaling it’s done.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Rajesh
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>So LLMs like ChatGPT are doing this thousands of times to generate each response? One token at a time?</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Exactly! And here’s an important detail: ChatGPT and most modern LLMs are <strong>decoder-only</strong> architectures. They don’t have a separate encoder - they use only the decoder with masked self-attention.</p>
+<p>But for tasks like <strong>translation</strong> - “I am in India” → “मैं भारत में हूं” - you need BOTH encoder and decoder. Why?</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/chapter-5-translation-example.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Translation Example: Why encoder-decoder is essential"><img src="images/chapter-5-translation-example.png" class="img-fluid figure-img" alt="Translation Example: Why encoder-decoder is essential"></a></p>
+<figcaption>Translation Example: Why encoder-decoder is essential</figcaption>
+</figure>
+</div>
+<p>The word order changes between languages. “India” is 4th in English but 2nd in Hindi. The encoder captures the SOURCE meaning, and cross-attention allows the decoder to attend to relevant source words regardless of their position.</p>
+<p>Without the encoder, the decoder would have no way to “see” the full source sentence before generating. It would be like translating blind!</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Masked Self-Attention
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>In the decoder, each token can only attend to tokens BEFORE it (not after). This prevents “cheating” - when generating token 5, you can’t peek at what token 6 should be. This is why some attention matrices show gray/blocked regions beyond the diagonal.</p>
+</div>
+</div>
+</section>
+<section id="chapter-6" class="level1">
+<h1>Chapter 6: Vision Transformers</h1>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Rajesh
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This all makes sense for text - words are naturally sequential. But images? How do you apply transformers to something that’s a 2D grid of pixels?</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>That’s exactly what researchers asked after the transformer paper. And in 2020, the <strong>Vision Transformer (ViT)</strong> paper answered: “An image is worth 16x16 words.”</p>
+<p>The trick is beautifully simple: <strong>treat image patches as tokens</strong>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/chapter-6-patches-as-tokens.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="Image Patches as Tokens: 16×16 patches become sequence elements"><img src="images/chapter-6-patches-as-tokens.png" class="img-fluid figure-img" alt="Image Patches as Tokens: 16×16 patches become sequence elements"></a></p>
+<figcaption>Image Patches as Tokens: 16×16 patches become sequence elements</figcaption>
+</figure>
+</div>
+<p>Take a 224×224 image, divide it into 16×16 pixel patches. You get 14×14 = 196 patches. Each patch becomes a “token” with its own embedding.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Rajesh
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>So instead of words, we have image patches? And each patch gets embedded into a vector?</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Exactly! Each patch is flattened (16×16×3 = 768 values for RGB) and passed through a linear layer to create a <strong>patch embedding</strong> of whatever dimension we want (e.g., 512).</p>
+<p>And just like text, <strong>position matters</strong>! Shuffling the patches gives a very different image.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/chapter-6-position-matters.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="Position Matters: Same patches, different meaning"><img src="images/chapter-6-position-matters.png" class="img-fluid figure-img" alt="Position Matters: Same patches, different meaning"></a></p>
+<figcaption>Position Matters: Same patches, different meaning</figcaption>
+</figure>
+</div>
+<p>So we add <strong>positional embeddings</strong> to patches too. Patch at position (0,0) has a different positional embedding than patch at (2,3).</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Rajesh
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Okay, but here’s my question. For text, we’re predicting the next token. For images… what’s the output? We’re not predicting “the next patch.”</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Great observation! For classification tasks, we need a single vector representing the ENTIRE image. But self-attention gives us context vectors for EACH patch. How do we get one summary vector?</p>
+<p>The solution is the <strong>CLS token</strong> - a special learnable token prepended to the sequence.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/chapter-6-cls-token.png" class="lightbox" data-gallery="quarto-lightbox-gallery-8" title="CLS Token: A learnable “summary” token for classification"><img src="images/chapter-6-cls-token.png" class="img-fluid figure-img" alt="CLS Token: A learnable “summary” token for classification"></a></p>
+<figcaption>CLS Token: A learnable “summary” token for classification</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Rajesh
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Wait - we just ADD a fake token? And it magically summarizes the image?</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>It’s not magic - it’s learned! The CLS token is initialized randomly but trained end-to-end. Through self-attention, it learns to attend to ALL the important patches.</p>
+<p>Look at how CLS attention works:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/chapter-6-cls-attention.png" class="lightbox" data-gallery="quarto-lightbox-gallery-9" title="CLS Attention Pattern: CLS learns to attend to discriminative regions"><img src="images/chapter-6-cls-attention.png" class="img-fluid figure-img" alt="CLS Attention Pattern: CLS learns to attend to discriminative regions"></a></p>
+<figcaption>CLS Attention Pattern: CLS learns to attend to discriminative regions</figcaption>
+</figure>
+</div>
+<p>The CLS token’s attention scores determine how much information it takes from each patch. For a “dog vs cat” classifier, CLS learns to attend heavily to patches containing the animal’s face and body.</p>
+<p>After the encoder, we ONLY use the CLS context vector and pass it through a <strong>classification head</strong> (a simple MLP) to get class probabilities.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>ViT Architecture Summary
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ol type="1">
+<li>Split image into patches (e.g., 16×16 pixels)</li>
+<li>Linearly embed each patch to create patch embeddings</li>
+<li>Add positional embeddings</li>
+<li>Prepend a learnable CLS token</li>
+<li>Pass through transformer encoder</li>
+<li>Use CLS token’s output for classification</li>
+</ol>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Rajesh
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This is elegant! But training a ViT from scratch must require massive datasets…</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>You’re right - ViT was originally trained on ImageNet-21K (14 million images). But here’s the beautiful thing: <strong>pre-trained ViTs can be fine-tuned</strong> for new tasks with very little data.</p>
+<p>Google released “google/vit-base-patch16-224” which you can use directly. Just replace the classification head with your number of classes and fine-tune on your dataset.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/chapter-6-vit-finetuning.png" class="lightbox" data-gallery="quarto-lightbox-gallery-10" title="Fine-tuning Pre-trained ViT: Freeze encoder, replace head"><img src="images/chapter-6-vit-finetuning.png" class="img-fluid figure-img" alt="Fine-tuning Pre-trained ViT: Freeze encoder, replace head"></a></p>
+<figcaption>Fine-tuning Pre-trained ViT: Freeze encoder, replace head</figcaption>
+</figure>
+</div>
+<p>I have a notebook where we classify plant disease images using a pre-trained ViT. We start at 94% accuracy and reach 97% after just 3 epochs of fine-tuning. The pre-trained model already understands “how images work” - we just teach it our specific classes.</p>
+</div>
+</div>
+</section>
+<section id="chapter-7" class="level1">
+<h1>Chapter 7: Transformers Meet Robots</h1>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Now for the payoff - how does all this apply to robotics?</p>
+<p>Remember our SO-ARM101 setup. The robot’s observation includes: - <strong>Images</strong> from cameras (480×640×3 pixels) - <strong>Proprioceptive data</strong> - 6 joint angles per arm</p>
+<p>And the output is a sequence of <strong>actions</strong> - target joint positions over time.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Rajesh
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>So robot control is sequence-to-sequence! Observations come in as a sequence (image frames, joint states), and we output a sequence of actions!</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Exactly! Robotics is <strong>sequence modeling</strong>. And transformers are exceptional at sequences.</p>
+<p>Now let me show you how modern robotics architectures use everything we learned:</p>
+<p><strong>SmallVA Architecture:</strong> <a href="images/chapter-7-smallva.png" class="lightbox" data-gallery="quarto-lightbox-gallery-11" title="SmallVA Architecture: Encoder-decoder for robot control"><img src="images/chapter-7-smallva.png" class="img-fluid" alt="SmallVA Architecture: Encoder-decoder for robot control"></a></p>
+<p>See how the encoder processes images and text (task instructions) using self-attention? The output becomes Keys and Values for the decoder. The decoder generates actions through cross-attention to these observations.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Rajesh
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>And the Q, K, V labels make sense now! K and V come from the encoder, Q comes from the decoder.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>You’re reading architecture diagrams like a native speaker!</p>
+<p><strong>NVIDIA’s GRoot:</strong> <a href="images/chapter-7-groot.png" class="lightbox" data-gallery="quarto-lightbox-gallery-12" title="NVIDIA GRoot: VLM + Diffusion Transformer"><img src="images/chapter-7-groot.png" class="img-fluid" alt="NVIDIA GRoot: VLM + Diffusion Transformer"></a></p>
+<p>GRoot uses a Vision Language Model (which is just a transformer processing both images and text) to create an encoding. Then a “diffusion transformer” generates actions. We’ll learn about diffusion models in a later lesson - just note that transformers appear everywhere.</p>
+<p><strong>OpenVLA:</strong> <a href="images/chapter-7-openvla.png" class="lightbox" data-gallery="quarto-lightbox-gallery-13" title="OpenVLA: 7B parameter LLaMA for robot actions"><img src="images/chapter-7-openvla.png" class="img-fluid" alt="OpenVLA: 7B parameter LLaMA for robot actions"></a></p>
+<p>OpenVLA uses a 7-billion parameter LLaMA model (decoder-only transformer) to generate actions. Images are projected to the same embedding space as language tokens, and the combined sequence is processed autoregressively.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Rajesh
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>They’re all using the same building blocks - just arranged differently! And I can actually follow what’s happening now.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>That’s the power of understanding transformers deeply.</p>
+<p>Now, here’s a teaser for our next lesson. The policy we’ll implement - <strong>ACT (Action Chunking with Transformers)</strong> - combines everything:</p>
+<ul>
+<li><strong>VAE</strong> for handling multimodality (from Lesson 2)</li>
+<li><strong>Transformer encoder</strong> for processing observations</li>
+<li><strong>Transformer decoder</strong> for generating action sequences</li>
+<li><strong>CLS token</strong> for image encoding</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="images/chapter-7-act-preview.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-14" title="ACT Preview: VAE + Transformer for action chunking"><img src="images/chapter-7-act-preview.jpg" class="img-fluid figure-img" alt="ACT Preview: VAE + Transformer for action chunking"></a></p>
+<figcaption>ACT Preview: VAE + Transformer for action chunking</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Rajesh
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Wait - the VAE latent variable goes INTO the transformer encoder? I would have thought the encoder produces the latent variable!</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>That’s the beautiful twist in ACT! The VAE captures the multimodal nature of expert demonstrations (different ways to fold clothes), and its latent variable z is passed as a special token to the transformer encoder.</p>
+<p>During training, we have access to the full demonstration trajectory, so we can encode it with the VAE. During inference, we sample z from the prior distribution.</p>
+<p>But that’s for next lesson. For now, you have homework:</p>
+<ol type="1">
+<li><strong>Read the original transformer paper</strong> - “Attention Is All You Need”</li>
+<li><strong>Read the ViT paper</strong> - “An Image Is Worth 16x16 Words”</li>
+<li><strong>Think about ACT</strong> - How would you combine VAE + Transformer Encoder + Transformer Decoder?</li>
+</ol>
+<p>You now speak transformer. The intimidating diagrams? They’re your native language now.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Rajesh
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>I can’t believe how much clearer everything is. Those architecture diagrams that terrified me at the start? I can actually read them now!</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dr.&nbsp;Nova Brooks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>That’s the transformation - pun intended. Next lesson, we implement ACT and make our SO-ARM101 arms move with learned policies.</p>
+<p>The revolution continues!</p>
+</div>
+</div>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
+
+
+
+</body></html>

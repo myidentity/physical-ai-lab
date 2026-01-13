@@ -1,0 +1,732 @@
+[
+  {
+    "index": 83,
+    "speaker": "PROFESSOR",
+    "text": "Chapter 2. .",
+    "line_type": "transition",
+    "chapter": 2,
+    "start_ms": 0,
+    "duration_ms": 2584,
+    "end_ms": 2584
+  },
+  {
+    "index": 84,
+    "speaker": "PROFESSOR",
+    "text": "Let\u2019s start with a simple task that will help us understand every piece of the transformer. Imagine we want to teach an AI to swap adjectives and nouns .",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 2584,
+    "duration_ms": 9684,
+    "end_ms": 12268
+  },
+  {
+    "index": 85,
+    "speaker": "STUDENT_4",
+    "text": "Why did roboticists get excited about transformers instead of using older neural network architectures?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 12268,
+    "duration_ms": 6380,
+    "end_ms": 18648
+  },
+  {
+    "index": 86,
+    "speaker": "PROFESSOR",
+    "text": "Older networks like RNNs were like reading a book through a tiny keyhole - you could only see one word at a time and had to remember everything yourself. Transformers kicked down the door: they can see the ENTIRE book at once and draw connections between any pages instantly. For robots dealing with complex, long sequences of movements, this is game-changing.",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 18648,
+    "duration_ms": 20652,
+    "end_ms": 39300
+  },
+  {
+    "index": 87,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: Imagine your SO-ARM101 learning a 30-second clothes folding demo. With old RNNs, by the time it reached the final fold, it had mostly forgotten how the task started! Transformers let the robot see 'oh, the way I'm positioning this final fold relates to how I flattened the shirt 25 seconds ago' - long-range connections that make complex manipulation possible.",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 39300,
+    "duration_ms": 25304,
+    "end_ms": 64604
+  },
+  {
+    "index": 88,
+    "speaker": "STUDENT_2",
+    "text": "RNNs were like reading through a keyhole, forgetting the beginning by the end. Transformers see the whole sequence at once AND can be parallelized on GPUs - speed and memory in one package.",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 64604,
+    "duration_ms": 12208,
+    "end_ms": 76812
+  },
+  {
+    "index": 89,
+    "speaker": "PROFESSOR",
+    "text": "Precisely. The parallelization alone changed what's computationally feasible.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 76812,
+    "duration_ms": 6372,
+    "end_ms": 83184
+  },
+  {
+    "index": 90,
+    "speaker": "PROFESSOR",
+    "text": "This is why NVIDIA invested heavily in transformer hardware - their H100 GPUs are specifically optimized for the attention operations that make modern robot learning possible.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 83184,
+    "duration_ms": 12032,
+    "end_ms": 95216
+  },
+  {
+    "index": 91,
+    "speaker": "PROFESSOR",
+    "text": "Sounds trivial, right? But this simple task will teach us everything about transformers.",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 95216,
+    "duration_ms": 6564,
+    "end_ms": 101780
+  },
+  {
+    "index": 92,
+    "speaker": "RAJESH",
+    "text": "Why such a simple example? Wouldn\u2019t a real NLP task be more relevant?",
+    "line_type": "dialogue",
+    "chapter": 2,
+    "start_ms": 101780,
+    "duration_ms": 6060,
+    "end_ms": 107840
+  },
+  {
+    "index": 93,
+    "speaker": "PROFESSOR",
+    "text": "Because simplicity reveals the mechanics. Once you understand how transformers swap \u201cred car\u201d to \u201ccar red,\u201d understanding how they translate English to Hindi, or generate robot trajectories, becomes almost trivial.",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 107840,
+    "duration_ms": 14268,
+    "end_ms": 122108
+  },
+  {
+    "index": 94,
+    "speaker": "STUDENT_1",
+    "text": "What is the attention matrix and what can it tell us about how a transformer thinks?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 122108,
+    "duration_ms": 5468,
+    "end_ms": 127576
+  },
+  {
+    "index": 95,
+    "speaker": "PROFESSOR",
+    "text": "The attention matrix is like a heatmap of 'who's paying attention to whom.' If you have 100 tokens, it's a 100x100 grid where each cell says how much token A cares about token B. Bright spots show strong connections. It's like seeing the invisible threads connecting ideas in someone's mind - literally visualizing how the model relates information.",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 127576,
+    "duration_ms": 21612,
+    "end_ms": 149188
+  },
+  {
+    "index": 96,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: Looking at your SO-ARM101's attention matrix during a fold, you might see the current gripper position strongly attending to (1) 3 seconds ago when it grabbed the fabric, and (2) the target fold location from the demo. These bright spots EXPLAIN the robot's decision - it's connecting 'where I grabbed' to 'where I'm going.' Debugging becomes visual!",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 149188,
+    "duration_ms": 24440,
+    "end_ms": 173628
+  },
+  {
+    "index": 97,
+    "speaker": "STUDENT_3",
+    "text": "It's a heatmap of relationships - every cell shows how much one token cares about another. You can literally read the model's reasoning from these patterns.",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 173628,
+    "duration_ms": 9904,
+    "end_ms": 183532
+  },
+  {
+    "index": 98,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. It's one of the few interpretable parts of deep learning.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 183532,
+    "duration_ms": 5412,
+    "end_ms": 188944
+  },
+  {
+    "index": 99,
+    "speaker": "PROFESSOR",
+    "text": "Waymo engineers analyze attention matrices to verify their models focus on pedestrians and traffic signs rather than irrelevant billboards or clouds.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 188944,
+    "duration_ms": 10232,
+    "end_ms": 199176
+  },
+  {
+    "index": 100,
+    "speaker": "PROFESSOR",
+    "text": "First, we need to define our vocabulary - the set of all possible tokens our model can work with.",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 199176,
+    "duration_ms": 7524,
+    "end_ms": 206700
+  },
+  {
+    "index": 101,
+    "speaker": "PROFESSOR",
+    "text": "Great question! BOS tells the model \u201cstart generating now.\u201d EOS tells it \u201cstop generating.\u201d And PAD makes all sequences the same length for batch processing.",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 206700,
+    "duration_ms": 11436,
+    "end_ms": 218136
+  },
+  {
+    "index": 102,
+    "speaker": "STUDENT_2",
+    "text": "What does the transformer encoder do and when is it used?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 218136,
+    "duration_ms": 3860,
+    "end_ms": 221996
+  },
+  {
+    "index": 103,
+    "speaker": "PROFESSOR",
+    "text": "The encoder is the 'understanding' half of a transformer - it takes in a complete sequence and builds a rich representation of it. Like deeply reading and comprehending an entire essay before summarizing it. The encoder can see everything at once (no masking) because its job is pure comprehension, not generation. It creates the 'mental model' that other parts can use.",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 221996,
+    "duration_ms": 22188,
+    "end_ms": 244184
+  },
+  {
+    "index": 104,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: When your SO-ARM101 watches a complete demonstration of folding a shirt, the encoder processes all 500 timesteps simultaneously, building a rich understanding: 'this demo shows a collar-first fold, takes 18 seconds, requires bimanual coordination at step 200.' This encoded representation captures the ESSENCE of the demonstration for later use.",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 244184,
+    "duration_ms": 25736,
+    "end_ms": 269920
+  },
+  {
+    "index": 105,
+    "speaker": "STUDENT_4",
+    "text": "The encoder reads everything and builds deep understanding - like reading an entire essay before writing a summary. It's used when you need to comprehend before generating.",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 269920,
+    "duration_ms": 10024,
+    "end_ms": 279944
+  },
+  {
+    "index": 106,
+    "speaker": "PROFESSOR",
+    "text": "That's right. Comprehension first, generation second.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 279944,
+    "duration_ms": 5076,
+    "end_ms": 285020
+  },
+  {
+    "index": 107,
+    "speaker": "PROFESSOR",
+    "text": "Google's RT-2 uses a massive encoder to understand camera images and language commands together before its decoder generates any robot actions.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 285020,
+    "duration_ms": 10592,
+    "end_ms": 295612
+  },
+  {
+    "index": 108,
+    "speaker": "PROFESSOR",
+    "text": "Think about ChatGPT - when you ask a question, how does it know when to stop answering? It generates tokens until it produces an EOS token. Without it, LLMs would ramble forever!",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 295612,
+    "duration_ms": 12372,
+    "end_ms": 307984
+  },
+  {
+    "index": 109,
+    "speaker": "PROFESSOR",
+    "text": "Now, here\u2019s the first key insight: computers can\u2019t directly process words like \u201cred\u201d or \u201ccar.\u201d We need to convert them to numbers. This is called embedding .",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 307984,
+    "duration_ms": 11124,
+    "end_ms": 319108
+  },
+  {
+    "index": 110,
+    "speaker": "PROFESSOR",
+    "text": "An embedding is a vector representation of a token that captures its semantic meaning. Similar words have similar embeddings - \u201cking\u201d and \u201ccrown\u201d are close together, while \u201cking\u201d and \u201cbanana\u201d are far apart.",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 319108,
+    "duration_ms": 14364,
+    "end_ms": 333472
+  },
+  {
+    "index": 111,
+    "speaker": "STUDENT_3",
+    "text": "What's the difference between decoder-only and encoder-decoder Transformers, and when would you use each?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 333472,
+    "duration_ms": 6860,
+    "end_ms": 340332
+  },
+  {
+    "index": 112,
+    "speaker": "PROFESSOR",
+    "text": "Encoder-decoder is like a translator who reads the ENTIRE French sentence first (encoder), then writes the English version word-by-word (decoder). Decoder-only is like an author writing a story - they can only see what they've written so far, generating one word at a time while peeking backward. GPT uses decoder-only; original Transformers for translation used encoder-decoder.",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 340332,
+    "duration_ms": 23652,
+    "end_ms": 363984
+  },
+  {
+    "index": 113,
+    "speaker": "PROFESSOR",
+    "text": "For SO-ARM101 clothes folding, decoder-only makes sense: the robot generates actions sequentially, each new action based on everything before it. You wouldn't want the robot to 'see the future' - it must decide 'what's my next move?' using only past observations and actions, just like you fold a shirt moment-by-moment without knowing exactly how wrinkled the next section will be.",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 363984,
+    "duration_ms": 24056,
+    "end_ms": 388040
+  },
+  {
+    "index": 114,
+    "speaker": "STUDENT_1",
+    "text": "Encoder-decoder is for translation - understand the whole input first, then generate output. Decoder-only is for generation - just keep predicting what comes next based on what you've seen so far.",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 388040,
+    "duration_ms": 13552,
+    "end_ms": 401592
+  },
+  {
+    "index": 115,
+    "speaker": "PROFESSOR",
+    "text": "Precisely. The choice depends on whether you need to see everything before you start generating.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 401592,
+    "duration_ms": 6948,
+    "end_ms": 408540
+  },
+  {
+    "index": 116,
+    "speaker": "PROFESSOR",
+    "text": "ChatGPT is decoder-only because it generates text token by token. But BERT for understanding and T5 for translation use encoder-decoder because they need full context first.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 408540,
+    "duration_ms": 12632,
+    "end_ms": 421172
+  },
+  {
+    "index": 117,
+    "speaker": "PROFESSOR",
+    "text": "Imagine each token wearing a uniform - a vector of numbers that represents everything about that word. In our simple example, we might use 3-dimensional embeddings. In reality, models use 512, 768, or even higher dimensions.",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 421172,
+    "duration_ms": 16620,
+    "end_ms": 437792
+  },
+  {
+    "index": 118,
+    "speaker": "RAJESH",
+    "text": "So \u201cred\u201d gets mapped to something like [0.2, 0.8, 0.1] and \u201ccar\u201d gets [0.7, 0.3, 0.5]?",
+    "line_type": "dialogue",
+    "chapter": 2,
+    "start_ms": 437792,
+    "duration_ms": 14124,
+    "end_ms": 451916
+  },
+  {
+    "index": 119,
+    "speaker": "PROFESSOR",
+    "text": "Exactly! But there\u2019s a problem. Consider these two sentences:",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 451916,
+    "duration_ms": 5604,
+    "end_ms": 457520
+  },
+  {
+    "index": 120,
+    "speaker": "STUDENT_4",
+    "text": "What does it mean for words or concepts to be 'close' in embedding space?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 457520,
+    "duration_ms": 5084,
+    "end_ms": 462604
+  },
+  {
+    "index": 121,
+    "speaker": "PROFESSOR",
+    "text": "Embedding space is like a magical map where similar meanings are physically near each other. 'Happy' and 'joyful' would be neighbors, while 'happy' and 'refrigerator' would be far apart. The transformer learns to place things on this map so that relationships make sense - you can even do math like 'king - man + woman = queen'!",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 462604,
+    "duration_ms": 20076,
+    "end_ms": 482680
+  },
+  {
+    "index": 122,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: In your SO-ARM101's learned embedding space, 'grasp collar' and 'grip neckline' would be nearby points because they mean similar things. 'Fold left sleeve' and 'fold right sleeve' would be close but not identical - like neighboring houses. This helps the robot understand that different words can mean the same action.",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 482680,
+    "duration_ms": 23000,
+    "end_ms": 505680
+  },
+  {
+    "index": 123,
+    "speaker": "STUDENT_2",
+    "text": "Embedding space is like a semantic map where similar meanings cluster together. 'Happy' and 'joyful' are neighbors, while 'happy' and 'refrigerator' are in different neighborhoods entirely.",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 505680,
+    "duration_ms": 12568,
+    "end_ms": 518248
+  },
+  {
+    "index": 124,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. The geometry of embeddings captures meaning.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 518248,
+    "duration_ms": 5076,
+    "end_ms": 523324
+  },
+  {
+    "index": 125,
+    "speaker": "PROFESSOR",
+    "text": "This is how OpenAI's CLIP connects vision and language - images and text descriptions that mean similar things end up close together in the same embedding space.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 523324,
+    "duration_ms": 10496,
+    "end_ms": 533820
+  },
+  {
+    "index": 126,
+    "speaker": "STUDENT_1",
+    "text": "Why does the decoder need to 'mask' future tokens during training?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 533820,
+    "duration_ms": 4988,
+    "end_ms": 538808
+  },
+  {
+    "index": 127,
+    "speaker": "PROFESSOR",
+    "text": "Imagine taking a test but being able to peek at the answer key - you'd never actually learn! During training, the decoder sees the full correct sequence, but we mask future tokens so it can only 'peek' at what it's already generated. This forces it to genuinely predict instead of cheating.",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 538808,
+    "duration_ms": 17028,
+    "end_ms": 555836
+  },
+  {
+    "index": 128,
+    "speaker": "PROFESSOR",
+    "text": "When training your SO-ARM101 on a folding demonstration, the decoder learns to predict action 5 from actions 1-4 only - not by peeking at actions 6-10. This way, during actual robot operation, it genuinely knows how to predict the next move based only on what's happened so far.",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 555836,
+    "duration_ms": 19208,
+    "end_ms": 575044
+  },
+  {
+    "index": 129,
+    "speaker": "STUDENT_3",
+    "text": "It's like taking a test without peeking at the answer key. The decoder must learn to genuinely predict the next token, not just copy it from the future.",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 575044,
+    "duration_ms": 10240,
+    "end_ms": 585284
+  },
+  {
+    "index": 130,
+    "speaker": "PROFESSOR",
+    "text": "That's right. We're teaching prediction, not memorization.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 585284,
+    "duration_ms": 5220,
+    "end_ms": 590504
+  },
+  {
+    "index": 131,
+    "speaker": "PROFESSOR",
+    "text": "This masking is why language models can generate coherent text - if GPT-4 could peek ahead during training, it would never learn to actually reason about what comes next.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 590504,
+    "duration_ms": 11552,
+    "end_ms": 602056
+  },
+  {
+    "index": 132,
+    "speaker": "STUDENT_2",
+    "text": "What's the problem with point estimate policies for robot learning?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 602056,
+    "duration_ms": 4172,
+    "end_ms": 606228
+  },
+  {
+    "index": 133,
+    "speaker": "PROFESSOR",
+    "text": "Point estimate policies output ONE exact answer for each situation - like a GPS that gives you exactly one route. The problem? Real robot tasks often have multiple good solutions, and picking just one ignores useful alternatives. It's like insisting there's only one right way to fold a shirt.",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 606228,
+    "duration_ms": 18252,
+    "end_ms": 624480
+  },
+  {
+    "index": 134,
+    "speaker": "PROFESSOR",
+    "text": "Your SO-ARM101 needs to fold a towel. A point estimate policy says 'move left arm to X=0.3, Y=0.2, Z=0.1' - one specific answer. But wait - you could fold it left-to-right OR right-to-left, both are valid! Point estimates can't capture this. Worse, if the training data has BOTH styles, the policy might average them and output something useless in the middle.",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 624480,
+    "duration_ms": 27392,
+    "end_ms": 651872
+  },
+  {
+    "index": 135,
+    "speaker": "STUDENT_4",
+    "text": "Point estimates give you ONE answer, but many tasks have multiple valid solutions. Average 'go left' and 'go right' and you get 'go straight into the wall.'",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 651872,
+    "duration_ms": 10480,
+    "end_ms": 662352
+  },
+  {
+    "index": 136,
+    "speaker": "PROFESSOR",
+    "text": "Precisely. The multimodal targets problem kills naive approaches.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 662352,
+    "duration_ms": 5988,
+    "end_ms": 668340
+  },
+  {
+    "index": 137,
+    "speaker": "PROFESSOR",
+    "text": "This is exactly why Tesla's Optimus team switched from simple regression to generative models - reaching for objects has multiple valid arm paths, and averaging them fails catastrophically.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 668340,
+    "duration_ms": 12392,
+    "end_ms": 680732
+  },
+  {
+    "index": 138,
+    "speaker": "STUDENT_3",
+    "text": "What kind of data from a robot can we feed into a VAE?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 680732,
+    "duration_ms": 4772,
+    "end_ms": 685504
+  },
+  {
+    "index": 139,
+    "speaker": "PROFESSOR",
+    "text": "Robot data is rich and multimodal - it's not just images! You can feed in joint positions, gripper states, camera views, force sensors, even sequences of actions over time. The VAE learns to compress all this into a meaningful latent space that captures 'what's really going on.'",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 685504,
+    "duration_ms": 17940,
+    "end_ms": 703444
+  },
+  {
+    "index": 140,
+    "speaker": "PROFESSOR",
+    "text": "For your SO-ARM101 doing clothes folding, you might feed the VAE: current positions of all 12 joints (6 per arm), gripper open/close states, a camera image of the fabric, and the last 10 timesteps of movement. The VAE compresses this into maybe 32 numbers that capture the 'folding state' - is it early-fold? mid-fold? which technique? The robot can then use this compact representation to decide what to do next.",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 703444,
+    "duration_ms": 26912,
+    "end_ms": 730356
+  },
+  {
+    "index": 141,
+    "speaker": "STUDENT_1",
+    "text": "Everything! Joint angles, gripper states, camera images, force sensors, even sequences of actions. The VAE learns to compress all of it into a unified latent space.",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 730356,
+    "duration_ms": 13672,
+    "end_ms": 744028
+  },
+  {
+    "index": 142,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. The multimodal nature of robot data is a feature, not a bug.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 744028,
+    "duration_ms": 6636,
+    "end_ms": 750664
+  },
+  {
+    "index": 143,
+    "speaker": "PROFESSOR",
+    "text": "Stanford's Mobile ALOHA feeds both arm proprioception AND camera images into its VAE - the latent space captures the relationship between what the robot sees and how it should move.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 750664,
+    "duration_ms": 12224,
+    "end_ms": 762888
+  },
+  {
+    "index": 144,
+    "speaker": "STUDENT_4",
+    "text": "What are the main building blocks in a Transformer architecture?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 762888,
+    "duration_ms": 3836,
+    "end_ms": 766724
+  },
+  {
+    "index": 145,
+    "speaker": "PROFESSOR",
+    "text": "A Transformer has three main parts: (1) Input embedding that converts raw data into vectors with position info, (2) Stacked attention layers where tokens 'talk' to each other, and (3) Output head that produces the final answer. It's like a conference where ideas get shared, refined through discussion, then voted into a final decision.",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 766724,
+    "duration_ms": 21180,
+    "end_ms": 787904
+  },
+  {
+    "index": 146,
+    "speaker": "PROFESSOR",
+    "text": "For your SO-ARM101: First, the camera image patches and joint positions get embedded into tokens (everyone gets a name tag). Then through multiple attention layers, the image tokens 'discuss' with the proprioception tokens ('Hey arm, I see a wrinkle at coordinate X' / 'Got it, I'm positioned to reach that'). Finally, the output head predicts the next action: 'Move left gripper 2cm right, close by 5mm.'",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 787904,
+    "duration_ms": 27200,
+    "end_ms": 815104
+  },
+  {
+    "index": 147,
+    "speaker": "STUDENT_2",
+    "text": "Three parts: input embedding converts raw data to vectors with position info, stacked attention layers let tokens communicate, and output heads convert back to predictions.",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 815104,
+    "duration_ms": 11152,
+    "end_ms": 826256
+  },
+  {
+    "index": 148,
+    "speaker": "PROFESSOR",
+    "text": "That's the complete picture. Everything else is variations on these themes.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 826256,
+    "duration_ms": 5676,
+    "end_ms": 831932
+  },
+  {
+    "index": 149,
+    "speaker": "PROFESSOR",
+    "text": "These same three blocks appear in every modern robot brain - from Waymo's perception system to Boston Dynamics' locomotion controllers. The recipe is universal.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 831932,
+    "duration_ms": 10976,
+    "end_ms": 842908
+  },
+  {
+    "index": 150,
+    "speaker": "STUDENT_1",
+    "text": "Why does input embedding need BOTH token and position information?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 842908,
+    "duration_ms": 4484,
+    "end_ms": 847392
+  },
+  {
+    "index": 151,
+    "speaker": "PROFESSOR",
+    "text": "Token embedding captures WHAT something is, position embedding captures WHERE it is in the sequence. Without position, the Transformer sees a bag of items with no order - like reading a sentence with all words shuffled. You need both the meaning AND the arrangement.",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 847392,
+    "duration_ms": 15204,
+    "end_ms": 862596
+  },
+  {
+    "index": 152,
+    "speaker": "PROFESSOR",
+    "text": "Your SO-ARM101 receives a sequence: [image_patch_1, image_patch_2, ..., joint_1, joint_2, ...]. The token embedding converts each into a meaningful vector (this patch shows fabric, this joint is at 45\u00b0). The position embedding adds 'and this is the 1st thing, this is the 2nd thing...' Without positions, the robot couldn't tell if a wrinkle appears in patch 5 or patch 50 - totally different spatial locations!",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 862596,
+    "duration_ms": 31256,
+    "end_ms": 893852
+  },
+  {
+    "index": 153,
+    "speaker": "STUDENT_4",
+    "text": "Token embedding says WHAT something is, position embedding says WHERE it is in the sequence. Without both, 'dog bites man' looks exactly like 'man bites dog.'",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 893852,
+    "duration_ms": 10936,
+    "end_ms": 904788
+  },
+  {
+    "index": 154,
+    "speaker": "PROFESSOR",
+    "text": "Precisely. Order matters, and the model needs to be told that explicitly.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 904788,
+    "duration_ms": 6252,
+    "end_ms": 911040
+  },
+  {
+    "index": 155,
+    "speaker": "PROFESSOR",
+    "text": "Figure 01's humanoid uses this for sequential manipulation - the position embedding tells the model that step 3 of a task comes AFTER step 2, not just that both exist.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 911040,
+    "duration_ms": 11960,
+    "end_ms": 923000
+  }
+]

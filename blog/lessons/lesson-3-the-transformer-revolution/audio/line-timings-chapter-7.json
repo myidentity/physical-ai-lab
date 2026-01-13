@@ -1,0 +1,372 @@
+[
+  {
+    "index": 385,
+    "speaker": "PROFESSOR",
+    "text": "Chapter 7. .",
+    "line_type": "transition",
+    "chapter": 7,
+    "start_ms": 0,
+    "duration_ms": 2680,
+    "end_ms": 2680
+  },
+  {
+    "index": 386,
+    "speaker": "PROFESSOR",
+    "text": "Now for the payoff - how does all this apply to robotics?",
+    "line_type": "lecture",
+    "chapter": 7,
+    "start_ms": 2680,
+    "duration_ms": 5220,
+    "end_ms": 7900
+  },
+  {
+    "index": 387,
+    "speaker": "PROFESSOR",
+    "text": "Remember our SO-ARM101 setup. The robot\u2019s observation includes: - Images from cameras (480\u00d7640\u00d73 pixels) - Proprioceptive data - 6 joint angles per arm",
+    "line_type": "lecture",
+    "chapter": 7,
+    "start_ms": 7900,
+    "duration_ms": 14268,
+    "end_ms": 22168
+  },
+  {
+    "index": 388,
+    "speaker": "PROFESSOR",
+    "text": "And the output is a sequence of actions - target joint positions over time.",
+    "line_type": "lecture",
+    "chapter": 7,
+    "start_ms": 22168,
+    "duration_ms": 6108,
+    "end_ms": 28276
+  },
+  {
+    "index": 389,
+    "speaker": "STUDENT_3",
+    "text": "What is SmallVA and why is its 'small' size actually a big deal for robotics?",
+    "line_type": "question",
+    "chapter": 7,
+    "start_ms": 28276,
+    "duration_ms": 6356,
+    "end_ms": 34632
+  },
+  {
+    "index": 390,
+    "speaker": "PROFESSOR",
+    "text": "SmallVA is a compact vision-language-action model that can understand images and text together, then output robot actions. Think of it like a Swiss Army knife that fits in your pocket - it does vision, language, AND action in one small package that can actually run on modest hardware, unlike giant models that need expensive GPU clusters.",
+    "line_type": "answer",
+    "chapter": 7,
+    "start_ms": 34632,
+    "duration_ms": 20580,
+    "end_ms": 55212
+  },
+  {
+    "index": 391,
+    "speaker": "PROFESSOR",
+    "text": "Your SO-ARM101 could use a SmallVA-style model to watch a shirt, hear 'fold this neatly,' and figure out the arm movements - all from one compact brain that runs on your laptop instead of needing a supercomputer. It's like having a helpful assistant who can see, listen, and act, but doesn't need a whole office building to think.",
+    "line_type": "example",
+    "chapter": 7,
+    "start_ms": 55212,
+    "duration_ms": 20144,
+    "end_ms": 75356
+  },
+  {
+    "index": 392,
+    "speaker": "STUDENT_1",
+    "text": "It's a compact vision-language-action model that runs on normal hardware. Most robots can't carry a data center - SmallVA brings foundation model capabilities to edge devices.",
+    "line_type": "echo",
+    "chapter": 7,
+    "start_ms": 75356,
+    "duration_ms": 12472,
+    "end_ms": 87828
+  },
+  {
+    "index": 393,
+    "speaker": "PROFESSOR",
+    "text": "Precisely. Small doesn't mean weak - it means practical.",
+    "line_type": "acknowledgment",
+    "chapter": 7,
+    "start_ms": 87828,
+    "duration_ms": 5340,
+    "end_ms": 93168
+  },
+  {
+    "index": 394,
+    "speaker": "PROFESSOR",
+    "text": "This is why edge AI matters for robotics - Boston Dynamics' robots need to think onboard, not phone home to a server. SmallVA-style models make that possible.",
+    "line_type": "consequence",
+    "chapter": 7,
+    "start_ms": 93168,
+    "duration_ms": 11456,
+    "end_ms": 104624
+  },
+  {
+    "index": 395,
+    "speaker": "RAJESH",
+    "text": "So robot control is sequence-to-sequence! Observations come in as a sequence (image frames, joint states), and we output a sequence of actions!",
+    "line_type": "dialogue",
+    "chapter": 7,
+    "start_ms": 104624,
+    "duration_ms": 11100,
+    "end_ms": 115724
+  },
+  {
+    "index": 396,
+    "speaker": "PROFESSOR",
+    "text": "Exactly! Robotics is sequence modeling . And transformers are exceptional at sequences.",
+    "line_type": "lecture",
+    "chapter": 7,
+    "start_ms": 115724,
+    "duration_ms": 7284,
+    "end_ms": 123008
+  },
+  {
+    "index": 397,
+    "speaker": "PROFESSOR",
+    "text": "Now let me show you how modern robotics architectures use everything we learned:",
+    "line_type": "lecture",
+    "chapter": 7,
+    "start_ms": 123008,
+    "duration_ms": 5964,
+    "end_ms": 128972
+  },
+  {
+    "index": 398,
+    "speaker": "STUDENT_4",
+    "text": "What makes GRoot special as a 'generalist robot transformer' and why does that matter?",
+    "line_type": "question",
+    "chapter": 7,
+    "start_ms": 128972,
+    "duration_ms": 5756,
+    "end_ms": 134728
+  },
+  {
+    "index": 399,
+    "speaker": "PROFESSOR",
+    "text": "GRoot (Generalist Robot Transformer) is designed to be a robot foundation model that can handle many different tasks and robot types without starting from scratch each time. It's like raising a child who learns general skills - walking, grabbing, balancing - that transfer to countless specific activities, rather than training a specialist who only knows one trick.",
+    "line_type": "answer",
+    "chapter": 7,
+    "start_ms": 134728,
+    "duration_ms": 21036,
+    "end_ms": 155764
+  },
+  {
+    "index": 400,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: Instead of training your SO-ARM101 separately for folding shirts, folding towels, and folding pants, GRoot's philosophy would give your robot general 'cloth manipulation intuition' that transfers across all folding tasks. When you show it a new blanket, it thinks 'this is like that towel thing I learned' rather than starting completely confused.",
+    "line_type": "example",
+    "chapter": 7,
+    "start_ms": 155764,
+    "duration_ms": 23888,
+    "end_ms": 179652
+  },
+  {
+    "index": 401,
+    "speaker": "STUDENT_2",
+    "text": "GRoot aims to be one model for many robots and tasks, not a specialist for each. Train once, deploy everywhere - like how one human can learn many skills.",
+    "line_type": "echo",
+    "chapter": 7,
+    "start_ms": 179652,
+    "duration_ms": 10864,
+    "end_ms": 190516
+  },
+  {
+    "index": 402,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. Generalization is the holy grail of robot learning.",
+    "line_type": "acknowledgment",
+    "chapter": 7,
+    "start_ms": 190516,
+    "duration_ms": 5628,
+    "end_ms": 196144
+  },
+  {
+    "index": 403,
+    "speaker": "PROFESSOR",
+    "text": "NVIDIA's GRoot project represents the industry bet on generalist models - instead of training separate models for each task, train one massive model that adapts to everything.",
+    "line_type": "consequence",
+    "chapter": 7,
+    "start_ms": 196144,
+    "duration_ms": 12320,
+    "end_ms": 208464
+  },
+  {
+    "index": 404,
+    "speaker": "PROFESSOR",
+    "text": "See how the encoder processes images and text (task instructions) using self-attention? The output becomes Keys and Values for the decoder. The decoder generates actions through cross-attention to these observations.",
+    "line_type": "lecture",
+    "chapter": 7,
+    "start_ms": 208464,
+    "duration_ms": 13428,
+    "end_ms": 221892
+  },
+  {
+    "index": 405,
+    "speaker": "RAJESH",
+    "text": "And the Q, K, V labels make sense now! K and V come from the encoder, Q comes from the decoder.",
+    "line_type": "dialogue",
+    "chapter": 7,
+    "start_ms": 221892,
+    "duration_ms": 9084,
+    "end_ms": 230976
+  },
+  {
+    "index": 406,
+    "speaker": "STUDENT_1",
+    "text": "What is OpenVLA and why is the 'Open' part so important for robotics research?",
+    "line_type": "question",
+    "chapter": 7,
+    "start_ms": 230976,
+    "duration_ms": 6164,
+    "end_ms": 237140
+  },
+  {
+    "index": 407,
+    "speaker": "PROFESSOR",
+    "text": "OpenVLA is an open-source Vision-Language-Action model that anyone can use, modify, and improve. Imagine if only one company made cars and kept the engine design secret - progress would be slow. OpenVLA is like sharing the engine blueprints so thousands of mechanics worldwide can tinker, improve, and adapt it for their specific needs.",
+    "line_type": "answer",
+    "chapter": 7,
+    "start_ms": 237140,
+    "duration_ms": 20772,
+    "end_ms": 257912
+  },
+  {
+    "index": 408,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: Because OpenVLA is open, you can download it, fine-tune it on your specific SO-ARM101 clothes-folding videos, and share your improvements back. Your discovery that 'approaching sleeves sideways works better' could help someone in Japan training their robot on kimonos. Open research multiplies everyone's efforts.",
+    "line_type": "example",
+    "chapter": 7,
+    "start_ms": 257912,
+    "duration_ms": 22352,
+    "end_ms": 280264
+  },
+  {
+    "index": 409,
+    "speaker": "STUDENT_4",
+    "text": "OpenVLA is an open-source vision-language-action model anyone can use and modify. Open means faster progress - the whole community can improve it instead of each lab starting from scratch.",
+    "line_type": "echo",
+    "chapter": 7,
+    "start_ms": 280264,
+    "duration_ms": 12136,
+    "end_ms": 292400
+  },
+  {
+    "index": 410,
+    "speaker": "PROFESSOR",
+    "text": "That's right. Open source accelerates the entire field.",
+    "line_type": "acknowledgment",
+    "chapter": 7,
+    "start_ms": 292400,
+    "duration_ms": 5124,
+    "end_ms": 297524
+  },
+  {
+    "index": 411,
+    "speaker": "PROFESSOR",
+    "text": "Just like Linux powers most servers and PyTorch powers most research, open models like OpenVLA could become the standard foundation for robot learning.",
+    "line_type": "consequence",
+    "chapter": 7,
+    "start_ms": 297524,
+    "duration_ms": 10832,
+    "end_ms": 308356
+  },
+  {
+    "index": 412,
+    "speaker": "PROFESSOR",
+    "text": "You\u2019re reading architecture diagrams like a native speaker!",
+    "line_type": "lecture",
+    "chapter": 7,
+    "start_ms": 308356,
+    "duration_ms": 4668,
+    "end_ms": 313024
+  },
+  {
+    "index": 413,
+    "speaker": "PROFESSOR",
+    "text": "GRoot uses a Vision Language Model (which is just a transformer processing both images and text) to create an encoding. Then a \u201cdiffusion transformer\u201d generates actions. We\u2019ll learn about diffusion models in a later lesson - just note that transformers appear everywhere.",
+    "line_type": "lecture",
+    "chapter": 7,
+    "start_ms": 313024,
+    "duration_ms": 17052,
+    "end_ms": 330076
+  },
+  {
+    "index": 414,
+    "speaker": "STUDENT_2",
+    "text": "How does the ACT (Action Chunking Transformer) combine transformer building blocks for robot control?",
+    "line_type": "question",
+    "chapter": 7,
+    "start_ms": 330076,
+    "duration_ms": 7388,
+    "end_ms": 337464
+  },
+  {
+    "index": 415,
+    "speaker": "PROFESSOR",
+    "text": "ACT stacks transformer components like LEGO blocks: a vision encoder processes camera images, attention layers figure out what's important, and a decoder generates sequences of robot actions (action chunks) rather than one movement at a time. It's like a chef who plans the next 5 cooking steps together instead of deciding each motion individually.",
+    "line_type": "answer",
+    "chapter": 7,
+    "start_ms": 337464,
+    "duration_ms": 21276,
+    "end_ms": 358740
+  },
+  {
+    "index": 416,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: When your SO-ARM101 sees a crumpled shirt, ACT's vision encoder says 'shirt, collar here, sleeves there.' The attention layers decide 'collar is most important for this fold.' Then the decoder doesn't just output 'move left arm 1cm' - it chunks out the whole 'reach, grasp, pull' sequence together, making movements smooth and coordinated.",
+    "line_type": "example",
+    "chapter": 7,
+    "start_ms": 358740,
+    "duration_ms": 26216,
+    "end_ms": 384956
+  },
+  {
+    "index": 417,
+    "speaker": "STUDENT_3",
+    "text": "ACT stacks vision encoder for seeing, attention for reasoning, and decoder for generating action chunks. The chunking is key - predict multiple future actions at once for temporal smoothness.",
+    "line_type": "echo",
+    "chapter": 7,
+    "start_ms": 384956,
+    "duration_ms": 13648,
+    "end_ms": 398604
+  },
+  {
+    "index": 418,
+    "speaker": "PROFESSOR",
+    "text": "Precisely. Action chunking is what makes trajectories smooth instead of jerky.",
+    "line_type": "acknowledgment",
+    "chapter": 7,
+    "start_ms": 398604,
+    "duration_ms": 6252,
+    "end_ms": 404856
+  },
+  {
+    "index": 419,
+    "speaker": "PROFESSOR",
+    "text": "Stanford's ALOHA uses ACT for bimanual manipulation - the action chunks ensure both arms move smoothly together, not in jerky independent motions.",
+    "line_type": "consequence",
+    "chapter": 7,
+    "start_ms": 404856,
+    "duration_ms": 11408,
+    "end_ms": 416264
+  },
+  {
+    "index": 420,
+    "speaker": "PROFESSOR",
+    "text": "OpenVLA uses a 7-billion parameter LLaMA model (decoder-only transformer) to generate actions. Images are projected to the same embedding space as language tokens, and the combined sequence is processed autoregressively.",
+    "line_type": "lecture",
+    "chapter": 7,
+    "start_ms": 416264,
+    "duration_ms": 15132,
+    "end_ms": 431396
+  },
+  {
+    "index": 421,
+    "speaker": "RAJESH",
+    "text": "They\u2019re all using the same building blocks - just arranged differently! And I can actually follow what\u2019s happening now.",
+    "line_type": "dialogue",
+    "chapter": 7,
+    "start_ms": 431396,
+    "duration_ms": 7668,
+    "end_ms": 439064
+  }
+]

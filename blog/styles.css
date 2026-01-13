@@ -712,6 +712,10 @@ input[type="submit"] {
   background-image: url('/posts/2026-01-04-lesson-2-understanding-policy-learning/thumbnail.jpg');
 }
 
+.sidebar-item a[href*="lesson-3-the-transformer-revolution"]::before {
+  background-image: url('/posts/2026-01-11-lesson-3-the-transformer-revolution/images/thumbnail.png');
+}
+
 /* Go2-W Training Workshop Series */
 .sidebar-item a[href*="isaac-workshop-part1"]::before {
   background-image: url('/posts/2025-12-18-isaac-workshop-part1/thumbnail.jpg');

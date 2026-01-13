@@ -1,0 +1,1722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classroom Experience - lesson-3</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0f;
+            color: #e0e0e0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        .player-container {
+            text-align: center;
+            max-width: 900px;
+            width: 100%;
+            padding: 30px 40px;
+        }
+
+        h1 {
+            font-size: 1.3rem;
+            color: #00d9ff;
+            margin-bottom: 8px;
+            font-weight: 400;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        .status-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .status {
+            font-size: 1.5rem;
+            color: #00ff88;
+            font-weight: 500;
+        }
+
+        .status.paused {
+            color: #ffa500;
+        }
+
+        .time-display {
+            font-size: 1.2rem;
+            font-family: monospace;
+            color: #888;
+        }
+
+        .speed-display {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .chapter-display {
+            color: #00d9ff;
+            font-size: 1rem;
+            margin-bottom: 25px;
+        }
+
+        /* Waveform Visualization */
+        .waveform-container {
+            width: 100%;
+            height: 120px;
+            background: #111118;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #waveform {
+            width: 100%;
+            height: 100%;
+        }
+
+        .waveform-label {
+            position: absolute;
+            top: 8px;
+            left: 12px;
+            font-size: 0.7rem;
+            color: #444;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Text Display */
+        .text-display {
+            background: #111118;
+            border-radius: 12px;
+            padding: 25px 30px;
+            min-height: 180px;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .speaker-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .speaker-label.professor {
+            color: #00d9ff;
+        }
+
+        .speaker-label.student {
+            color: #ff6b9d;
+        }
+
+        .spoken-text {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: #e0e0e0;
+        }
+
+        .line-type {
+            font-size: 0.7rem;
+            margin-top: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .line-type.question { background: #ff6b9d22; color: #ff6b9d; }
+        .line-type.answer { background: #00d9ff22; color: #00d9ff; }
+        .line-type.example { background: #00ff8822; color: #00ff88; }
+        .line-type.echo { background: #ffa50022; color: #ffa500; }
+        .line-type.acknowledgment { background: #88888822; color: #aaa; }
+        .line-type.consequence { background: #a855f722; color: #a855f7; }
+        .line-type.lecture { background: #33333322; color: #666; }
+        .line-type.transition { background: #4a90d922; color: #4a90d9; }
+
+        /* Progress bar with segment markers */
+        .progress-container {
+            width: 100%;
+            height: 24px;
+            background: #1a1a25;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            position: relative;
+            overflow: visible; /* Allow tooltips to show above segments */
+        }
+
+        .progress-segments {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            overflow: hidden; /* Clip segment content but allow tooltip overflow */
+            border-radius: 6px;
+        }
+
+        .progress-segment {
+            height: 100%;
+            position: relative;
+            transition: all 0.2s ease;
+            border-right: 1px solid rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+        }
+
+        .progress-segment:last-child {
+            border-right: none;
+        }
+
+        .progress-segment:hover {
+            filter: brightness(1.3);
+            z-index: 5;
+        }
+
+        .progress-segment.lecture {
+            background: linear-gradient(to bottom, #4a6a8a 0%, #3a5a7a 100%);  /* Clear BLUE */
+        }
+
+        .progress-segment.question {
+            background: linear-gradient(to bottom, #9a4a9a 0%, #7a3a7a 100%);  /* Clear MAGENTA/PINK */
+        }
+
+        /* All Q&A segments same color - no alternating */
+        /* Segment labels removed - using unified hover tooltip instead */
+
+        .progress-playhead {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: #00ff88;
+            box-shadow: 0 0 8px #00ff88;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .progress-time-tooltip {
+            position: fixed; /* Use fixed to escape all parent constraints */
+            background: rgba(0, 0, 0, 0.95);
+            color: #e0e0e0;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s ease;
+            max-width: 400px;
+            min-width: 150px;
+            text-align: left;
+            border: 1px solid #444;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+            z-index: 1000; /* Above everything */
+            white-space: normal;
+        }
+
+        .progress-time-tooltip .tooltip-time {
+            font-family: monospace;
+            color: #00d9ff;
+            font-size: 0.8rem;
+            margin-bottom: 4px;
+        }
+
+        .progress-time-tooltip .tooltip-type {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            margin-right: 8px;
+        }
+
+        .progress-time-tooltip .tooltip-type.lecture {
+            background: #3a4a5a;
+            color: #8ab4d4;
+        }
+
+        .progress-time-tooltip .tooltip-type.question {
+            background: #5a3a5a;
+            color: #d48ab4;
+        }
+
+        .progress-time-tooltip .tooltip-text {
+            color: #ccc;
+            font-size: 0.7rem;
+            line-height: 1.3;
+            margin-top: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        /* Tooltip opacity controlled by JavaScript mouseenter/mouseleave */
+
+        /* Controls Reference */
+        .controls-overlay {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(20, 20, 30, 0.95);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 15px 25px;
+            font-size: 0.75rem;
+            transition: opacity 0.3s ease;
+            z-index: 100;
+        }
+
+        .controls-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .controls-overlay h3 {
+            color: #00d9ff;
+            margin-bottom: 10px;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px 30px;
+        }
+
+        .control-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .control-key {
+            color: #00ff88;
+            font-family: monospace;
+            min-width: 80px;
+        }
+
+        .control-action {
+            color: #999;
+        }
+
+        .hide-hint {
+            color: #555;
+            font-size: 0.7rem;
+            margin-top: 10px;
+            text-align: center;
+            grid-column: span 2;
+        }
+
+        /* Feedback indicator */
+        .feedback {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            color: #00d9ff;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+            z-index: 200;
+        }
+
+        .feedback.show {
+            opacity: 1;
+        }
+
+        /* Chapter Navigation */
+        .chapter-nav {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .nav-btn {
+            background: #1a1a25;
+            border: 1px solid #333;
+            color: #888;
+            padding: 10px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            border-color: #00d9ff;
+            color: #00d9ff;
+            background: #1a1a30;
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .nav-icon {
+            font-size: 0.9rem;
+        }
+
+        .chapter-select {
+            background: #1a1a25;
+            border: 1px solid #444;
+            color: #00d9ff;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            min-width: 220px;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2300d9ff'%3E%3Cpath d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 35px;
+        }
+
+        .chapter-select:hover {
+            border-color: #00d9ff;
+        }
+
+        .chapter-select:focus {
+            outline: none;
+            border-color: #00ff88;
+        }
+
+        .chapter-select option {
+            background: #1a1a25;
+            color: #e0e0e0;
+            padding: 10px;
+        }
+
+        .chapter-select option:disabled {
+            color: #555;
+        }
+
+        /* Chapter status indicator */
+        .chapter-status {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .chapter-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #333;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .chapter-dot.available {
+            background: #444;
+        }
+
+        .chapter-dot.available:hover {
+            background: #00d9ff;
+        }
+
+        .chapter-dot.current {
+            background: #00d9ff;
+            box-shadow: 0 0 8px #00d9ff;
+        }
+
+        .chapter-dot.completed {
+            background: #00ff88;
+        }
+
+        /* Loop Mode Controls */
+        .loop-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .loop-btn {
+            background: #1a1a25;
+            border: 1px solid #333;
+            color: #666;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .loop-btn:hover {
+            border-color: #555;
+            color: #888;
+        }
+
+        .loop-btn.active {
+            border-color: #00d9ff;
+            color: #00d9ff;
+            background: #1a1a30;
+        }
+
+        .loop-btn .loop-icon {
+            font-size: 0.9rem;
+        }
+
+        .loop-label {
+            color: #555;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+    <div class="player-container">
+        <h1>Lesson 3: The Transformer Revolution</h1>
+        <p class="subtitle">Close your eyes. Listen. Let insights land.</p>
+
+        <!-- Chapter Navigation -->
+        <div class="chapter-nav">
+            <button class="nav-btn" id="prevChapter" onclick="goToPreviousChapter()">
+                <span class="nav-icon">◀</span>
+                <span class="nav-label">Prev</span>
+            </button>
+            <select id="chapterSelect" class="chapter-select" onchange="goToChapter(this.value)">
+                                <option value="0">0. Chapter 0</option>
+                <option value="1" selected>1. The Revolution Arrives</option>
+                <option value="2">2. Speaking the Language</option>
+                <option value="3">3. The Attention Mechanism</option>
+                <option value="4">4. The Encoder</option>
+                <option value="5">5. The Decoder</option>
+                <option value="6">6. Vision Transformers</option>
+                <option value="7">7. Transformers Meet Robots</option>
+            </select>
+            <button class="nav-btn" id="nextChapter" onclick="goToNextChapter()">
+                <span class="nav-label">Next</span>
+                <span class="nav-icon">▶</span>
+            </button>
+        </div>
+
+        <!-- Loop Mode Controls -->
+        <div class="loop-controls">
+            <span class="loop-label">Loop:</span>
+            <button class="loop-btn" id="loopCourse" onclick="setLoopMode('course')" title="Play all chapters continuously">
+                <span class="loop-icon">🔁</span>
+                <span>Course</span>
+            </button>
+            <button class="loop-btn" id="loopChapter" onclick="setLoopMode('chapter')" title="Repeat current chapter">
+                <span class="loop-icon">🔂</span>
+                <span>Chapter</span>
+            </button>
+        </div>
+
+        <div class="status-row">
+            <div class="status" id="status">PAUSED</div>
+            <div class="time-display">
+                <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
+            </div>
+            <div class="speed-display">Speed: <span id="speedDisplay">1.0x</span></div>
+        </div>
+
+        <div class="chapter-display" id="chapterDisplay">Chapter 1: The Revolution Arrives</div>
+
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-segments" id="progressSegments"></div>
+            <div class="progress-playhead" id="progressPlayhead"></div>
+            <div class="progress-time-tooltip" id="progressTooltip">0:00</div>
+        </div>
+
+        <div class="waveform-container">
+            <span class="waveform-label">Audio Waveform</span>
+            <canvas id="waveform"></canvas>
+        </div>
+
+        <div class="text-display">
+            <div class="speaker-label professor" id="speakerLabel">PROFESSOR</div>
+            <div class="spoken-text" id="spokenText">Loading script...</div>
+            <div class="line-type" id="lineType"></div>
+        </div>
+    </div>
+
+    <div class="controls-overlay" id="controlsOverlay">
+        <h3>Keyboard Controls</h3>
+        <div class="controls-grid">
+            <div class="control-row">
+                <span class="control-key">SPACE</span>
+                <span class="control-action">Play / Pause</span>
+            </div>
+            <div class="control-row">
+                <span class="control-key">← →</span>
+                <span class="control-action">Prev/Next topic</span>
+            </div>
+            <div class="control-row">
+                <span class="control-key">PgUp/PgDn</span>
+                <span class="control-action">Prev/Next chapter</span>
+            </div>
+            <div class="control-row">
+                <span class="control-key">↑ ↓</span>
+                <span class="control-action">Speed ±0.25x</span>
+            </div>
+            <div class="control-row">
+                <span class="control-key">SCROLL</span>
+                <span class="control-action">Scrub ±10s</span>
+            </div>
+            <div class="control-row">
+                <span class="control-key">R</span>
+                <span class="control-action">Reset speed</span>
+            </div>
+            <div class="control-row">
+                <span class="control-key">L</span>
+                <span class="control-action">Cycle loop mode</span>
+            </div>
+            <p class="hide-hint">Press H to hide</p>
+        </div>
+    </div>
+
+    <div class="feedback" id="feedback"></div>
+
+    <audio id="audio" preload="auto">
+        <source src="audio/lesson-3-chapter-1.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════════
+        // Chapter Configuration
+        // ═══════════════════════════════════════════════════════════════════
+
+        const CHAPTERS = [{"id": 0, "title": "Chapter 0", "available": false}, {"id": 1, "title": "The Revolution Arrives", "available": true}, {"id": 2, "title": "Speaking the Language", "available": true}, {"id": 3, "title": "The Attention Mechanism", "available": true}, {"id": 4, "title": "The Encoder", "available": true}, {"id": 5, "title": "The Decoder", "available": true}, {"id": 6, "title": "Vision Transformers", "available": true}, {"id": 7, "title": "Transformers Meet Robots", "available": true}];
+
+        const LESSON_SLUG = 'lesson-3';
+        let currentChapter = 1;
+
+        function getChapterAudioPath(chapterId) {
+            return `audio/${LESSON_SLUG}-chapter-${chapterId}.mp3`;
+        }
+
+        function getChapterTimingsPath(chapterId) {
+            return `audio/line-timings-chapter-${chapterId}.json`;
+        }
+
+        function goToChapter(chapterId, autoPlay = null) {
+            chapterId = parseInt(chapterId);
+            const chapter = CHAPTERS.find(ch => ch.id === chapterId);
+
+            if (!chapter || !chapter.available) {
+                playErrorSound();
+                showFeedback('Not available yet');
+                // Reset dropdown to current chapter
+                document.getElementById('chapterSelect').value = currentChapter;
+                return;
+            }
+
+            if (chapterId === currentChapter) return;
+
+            // If autoPlay is explicitly set, use it; otherwise check if currently playing
+            // Note: When audio ends, audio.paused becomes true BEFORE the 'ended' event fires,
+            // so we need to allow explicit autoPlay=true to override this
+            const shouldPlay = autoPlay !== null ? autoPlay : !audio.paused;
+            currentChapter = chapterId;
+            lastNavigatedBlockIdx = -1; // Reset navigation tracking on chapter change
+
+            // Update audio source
+            audio.src = getChapterAudioPath(chapterId);
+            audio.load();
+
+            // Reload timings
+            loadScript(getChapterTimingsPath(chapterId));
+
+            // Update UI
+            document.getElementById('chapterSelect').value = chapterId;
+            updateChapterNavButtons();
+
+            audio.addEventListener('loadedmetadata', function onLoad() {
+                audio.currentTime = 0;
+                if (shouldPlay) {
+                    audio.play();
+                }
+                audio.removeEventListener('loadedmetadata', onLoad);
+            });
+
+            showFeedback(`Ch ${chapterId}: ${chapter.title}`);
+            playTone(600, 0.15);
+        }
+
+        function goToPreviousChapter() {
+            // Find previous available chapter
+            for (let i = currentChapter - 1; i >= 0; i--) {
+                if (CHAPTERS[i] && CHAPTERS[i].available) {
+                    goToChapter(i);
+                    return;
+                }
+            }
+            playErrorSound();
+            showFeedback('No previous chapter');
+        }
+
+        function goToNextChapter() {
+            // Find next available chapter
+            for (let i = currentChapter + 1; i < CHAPTERS.length; i++) {
+                if (CHAPTERS[i] && CHAPTERS[i].available) {
+                    goToChapter(i);
+                    return;
+                }
+            }
+            playErrorSound();
+            showFeedback('No next chapter');
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // Loop Mode Configuration
+        // ═══════════════════════════════════════════════════════════════════
+
+        // Loop modes: 'off' (stop after chapter), 'course' (continue to next chapter), 'chapter' (repeat current)
+        let loopMode = localStorage.getItem('loopMode') || 'course'; // Default to continue through course
+
+        function setLoopMode(mode) {
+            // Toggle behavior: clicking the active mode turns it off
+            if (loopMode === mode && mode !== 'off') {
+                mode = 'off';
+            }
+            loopMode = mode;
+            localStorage.setItem('loopMode', mode);
+            updateLoopButtons();
+
+            const modeNames = { course: 'Course Loop', chapter: 'Chapter Loop', off: 'No Loop' };
+            showFeedback(modeNames[mode]);
+            playTone(mode === 'off' ? 400 : 600, 0.15);
+        }
+
+        function updateLoopButtons() {
+            document.getElementById('loopCourse').classList.toggle('active', loopMode === 'course');
+            document.getElementById('loopChapter').classList.toggle('active', loopMode === 'chapter');
+        }
+
+        // Auto-continue to next chapter when current ends
+        function handleChapterEnd() {
+            console.log('Chapter ended, loop mode:', loopMode);
+
+            if (loopMode === 'chapter') {
+                // Repeat current chapter
+                audio.currentTime = 0;
+                audio.play();
+                showFeedback('🔂 Repeating chapter');
+            } else if (loopMode === 'off') {
+                // Off mode - stop after chapter ends
+                showFeedback('✓ Chapter complete');
+            } else {
+                // Course mode - advance to next chapter
+                let nextAvailable = null;
+                for (let i = currentChapter + 1; i < CHAPTERS.length; i++) {
+                    if (CHAPTERS[i] && CHAPTERS[i].available) {
+                        nextAvailable = i;
+                        break;
+                    }
+                }
+
+                if (nextAvailable !== null) {
+                    // Go to next chapter and auto-play (explicit autoPlay=true because audio.paused is now true)
+                    goToChapter(nextAvailable, true);
+                } else {
+                    // End of course - loop back to first chapter
+                    for (let i = 0; i < CHAPTERS.length; i++) {
+                        if (CHAPTERS[i] && CHAPTERS[i].available) {
+                            goToChapter(i, true);
+                            showFeedback('🔁 Restarting course');
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        function updateChapterNavButtons() {
+            const prevBtn = document.getElementById('prevChapter');
+            const nextBtn = document.getElementById('nextChapter');
+            const select = document.getElementById('chapterSelect');
+
+            // Check for available chapters
+            let hasPrev = false, hasNext = false;
+            for (let i = 0; i < CHAPTERS.length; i++) {
+                if (CHAPTERS[i].available) {
+                    if (i < currentChapter) hasPrev = true;
+                    if (i > currentChapter) hasNext = true;
+                }
+            }
+
+            prevBtn.disabled = !hasPrev;
+            nextBtn.disabled = !hasNext;
+
+            // Update select options - mark unavailable chapters
+            Array.from(select.options).forEach(opt => {
+                const chId = parseInt(opt.value);
+                const ch = CHAPTERS.find(c => c.id === chId);
+                if (ch && !ch.available) {
+                    opt.disabled = true;
+                    opt.textContent = opt.textContent.replace(' ✓', '') + ' (soon)';
+                } else if (ch) {
+                    opt.disabled = false;
+                    if (!opt.textContent.includes('✓')) {
+                        opt.textContent = opt.textContent.replace(' (soon)', '') + ' ✓';
+                    }
+                }
+            });
+        }
+    </script>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════════
+        // Audio Context & Analyser for Waveform
+        // ═══════════════════════════════════════════════════════════════════
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 256;
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+
+        // Will be connected when audio plays
+        let sourceConnected = false;
+
+        // ═══════════════════════════════════════════════════════════════════
+        // Audio Feedback Tones
+        // ═══════════════════════════════════════════════════════════════════
+
+        function playTone(frequency, duration, type = 'sine', volume = 0.1) {
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            oscillator.frequency.value = frequency;
+            oscillator.type = type;
+
+            gainNode.gain.setValueAtTime(volume, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + duration);
+        }
+
+        function playPauseSound() {
+            playTone(600, 0.15);
+            setTimeout(() => playTone(400, 0.15), 100);
+        }
+
+        function playResumeSound() {
+            playTone(400, 0.15);
+            setTimeout(() => playTone(600, 0.15), 100);
+        }
+
+        function playScrubSound() {
+            playTone(800, 0.05, 'sine', 0.05);
+        }
+
+        function playSpeedUpSound() {
+            playTone(500, 0.1);
+            setTimeout(() => playTone(700, 0.1), 50);
+        }
+
+        function playSpeedDownSound() {
+            playTone(700, 0.1);
+            setTimeout(() => playTone(500, 0.1), 50);
+        }
+
+        function playErrorSound() {
+            playTone(200, 0.2, 'square', 0.05);
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // Player State
+        // ═══════════════════════════════════════════════════════════════════
+
+        const audio = document.getElementById('audio');
+        const statusEl = document.getElementById('status');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+        const speedEl = document.getElementById('speedDisplay');
+        const chapterEl = document.getElementById('chapterDisplay');
+        const controlsEl = document.getElementById('controlsOverlay');
+        const feedbackEl = document.getElementById('feedback');
+        // progressBar removed - using segment-based progress with playhead
+        const progressContainer = document.getElementById('progressContainer');
+        const speakerLabel = document.getElementById('speakerLabel');
+        const spokenText = document.getElementById('spokenText');
+        const lineType = document.getElementById('lineType');
+        const waveformCanvas = document.getElementById('waveform');
+        const waveformCtx = waveformCanvas.getContext('2d');
+
+        let speed = 1.0;
+        let controlsVisible = true;
+
+        // Chapter markers
+        let chapters = [
+            { chapter: 5, title: "The Plot Twist", start_ms: 0 }
+        ];
+
+        // Script lines with timing (will be calculated)
+        let scriptLines = [];
+        let lastNavigatedBlockIdx = -1; // Track last navigated block to handle rapid key presses
+        let currentLineIndex = 0;
+
+        // ═══════════════════════════════════════════════════════════════════
+        // Load Line Timings (actual timestamps from audio generation)
+        // ═══════════════════════════════════════════════════════════════════
+
+        async function loadScript(timingsUrl = `audio/line-timings-chapter-${currentChapter}.json`) {
+            try {
+                // Load actual line timings generated during audio creation
+                const response = await fetch(timingsUrl);
+                scriptLines = await response.json();
+
+                console.log(`Loaded ${scriptLines.length} lines with actual timestamps from ${timingsUrl}`);
+                updateTextDisplay();
+
+                // Build progress segments after audio duration is known
+                audio.addEventListener('loadedmetadata', buildProgressSegments, { once: true });
+                if (audio.duration) buildProgressSegments();
+            } catch (e) {
+                console.error('Failed to load line timings:', e);
+                spokenText.textContent = 'Line timings not loaded. Text sync may be inaccurate.';
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // Progress Bar Segments (YouTube-style)
+        // ═══════════════════════════════════════════════════════════════════
+
+        const progressSegments = document.getElementById('progressSegments');
+        const progressPlayhead = document.getElementById('progressPlayhead');
+        const progressTooltip = document.getElementById('progressTooltip');
+        let builtSegments = []; // Store segments for tooltip lookup
+
+        function buildProgressSegments() {
+            if (scriptLines.length === 0 || !audio.duration) return;
+
+            progressSegments.innerHTML = '';
+            const totalDuration = audio.duration * 1000; // ms
+
+            // Group lines into segments
+            // Each Q&A block starts with a 'question' and includes answer/example/echo/ack/consequence
+            // Lecture segments group adjacent lecture/transition lines
+            builtSegments = []; // Reset
+            let currentSegment = null;
+
+            for (let i = 0; i < scriptLines.length; i++) {
+                const line = scriptLines[i];
+                const nextLine = scriptLines[i + 1];
+                const lineType = line.line_type;
+                const isQA = ['question', 'answer', 'example', 'echo', 'acknowledgment', 'consequence'].includes(lineType);
+                const segmentType = isQA ? 'question' : 'lecture';
+
+                // Calculate end time (next line's start or audio end)
+                const endMs = nextLine ? nextLine.start_ms : totalDuration;
+
+                // Start a new segment if:
+                // 1. No current segment
+                // 2. Type changed (lecture <-> Q&A)
+                // 3. New question starts a new Q&A block
+                const shouldStartNewSegment = !currentSegment ||
+                    currentSegment.type !== segmentType ||
+                    lineType === 'question';
+
+                if (shouldStartNewSegment) {
+                    // Start new segment
+                    if (currentSegment) {
+                        builtSegments.push(currentSegment);
+                    }
+                    currentSegment = {
+                        type: segmentType,
+                        startMs: line.start_ms,
+                        endMs: endMs,
+                        label: lineType === 'question' ? line.text : (lineType === 'lecture' ? 'Lecture' : lineType),
+                        lines: [line]
+                    };
+                } else {
+                    // Extend current segment
+                    currentSegment.endMs = endMs;
+                    currentSegment.lines.push(line);
+                }
+            }
+            if (currentSegment) builtSegments.push(currentSegment);
+
+            // Debug: Log first 8 segments to verify classification
+            console.log('=== SEGMENT VERIFICATION ===');
+            builtSegments.slice(0, 8).forEach((seg, idx) => {
+                const startTime = Math.floor(seg.startMs / 60000) + ':' + String(Math.floor((seg.startMs % 60000) / 1000)).padStart(2, '0');
+                console.log(`Seg ${idx}: ${startTime} | Type: ${seg.type} | CSS class will be: progress-segment ${seg.type}`);
+            });
+            console.log('Expected: Seg 0,2,4,6 = lecture (blue-gray), Seg 1,3,5,7 = question (purple)');
+            console.log('===========================');
+
+            // Create segment elements (no longer adding inline labels - using hover tooltip)
+            builtSegments.forEach((seg, idx) => {
+                const width = ((seg.endMs - seg.startMs) / totalDuration) * 100;
+                const el = document.createElement('div');
+                el.className = `progress-segment ${seg.type}`;
+                el.style.width = `${width}%`;
+                el.dataset.startMs = seg.startMs;
+                el.dataset.endMs = seg.endMs;
+                el.dataset.segmentIdx = idx; // For tooltip lookup
+
+                // Click to seek
+                el.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const targetTime = seg.startMs / 1000;
+                    console.log('Segment clicked:', seg.startMs, 'ms -> seeking to', targetTime, 'sec');
+                    console.log('Audio duration:', audio.duration, 'Current time before:', audio.currentTime);
+                    console.log('Audio ready state:', audio.readyState, 'Seekable ranges:', audio.seekable.length);
+
+                    if (targetTime <= audio.duration) {
+                        audio.currentTime = targetTime;
+                        console.log('Current time after:', audio.currentTime);
+                        updatePlayhead();  // Immediate visual feedback
+                    } else {
+                        console.error('Target time exceeds duration!', targetTime, '>', audio.duration);
+                    }
+                    playScrubSound();
+                    updateTextDisplay();
+                });
+
+                progressSegments.appendChild(el);
+            });
+
+            console.log(`Built ${builtSegments.length} progress segments`);
+        }
+
+        function updatePlayhead() {
+            if (!audio.duration) return;
+            const percent = (audio.currentTime / audio.duration) * 100;
+            progressPlayhead.style.left = `${percent}%`;
+        }
+
+        // Hover tooltip - shows time and segment info (fixed positioning)
+        progressContainer.addEventListener('mousemove', (e) => {
+            const rect = progressContainer.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const percent = x / rect.width;
+            const timeSeconds = percent * audio.duration;
+            const timeMs = timeSeconds * 1000;
+
+            // Find the segment being hovered
+            let hoveredSegment = null;
+            for (const seg of builtSegments) {
+                if (timeMs >= seg.startMs && timeMs < seg.endMs) {
+                    hoveredSegment = seg;
+                    break;
+                }
+            }
+
+            // Build rich tooltip content
+            let tooltipHTML = `<div class="tooltip-time">${formatTime(timeSeconds)}</div>`;
+            if (hoveredSegment) {
+                const typeLabel = hoveredSegment.type === 'question' ? 'Q&A' : 'Lecture';
+                const preview = hoveredSegment.label.substring(0, 100) + (hoveredSegment.label.length > 100 ? '...' : '');
+                tooltipHTML += `<span class="tooltip-type ${hoveredSegment.type}">${typeLabel}</span>`;
+                tooltipHTML += `<div class="tooltip-text">${preview}</div>`;
+            }
+            progressTooltip.innerHTML = tooltipHTML;
+
+            // Position tooltip using fixed coordinates (viewport-relative)
+            // Center horizontally on mouse, position above the progress bar
+            const tooltipRect = progressTooltip.getBoundingClientRect();
+            let tooltipX = e.clientX - (tooltipRect.width / 2);
+            const tooltipY = rect.top - 10; // 10px above progress bar
+
+            // Keep tooltip within viewport
+            if (tooltipX < 10) tooltipX = 10;
+            if (tooltipX + tooltipRect.width > window.innerWidth - 10) {
+                tooltipX = window.innerWidth - tooltipRect.width - 10;
+            }
+
+            progressTooltip.style.left = `${tooltipX}px`;
+            progressTooltip.style.top = `${tooltipY}px`;
+            progressTooltip.style.transform = 'translateY(-100%)';
+        });
+
+        // Hide tooltip when leaving progress bar
+        progressContainer.addEventListener('mouseleave', () => {
+            progressTooltip.style.opacity = '0';
+        });
+
+        progressContainer.addEventListener('mouseenter', () => {
+            progressTooltip.style.opacity = '1';
+        });
+
+        // Load chapter markers
+        fetch('audio/chapter-markers.json')
+            .then(r => r.json())
+            .then(data => { chapters = data; updateChapterDisplay(); })
+            .catch(() => console.log('No chapter markers found'));
+
+        // Load script
+        loadScript();
+
+        // ═══════════════════════════════════════════════════════════════════
+        // Waveform Visualization
+        // ═══════════════════════════════════════════════════════════════════
+
+        function resizeCanvas() {
+            const container = waveformCanvas.parentElement;
+            waveformCanvas.width = container.clientWidth;
+            waveformCanvas.height = container.clientHeight;
+        }
+
+        function drawWaveform() {
+            requestAnimationFrame(drawWaveform);
+
+            if (!sourceConnected) return;
+
+            analyser.getByteFrequencyData(dataArray);
+
+            const width = waveformCanvas.width;
+            const height = waveformCanvas.height;
+
+            // Clear
+            waveformCtx.fillStyle = '#111118';
+            waveformCtx.fillRect(0, 0, width, height);
+
+            // Draw bars
+            const barWidth = (width / bufferLength) * 2;
+            let x = 0;
+
+            for (let i = 0; i < bufferLength; i++) {
+                const barHeight = (dataArray[i] / 255) * height * 0.8;
+
+                // Gradient from cyan to green
+                const hue = 170 + (i / bufferLength) * 30;
+                waveformCtx.fillStyle = `hsla(${hue}, 100%, 50%, 0.8)`;
+
+                // Draw from center
+                const y = (height - barHeight) / 2;
+                waveformCtx.fillRect(x, y, barWidth - 1, barHeight);
+
+                x += barWidth;
+            }
+        }
+
+        function connectAudioToAnalyser() {
+            if (sourceConnected) return;
+
+            try {
+                const source = audioCtx.createMediaElementSource(audio);
+                source.connect(analyser);
+                analyser.connect(audioCtx.destination);
+                sourceConnected = true;
+                console.log('Audio connected to analyser');
+            } catch (e) {
+                // CORS restriction prevents AudioContext connection in Chrome
+                // Audio still plays, but waveform visualization won't work
+                console.warn('Could not connect audio to analyser (CORS restriction):', e.message);
+                console.info('Audio playback works, but waveform visualization is disabled.');
+                sourceConnected = true; // Prevent repeated attempts
+            }
+        }
+
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        drawWaveform();
+
+        // ═══════════════════════════════════════════════════════════════════
+        // UI Updates
+        // ═══════════════════════════════════════════════════════════════════
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function updateTimeDisplay() {
+            currentTimeEl.textContent = formatTime(audio.currentTime);
+            durationEl.textContent = formatTime(audio.duration || 0);
+
+            // Update playhead position
+            updatePlayhead();
+        }
+
+        function updateStatus() {
+            if (audio.paused) {
+                statusEl.textContent = 'PAUSED';
+                statusEl.classList.add('paused');
+            } else {
+                statusEl.textContent = 'PLAYING';
+                statusEl.classList.remove('paused');
+            }
+        }
+
+        function updateChapterDisplay() {
+            // Use CHAPTERS array for proper titles
+            const chapter = CHAPTERS.find(ch => ch.id === currentChapter);
+            if (chapter) {
+                chapterEl.textContent = `Chapter ${chapter.id}: ${chapter.title}`;
+            }
+        }
+
+        function updateTextDisplay() {
+            if (scriptLines.length === 0) return;
+
+            const currentMs = audio.currentTime * 1000;
+
+            // Find current line
+            let foundLine = scriptLines[0];
+            for (let i = 0; i < scriptLines.length; i++) {
+                if (scriptLines[i].start_ms <= currentMs) {
+                    foundLine = scriptLines[i];
+                    currentLineIndex = i;
+                } else {
+                    break;
+                }
+            }
+
+            // Update display
+            const speaker = foundLine.speaker;
+            speakerLabel.textContent = speaker;
+            speakerLabel.className = 'speaker-label ' +
+                (speaker === 'PROFESSOR' ? 'professor' : 'student');
+
+            spokenText.textContent = foundLine.text;
+
+            // Show line type with colored styling
+            if (foundLine.line_type) {
+                lineType.textContent = foundLine.line_type.replace('_', ' ');
+                lineType.className = 'line-type ' + foundLine.line_type;
+            } else {
+                lineType.textContent = '';
+                lineType.className = 'line-type';
+            }
+        }
+
+        function showFeedback(text) {
+            feedbackEl.textContent = text;
+            feedbackEl.classList.add('show');
+            setTimeout(() => feedbackEl.classList.remove('show'), 500);
+        }
+
+        audio.addEventListener('timeupdate', () => {
+            updateTimeDisplay();
+            updateChapterDisplay();
+            updateTextDisplay();
+            updatePlayhead();
+
+            // Reset navigation tracking when audio has progressed past the navigated position
+            // This handles the case where user stops pressing keys and lets audio play
+            if (lastNavigatedBlockIdx >= 0 && !audio.paused && scriptLines.length > 0) {
+                const currentMs = audio.currentTime * 1000;
+                const navBlockStart = scriptLines[lastNavigatedBlockIdx]?.start_ms || 0;
+                // If current position is at least 500ms past the navigated block start,
+                // consider the seek complete and reset tracking
+                if (currentMs > navBlockStart + 500) {
+                    lastNavigatedBlockIdx = -1;
+                }
+            }
+        });
+
+        audio.addEventListener('loadedmetadata', updateTimeDisplay);
+        audio.addEventListener('play', () => {
+            updateStatus();
+            connectAudioToAnalyser();
+        });
+        audio.addEventListener('pause', updateStatus);
+        audio.addEventListener('ended', handleChapterEnd);
+
+        // Click on progress bar to seek
+        progressContainer.addEventListener('click', (e) => {
+            const rect = progressContainer.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const percent = x / rect.width;
+            audio.currentTime = percent * audio.duration;
+            lastNavigatedBlockIdx = -1; // Reset tracking on manual seek
+            playScrubSound();
+        });
+
+        // ═══════════════════════════════════════════════════════════════════
+        // Controls
+        // ═══════════════════════════════════════════════════════════════════
+
+        function togglePlayPause() {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            if (audio.paused) {
+                audio.play();
+                playResumeSound();
+                showFeedback('▶');
+            } else {
+                audio.pause();
+                playPauseSound();
+                showFeedback('⏸');
+            }
+        }
+
+        function scrub(seconds) {
+            const newTime = audio.currentTime + seconds;
+            if (newTime < 0) {
+                audio.currentTime = 0;
+                playErrorSound();
+            } else if (newTime > audio.duration) {
+                audio.currentTime = audio.duration;
+                playErrorSound();
+            } else {
+                audio.currentTime = newTime;
+                playScrubSound();
+            }
+
+            // Force immediate display updates
+            updateTimeDisplay();
+            updateTextDisplay();
+
+            // Show current line info instead of just "+10s"
+            if (scriptLines.length > 0) {
+                const currentMs = audio.currentTime * 1000;
+                let currentLine = scriptLines[0];
+                for (const line of scriptLines) {
+                    if (line.start_ms <= currentMs) {
+                        currentLine = line;
+                    } else {
+                        break;
+                    }
+                }
+                const lineType = currentLine.line_type.charAt(0).toUpperCase() + currentLine.line_type.slice(1);
+                const preview = currentLine.text.substring(0, 40) + (currentLine.text.length > 40 ? '...' : '');
+                showFeedback(`${lineType}: ${preview}`);
+            } else {
+                showFeedback(seconds > 0 ? `+${seconds}s` : `${seconds}s`);
+            }
+        }
+
+        function changeSpeed(delta) {
+            speed = Math.max(0.5, Math.min(2.0, speed + delta));
+            audio.playbackRate = speed;
+            speedEl.textContent = `${speed.toFixed(2)}x`;
+
+            if (delta > 0) {
+                playSpeedUpSound();
+            } else {
+                playSpeedDownSound();
+            }
+            showFeedback(`${speed.toFixed(2)}x`);
+        }
+
+        function resetSpeed() {
+            speed = 1.0;
+            audio.playbackRate = speed;
+            speedEl.textContent = '1.00x';
+            playTone(500, 0.2);
+            showFeedback('1.0x');
+        }
+
+        function toggleControls() {
+            controlsVisible = !controlsVisible;
+            controlsEl.classList.toggle('hidden', !controlsVisible);
+            playTone(controlsVisible ? 600 : 400, 0.1);
+        }
+
+        // Topic navigation - navigates by logical blocks
+        // A block starts with: 'question' (student) or 'lecture' (professor)
+        // Q&A block: question → answer → example → reinforcement
+        // Back: go to start of current block, then previous block
+        // Forward: go to next block
+
+        function isBlockStart(line) {
+            // A new block starts with a question or lecture
+            return line.line_type === 'question' || line.line_type === 'lecture';
+        }
+
+        function findBlockStartIndex(fromIndex) {
+            // Find the start of the block containing this index
+            for (let i = fromIndex; i >= 0; i--) {
+                if (isBlockStart(scriptLines[i])) {
+                    return i;
+                }
+            }
+            return 0; // Default to first line
+        }
+
+        function findPreviousBlockStartIndex(fromIndex) {
+            // Find the start of the previous block
+            const currentBlockStart = findBlockStartIndex(fromIndex);
+            if (currentBlockStart <= 0) return -1;
+
+            // Go back one line from current block start, then find that block's start
+            return findBlockStartIndex(currentBlockStart - 1);
+        }
+
+        function findNextBlockStartIndex(fromIndex) {
+            // Find the start of the next block
+            for (let i = fromIndex + 1; i < scriptLines.length; i++) {
+                if (isBlockStart(scriptLines[i])) {
+                    return i;
+                }
+            }
+            return -1; // No next block
+        }
+
+        function previousTopic() {
+            if (scriptLines.length === 0) {
+                playErrorSound();
+                return;
+            }
+
+            const currentMs = audio.currentTime * 1000;
+            const threshold = 2000; // 2 seconds
+
+            // Find current line index
+            let currentIdx = 0;
+            for (let i = 0; i < scriptLines.length; i++) {
+                if (scriptLines[i].start_ms <= currentMs) {
+                    currentIdx = i;
+                } else {
+                    break;
+                }
+            }
+
+            // Find start of current block
+            const blockStartIdx = findBlockStartIndex(currentIdx);
+            const blockStartLine = scriptLines[blockStartIdx];
+            const timeIntoBlock = currentMs - blockStartLine.start_ms;
+
+            if (timeIntoBlock > threshold) {
+                // More than 2s into block - go to start of current block
+                audio.currentTime = blockStartLine.start_ms / 1000;
+                updateTimeDisplay();
+                playScrubSound();
+                const label = blockStartLine.line_type === 'question' ? 'Question' : 'Lecture';
+                showFeedback(`↩ ${label}`);
+            } else {
+                // At start of block - go to previous block
+                const prevBlockIdx = findPreviousBlockStartIndex(currentIdx);
+                if (prevBlockIdx >= 0) {
+                    const prevBlockLine = scriptLines[prevBlockIdx];
+                    audio.currentTime = prevBlockLine.start_ms / 1000;
+                    updateTimeDisplay();
+                    playScrubSound();
+                    const label = prevBlockLine.line_type === 'question' ? 'Question' : 'Lecture';
+                    showFeedback(`⏮ ${label}`);
+                } else {
+                    // Start of chapter
+                    handleStartOfChapterTopics();
+                }
+            }
+        }
+
+        function handleStartOfChapterTopics() {
+            if (loopMode === 'chapter') {
+                // Loop to end of this chapter (last block)
+                const lastBlockIdx = findLastBlockIndex();
+                if (lastBlockIdx >= 0) {
+                    audio.currentTime = scriptLines[lastBlockIdx].start_ms / 1000;
+                    updateTimeDisplay();
+                    playScrubSound();
+                    showFeedback('🔂 Chapter end');
+                } else {
+                    audio.currentTime = 0;
+                    updateTimeDisplay();
+                    playErrorSound();
+                }
+            } else {
+                // Try to go to previous chapter (course mode or off mode)
+                let prevAvailable = null;
+                for (let i = currentChapter - 1; i >= 0; i--) {
+                    if (CHAPTERS[i] && CHAPTERS[i].available) {
+                        prevAvailable = i;
+                        break;
+                    }
+                }
+
+                if (prevAvailable !== null) {
+                    // Go to previous chapter - will seek to end after load
+                    goToChapterEnd(prevAvailable);
+                    showFeedback(`⏮ Ch ${prevAvailable}`);
+                } else if (loopMode === 'course') {
+                    // Start of course in course loop mode - go to last chapter
+                    for (let i = CHAPTERS.length - 1; i >= 0; i--) {
+                        if (CHAPTERS[i] && CHAPTERS[i].available) {
+                            goToChapterEnd(i);
+                            showFeedback('🔁 Course end');
+                            break;
+                        }
+                    }
+                } else {
+                    // Start of course, no loop - just go to beginning
+                    audio.currentTime = 0;
+                    playTone(400, 0.2);
+                    showFeedback('◀ Start');
+                }
+            }
+        }
+
+        function findLastBlockIndex() {
+            // Find the last block (lecture or question) in scriptLines
+            for (let i = scriptLines.length - 1; i >= 0; i--) {
+                if (isBlockStart(scriptLines[i])) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        function goToChapterEnd(chapterId) {
+            // Go to a chapter and seek to its last block
+            const chapter = CHAPTERS.find(ch => ch.id === chapterId);
+            if (!chapter || !chapter.available) return;
+
+            const wasPlaying = !audio.paused;
+            currentChapter = chapterId;
+            lastNavigatedBlockIdx = -1; // Will be set after timings load
+
+            // Update audio source
+            audio.src = getChapterAudioPath(chapterId);
+            audio.load();
+
+            // Update UI
+            document.getElementById('chapterSelect').value = chapterId;
+            updateChapterNavButtons();
+
+            // When loaded, seek to end and load timings
+            audio.addEventListener('loadedmetadata', function onLoad() {
+                // Load the timings for this chapter, then seek to last block
+                fetch(getChapterTimingsPath(chapterId))
+                    .then(r => r.json())
+                    .then(lines => {
+                        scriptLines = lines;
+                        const lastBlockIdx = findLastBlockIndex();
+                        if (lastBlockIdx >= 0) {
+                            audio.currentTime = scriptLines[lastBlockIdx].start_ms / 1000;
+                        } else {
+                            audio.currentTime = Math.max(0, audio.duration - 1);
+                        }
+                        if (wasPlaying) audio.play();
+                        updateTextDisplay();
+                        buildProgressSegments();
+                    })
+                    .catch(() => {
+                        audio.currentTime = Math.max(0, audio.duration - 1);
+                        if (wasPlaying) audio.play();
+                    });
+                audio.removeEventListener('loadedmetadata', onLoad);
+            });
+
+            playTone(600, 0.15);
+        }
+
+        function nextTopic() {
+            if (scriptLines.length === 0) {
+                playErrorSound();
+                return;
+            }
+
+            const currentMs = audio.currentTime * 1000;
+
+            // Find current line index
+            let currentIdx = 0;
+            for (let i = 0; i < scriptLines.length; i++) {
+                if (scriptLines[i].start_ms <= currentMs) {
+                    currentIdx = i;
+                } else {
+                    break;
+                }
+            }
+
+            // Find next block
+            const nextBlockIdx = findNextBlockStartIndex(currentIdx);
+            if (nextBlockIdx >= 0) {
+                const nextBlockLine = scriptLines[nextBlockIdx];
+                audio.currentTime = nextBlockLine.start_ms / 1000;
+                updateTimeDisplay();
+                playScrubSound();
+                const label = nextBlockLine.line_type === 'question' ? 'Question' : 'Lecture';
+                showFeedback(`⏭ ${label}`);
+            } else {
+                // End of chapter
+                handleEndOfChapterTopics();
+            }
+        }
+
+        function handleEndOfChapterTopics() {
+            if (loopMode === 'chapter') {
+                // Loop back to beginning of this chapter
+                audio.currentTime = 0;
+                updateTimeDisplay();
+                playScrubSound();
+                showFeedback('🔂 Chapter restart');
+            } else {
+                // Try to advance to next chapter (course mode or off mode)
+                let nextAvailable = null;
+                for (let i = currentChapter + 1; i < CHAPTERS.length; i++) {
+                    if (CHAPTERS[i] && CHAPTERS[i].available) {
+                        nextAvailable = i;
+                        break;
+                    }
+                }
+
+                if (nextAvailable !== null) {
+                    goToChapter(nextAvailable);
+                    showFeedback(`⏭ Ch ${nextAvailable}`);
+                } else if (loopMode === 'course') {
+                    // End of course in course loop mode - go back to first chapter
+                    for (let i = 0; i < CHAPTERS.length; i++) {
+                        if (CHAPTERS[i] && CHAPTERS[i].available) {
+                            goToChapter(i);
+                            showFeedback('🔁 Course restart');
+                            break;
+                        }
+                    }
+                } else {
+                    // End of course, no loop - just show end message
+                    playTone(400, 0.2);
+                    showFeedback('✓ End of course');
+                }
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // Event Listeners
+        // ═══════════════════════════════════════════════════════════════════
+
+        // Keyboard
+        document.addEventListener('keydown', (e) => {
+            switch (e.code) {
+                case 'Space':
+                    e.preventDefault();
+                    togglePlayPause();
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    changeSpeed(0.25);
+                    break;
+                case 'ArrowDown':
+                    e.preventDefault();
+                    changeSpeed(-0.25);
+                    break;
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    previousTopic();
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    nextTopic();
+                    break;
+                case 'KeyH':
+                    toggleControls();
+                    break;
+                case 'KeyR':
+                    resetSpeed();
+                    break;
+                case 'KeyL':
+                    // Cycle loop mode: course -> chapter -> off -> course
+                    const modes = ['course', 'chapter', 'off'];
+                    const nextIdx = (modes.indexOf(loopMode) + 1) % modes.length;
+                    setLoopMode(modes[nextIdx]);
+                    break;
+            }
+        });
+
+        // Mouse wheel - scrub (vertical) and speed (horizontal/thumb wheel)
+        document.addEventListener('wheel', (e) => {
+            e.preventDefault();
+
+            const absY = Math.abs(e.deltaY);
+            const absX = Math.abs(e.deltaX);
+            const threshold = 5;
+
+            if (absY > threshold) {
+                if (e.deltaY < 0) {
+                    scrub(10);
+                } else {
+                    scrub(-10);
+                }
+            }
+            else if (absX > threshold && absY < threshold) {
+                if (e.deltaX > 0) {
+                    changeSpeed(0.25);
+                } else {
+                    changeSpeed(-0.25);
+                }
+            }
+        }, { passive: false });
+
+        // Mouse buttons (back/forward) - navigate topics
+        document.addEventListener('mousedown', (e) => {
+            if (e.button === 3) {
+                e.preventDefault();
+                previousTopic();
+            } else if (e.button === 4) {
+                e.preventDefault();
+                nextTopic();
+            }
+        });
+
+        // Prevent context menu
+        document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+        // ═══════════════════════════════════════════════════════════════════
+        // Initialize
+        // ═══════════════════════════════════════════════════════════════════
+
+        updateStatus();
+        updateTimeDisplay();
+        updateChapterNavButtons();
+        updateLoopButtons(); // Initialize loop mode UI
+
+        // Restore controls visibility preference (default is visible)
+        const savedControlsVisible = localStorage.getItem('controlsVisible');
+        if (savedControlsVisible === 'false') {
+            controlsVisible = false;
+            controlsEl.classList.add('hidden');
+        }
+
+        // Save controls visibility preference
+        new MutationObserver(() => {
+            localStorage.setItem('controlsVisible', controlsVisible.toString());
+        }).observe(controlsEl, { attributes: true, attributeFilter: ['class'] });
+
+        // Keyboard shortcuts for chapter navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'PageUp') {
+                e.preventDefault();
+                goToPreviousChapter();
+            } else if (e.key === 'PageDown') {
+                e.preventDefault();
+                goToNextChapter();
+            }
+        });
+    </script>
+</body>
+</html>
