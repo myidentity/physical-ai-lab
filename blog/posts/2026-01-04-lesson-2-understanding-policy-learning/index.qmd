@@ -4,7 +4,7 @@ subtitle: "From Point Estimates to Probability Distributions"
 author: "Rajesh"
 date: "2026-01-04"
 categories: [robot-learning, deep-generative-models, VAE, lesson-2]
-image: images/thumbnail.png
+image: thumbnail.jpg
 toc: true
 toc-depth: 2
 ---
@@ -94,7 +94,7 @@ Precisely! Now here's the key insight: we can think about almost ANYTHING as hav
 Consider all possible images of cats. There's some incredibly complex, high-dimensional distribution over "valid cat images." Most random pixel arrangements are NOT cats - they have zero probability under this distribution. But actual cat photos have high probability.
 :::
 
-![[4] An abstract probability landscape representing "all possible cats" - high probability regions glow brightly, low probability regions fade to darkness.](images/chapter-2-cat-distribution.png)
+![[4] An abstract probability landscape representing "all possible cats" - high probability regions glow brightly, low probability regions fade to darkness.](images/chapter-2-cat-distribution.jpg)
 
 ::: {.callout-important}
 ## Deep Generative Modeling Definition
@@ -200,7 +200,7 @@ So every handwriting sample can be described by a "secret recipe" of these hidde
 ## Dr. Nova Brooks
 I love that analogy! Yes, think of it like a machine with hidden knobs:
 
-![[8] The "secret recipe machine" - turn the knobs (latent variables) and the machine produces handwriting that matches those settings.](images/chapter-4-secret-machine.png)
+![[8] The "secret recipe machine" - turn the knobs (latent variables) and the machine produces handwriting that matches those settings.](images/chapter-4-secret-machine.jpg)
 
 If I know Rohan writes with:
 - Slant: slightly right
@@ -320,7 +320,7 @@ So if I move around in latent space, the decoder output changes smoothly?
 ## Dr. Nova Brooks
 Exactly! Watch what happens as we traverse the latent space:
 
-![[12] Moving through latent space produces smooth transitions in the decoded output - different digits/styles emerge at different locations.](images/chapter-6-latent-traversal.png)
+![[12] Moving through latent space produces smooth transitions in the decoded output - different digits/styles emerge at different locations.](images/chapter-6-latent-traversal.jpg)
 
 This is called **latent space interpolation**. You can smoothly morph between a "3" and an "8", or between fast-writing and slow-writing styles. The transitions are continuous, not abrupt.
 :::

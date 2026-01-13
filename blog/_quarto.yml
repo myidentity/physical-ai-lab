@@ -32,7 +32,7 @@ website:
           - text: "Lesson 1: Why Can't Robots Fold Clothes?"
             href: posts/2025-12-28-lesson-1-why-cant-robots-fold-clothes/index.qmd
           - text: "Lesson 2: Understanding Policy Learning"
-            href: posts/2026-01-13-lesson-2-understanding-policy-learning/index.qmd
+            href: posts/2026-01-04-lesson-2-understanding-policy-learning/index.qmd
       - section: "NVIDIA Isaac Lab Workshop"
         contents:
           - text: "Part 1: Isaac Sim vs Isaac Lab"
