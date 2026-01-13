@@ -11,6 +11,12 @@ toc-depth: 2
 
 *In this lesson, we discover why predicting a single action fails for robots, and how thinking in probability distributions unlocks the power of modern robot learning.*
 
+::: {.audio-cta}
+🎧 **Prefer to listen?** Experience this lesson as an immersive classroom audio.
+
+[Listen to Audio Version →](/lessons/lesson-2-understanding-policy-learning/classroom-player.html){.cta-button-secondary}
+:::
+
 # Chapter 1: The Multimodal Problem {#chapter-1}
 
 ::: {.callout-tip}
