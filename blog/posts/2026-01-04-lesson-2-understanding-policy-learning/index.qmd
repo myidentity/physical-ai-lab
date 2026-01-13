@@ -9,6 +9,8 @@ toc: true
 toc-depth: 2
 ---
 
+![](thumbnail.jpg){.hero-image fig-align="center" width="100%"}
+
 *In this lesson, we discover why predicting a single action fails for robots, and how thinking in probability distributions unlocks the power of modern robot learning.*
 
 ::: {.audio-cta}
