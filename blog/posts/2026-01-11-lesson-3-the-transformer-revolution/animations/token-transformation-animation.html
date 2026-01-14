@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Token Transformation Animation</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        #reset-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+        #reset-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+        /* Text overlay styles */
+        .text-overlay {
+            position: absolute;
+            pointer-events: none;
+            font-family: Arial, sans-serif;
+            text-shadow: 0 0 10px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.6);
+            transition: opacity 0.5s ease;
+        }
+        #phase-title {
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 28px;
+            color: #fff;
+            font-weight: bold;
+        }
+        #phase-subtitle {
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 18px;
+            color: #aaa;
+        }
+        .token-label {
+            font-size: 20px;
+            color: #fff;
+        }
+        .attention-label {
+            font-size: 16px;
+            color: #4ecdc4;
+        }
+        #insight-box {
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 100, 150, 0.3);
+            border: 1px solid rgba(78, 205, 196, 0.5);
+            border-radius: 8px;
+            padding: 15px 25px;
+            text-align: center;
+            max-width: 600px;
+        }
+        #insight-title {
+            font-size: 16px;
+            color: #4ecdc4;
+            margin-bottom: 8px;
+        }
+        #insight-text {
+            font-size: 14px;
+            color: #fff;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    <button id="reset-btn">Reset View</button>
+
+    <!-- Text overlays -->
+    <div id="phase-title" class="text-overlay">BEFORE ATTENTION</div>
+    <div id="phase-subtitle" class="text-overlay">Each token only knows about itself</div>
+
+    <div id="insight-box" class="text-overlay" style="opacity: 0;">
+        <div id="insight-title"></div>
+        <div id="insight-text"></div>
+    </div>
+
+    <!-- Token labels -->
+    <div id="label-data" class="text-overlay token-label" style="color: #4ecdc4;">"data"</div>
+    <div id="label-visualization" class="text-overlay token-label" style="color: #ff6b6b;">"visualization"</div>
+    <div id="label-users" class="text-overlay token-label" style="color: #ffd93d;">"users"</div>
+
+    <!-- Three.js libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TrackballControls.js"></script>
+
+    <script>
+        const container = document.getElementById('container');
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        // Create scene
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000000);
+
+        // Create camera - positioned for good view
+        const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+        camera.position.set(0, 2, 12);
+        camera.lookAt(0, 0, 0);
+
+        // Create renderer
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(width, height);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        // Add lights
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(5, 10, 7);
+        scene.add(directionalLight);
+
+        // Create controls
+        const controls = new THREE.TrackballControls(camera, renderer.domElement);
+        controls.rotateSpeed = 2.0;
+        controls.zoomSpeed = 1.2;
+        controls.panSpeed = 0.8;
+
+        // Token colors
+        const colors = {
+            data: 0x4ecdc4,      // Cyan
+            visualization: 0xff6b6b, // Coral/Red
+            users: 0xffd93d     // Yellow
+        };
+
+        // Create token spheres
+        const tokenGeometry = new THREE.SphereGeometry(0.6, 32, 32);
+
+        // Token positions - arranged in a triangle
+        const positions = {
+            data: new THREE.Vector3(-3.5, 0, 0),
+            visualization: new THREE.Vector3(0, 0, 0),
+            users: new THREE.Vector3(3.5, 0, 0)
+        };
+
+        // Create tokens
+        const tokens = {};
+        const tokenLabels = {};
+
+        Object.keys(positions).forEach(name => {
+            const material = new THREE.MeshPhongMaterial({
+                color: colors[name],
+                transparent: true,
+                opacity: 1
+            });
+            const mesh = new THREE.Mesh(tokenGeometry, material);
+            mesh.position.copy(positions[name]);
+            mesh.userData.originalPosition = positions[name].clone();
+            mesh.userData.name = name;
+            scene.add(mesh);
+            tokens[name] = mesh;
+        });
+
+        // Create attention arrows (initially invisible)
+        const arrowGroup = new THREE.Group();
+        scene.add(arrowGroup);
+
+        function createArrow(from, to, color, weight) {
+            const direction = new THREE.Vector3().subVectors(to, from).normalize();
+            const length = from.distanceTo(to) - 1.4; // Subtract sphere radii
+
+            const arrowHelper = new THREE.ArrowHelper(
+                direction,
+                from.clone().add(direction.clone().multiplyScalar(0.7)),
+                length,
+                color,
+                0.4,
+                0.25
+            );
+            arrowHelper.userData.weight = weight;
+            arrowHelper.visible = false;
+            return arrowHelper;
+        }
+
+        // Attention arrows from visualization to data and users
+        const arrows = {
+            vizToData: createArrow(positions.visualization, positions.data, 0x4ecdc4, 0.4),
+            vizToUsers: createArrow(positions.visualization, positions.users, 0xffd93d, 0.5)
+        };
+        Object.values(arrows).forEach(a => arrowGroup.add(a));
+
+        // Create "ghost" of original visualization position
+        const ghostGeometry = new THREE.SphereGeometry(0.6, 32, 32);
+        const ghostMaterial = new THREE.MeshPhongMaterial({
+            color: colors.visualization,
+            transparent: true,
+            opacity: 0,
+            wireframe: true
+        });
+        const ghostSphere = new THREE.Mesh(ghostGeometry, ghostMaterial);
+        ghostSphere.position.copy(positions.visualization);
+        scene.add(ghostSphere);
+
+        // Animation state
+        let phase = 0;
+        let phaseTime = 0;
+        const phaseDurations = [5, 5, 6, 6, 5]; // Duration of each phase in seconds
+        const clock = new THREE.Clock();
+
+        // Text overlays
+        const phaseTitle = document.getElementById('phase-title');
+        const phaseSubtitle = document.getElementById('phase-subtitle');
+        const insightBox = document.getElementById('insight-box');
+        const insightTitle = document.getElementById('insight-title');
+        const insightText = document.getElementById('insight-text');
+
+        // Phase content
+        const phases = [
+            {
+                title: "BEFORE ATTENTION",
+                subtitle: "Each token only knows about itself",
+                insight: null
+            },
+            {
+                title: "ATTENTION COMPUTATION",
+                subtitle: '"visualization" asks: "Who should I attend to?"',
+                insight: {
+                    title: "Attention Scores",
+                    text: '"visualization" → "data": 0.4\n"visualization" → "users": 0.5\n"visualization" → itself: 0.1'
+                }
+            },
+            {
+                title: "INFORMATION FLOWS",
+                subtitle: "Value vectors flow from attended tokens",
+                insight: {
+                    title: "What flows through attention?",
+                    text: '"data" shares: information, facts, structure\n"users" shares: people, audience, purpose'
+                }
+            },
+            {
+                title: "AFTER ATTENTION",
+                subtitle: '"visualization" now contains context from neighbors',
+                insight: {
+                    title: "The Transformation",
+                    text: 'Before: "visualization" = isolated concept\nAfter: "visualization" = concept-for-data-for-users\nThe token now UNDERSTANDS its context!'
+                }
+            },
+            {
+                title: "THE POWER OF ATTENTION",
+                subtitle: "Words become context-aware",
+                insight: {
+                    title: 'Why "data visualization" makes sense',
+                    text: 'The attention mechanism discovered that "visualization"\nshould attend to "data" (what is visualized) and "users"\n(who benefits). This is learned, not programmed!'
+                }
+            }
+        ];
+
+        function updatePhase(newPhase) {
+            phase = newPhase;
+            phaseTime = 0;
+
+            const p = phases[phase];
+            phaseTitle.textContent = p.title;
+            phaseSubtitle.textContent = p.subtitle;
+
+            if (p.insight) {
+                insightTitle.textContent = p.insight.title;
+                insightText.textContent = p.insight.text;
+                insightBox.style.opacity = '1';
+            } else {
+                insightBox.style.opacity = '0';
+            }
+        }
+
+        function resetAnimation() {
+            // Reset token positions
+            tokens.visualization.position.copy(positions.visualization);
+
+            // Reset ghost
+            ghostMaterial.opacity = 0;
+
+            // Hide arrows
+            Object.values(arrows).forEach(a => {
+                a.visible = false;
+                a.scale.set(1, 1, 1);
+            });
+
+            // Reset phase
+            updatePhase(0);
+        }
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const delta = clock.getDelta();
+            phaseTime += delta;
+
+            // Phase transitions
+            if (phaseTime > phaseDurations[phase]) {
+                const nextPhase = (phase + 1) % phases.length;
+                if (nextPhase === 0) {
+                    resetAnimation();
+                } else {
+                    updatePhase(nextPhase);
+                }
+            }
+
+            // Phase-specific animations
+            const t = Math.min(phaseTime / phaseDurations[phase], 1);
+
+            switch (phase) {
+                case 0: // Before attention - tokens pulse gently
+                    Object.values(tokens).forEach((token, i) => {
+                        const scale = 1 + 0.05 * Math.sin(phaseTime * 2 + i);
+                        token.scale.set(scale, scale, scale);
+                    });
+                    break;
+
+                case 1: // Attention computation - arrows appear
+                    arrows.vizToData.visible = true;
+                    arrows.vizToUsers.visible = true;
+
+                    // Fade in arrows
+                    const arrowOpacity = Math.min(t * 2, 1);
+                    arrows.vizToData.line.material.opacity = arrowOpacity;
+                    arrows.vizToUsers.line.material.opacity = arrowOpacity;
+
+                    // Pulse visualization token
+                    const vizScale = 1 + 0.1 * Math.sin(phaseTime * 4);
+                    tokens.visualization.scale.set(vizScale, vizScale, vizScale);
+                    break;
+
+                case 2: // Information flows - arrows pulse, particles could flow
+                    // Pulse arrows to show flow
+                    const pulse = 0.8 + 0.4 * Math.sin(phaseTime * 6);
+                    arrows.vizToData.line.material.opacity = pulse;
+                    arrows.vizToUsers.line.material.opacity = pulse;
+
+                    // Glow target tokens
+                    const glowData = 1 + 0.3 * Math.sin(phaseTime * 4);
+                    const glowUsers = 1 + 0.3 * Math.sin(phaseTime * 4 + 1);
+                    tokens.data.scale.set(glowData, glowData, glowData);
+                    tokens.users.scale.set(glowUsers, glowUsers, glowUsers);
+                    break;
+
+                case 3: // After attention - visualization moves toward center of attended tokens
+                    // Show ghost of original position
+                    ghostMaterial.opacity = 0.3;
+
+                    // Calculate new position - weighted average toward attended tokens
+                    const targetPos = new THREE.Vector3(
+                        positions.data.x * 0.4 + positions.users.x * 0.5 + positions.visualization.x * 0.1,
+                        0,
+                        0
+                    );
+
+                    // Smoothly move visualization token
+                    const moveT = Math.min(t * 1.5, 1);
+                    const eased = 1 - Math.pow(1 - moveT, 3); // Ease out cubic
+                    tokens.visualization.position.lerpVectors(
+                        positions.visualization,
+                        targetPos,
+                        eased
+                    );
+
+                    // Fade out arrows as movement completes
+                    const fadeOut = Math.max(0, 1 - (t - 0.7) * 3);
+                    arrows.vizToData.line.material.opacity = fadeOut;
+                    arrows.vizToUsers.line.material.opacity = fadeOut;
+                    break;
+
+                case 4: // Summary - gentle pulse of transformed token
+                    // Hide arrows
+                    arrows.vizToData.visible = false;
+                    arrows.vizToUsers.visible = false;
+
+                    // Pulse the transformed visualization
+                    const finalScale = 1 + 0.15 * Math.sin(phaseTime * 3);
+                    tokens.visualization.scale.set(finalScale, finalScale, finalScale);
+
+                    // Keep ghost visible
+                    ghostMaterial.opacity = 0.2;
+                    break;
+            }
+
+            controls.update();
+
+            // Update label positions based on 3D token positions
+            updateLabelPositions();
+
+            renderer.render(scene, camera);
+        }
+
+        // Label elements
+        const labelData = document.getElementById('label-data');
+        const labelViz = document.getElementById('label-visualization');
+        const labelUsers = document.getElementById('label-users');
+
+        function updateLabelPositions() {
+            // Project 3D positions to screen coordinates
+            const labelOffset = 1.2; // Offset below tokens
+
+            Object.entries(tokens).forEach(([name, token]) => {
+                const pos = token.position.clone();
+                pos.y -= labelOffset;
+                pos.project(camera);
+
+                const x = (pos.x * 0.5 + 0.5) * window.innerWidth;
+                const y = (-pos.y * 0.5 + 0.5) * window.innerHeight;
+
+                let label;
+                if (name === 'data') label = labelData;
+                else if (name === 'visualization') label = labelViz;
+                else if (name === 'users') label = labelUsers;
+
+                if (label) {
+                    label.style.left = x + 'px';
+                    label.style.top = y + 'px';
+                    label.style.transform = 'translate(-50%, 0)';
+                }
+            });
+        }
+
+        // Initialize
+        updatePhase(0);
+        animate();
+
+        // Reset button handler
+        const initialCameraPosition = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            camera.position.set(initialCameraPosition.x, initialCameraPosition.y, initialCameraPosition.z);
+            camera.up.set(0, 1, 0);
+            controls.target.set(0, 0, 0);
+            controls.reset();
+            resetAnimation();
+        });
+
+        // Window resize handler
+        window.addEventListener('resize', () => {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        });
+    </script>
+</body>
+</html>

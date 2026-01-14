@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Self-Attention Animation</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        #reset-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+        #reset-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    <button id="reset-btn">Reset View</button>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TrackballControls.js"></script>
+    <script>
+        const container = document.getElementById('container');
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        // Scene setup
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000000);
+
+        const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+        camera.position.set(0, 2, 10);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+        renderer.setSize(width, height);
+        container.appendChild(renderer.domElement);
+
+        const controls = new THREE.TrackballControls(camera, renderer.domElement);
+        controls.rotateSpeed = 2.0;
+        controls.zoomSpeed = 1.2;
+        controls.panSpeed = 0.8;
+
+        // Store initial camera position for reset
+        const initialCameraPosition = { x: 0, y: 2, z: 10 };
+        const initialTarget = new THREE.Vector3(0, 0, 0);
+
+        // Reset view button
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            camera.position.set(initialCameraPosition.x, initialCameraPosition.y, initialCameraPosition.z);
+            camera.up.set(0, 1, 0);
+            controls.target.copy(initialTarget);
+            controls.reset();
+        });
+
+        // Increased ambient light for brighter scene
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+        directionalLight.position.set(5, 10, 7);
+        scene.add(directionalLight);
+
+        const pointLight = new THREE.PointLight(0xffffff, 0.5);
+        pointLight.position.set(-5, 5, 5);
+        scene.add(pointLight);
+
+        // Colors
+        const ORANGE = 0xFF6B35;
+        const BLUE = 0x2E86AB;
+        const GREEN = 0x28A745;
+        const WHITE = 0xffffff;
+
+        // Token data
+        const tokens = ["the", "red", "car"];
+        const tokenPositions = [-4, 0, 4];
+        const tokenSpheres = [];
+        const tokenGlows = [];
+
+        // Create token spheres
+        tokens.forEach((token, i) => {
+            const geometry = new THREE.SphereGeometry(1, 32, 32);
+            const material = new THREE.MeshPhongMaterial({
+                color: 0x4488ff,
+                emissive: 0x112244,
+                emissiveIntensity: 0.3,
+                transparent: true,
+                opacity: 0
+            });
+            const sphere = new THREE.Mesh(geometry, material);
+            sphere.position.set(tokenPositions[i], 0, 0);
+            sphere.name = `Token: "${token}" - Input embedding vector`;
+            scene.add(sphere);
+            tokenSpheres.push(sphere);
+
+            // Glow effect
+            const glowGeometry = new THREE.SphereGeometry(1.2, 32, 32);
+            const glowMaterial = new THREE.MeshBasicMaterial({
+                color: 0x4488ff,
+                transparent: true,
+                opacity: 0,
+                side: THREE.BackSide
+            });
+            const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+            glow.position.copy(sphere.position);
+            scene.add(glow);
+            tokenGlows.push(glow);
+        });
+
+        // 2D Text Overlay System
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;font-family:Arial,sans-serif;';
+        container.appendChild(overlay);
+
+        function createTextElement(id, fontSize, top, left, color = 'white') {
+            const elem = document.createElement('div');
+            elem.id = id;
+            elem.style.cssText = `position:absolute;top:${top};left:${left};transform:translate(-50%,-50%);font-size:${fontSize}px;color:${color};text-align:center;text-shadow:2px 2px 4px black,-2px -2px 4px black,2px -2px 4px black,-2px 2px 4px black;opacity:0;transition:opacity 0.5s;white-space:nowrap;`;
+            overlay.appendChild(elem);
+            return elem;
+        }
+
+        // Create text elements
+        const phaseTitle = createTextElement('phase-title', 48, '8%', '50%');
+        const phaseSubtitle = createTextElement('phase-subtitle', 28, '15%', '50%');
+        const explanation = createTextElement('explanation', 24, '22%', '50%');
+
+        // Token labels
+        const tokenLabels = tokens.map((token, i) => {
+            const label = createTextElement(`token-${i}`, 36, '35%', `${25 + i * 25}%`);
+            label.textContent = `"${token}"`;
+            return label;
+        });
+
+        // Q, K, V labels
+        const qLabel = createTextElement('q-label', 32, '50%', '50%', '#FF6B35');
+        qLabel.textContent = 'Q';
+
+        const kLabels = tokens.map((_, i) => {
+            const label = createTextElement(`k-${i}`, 28, '25%', `${25 + i * 25}%`, '#2E86AB');
+            label.textContent = `K${i + 1}`;
+            return label;
+        });
+
+        const vLabels = tokens.map((_, i) => {
+            const label = createTextElement(`v-${i}`, 28, '55%', `${25 + i * 25}%`, '#28A745');
+            label.textContent = `V${i + 1}`;
+            return label;
+        });
+
+        // Score labels
+        const scoreLabels = [];
+        const scores = [0.1, 0.3, 0.6];
+        scores.forEach((score, i) => {
+            const label = createTextElement(`score-${i}`, 24, '62%', `${25 + i * 25}%`, '#ffff00');
+            label.textContent = score.toFixed(1);
+            scoreLabels.push(label);
+        });
+
+        // Final equation
+        const equationText = createTextElement('equation', 22, '85%', '50%', '#00ff88');
+        equationText.textContent = 'Output = 0.1×V₁ + 0.3×V₂ + 0.6×V₃';
+
+        const finalText = createTextElement('final', 36, '92%', '50%', '#ffcc00');
+        finalText.textContent = '✨ This is Self-Attention ✨';
+
+        // 3D Elements for animation
+        let spotlight = null;
+        const keyTags = [];
+        const valueCubes = [];
+        const connectionLines = [];
+        const particles = [];
+
+        // Create spotlight cone
+        function createSpotlight() {
+            const coneGeometry = new THREE.ConeGeometry(0.8, 2, 32, 1, true);
+            const coneMaterial = new THREE.MeshBasicMaterial({
+                color: ORANGE,
+                transparent: true,
+                opacity: 0,
+                side: THREE.DoubleSide
+            });
+            spotlight = new THREE.Mesh(coneGeometry, coneMaterial);
+            spotlight.position.set(0, 0, 0);
+            spotlight.rotation.x = Math.PI / 2;
+            spotlight.name = "Query Spotlight - Searching for relevant information";
+            scene.add(spotlight);
+        }
+
+        // Create key tags
+        function createKeyTags() {
+            tokens.forEach((_, i) => {
+                const tagGeometry = new THREE.BoxGeometry(0.8, 0.5, 0.1);
+                const tagMaterial = new THREE.MeshPhongMaterial({
+                    color: BLUE,
+                    emissive: BLUE,
+                    emissiveIntensity: 0.3,
+                    transparent: true,
+                    opacity: 0
+                });
+                const tag = new THREE.Mesh(tagGeometry, tagMaterial);
+                tag.position.set(tokenPositions[i], 2, 0);
+                tag.name = `Key ${i + 1} - Information descriptor for "${tokens[i]}"`;
+                scene.add(tag);
+                keyTags.push(tag);
+            });
+        }
+
+        // Create value cubes
+        function createValueCubes() {
+            tokens.forEach((_, i) => {
+                const cubeGeometry = new THREE.BoxGeometry(0.6, 0.6, 0.6);
+                const cubeMaterial = new THREE.MeshPhongMaterial({
+                    color: GREEN,
+                    emissive: GREEN,
+                    emissiveIntensity: 0.3,
+                    transparent: true,
+                    opacity: 0
+                });
+                const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+                cube.position.set(tokenPositions[i], 0, 0);
+                cube.name = `Value ${i + 1} - Content from "${tokens[i]}"`;
+                scene.add(cube);
+                valueCubes.push(cube);
+            });
+        }
+
+        // Create connection lines
+        function createConnectionLines() {
+            const thicknesses = [0.05, 0.1, 0.2];
+            tokens.forEach((_, i) => {
+                const points = [
+                    new THREE.Vector3(0, 0, 0),
+                    new THREE.Vector3(tokenPositions[i], 0, 0)
+                ];
+                const curve = new THREE.CatmullRomCurve3(points);
+                const tubeGeometry = new THREE.TubeGeometry(curve, 20, thicknesses[i], 8, false);
+                const tubeMaterial = new THREE.MeshBasicMaterial({
+                    color: 0xffaa00,
+                    transparent: true,
+                    opacity: 0
+                });
+                const tube = new THREE.Mesh(tubeGeometry, tubeMaterial);
+                tube.name = `Attention weight ${scores[i]} from "red" to "${tokens[i]}"`;
+                scene.add(tube);
+                connectionLines.push(tube);
+            });
+        }
+
+        // Create particles
+        function createParticles() {
+            const particleCounts = [3, 6, 12];
+            tokens.forEach((_, i) => {
+                const tokenParticles = [];
+                for (let j = 0; j < particleCounts[i]; j++) {
+                    const particleGeometry = new THREE.SphereGeometry(0.08, 16, 16);
+                    const particleMaterial = new THREE.MeshBasicMaterial({
+                        color: GREEN,
+                        transparent: true,
+                        opacity: 0
+                    });
+                    const particle = new THREE.Mesh(particleGeometry, particleMaterial);
+                    particle.position.set(tokenPositions[i], 0, 0);
+                    particle.userData = {
+                        startX: tokenPositions[i],
+                        progress: j / particleCounts[i],
+                        speed: 0.3 + Math.random() * 0.2
+                    };
+                    particle.name = `Value particle from "${tokens[i]}"`;
+                    scene.add(particle);
+                    tokenParticles.push(particle);
+                }
+                particles.push(tokenParticles);
+            });
+        }
+
+        // Initialize all elements
+        createSpotlight();
+        createKeyTags();
+        createValueCubes();
+        createConnectionLines();
+        createParticles();
+
+        // Animation timing
+        const startTime = Date.now();
+
+        function getPhase(elapsed) {
+            if (elapsed < 8000) return 1;
+            if (elapsed < 18000) return 2;
+            if (elapsed < 28000) return 3;
+            if (elapsed < 36000) return 4;
+            if (elapsed < 45000) return 5;
+            return 0; // Loop back
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            let elapsed = (Date.now() - startTime) % 48000; // Loop every 48 seconds
+            const phase = getPhase(elapsed);
+            const time = elapsed / 1000;
+
+            // Reset on loop - clear all visual elements
+            if (phase === 0) {
+                elapsed = 0;
+
+                // Reset text overlays
+                phaseTitle.style.opacity = 0;
+                phaseSubtitle.style.opacity = 0;
+                explanation.style.opacity = 0;
+                tokenLabels.forEach(label => label.style.opacity = 0);
+                qLabel.style.opacity = 0;
+                kLabels.forEach(label => label.style.opacity = 0);
+                vLabels.forEach(label => label.style.opacity = 0);
+                scoreLabels.forEach(label => label.style.opacity = 0);
+                equationText.style.opacity = 0;
+                finalText.style.opacity = 0;
+
+                // Reset token spheres
+                tokenSpheres.forEach((sphere, i) => {
+                    sphere.material.opacity = 0;
+                    sphere.material.emissive.setHex(0x112244);
+                    sphere.material.emissiveIntensity = 0.3;
+                    tokenGlows[i].material.opacity = 0;
+                    tokenGlows[i].material.color.setHex(0x4488ff);
+                });
+
+                // Reset spotlight
+                spotlight.material.opacity = 0;
+
+                // Reset key tags
+                keyTags.forEach(tag => {
+                    tag.material.opacity = 0;
+                });
+
+                // Reset connection lines
+                connectionLines.forEach(line => {
+                    line.material.opacity = 0;
+                });
+
+                // Reset value cubes
+                valueCubes.forEach(cube => {
+                    cube.material.opacity = 0;
+                });
+
+                // Reset particles
+                particles.forEach(tokenParticles => {
+                    tokenParticles.forEach(particle => {
+                        particle.material.opacity = 0;
+                        particle.position.set(particle.userData.startX, 0, 0);
+                        particle.userData.progress = 0;
+                    });
+                });
+            }
+
+            // Phase 1: Meet the Tokens (0-8s)
+            if (phase >= 1) {
+                const p1Progress = Math.min(1, elapsed / 2000);
+                tokenSpheres.forEach((sphere, i) => {
+                    sphere.material.opacity = p1Progress;
+                    tokenGlows[i].material.opacity = p1Progress * 0.3;
+                });
+                tokenLabels.forEach(label => label.style.opacity = p1Progress);
+
+                if (phase === 1) {
+                    phaseTitle.textContent = 'STEP 1: Input Tokens';
+                    phaseTitle.style.opacity = 1;
+                    phaseSubtitle.textContent = 'Each word becomes a vector';
+                    phaseSubtitle.style.opacity = 1;
+                }
+            }
+
+            // Phase 2: Query (8-18s)
+            if (phase >= 2) {
+                const p2Progress = Math.min(1, (elapsed - 8000) / 2000);
+
+                tokenSpheres[1].material.emissive.setHex(ORANGE);
+                tokenSpheres[1].material.emissiveIntensity = 0.5 * p2Progress;
+                tokenGlows[1].material.color.setHex(ORANGE);
+                tokenGlows[1].material.opacity = 0.4 * p2Progress;
+
+                spotlight.material.opacity = 0.6 * p2Progress;
+                const sweepAngle = Math.sin((elapsed - 8000) / 1000) * 0.5;
+                spotlight.rotation.y = sweepAngle;
+                spotlight.position.z = 1;
+
+                if (phase === 2) {
+                    phaseTitle.textContent = 'STEP 2: Query (Q)';
+                    phaseSubtitle.textContent = 'The "red" token asks: What should I pay attention to?';
+                    qLabel.style.opacity = p2Progress;
+                    qLabel.style.top = '45%';
+                    qLabel.style.left = '50%';
+                }
+            }
+
+            // Phase 3: Keys (18-28s)
+            if (phase >= 3) {
+                const p3Progress = Math.min(1, (elapsed - 18000) / 2000);
+
+                keyTags.forEach((tag, i) => {
+                    tag.material.opacity = p3Progress;
+                    tag.material.emissiveIntensity = 0.3 + 0.2 * Math.sin(time * 3 + i);
+                });
+
+                kLabels.forEach(label => label.style.opacity = p3Progress);
+
+                if (phase === 3) {
+                    phaseTitle.textContent = 'STEP 3: Keys (K)';
+                    phaseSubtitle.textContent = 'Each token advertises: Here\'s what information I contain';
+                    spotlight.material.opacity = 0.3;
+                }
+            }
+
+            // Phase 4: Attention Scores (28-36s)
+            if (phase >= 4) {
+                const p4Progress = Math.min(1, (elapsed - 28000) / 2000);
+
+                connectionLines.forEach((line, i) => {
+                    line.material.opacity = p4Progress * (0.3 + scores[i]);
+                });
+
+                scoreLabels.forEach(label => label.style.opacity = p4Progress);
+
+                if (phase === 4) {
+                    phaseTitle.textContent = 'STEP 4: Attention Scores';
+                    phaseSubtitle.textContent = 'Q · K = How relevant is each token?';
+                    explanation.textContent = 'Thicker line = Higher attention';
+                    explanation.style.opacity = p4Progress;
+                }
+            }
+
+            // Phase 5: Values Flow (36-45s)
+            if (phase >= 5) {
+                const p5Progress = Math.min(1, (elapsed - 36000) / 2000);
+
+                valueCubes.forEach((cube, i) => {
+                    cube.material.opacity = p5Progress;
+                    cube.rotation.x = time;
+                    cube.rotation.y = time * 1.2;
+                });
+
+                vLabels.forEach(label => label.style.opacity = p5Progress);
+
+                // Animate particles
+                particles.forEach((tokenParticles, i) => {
+                    tokenParticles.forEach(particle => {
+                        particle.material.opacity = p5Progress;
+                        particle.userData.progress += particle.userData.speed * 0.01;
+                        if (particle.userData.progress > 1) {
+                            particle.userData.progress = 0;
+                        }
+                        const prog = particle.userData.progress;
+                        particle.position.x = particle.userData.startX * (1 - prog);
+                        particle.position.y = Math.sin(prog * Math.PI) * 0.5;
+                    });
+                });
+
+                const glowIntensity = 0.3 + p5Progress * 0.5;
+                tokenSpheres[1].material.emissiveIntensity = glowIntensity;
+                tokenGlows[1].material.opacity = 0.3 + p5Progress * 0.3;
+
+                phaseTitle.textContent = 'STEP 5: Weighted Sum of Values';
+                phaseSubtitle.textContent = '"red" now contains context from all tokens!';
+                explanation.style.opacity = 0;
+                equationText.style.opacity = p5Progress;
+
+                if (elapsed > 40000) {
+                    finalText.style.opacity = Math.min(1, (elapsed - 40000) / 2000);
+                }
+            }
+
+            // Gentle camera movement
+            const targetZ = phase === 2 ? 8 : 10;
+            camera.position.z += (targetZ - camera.position.z) * 0.02;
+            camera.position.y += (2 - camera.position.y) * 0.02;
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        });
+
+        animate();
+    </script>
+</body>
+</html>

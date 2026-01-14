@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Context Vector Animation</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        #reset-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+        #reset-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    <button id="reset-btn">Reset View</button>
+
+    <!-- Three.js libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TrackballControls.js"></script>
+
+    <script>
+        const container = document.getElementById('container');
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        // Scene setup
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000000);
+
+        const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+        camera.position.set(0, 2, 10);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+        renderer.setSize(width, height);
+        container.appendChild(renderer.domElement);
+
+        const controls = new THREE.TrackballControls(camera, renderer.domElement);
+        controls.rotateSpeed = 2.0;
+        controls.zoomSpeed = 1.2;
+        controls.panSpeed = 0.8;
+
+        // Lighting - brighter ambient
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+        directionalLight.position.set(5, 10, 7);
+        scene.add(directionalLight);
+
+        // Tooltip setup
+        const tooltip = document.createElement('div');
+        tooltip.style.cssText = 'position:absolute;padding:6px 10px;background:rgba(0,0,0,0.8);color:white;border-radius:4px;font-size:12px;pointer-events:none;display:none;';
+        container.appendChild(tooltip);
+
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        // Token data
+        const tokens = [
+            { name: 'dog', x: -4, color: 0x4488ff, vDir: new THREE.Vector3(0.5, 1, 0.3).normalize() },
+            { name: 'chased', x: 0, color: 0x44ff88, vDir: new THREE.Vector3(-0.3, 0.8, 0.5).normalize() },
+            { name: 'car', x: 4, color: 0xff8844, vDir: new THREE.Vector3(0.2, 0.6, -0.4).normalize() }
+        ];
+
+        const attentionWeights = [0.2, 0.6, 0.2];
+
+        // Create token spheres
+        const tokenMeshes = [];
+        const tokenLabels = [];
+
+        // FIXED: Increased canvas width to 512 for longer text labels
+        function createTextSprite(text, fontSize = 48, color = 'white') {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;  // Increased from 256 to prevent clipping
+            canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = color;
+            ctx.font = `${fontSize}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, 256, 64);  // Center at 256 (half of 512)
+            const texture = new THREE.CanvasTexture(canvas);
+            const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
+            const sprite = new THREE.Sprite(material);
+            sprite.scale.set(4, 1, 1);  // Increased scale to match wider canvas
+            return sprite;
+        }
+
+        tokens.forEach((token, i) => {
+            const geometry = new THREE.SphereGeometry(0.5, 32, 32);
+            const material = new THREE.MeshPhongMaterial({ color: token.color, emissive: token.color, emissiveIntensity: 0.3 });
+            const sphere = new THREE.Mesh(geometry, material);
+            sphere.position.set(token.x, 0, 0);
+            sphere.name = `Token: "${token.name}"`;
+            scene.add(sphere);
+            tokenMeshes.push(sphere);
+
+            const label = createTextSprite(`"${token.name}"`);
+            label.position.set(token.x, -1.2, 0);
+            scene.add(label);
+            tokenLabels.push(label);
+        });
+
+        // Create V vector arrows
+        function createArrow(origin, direction, length, color, name) {
+            const arrowGroup = new THREE.Group();
+
+            const shaftGeom = new THREE.CylinderGeometry(0.05, 0.05, length - 0.3, 8);
+            const shaftMat = new THREE.MeshPhongMaterial({ color: color, emissive: color, emissiveIntensity: 0.4 });
+            const shaft = new THREE.Mesh(shaftGeom, shaftMat);
+            shaft.position.y = (length - 0.3) / 2;
+            arrowGroup.add(shaft);
+
+            const headGeom = new THREE.ConeGeometry(0.12, 0.3, 8);
+            const headMat = new THREE.MeshPhongMaterial({ color: color, emissive: color, emissiveIntensity: 0.4 });
+            const head = new THREE.Mesh(headGeom, headMat);
+            head.position.y = length - 0.15;
+            arrowGroup.add(head);
+
+            arrowGroup.position.copy(origin);
+            const axis = new THREE.Vector3(0, 1, 0).cross(direction).normalize();
+            const angle = Math.acos(new THREE.Vector3(0, 1, 0).dot(direction));
+            if (axis.length() > 0.001) {
+                arrowGroup.setRotationFromAxisAngle(axis, angle);
+            }
+
+            arrowGroup.name = name;
+            return arrowGroup;
+        }
+
+        const vArrows = [];
+        tokens.forEach((token, i) => {
+            const origin = new THREE.Vector3(token.x, 0.6, 0);
+            const arrow = createArrow(origin, token.vDir, 1.5, token.color, `V vector for "${token.name}"`);
+            arrow.visible = false;
+            scene.add(arrow);
+            vArrows.push(arrow);
+        });
+
+        // Ghost arrows for animation
+        const ghostArrows = [];
+        tokens.forEach((token, i) => {
+            const origin = new THREE.Vector3(token.x, 0.6, 0);
+            const arrow = createArrow(origin, token.vDir, 1.5, token.color, `Weighted V from "${token.name}"`);
+            arrow.visible = false;
+            scene.add(arrow);
+            ghostArrows.push(arrow);
+        });
+
+        // Context vector (result)
+        const contextArrow = createArrow(
+            new THREE.Vector3(-4, 0.6, 0),
+            new THREE.Vector3(0, 1, 0).normalize(),
+            1.8,
+            0x88ffaa,
+            'Context vector for "dog"'
+        );
+        contextArrow.visible = false;
+        scene.add(contextArrow);
+
+        // Attention weight labels - FIXED positioning and sizing
+        const weightLabels = [];
+        const weightTexts = ['dog → dog: 0.2', 'dog → chased: 0.6', 'dog → car: 0.2'];
+        weightTexts.forEach((text, i) => {
+            const label = createTextSprite(text, i === 1 ? 36 : 32, i === 1 ? '#ffff00' : '#ffffff');
+            label.position.set(tokens[i].x, 2.5, 0);  // Moved higher to avoid overlap
+            label.material.opacity = 0;
+            label.visible = false;
+            scene.add(label);
+            weightLabels.push(label);
+        });
+
+        // Phase labels
+        const phaseLabel = createTextSprite('', 36, '#ffffff');
+        phaseLabel.position.set(0, -3, 0);
+        phaseLabel.scale.set(6, 1.5, 1);
+        scene.add(phaseLabel);
+
+        function updatePhaseLabel(text) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1024;
+            canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = 'white';
+            ctx.font = '36px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, 512, 64);
+            phaseLabel.material.map = new THREE.CanvasTexture(canvas);
+            phaseLabel.material.needsUpdate = true;
+        }
+
+        // Info box
+        const infoBox = document.createElement('div');
+        infoBox.style.cssText = 'position:absolute;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,40,80,0.9);color:white;padding:20px;border-radius:10px;font-size:14px;text-align:center;max-width:500px;display:none;border:2px solid #4488ff;';
+        container.appendChild(infoBox);
+
+        // Animation timing
+        const duration = 36000; // 36 seconds
+        let startTime = Date.now();
+
+        function getPhase(elapsed) {
+            if (elapsed < 6000) return 1;
+            if (elapsed < 12000) return 2;
+            if (elapsed < 20000) return 3;
+            if (elapsed < 28000) return 4;
+            return 5;
+        }
+
+        // Reset function for clean loop
+        function resetScene() {
+            vArrows.forEach(arrow => {
+                arrow.visible = false;
+                arrow.scale.setScalar(1);
+                arrow.children.forEach(child => {
+                    if (child.material) {
+                        child.material.opacity = 1;
+                        child.material.transparent = false;
+                    }
+                });
+            });
+
+            ghostArrows.forEach(ghost => {
+                ghost.visible = false;
+                ghost.position.x = tokens[ghostArrows.indexOf(ghost)].x;
+                ghost.position.y = 0.6;
+                ghost.scale.setScalar(1);
+            });
+
+            weightLabels.forEach(label => {
+                label.visible = false;
+                label.material.opacity = 0;
+            });
+
+            contextArrow.visible = false;
+            contextArrow.scale.setScalar(1);
+
+            infoBox.style.display = 'none';
+        }
+
+        let lastPhase = 0;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+
+            const elapsed = (Date.now() - startTime) % duration;
+            const phase = getPhase(elapsed);
+
+            // Reset at loop start
+            if (phase === 1 && lastPhase === 5) {
+                resetScene();
+            }
+            lastPhase = phase;
+
+            // Phase 1: Show V vectors
+            if (phase === 1) {
+                const t = elapsed / 6000;
+                vArrows.forEach(arrow => {
+                    arrow.visible = true;
+                    arrow.scale.setScalar(Math.min(1, t * 2));
+                });
+                weightLabels.forEach(l => { l.visible = false; });
+                ghostArrows.forEach(g => { g.visible = false; });
+                contextArrow.visible = false;
+                infoBox.style.display = 'none';
+                updatePhaseLabel('Each token has a Value vector');
+            }
+
+            // Phase 2: Show attention weights
+            if (phase === 2) {
+                const t = (elapsed - 6000) / 6000;
+                vArrows.forEach(arrow => { arrow.visible = true; arrow.scale.setScalar(1); });
+                weightLabels.forEach((label, i) => {
+                    label.visible = true;
+                    label.material.opacity = Math.min(1, t * 2);
+                    if (i === 1) {
+                        label.scale.set(4.5, 1.25, 1);
+                    }
+                });
+                updatePhaseLabel('Attention scores = how much to pull from each');
+            }
+
+            // Phase 3: Weighted pull animation
+            if (phase === 3) {
+                const t = (elapsed - 12000) / 8000;
+                const targetX = -4;
+                const targetY = 0.6;
+
+                ghostArrows.forEach((ghost, i) => {
+                    ghost.visible = true;
+                    const weight = attentionWeights[i];
+                    const startX = tokens[i].x;
+                    const currentX = startX + (targetX - startX) * t;
+                    ghost.position.x = currentX;
+                    ghost.position.y = targetY;
+                    ghost.scale.setScalar(weight * 2);
+                    ghost.children.forEach(child => {
+                        if (child.material) {
+                            child.material.opacity = 0.5 + weight * 0.5;
+                            child.material.transparent = true;
+                        }
+                    });
+                });
+
+                vArrows.forEach((arrow, i) => {
+                    arrow.children.forEach(child => {
+                        if (child.material) {
+                            child.material.opacity = 1 - t * 0.5;
+                            child.material.transparent = true;
+                        }
+                    });
+                });
+
+                updatePhaseLabel('Higher attention = stronger pull');
+            }
+
+            // Phase 4: Context vector forms
+            if (phase === 4) {
+                const t = (elapsed - 20000) / 8000;
+
+                ghostArrows.forEach(ghost => {
+                    ghost.visible = true;
+                    ghost.scale.setScalar(ghost.scale.x * (1 - t * 0.1));
+                    if (t > 0.5) {
+                        ghost.visible = false;
+                    }
+                });
+
+                vArrows.forEach(arrow => {
+                    arrow.children.forEach(child => {
+                        if (child.material) {
+                            child.material.opacity = Math.max(0.1, 0.5 - t);
+                        }
+                    });
+                });
+
+                contextArrow.visible = true;
+                contextArrow.scale.setScalar(Math.min(1, t * 2));
+
+                // Blend direction based on weighted average
+                const blendedDir = new THREE.Vector3();
+                tokens.forEach((token, i) => {
+                    blendedDir.add(token.vDir.clone().multiplyScalar(attentionWeights[i]));
+                });
+                blendedDir.normalize();
+
+                const axis = new THREE.Vector3(0, 1, 0).cross(blendedDir).normalize();
+                const angle = Math.acos(new THREE.Vector3(0, 1, 0).dot(blendedDir));
+                if (axis.length() > 0.001) {
+                    contextArrow.setRotationFromAxisAngle(axis, angle);
+                }
+
+                updatePhaseLabel("dog's context vector: mostly influenced by 'chased'");
+            }
+
+            // Phase 5: Eureka
+            if (phase === 5) {
+                contextArrow.visible = true;
+                contextArrow.scale.setScalar(1);
+                ghostArrows.forEach(g => { g.visible = false; });
+                vArrows.forEach(arrow => {
+                    arrow.children.forEach(child => {
+                        if (child.material) child.material.opacity = 0.2;
+                    });
+                });
+
+                infoBox.style.display = 'block';
+                infoBox.innerHTML = `
+                    <strong style="font-size:16px;">Context Vector = Weighted blend of neighbors' Values</strong><br><br>
+                    dog attended <span style="color:#ffff00;font-weight:bold;">60%</span> to 'chased'<br>
+                    → dog's new representation is <span style="color:#44ff88;font-weight:bold;">60% pulled toward 'chased'</span>
+                `;
+                updatePhaseLabel('');
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // Mouse events for tooltip
+        container.addEventListener('mousemove', (event) => {
+            const rect = renderer.domElement.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const allObjects = [...tokenMeshes, ...vArrows, ...ghostArrows, contextArrow];
+            const intersects = raycaster.intersectObjects(allObjects, true);
+
+            if (intersects.length > 0) {
+                let obj = intersects[0].object;
+                while (obj.parent && !obj.name) obj = obj.parent;
+                if (obj.name) {
+                    tooltip.style.display = 'block';
+                    tooltip.style.left = (event.clientX - rect.left + 15) + 'px';
+                    tooltip.style.top = (event.clientY - rect.top + 15) + 'px';
+                    tooltip.textContent = obj.name;
+                }
+            } else {
+                tooltip.style.display = 'none';
+            }
+        });
+
+        // Reset button handler
+        const initialCameraPosition = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            camera.position.set(initialCameraPosition.x, initialCameraPosition.y, initialCameraPosition.z);
+            camera.up.set(0, 1, 0);
+            controls.target.set(0, 0, 0);
+            controls.reset();
+            startTime = Date.now(); // Also reset animation
+            resetScene();
+        });
+
+        // Window resize handler
+        window.addEventListener('resize', () => {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        });
+
+        animate();
+    </script>
+</body>
+</html>

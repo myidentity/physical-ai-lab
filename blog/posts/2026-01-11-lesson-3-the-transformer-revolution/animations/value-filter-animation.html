@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Value as Information Filter</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0a0a0a; overflow: hidden; font-family: Arial, sans-serif; }
+        #container { width: 100vw; height: 100vh; position: relative; }
+        .control-btn {
+            position: absolute; bottom: 20px;
+            padding: 10px 20px; background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3); color: white;
+            font-size: 14px; border-radius: 6px; cursor: pointer; z-index: 1000;
+        }
+        .control-btn:hover { background: rgba(255, 255, 255, 0.25); }
+        #reset-view-btn { right: 20px; }
+        #reset-anim-btn { right: 150px; }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    <button id="reset-anim-btn" class="control-btn">⟲ Reset Animation</button>
+    <button id="reset-view-btn" class="control-btn">↺ Reset View</button>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TrackballControls.js"></script>
+    <script>
+        const container = document.getElementById('container');
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+// Scene setup
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a0a);
+
+const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+camera.position.set(0, 0, 8);
+camera.lookAt(0, 0, 0);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(width, height);
+container.appendChild(renderer.domElement);
+
+// Lighting - increased ambient for brighter scene
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+scene.add(ambientLight);
+
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+directionalLight.position.set(5, 5, 5);
+scene.add(directionalLight);
+
+// Controls
+const controls = new THREE.TrackballControls(camera, renderer.domElement);
+controls.rotateSpeed = 1.0;
+controls.zoomSpeed = 1.2;
+controls.panSpeed = 0.8;
+
+// Create "dog" token sphere (left)
+const dogGeometry = new THREE.SphereGeometry(0.6, 32, 32);
+const dogMaterial = new THREE.MeshPhongMaterial({ color: 0x4488ff, emissive: 0x112244 });
+const dogSphere = new THREE.Mesh(dogGeometry, dogMaterial);
+dogSphere.position.set(-2.5, 0, 0);
+dogSphere.name = "Token: 'dog' - The source token with embedded information";
+scene.add(dogSphere);
+
+// Create "chased" token sphere (right)
+const chasedGeometry = new THREE.SphereGeometry(0.6, 32, 32);
+const chasedMaterial = new THREE.MeshPhongMaterial({ color: 0x44cc66, emissive: 0x112211 });
+const chasedSphere = new THREE.Mesh(chasedGeometry, chasedMaterial);
+chasedSphere.position.set(2.5, 0, 0);
+chasedSphere.name = "Token: 'chased' - The query token receiving information";
+scene.add(chasedSphere);
+
+// Info cubes data
+const cubeData = [
+    { label: "agent", color: 0xffd700, isGold: true },
+    { label: "furry", color: 0x888888, isGold: false },
+    { label: "barks", color: 0x888888, isGold: false },
+    { label: "noun", color: 0x888888, isGold: false },
+    { label: "4-legs", color: 0x888888, isGold: false }
+];
+
+const cubes = [];
+const cubeSize = 0.25;
+
+cubeData.forEach((data, i) => {
+    const geometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
+    const material = new THREE.MeshPhongMaterial({
+        color: data.color,
+        emissive: data.isGold ? 0x443300 : 0x222222
+    });
+    const cube = new THREE.Mesh(geometry, material);
+    cube.name = `Info: '${data.label}' - ${data.isGold ? 'Selected by V (role information)' : 'Filtered out by V'}`;
+    cube.userData = {
+        label: data.label,
+        isGold: data.isGold,
+        orbitAngle: (i / 5) * Math.PI * 2,
+        orbitRadius: 1.0,
+        state: 'orbiting', // orbiting, moving, filtered, transferred
+        filterProgress: 0,
+        transferProgress: 0
+    };
+    cubes.push(cube);
+    scene.add(cube);
+});
+
+// V Filter (golden translucent membrane)
+const filterGeometry = new THREE.PlaneGeometry(1.2, 2);
+const filterMaterial = new THREE.MeshPhongMaterial({
+    color: 0xffd700,
+    transparent: true,
+    opacity: 0,
+    side: THREE.DoubleSide,
+    emissive: 0x332200
+});
+const vFilter = new THREE.Mesh(filterGeometry, filterMaterial);
+vFilter.position.set(0, 0, 0);
+vFilter.name = "V Matrix Filter - Selects which information to transmit";
+scene.add(vFilter);
+
+// Attention beam
+const beamGeometry = new THREE.CylinderGeometry(0.03, 0.03, 5, 8);
+const beamMaterial = new THREE.MeshPhongMaterial({
+    color: 0xffaa00,
+    transparent: true,
+    opacity: 0,
+    emissive: 0x442200
+});
+const beam = new THREE.Mesh(beamGeometry, beamMaterial);
+beam.rotation.z = Math.PI / 2;
+beam.position.set(0, 0, 0);
+beam.name = "Attention Beam - Connection weighted by Q·K similarity";
+scene.add(beam);
+
+// HTML Overlay for labels
+const overlay = document.createElement('div');
+overlay.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;';
+container.appendChild(overlay);
+
+function createLabel(id, text, x, y) {
+    const label = document.createElement('div');
+    label.id = id;
+    label.style.cssText = `
+        position:absolute;
+        left:${x}%;
+        top:${y}%;
+        transform:translate(-50%,-50%);
+        color:white;
+        font-family:Arial,sans-serif;
+        font-size:14px;
+        text-shadow:0 0 10px rgba(0,0,0,0.8),0 0 20px rgba(0,0,0,0.6);
+        text-align:center;
+        opacity:0;
+        transition:opacity 0.5s;
+        white-space:nowrap;
+    `;
+    label.textContent = text;
+    overlay.appendChild(label);
+    return label;
+}
+
+// Create all labels
+const dogLabel = createLabel('dogLabel', '"dog"', 22, 50);
+const chasedLabel = createLabel('chasedLabel', '"chased"', 78, 50);
+const embedLabel = createLabel('embedLabel', 'Original Embedding', 22, 30);
+const containsLabel = createLabel('containsLabel', 'Contains: agent, furry, barks, noun, 4-legs', 50, 85);
+const attentionLabel = createLabel('attentionLabel', 'Q·K Match: "Yes, dog is relevant to chased"', 50, 20);
+const scoreLabel = createLabel('scoreLabel', '0.8', 50, 45);
+const vLabel = createLabel('vLabel', 'V', 50, 50);
+const selectLabel = createLabel('selectLabel', 'V Selects: "Share only agent role"', 50, 20);
+const outputLabel = createLabel('outputLabel', 'Output: "dog is the one doing the action"', 50, 20);
+
+// EUREKA BOX - Phase 5
+const eurekaBox = document.createElement('div');
+eurekaBox.style.cssText = `
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.9);
+    border: 2px solid #ffd700;
+    border-radius: 16px;
+    padding: 30px 40px;
+    color: white;
+    font-family: Arial, sans-serif;
+    text-align: left;
+    opacity: 0;
+    transition: opacity 0.8s;
+    max-width: 500px;
+    box-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
+`;
+eurekaBox.innerHTML = `
+    <div style="font-size: 28px; text-align: center; margin-bottom: 20px;">🎯 THE KEY INSIGHT</div>
+    <div style="font-size: 18px; line-height: 1.8; margin-bottom: 15px;">
+        <span style="color: #ffaa00; font-weight: bold;">Q·K</span> = <span style="color: #aaa;">"Should I pay attention to dog?"</span><br>
+        <span style="margin-left: 40px;">→ <span style="color: #44ff44;">Yes (0.8)</span></span>
+    </div>
+    <div style="font-size: 18px; line-height: 1.8; margin-bottom: 20px;">
+        <span style="color: #ffd700; font-weight: bold;">V</span> = <span style="color: #aaa;">"What should dog tell me?"</span><br>
+        <span style="margin-left: 40px;">→ <span style="color: #ffd700;">"I'm doing the chasing"</span></span>
+    </div>
+    <div style="font-size: 16px; color: #888; border-top: 1px solid #444; padding-top: 15px; text-align: center;">
+        <span style="color: #ff6666;">Not:</span> "I'm furry, I bark, I have 4 legs..."
+    </div>
+`;
+overlay.appendChild(eurekaBox);
+
+// Tooltip
+const tooltip = document.createElement('div');
+tooltip.style.cssText = 'position:absolute;padding:6px 10px;background:rgba(0,0,0,0.8);color:white;border-radius:4px;font-size:12px;pointer-events:none;opacity:0;transition:opacity 0.2s;';
+container.appendChild(tooltip);
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+renderer.domElement.addEventListener('mousemove', (event) => {
+    const rect = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+    const allObjects = [dogSphere, chasedSphere, vFilter, beam, ...cubes];
+    const intersects = raycaster.intersectObjects(allObjects);
+
+    if (intersects.length > 0 && intersects[0].object.name) {
+        tooltip.textContent = intersects[0].object.name;
+        tooltip.style.left = (event.clientX - rect.left + 15) + 'px';
+        tooltip.style.top = (event.clientY - rect.top + 15) + 'px';
+        tooltip.style.opacity = '1';
+    } else {
+        tooltip.style.opacity = '0';
+    }
+});
+
+// Animation timing - NOW 40 SECONDS TOTAL
+const PHASE_DURATION = 40000; // 40 seconds total
+let startTime = Date.now();
+
+function getPhase(elapsed) {
+    const t = elapsed % PHASE_DURATION;
+    if (t < 6000) return { phase: 1, progress: t / 6000 };
+    if (t < 12000) return { phase: 2, progress: (t - 6000) / 6000 };
+    if (t < 22000) return { phase: 3, progress: (t - 12000) / 10000 };
+    if (t < 28000) return { phase: 4, progress: (t - 22000) / 6000 };
+    return { phase: 5, progress: (t - 28000) / 12000 }; // 12 seconds for Phase 5
+}
+
+function hideAllLabels() {
+    [embedLabel, containsLabel, attentionLabel, scoreLabel, vLabel, selectLabel, outputLabel].forEach(l => {
+        l.style.opacity = '0';
+    });
+}
+
+function resetAnimation() {
+    startTime = Date.now();
+    cubes.forEach(cube => {
+        cube.userData.state = 'orbiting';
+        cube.userData.filterProgress = 0;
+        cube.userData.transferProgress = 0;
+        cube.visible = true;
+        cube.material.opacity = 1;
+        cube.material.transparent = false;
+    });
+    beamMaterial.opacity = 0;
+    filterMaterial.opacity = 0;
+    chasedMaterial.emissive.setHex(0x112211);
+    dogMaterial.emissive.setHex(0x112244);
+    hideAllLabels();
+    eurekaBox.style.opacity = '0';
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+
+    const elapsed = Date.now() - startTime;
+    const { phase, progress } = getPhase(elapsed);
+    const time = elapsed * 0.001;
+
+    // Token labels always visible (except Phase 5)
+    dogLabel.style.opacity = phase === 5 ? '0' : '1';
+    chasedLabel.style.opacity = phase === 5 ? '0' : '1';
+
+    // Hide eureka box except in Phase 5
+    eurekaBox.style.opacity = phase === 5 ? '1' : '0';
+
+    // Reset states at phase transitions
+    if (phase === 1 && progress < 0.05) {
+        cubes.forEach(cube => {
+            cube.userData.state = 'orbiting';
+            cube.userData.filterProgress = 0;
+            cube.userData.transferProgress = 0;
+            cube.visible = true;
+            cube.material.opacity = 1;
+            cube.material.transparent = false;
+        });
+        beamMaterial.opacity = 0;
+        filterMaterial.opacity = 0;
+        chasedMaterial.emissive.setHex(0x112211);
+        dogMaterial.emissive.setHex(0x112244);
+    }
+
+    // PHASE 1: Setup - cubes orbit dog
+    if (phase === 1) {
+        hideAllLabels();
+        embedLabel.style.opacity = '1';
+        containsLabel.style.opacity = '1';
+
+        chasedMaterial.emissive.setHex(0x050505);
+
+        cubes.forEach((cube, i) => {
+            const angle = cube.userData.orbitAngle + time * 0.5;
+            const radius = cube.userData.orbitRadius;
+            cube.position.x = dogSphere.position.x + Math.cos(angle) * radius;
+            cube.position.y = Math.sin(angle) * radius * 0.5;
+            cube.position.z = Math.sin(angle * 0.7) * 0.3;
+            cube.rotation.x = time;
+            cube.rotation.y = time * 0.7;
+        });
+    }
+
+    // PHASE 2: Attention beam forms
+    if (phase === 2) {
+        hideAllLabels();
+        attentionLabel.style.opacity = '1';
+        scoreLabel.style.opacity = Math.min(1, progress * 2);
+
+        beamMaterial.opacity = Math.min(0.8, progress * 1.5);
+        chasedMaterial.emissive.setHex(0x115522);
+        dogMaterial.emissive.setHex(0x224488);
+
+        // Cubes continue orbiting
+        cubes.forEach((cube, i) => {
+            const angle = cube.userData.orbitAngle + time * 0.5;
+            const radius = cube.userData.orbitRadius;
+            cube.position.x = dogSphere.position.x + Math.cos(angle) * radius;
+            cube.position.y = Math.sin(angle) * radius * 0.5;
+            cube.position.z = Math.sin(angle * 0.7) * 0.3;
+            cube.rotation.x = time;
+            cube.rotation.y = time * 0.7;
+        });
+    }
+
+    // PHASE 3: V filter in action
+    if (phase === 3) {
+        hideAllLabels();
+        vLabel.style.opacity = '1';
+        selectLabel.style.opacity = progress > 0.3 ? '1' : '0';
+
+        // Show filter
+        filterMaterial.opacity = Math.min(0.5, progress * 2);
+        beamMaterial.opacity = 0.8;
+
+        cubes.forEach((cube, i) => {
+            const cubeProgress = Math.max(0, (progress - 0.1 - i * 0.1) / 0.4);
+
+            if (cubeProgress <= 0) {
+                // Still orbiting
+                const angle = cube.userData.orbitAngle + time * 0.5;
+                const radius = cube.userData.orbitRadius;
+                cube.position.x = dogSphere.position.x + Math.cos(angle) * radius;
+                cube.position.y = Math.sin(angle) * radius * 0.5;
+                cube.position.z = Math.sin(angle * 0.7) * 0.3;
+            } else if (cubeProgress < 1) {
+                // Moving toward filter
+                const startX = dogSphere.position.x + 0.8;
+                const endX = 0;
+                cube.position.x = startX + (endX - startX) * cubeProgress;
+                cube.position.y = cube.position.y * (1 - cubeProgress * 0.5);
+                cube.position.z = cube.position.z * (1 - cubeProgress);
+                cube.userData.state = 'moving';
+            } else {
+                // At filter - gold passes, others bounce/fade
+                if (cube.userData.isGold) {
+                    cube.userData.state = 'passed';
+                    cube.position.x = 0.3;
+                    cube.position.y = 0;
+                    cube.position.z = 0;
+                } else {
+                    cube.userData.state = 'filtered';
+                    const bounceProgress = Math.min(1, (cubeProgress - 1) * 2);
+                    cube.position.x = -0.5 - bounceProgress * 1.5;
+                    cube.position.y = (i - 2) * 0.4 * bounceProgress;
+                    cube.material.transparent = true;
+                    cube.material.opacity = Math.max(0, 1 - bounceProgress);
+                }
+            }
+
+            cube.rotation.x = time;
+            cube.rotation.y = time * 0.7;
+        });
+    }
+
+    // PHASE 4: Clean transfer
+    if (phase === 4) {
+        hideAllLabels();
+        outputLabel.style.opacity = '1';
+
+        filterMaterial.opacity = 0.3;
+        beamMaterial.opacity = 0.6;
+
+        cubes.forEach(cube => {
+            if (cube.userData.isGold) {
+                // Transfer to chased
+                const startX = 0.3;
+                const endX = chasedSphere.position.x + Math.cos(time * 0.8) * 0.8;
+                const endY = Math.sin(time * 0.8) * 0.4;
+
+                if (progress < 0.5) {
+                    const transferProg = progress * 2;
+                    cube.position.x = startX + (endX - startX) * transferProg;
+                    cube.position.y = endY * transferProg;
+                } else {
+                    // Orbit chased
+                    const angle = time * 0.8;
+                    cube.position.x = chasedSphere.position.x + Math.cos(angle) * 0.8;
+                    cube.position.y = Math.sin(angle) * 0.4;
+                    cube.position.z = Math.sin(angle * 0.5) * 0.2;
+                }
+                cube.rotation.x = time;
+                cube.rotation.y = time * 0.7;
+            } else {
+                cube.material.opacity = 0;
+                cube.visible = false;
+            }
+        });
+    }
+
+    // PHASE 5: Eureka moment - hold final scene with summary
+    if (phase === 5) {
+        hideAllLabels();
+
+        // Dim the 3D scene slightly
+        filterMaterial.opacity = 0.15;
+        beamMaterial.opacity = 0.3;
+        dogMaterial.emissive.setHex(0x080818);
+        chasedMaterial.emissive.setHex(0x081808);
+
+        // Gold cube continues gentle orbit around chased
+        cubes.forEach(cube => {
+            if (cube.userData.isGold) {
+                const angle = time * 0.5; // Slower, peaceful orbit
+                cube.position.x = chasedSphere.position.x + Math.cos(angle) * 0.8;
+                cube.position.y = Math.sin(angle) * 0.4;
+                cube.position.z = Math.sin(angle * 0.5) * 0.2;
+                cube.rotation.x = time * 0.5;
+                cube.rotation.y = time * 0.3;
+            }
+        });
+    }
+
+    controls.update();
+    renderer.render(scene, camera);
+}
+
+animate();
+
+        // Reset View button - restore camera position
+        const initialCameraPosition = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
+        document.getElementById('reset-view-btn').addEventListener('click', () => {
+            camera.position.set(initialCameraPosition.x, initialCameraPosition.y, initialCameraPosition.z);
+            camera.up.set(0, 1, 0);
+            controls.target.set(0, 0, 0);
+            controls.reset();
+        });
+
+        // Reset Animation button - restart from phase 1
+        document.getElementById('reset-anim-btn').addEventListener('click', resetAnimation);
+
+        // Add window resize handler
+        window.addEventListener('resize', () => {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        });
+    </script>
+</body>
+</html>
