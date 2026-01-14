@@ -385,7 +385,6 @@ That animation makes it click! The attention score (0.8) decides "yes, pay atten
 ## Dr. Nova Brooks
 Exactly - you've got it. Now, once we have attention scores, we use them to create **context vectors**. Here's the geometric intuition:
 
-::: {.column-page}
 <iframe
     src="animations/context-vector-animation.html"
     width="100%"
@@ -393,7 +392,6 @@ Exactly - you've got it. Now, once we have attention scores, we use them to crea
     style="border: none; border-radius: 8px; background: #000;"
     title="[6] Context Vector Animation">
 </iframe>
-:::
 
 *[6] Watch how context vectors form through weighted blending of Value vectors. The animation shows "dog" attending 60% to "chased" - so its new representation is pulled toward "chased's" Value. Drag to rotate, scroll to zoom.*
 
@@ -411,7 +409,6 @@ Perfectly said! Before attention, each token only knows about itself - its unifo
 
 Let me show you an interactive visualization that makes this crystal clear:
 
-::: {.column-page}
 <iframe
     src="animations/token-transformation-animation.html"
     width="100%"
@@ -419,7 +416,6 @@ Let me show you an interactive visualization that makes this crystal clear:
     style="border: none; border-radius: 8px; background: #000;"
     title="[7] Token Transformation Animation">
 </iframe>
-:::
 
 *[7] Watch how "visualization" transforms by attending to "data" and "users". The animation shows the before/after: initially each token is isolated, but after attention, "visualization" is pulled toward the tokens it attends to - it now UNDERSTANDS its context! Drag to rotate, scroll to zoom.*
 
