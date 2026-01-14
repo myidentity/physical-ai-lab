@@ -456,18 +456,28 @@ What does the feed-forward network do? I thought we already have context vectors
 
 ::: {.callout-note}
 ## Dr. Nova Brooks
-Good question! The feed-forward network adds non-linearity and allows the model to transform the context vectors further. It's typically:
+Excellent question! To understand why FFN is essential, I need to first show you something profound about attention that most explanations skip over.
 
-Input dimension → 4× larger hidden dimension → Back to input dimension
+Here's the critical insight: **attention is fundamentally LINEAR**. A weighted sum of vectors is still just a linear combination. No matter how many attention layers you stack, without something else, the network collapses to a single linear transformation.
 
-So if our embeddings are 512-dimensional, the FFN goes 512 → 2048 → 512.
+You can't learn complex patterns with only linear operations!
 
-Now, one thing I glossed over - in practice, we don't use just ONE attention head. We use **multi-head attention**.
+Before I explain how FFN solves this, let me first complete the attention picture with **multi-head attention**.
 :::
 
 ::: {.callout-important}
 ## Multi-Head Attention
-Instead of one attention matrix, we compute MULTIPLE attention matrices in parallel - typically 8 or 12 "heads." Each head can learn to attend to different relationship types (syntactic, semantic, positional, etc.). The outputs are concatenated and projected back.
+In practice, we don't use just ONE attention head. We use **multi-head attention** - computing MULTIPLE attention matrices in parallel (typically 8 or 12 "heads"). Each head can learn to attend to different relationship types (syntactic, semantic, positional, etc.). The outputs are concatenated and projected back.
+
+<iframe
+    src="animations/multi-head-attention-animation.html"
+    width="100%"
+    height="500px"
+    style="border: none; border-radius: 8px; background: #000;"
+    title="[9] Multi-Head Attention Animation">
+</iframe>
+
+*[9] Watch how 4 attention heads process "the red car" in parallel - each head learns different relationship patterns (adjective→noun, grammatical structure, etc.), then all heads combine into a richer output. Drag to rotate, scroll to zoom.*
 :::
 
 ::: {.callout-tip}
@@ -478,6 +488,48 @@ So one head might learn "what adjectives modify which nouns" while another learn
 ::: {.callout-note}
 ## Dr. Nova Brooks
 Exactly! Different heads specialize in different relationship patterns.
+
+But even with multi-head attention, we still have the linearity problem. That's where the **Feed-Forward Network (FFN)** comes in.
+:::
+
+::: {.callout-important}
+## The FFN Intuition: Communication vs. Thinking
+
+Think of the transformer encoder as having two distinct phases:
+
+| Component | What It Does | Analogy |
+|-----------|--------------|---------|
+| **Attention** | Tokens COMMUNICATE - share information | A meeting where everyone talks |
+| **FFN** | Each token THINKS - processes what it heard | Everyone goes home to analyze the discussion |
+
+Without FFN, you'd have a network that can communicate but can't *think* about what it learned. It's like a meeting where people pass notes around, but no one ever processes the information!
+:::
+
+::: {.callout-note}
+## Dr. Nova Brooks
+The FFN has a fascinating "expand-compress" pattern:
+
+**512 → 2048 → 512** (with non-linearity in the middle!)
+
+1. **Expand (512 → 2048)**: Give each token "thinking space" - room to explore complex transformations
+2. **Non-linearity (ReLU/GELU)**: The magic ingredient - this is what enables learning complex patterns
+3. **Compress (2048 → 512)**: Distill the transformation back, keeping only what's useful
+
+Here's something researchers discovered recently: FFN layers act as **"key-value memories"** - they store factual knowledge! When you ask ChatGPT "What is the capital of France?", it's the FFN layers that retrieve "Paris" from their learned memory.
+
+<iframe
+    src="animations/ffn-animation.html"
+    width="100%"
+    height="500px"
+    style="border: none; border-radius: 8px; background: #000;"
+    title="[10] Feed-Forward Network Animation">
+</iframe>
+
+*[10] Watch how the FFN transforms each token: expand to 4× dimensions, apply non-linearity (the spark!), then compress back. Attention mixes information BETWEEN tokens; FFN transforms WITHIN each token. Drag to rotate, scroll to zoom.*
+:::
+
+::: {.callout-note}
+## Dr. Nova Brooks
 
 Now, the encoder's job is to create a **rich representation** of the input sequence. It reads "the red car" and produces context vectors that understand: "red" modifies "car," "the" is an article, and together they describe a colored vehicle.
 

@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 900" width="700" height="900">
+  <defs>
+    <style>
+      .title { font: bold 16px sans-serif; fill: #333; }
+      .label { font: 14px sans-serif; fill: #333; }
+      .label-small { font: 12px sans-serif; fill: #666; }
+      .box { stroke-width: 2; rx: 5; }
+      .arrow { stroke: #333; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+      .encoder-box { fill: #fff3cd; stroke: #ffc107; }
+      .decoder-box { fill: #ffe4c4; stroke: #ff8c00; }
+      .attention-box { fill: #ffccbc; stroke: #ff5722; }
+      .ffn-box { fill: #b3e5fc; stroke: #03a9f4; }
+      .norm-box { fill: #fff9c4; stroke: #fdd835; }
+      .embed-box { fill: #f8bbd9; stroke: #e91e63; }
+      .output-box { fill: #c8e6c9; stroke: #4caf50; }
+      .linear-box { fill: #d1c4e9; stroke: #7e57c2; }
+      .bracket { stroke: #333; stroke-width: 2; fill: none; }
+      .plus-circle { fill: white; stroke: #333; stroke-width: 2; }
+      .pos-enc { fill: none; stroke: #333; stroke-width: 2; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#333"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="700" height="900" fill="#fafafa"/>
+
+  <!-- ==================== ENCODER (Left Side) ==================== -->
+
+  <!-- Encoder bracket -->
+  <path d="M 70 280 L 50 280 L 50 580 L 70 580" class="bracket"/>
+  <text x="35" y="435" text-anchor="middle" class="label" style="font-size: 18px;">N×</text>
+
+  <!-- Input Embedding -->
+  <rect x="100" y="780" width="120" height="40" class="box embed-box"/>
+  <text x="160" y="805" text-anchor="middle" class="label">Input</text>
+  <text x="160" y="820" text-anchor="middle" class="label">Embedding</text>
+
+  <!-- Inputs label -->
+  <text x="160" y="860" text-anchor="middle" class="label" style="font-weight: bold;">Inputs</text>
+  <path d="M 160 840 L 160 825" class="arrow"/>
+
+  <!-- Positional Encoding (encoder) -->
+  <ellipse cx="100" cy="710" rx="25" ry="15" class="pos-enc"/>
+  <path d="M 80 720 Q 100 700 120 720" class="pos-enc"/>
+  <text x="45" y="715" text-anchor="middle" class="label-small">Positional</text>
+  <text x="45" y="730" text-anchor="middle" class="label-small">Encoding</text>
+
+  <!-- Plus circle (encoder) -->
+  <circle cx="160" cy="710" r="12" class="plus-circle"/>
+  <text x="160" y="715" text-anchor="middle" class="label" style="font-size: 16px;">+</text>
+
+  <!-- Arrow from embedding to plus -->
+  <path d="M 160 780 L 160 725" class="arrow"/>
+  <!-- Arrow from pos enc to plus -->
+  <path d="M 125 710 L 145 710" class="arrow" style="marker-end: none;"/>
+
+  <!-- Multi-Head Attention (encoder) -->
+  <rect x="100" y="580" width="120" height="50" class="box attention-box"/>
+  <text x="160" y="600" text-anchor="middle" class="label">Multi-Head</text>
+  <text x="160" y="618" text-anchor="middle" class="label">Attention</text>
+
+  <!-- Arrow to attention -->
+  <path d="M 160 695 L 160 635" class="arrow"/>
+
+  <!-- Self-attention arrows (3 inputs from below) -->
+  <path d="M 130 695 L 130 635" class="arrow"/>
+  <path d="M 190 695 L 190 635" class="arrow"/>
+
+  <!-- Add &amp; Norm 1 (encoder) -->
+  <rect x="100" y="500" width="120" height="35" class="box norm-box"/>
+  <text x="160" y="523" text-anchor="middle" class="label">Add &amp; Norm</text>
+
+  <!-- Arrow from attention to norm -->
+  <path d="M 160 580 L 160 540" class="arrow"/>
+  <!-- Residual connection -->
+  <path d="M 230 660 L 230 517 L 225 517" class="arrow"/>
+
+  <!-- Feed Forward (encoder) -->
+  <rect x="100" y="410" width="120" height="45" class="box ffn-box"/>
+  <text x="160" y="428" text-anchor="middle" class="label">Feed</text>
+  <text x="160" y="446" text-anchor="middle" class="label">Forward</text>
+
+  <!-- Arrow from norm to ffn -->
+  <path d="M 160 500 L 160 460" class="arrow"/>
+
+  <!-- Add &amp; Norm 2 (encoder) -->
+  <rect x="100" y="330" width="120" height="35" class="box norm-box"/>
+  <text x="160" y="353" text-anchor="middle" class="label">Add &amp; Norm</text>
+
+  <!-- Arrow from ffn to norm -->
+  <path d="M 160 410 L 160 370" class="arrow"/>
+  <!-- Residual connection -->
+  <path d="M 230 480 L 230 347 L 225 347" class="arrow"/>
+
+  <!-- Arrow out of encoder to decoder -->
+  <path d="M 160 330 L 160 280 L 350 280 L 350 480" class="arrow" style="stroke-dasharray: 5,5;"/>
+
+  <!-- ==================== DECODER (Right Side) ==================== -->
+
+  <!-- Decoder bracket -->
+  <path d="M 290 180 L 270 180 L 270 630 L 290 630" class="bracket"/>
+  <text x="255" y="405" text-anchor="middle" class="label" style="font-size: 18px;">N×</text>
+
+  <!-- Output Embedding -->
+  <rect x="340" y="780" width="120" height="40" class="box embed-box"/>
+  <text x="400" y="805" text-anchor="middle" class="label">Output</text>
+  <text x="400" y="820" text-anchor="middle" class="label">Embedding</text>
+
+  <!-- Outputs label -->
+  <text x="400" y="860" text-anchor="middle" class="label" style="font-weight: bold;">Outputs</text>
+  <text x="400" y="878" text-anchor="middle" class="label-small">(shifted right)</text>
+  <path d="M 400 840 L 400 825" class="arrow"/>
+
+  <!-- Positional Encoding (decoder) -->
+  <ellipse cx="480" cy="710" rx="25" ry="15" class="pos-enc"/>
+  <path d="M 460 720 Q 480 700 500 720" class="pos-enc"/>
+  <text x="545" y="715" text-anchor="middle" class="label-small">Positional</text>
+  <text x="545" y="730" text-anchor="middle" class="label-small">Encoding</text>
+
+  <!-- Plus circle (decoder) -->
+  <circle cx="400" cy="710" r="12" class="plus-circle"/>
+  <text x="400" y="715" text-anchor="middle" class="label" style="font-size: 16px;">+</text>
+
+  <!-- Arrow from embedding to plus -->
+  <path d="M 400 780 L 400 725" class="arrow"/>
+  <!-- Arrow from pos enc to plus -->
+  <path d="M 455 710 L 415 710" class="arrow" style="marker-end: none;"/>
+
+  <!-- Masked Multi-Head Attention (decoder) -->
+  <rect x="340" y="580" width="120" height="55" class="box attention-box"/>
+  <text x="400" y="598" text-anchor="middle" class="label">Masked</text>
+  <text x="400" y="614" text-anchor="middle" class="label">Multi-Head</text>
+  <text x="400" y="630" text-anchor="middle" class="label">Attention</text>
+
+  <!-- Arrow to masked attention -->
+  <path d="M 400 695 L 400 640" class="arrow"/>
+  <path d="M 370 695 L 370 640" class="arrow"/>
+  <path d="M 430 695 L 430 640" class="arrow"/>
+
+  <!-- Add &amp; Norm 1 (decoder) -->
+  <rect x="340" y="500" width="120" height="35" class="box norm-box"/>
+  <text x="400" y="523" text-anchor="middle" class="label">Add &amp; Norm</text>
+
+  <!-- Arrow from masked attention to norm -->
+  <path d="M 400 580 L 400 540" class="arrow"/>
+  <!-- Residual connection -->
+  <path d="M 470 660 L 470 517 L 465 517" class="arrow"/>
+
+  <!-- Multi-Head Attention (cross-attention, decoder) -->
+  <rect x="340" y="400" width="120" height="50" class="box attention-box"/>
+  <text x="400" y="420" text-anchor="middle" class="label">Multi-Head</text>
+  <text x="400" y="438" text-anchor="middle" class="label">Attention</text>
+
+  <!-- Arrow from norm to cross-attention -->
+  <path d="M 400 500 L 400 455" class="arrow"/>
+  <!-- K, V from encoder -->
+  <path d="M 350 430 L 340 430" class="arrow" style="marker-end: none;"/>
+  <path d="M 350 420 L 340 420" class="arrow" style="marker-end: none;"/>
+
+  <!-- Add &amp; Norm 2 (decoder) -->
+  <rect x="340" y="320" width="120" height="35" class="box norm-box"/>
+  <text x="400" y="343" text-anchor="middle" class="label">Add &amp; Norm</text>
+
+  <!-- Arrow from cross-attention to norm -->
+  <path d="M 400 400 L 400 360" class="arrow"/>
+  <!-- Residual connection -->
+  <path d="M 470 480 L 470 337 L 465 337" class="arrow"/>
+
+  <!-- Feed Forward (decoder) -->
+  <rect x="340" y="235" width="120" height="45" class="box ffn-box"/>
+  <text x="400" y="253" text-anchor="middle" class="label">Feed</text>
+  <text x="400" y="271" text-anchor="middle" class="label">Forward</text>
+
+  <!-- Arrow from norm to ffn -->
+  <path d="M 400 320 L 400 285" class="arrow"/>
+
+  <!-- Add &amp; Norm 3 (decoder) -->
+  <rect x="340" y="160" width="120" height="35" class="box norm-box"/>
+  <text x="400" y="183" text-anchor="middle" class="label">Add &amp; Norm</text>
+
+  <!-- Arrow from ffn to norm -->
+  <path d="M 400 235 L 400 200" class="arrow"/>
+  <!-- Residual connection -->
+  <path d="M 470 300 L 470 177 L 465 177" class="arrow"/>
+
+  <!-- ==================== OUTPUT LAYERS ==================== -->
+
+  <!-- Linear -->
+  <rect x="340" y="95" width="120" height="35" class="box linear-box"/>
+  <text x="400" y="118" text-anchor="middle" class="label">Linear</text>
+
+  <!-- Arrow from norm to linear -->
+  <path d="M 400 160 L 400 135" class="arrow"/>
+
+  <!-- Softmax -->
+  <rect x="340" y="35" width="120" height="35" class="box output-box"/>
+  <text x="400" y="58" text-anchor="middle" class="label">Softmax</text>
+
+  <!-- Arrow from linear to softmax -->
+  <path d="M 400 95 L 400 75" class="arrow"/>
+
+  <!-- Output Probabilities label -->
+  <text x="400" y="20" text-anchor="middle" class="label" style="font-weight: bold;">Output Probabilities</text>
+  <path d="M 400 35 L 400 25" class="arrow"/>
+
+  <!-- Legend -->
+  <rect x="520" y="780" width="15" height="15" fill="#ffccbc" stroke="#ff5722" stroke-width="1"/>
+  <text x="540" y="792" class="label-small">Attention</text>
+  <rect x="520" y="800" width="15" height="15" fill="#b3e5fc" stroke="#03a9f4" stroke-width="1"/>
+  <text x="540" y="812" class="label-small">Feed Forward</text>
+  <rect x="520" y="820" width="15" height="15" fill="#fff9c4" stroke="#fdd835" stroke-width="1"/>
+  <text x="540" y="832" class="label-small">Add &amp; Norm</text>
+
+</svg>

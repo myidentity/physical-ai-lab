@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Head Attention Animation</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        .control-btn {
+            position: absolute;
+            bottom: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        #reset-view-btn { right: 20px; }
+        #reset-anim-btn { right: 150px; }
+
+        /* Text overlay base styles */
+        .text-overlay {
+            position: absolute;
+            pointer-events: none;
+            font-family: Arial, sans-serif;
+            text-shadow: 0 0 10px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.6);
+            transition: opacity 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    <button id="reset-anim-btn" class="control-btn">⟲ Reset Animation</button>
+    <button id="reset-view-btn" class="control-btn">↺ Reset View</button>
+
+    <!-- Three.js libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TrackballControls.js"></script>
+
+    <script>
+        const container = document.getElementById('container');
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        // ============================================
+        // ILLUSTRATION CODE FROM DATABASE GOES HERE
+        // ============================================
+        // Scene setup
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x000000);
+
+const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+camera.position.set(0, 0, 12);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(width, height);
+container.appendChild(renderer.domElement);
+
+const controls = new THREE.TrackballControls(camera, renderer.domElement);
+controls.rotateSpeed = 2.0;
+controls.zoomSpeed = 1.2;
+controls.panSpeed = 0.8;
+
+// Lighting - brighter for visibility
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+scene.add(ambientLight);
+
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+directionalLight.position.set(5, 10, 7);
+scene.add(directionalLight);
+
+// Colors
+const colors = {
+    white: 0xFFFFFF,
+    coral: 0xFF6B6B,
+    cyan: 0x4ECDC4,
+    blue: 0x2E86AB,
+    green: 0x28A745,
+    orange: 0xFF6B35,
+    purple: 0x9B59B6,
+    gold: 0xFFD700
+};
+
+// Store all objects for animation
+const objects = {
+    inputTokens: [],
+    heads: [],
+    headLabels: [],
+    connections: [],
+    outputTokens: [],
+    allMeshes: []
+};
+
+// HTML overlay container
+const overlayContainer = document.createElement('div');
+overlayContainer.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:hidden;';
+container.appendChild(overlayContainer);
+
+// Create 2D label function
+function createLabel(text, color = '#FFFFFF', fontSize = '14px') {
+    const label = document.createElement('div');
+    label.innerHTML = text;
+    label.style.cssText = `
+        position: absolute;
+        color: ${color};
+        font-family: Arial, sans-serif;
+        font-size: ${fontSize};
+        font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.9), -1px -1px 2px rgba(0,0,0,0.9);
+        white-space: nowrap;
+        transform: translate(-50%, -50%);
+        opacity: 0;
+        transition: opacity 0.3s;
+    `;
+    overlayContainer.appendChild(label);
+    return label;
+}
+
+// Title and subtitle labels
+const titleLabel = createLabel('', '#FFFFFF', '24px');
+const subtitleLabel = createLabel('', '#AAAAAA', '16px');
+
+// Punchline box
+const punchlineBox = document.createElement('div');
+punchlineBox.style.cssText = `
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.9);
+    border: 2px solid #FFD700;
+    border-radius: 12px;
+    padding: 20px 30px;
+    color: white;
+    font-family: Arial, sans-serif;
+    text-align: left;
+    opacity: 0;
+    transition: opacity 0.5s;
+    max-width: 450px;
+`;
+punchlineBox.innerHTML = `
+    <div style="font-size: 20px; font-weight: bold; color: #FFD700; margin-bottom: 15px;">🎯 WHY MULTI-HEAD ATTENTION?</div>
+    <div style="font-size: 14px; line-height: 1.8;">
+        <div style="margin-bottom: 8px;">• Each head learns <span style="color: #4ECDC4;">DIFFERENT</span> relationships</div>
+        <div style="margin-bottom: 8px;">• Head 1: <span style="color: #2E86AB;">"red modifies car"</span></div>
+        <div style="margin-bottom: 8px;">• Head 2: <span style="color: #28A745;">"the is an article"</span></div>
+        <div style="margin-bottom: 8px;">• Combined: <span style="color: #FF6B6B;">RICHER</span> understanding than 1 head</div>
+        <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #444; color: #FFD700;">
+            8 heads = 8 experts, each with unique insight
+        </div>
+    </div>
+`;
+overlayContainer.appendChild(punchlineBox);
+
+// Create input tokens
+const inputData = [
+    { text: '"the"', color: colors.white, x: -3 },
+    { text: '"red"', color: colors.coral, x: 0 },
+    { text: '"car"', color: colors.cyan, x: 3 }
+];
+
+inputData.forEach((data, i) => {
+    const geometry = new THREE.SphereGeometry(0.4, 32, 32);
+    const material = new THREE.MeshPhongMaterial({ 
+        color: data.color, 
+        emissive: data.color,
+        emissiveIntensity: 0.3
+    });
+    const sphere = new THREE.Mesh(geometry, material);
+    sphere.position.set(data.x, 3, 0);
+    sphere.name = `Input Token: ${data.text}`;
+    sphere.visible = false;
+    scene.add(sphere);
+    objects.inputTokens.push(sphere);
+    objects.allMeshes.push(sphere);
+    
+    const label = createLabel(data.text, '#FFFFFF', '16px');
+    label.dataset.targetX = data.x;
+    label.dataset.targetY = 3;
+    label.dataset.offsetY = 0.8;
+    objects.inputTokens.push({ label, sphere });
+});
+
+// Create attention heads
+const headData = [
+    { name: 'Head 1: Adjective→Noun', color: colors.blue, y: 1 },
+    { name: 'Head 2: Article→All', color: colors.green, y: 0 },
+    { name: 'Head 3: Self-Reference', color: colors.orange, y: -1 },
+    { name: 'Head 4: Positional', color: colors.purple, y: -2 }
+];
+
+headData.forEach((data, i) => {
+    // Head box
+    const geometry = new THREE.BoxGeometry(6, 0.6, 0.3);
+    const material = new THREE.MeshPhongMaterial({ 
+        color: data.color,
+        emissive: data.color,
+        emissiveIntensity: 0.2,
+        transparent: true,
+        opacity: 0
+    });
+    const box = new THREE.Mesh(geometry, material);
+    box.position.set(0, data.y, 0);
+    box.name = data.name;
+    scene.add(box);
+    objects.heads.push({ mesh: box, color: data.color, data });
+    objects.allMeshes.push(box);
+    
+    // Head label
+    const label = createLabel(data.name, `#${data.color.toString(16).padStart(6, '0')}`, '12px');
+    label.dataset.targetX = 0;
+    label.dataset.targetY = data.y;
+    label.dataset.offsetX = 4.5;
+    objects.headLabels.push(label);
+});
+
+// Create connection lines
+function createConnection(startX, startY, endX, endY, color) {
+    const points = [];
+    points.push(new THREE.Vector3(startX, startY, 0));
+    points.push(new THREE.Vector3(endX, endY, 0));
+    
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    const material = new THREE.LineBasicMaterial({ 
+        color: color,
+        transparent: true,
+        opacity: 0,
+        linewidth: 2
+    });
+    const line = new THREE.Line(geometry, material);
+    scene.add(line);
+    return line;
+}
+
+// Head 1 connections (red → car)
+const head1Connections = [
+    createConnection(0, 2.5, 0, 1.3, colors.blue),
+    createConnection(3, 2.5, 3, 1.3, colors.blue),
+    createConnection(0, 0.7, 3, 0.7, colors.blue)
+];
+objects.connections.push({ lines: head1Connections, headIndex: 0 });
+
+// Head 2 connections (the → all)
+const head2Connections = [
+    createConnection(-3, 2.5, -3, 0.3, colors.green),
+    createConnection(-3, -0.3, 0, -0.3, colors.green),
+    createConnection(-3, -0.3, 3, -0.3, colors.green)
+];
+objects.connections.push({ lines: head2Connections, headIndex: 1 });
+
+// Head 3 connections (self)
+const head3Connections = [
+    createConnection(-3, 2.5, -3, -0.7, colors.orange),
+    createConnection(0, 2.5, 0, -0.7, colors.orange),
+    createConnection(3, 2.5, 3, -0.7, colors.orange)
+];
+objects.connections.push({ lines: head3Connections, headIndex: 2 });
+
+// Head 4 connections (positional)
+const head4Connections = [
+    createConnection(-3, 2.5, -2, -1.7, colors.purple),
+    createConnection(0, 2.5, 0, -1.7, colors.purple),
+    createConnection(3, 2.5, 2, -1.7, colors.purple)
+];
+objects.connections.push({ lines: head4Connections, headIndex: 3 });
+
+// Create output tokens
+const outputData = [
+    { text: 'Output: "the"', x: -3 },
+    { text: 'Output: "red"', x: 0 },
+    { text: 'Output: "car"', x: 3 }
+];
+
+outputData.forEach((data, i) => {
+    const geometry = new THREE.SphereGeometry(0.5, 32, 32);
+    const material = new THREE.MeshPhongMaterial({ 
+        color: colors.gold,
+        emissive: colors.gold,
+        emissiveIntensity: 0.4,
+        transparent: true,
+        opacity: 0
+    });
+    const sphere = new THREE.Mesh(geometry, material);
+    sphere.position.set(data.x, -4, 0);
+    sphere.name = data.text;
+    scene.add(sphere);
+    objects.outputTokens.push({ mesh: sphere, text: data.text });
+    objects.allMeshes.push(sphere);
+    
+    const label = createLabel(data.text, '#FFD700', '14px');
+    label.dataset.targetX = data.x;
+    label.dataset.targetY = -4;
+    label.dataset.offsetY = 0.9;
+    objects.outputTokens[objects.outputTokens.length - 1].label = label;
+});
+
+// Combined label
+const combinedLabel = createLabel('Combined from all 4 heads', '#FFFFFF', '12px');
+combinedLabel.dataset.targetX = 0;
+combinedLabel.dataset.targetY = -5.2;
+
+// Tooltip
+const tooltip = document.createElement('div');
+tooltip.style.cssText = 'position:absolute;padding:6px 10px;background:rgba(0,0,0,0.8);color:white;border-radius:4px;font-size:12px;pointer-events:none;opacity:0;transition:opacity 0.2s;';
+container.appendChild(tooltip);
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+container.addEventListener('mousemove', (event) => {
+    const rect = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(objects.allMeshes);
+    
+    if (intersects.length > 0 && intersects[0].object.visible) {
+        tooltip.textContent = intersects[0].object.name;
+        tooltip.style.left = (event.clientX - rect.left + 10) + 'px';
+        tooltip.style.top = (event.clientY - rect.top - 20) + 'px';
+        tooltip.style.opacity = '1';
+    } else {
+        tooltip.style.opacity = '0';
+    }
+});
+
+// Update label positions
+function updateLabelPositions() {
+    const updateLabel = (label, targetPos, offsetX = 0, offsetY = 0) => {
+        const vector = targetPos.clone();
+        vector.y -= offsetY;
+        vector.x += offsetX;
+        vector.project(camera);
+        
+        const x = (vector.x * 0.5 + 0.5) * width;
+        const y = (-vector.y * 0.5 + 0.5) * height;
+        
+        label.style.left = x + 'px';
+        label.style.top = y + 'px';
+    };
+    
+    // Title at top
+    titleLabel.style.left = '50%';
+    titleLabel.style.top = '8%';
+    
+    subtitleLabel.style.left = '50%';
+    subtitleLabel.style.top = '14%';
+    
+    // Input token labels
+    objects.inputTokens.forEach((item) => {
+        if (item.label && item.sphere) {
+            updateLabel(item.label, item.sphere.position, 0, -0.8);
+        }
+    });
+    
+    // Head labels
+    objects.headLabels.forEach((label, i) => {
+        if (objects.heads[i]) {
+            updateLabel(label, objects.heads[i].mesh.position, 4.5, 0);
+        }
+    });
+    
+    // Output labels
+    objects.outputTokens.forEach((item) => {
+        if (item.label && item.mesh) {
+            updateLabel(item.label, item.mesh.position, 0, -0.9);
+        }
+    });
+    
+    // Combined label
+    updateLabel(combinedLabel, new THREE.Vector3(0, -5.2, 0), 0, 0);
+}
+
+// Animation state
+let animationTime = 0;
+const phaseDurations = [5, 6, 5, 5, 6, 15]; // seconds per phase (Phase 6 now 15s)
+const totalDuration = phaseDurations.reduce((a, b) => a + b, 0); // ~42 seconds
+
+function getPhase(time) {
+    let accumulated = 0;
+    for (let i = 0; i < phaseDurations.length; i++) {
+        accumulated += phaseDurations[i];
+        if (time < accumulated) {
+            return { phase: i + 1, phaseTime: time - (accumulated - phaseDurations[i]) };
+        }
+    }
+    return { phase: 6, phaseTime: phaseDurations[5] };
+}
+
+function resetScene() {
+    // Hide all elements
+    objects.inputTokens.forEach((item) => {
+        if (item instanceof THREE.Mesh) {
+            item.visible = false;
+        } else if (item.label) {
+            item.label.style.opacity = '0';
+        }
+    });
+    
+    objects.heads.forEach((head) => {
+        head.mesh.material.opacity = 0;
+    });
+    
+    objects.headLabels.forEach((label) => {
+        label.style.opacity = '0';
+    });
+    
+    objects.connections.forEach((conn) => {
+        conn.lines.forEach((line) => {
+            line.material.opacity = 0;
+        });
+    });
+    
+    objects.outputTokens.forEach((item) => {
+        item.mesh.material.opacity = 0;
+        if (item.label) item.label.style.opacity = '0';
+    });
+    
+    combinedLabel.style.opacity = '0';
+    punchlineBox.style.opacity = '0';
+    titleLabel.style.opacity = '0';
+    subtitleLabel.style.opacity = '0';
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+    
+    const delta = 1 / 60;
+    animationTime += delta;
+    
+    if (animationTime > totalDuration) {
+        resetScene();
+        animationTime = 0;
+    }
+    
+    const { phase, phaseTime } = getPhase(animationTime);
+    const fadeIn = Math.min(phaseTime / 0.5, 1);
+    
+    // Reset punchline when not in phase 6
+    if (phase !== 6) {
+        punchlineBox.style.opacity = '0';
+    }
+    
+    // Phase 1: Input tokens
+    if (phase >= 1) {
+        titleLabel.innerHTML = 'INPUT TOKENS';
+        subtitleLabel.innerHTML = 'Three words enter the encoder';
+        titleLabel.style.opacity = '1';
+        subtitleLabel.style.opacity = '1';
+        
+        objects.inputTokens.forEach((item) => {
+            if (item instanceof THREE.Mesh) {
+                item.visible = true;
+                item.material.opacity = phase === 1 ? fadeIn : 1;
+            } else if (item.label) {
+                item.label.style.opacity = phase === 1 ? fadeIn : 1;
+            }
+        });
+    }
+    
+    // Phase 2: Multi-head attention
+    if (phase >= 2) {
+        if (phase === 2) {
+            titleLabel.innerHTML = 'MULTI-HEAD ATTENTION';
+            subtitleLabel.innerHTML = '4 heads process IN PARALLEL';
+        }
+        
+        objects.heads.forEach((head) => {
+            head.mesh.material.opacity = phase >= 2 ? Math.min((phase === 2 ? phaseTime : 10) / 1, 0.8) : 0;
+        });
+        
+        objects.headLabels.forEach((label) => {
+            label.style.opacity = phase >= 2 ? '1' : '0';
+        });
+    }
+    
+    // Phase 3: Head 1 focus
+    if (phase === 3) {
+        titleLabel.innerHTML = 'HEAD 1: Adjective→Noun';
+        subtitleLabel.innerHTML = 'Learns: "red" describes "car"';
+        
+        objects.heads[0].mesh.material.emissiveIntensity = 0.5 + Math.sin(phaseTime * 4) * 0.3;
+        objects.connections[0].lines.forEach((line) => {
+            line.material.opacity = fadeIn * 0.8;
+        });
+    } else if (objects.heads[0]) {
+        objects.heads[0].mesh.material.emissiveIntensity = 0.2;
+    }
+    
+    // Phase 4: Head 2 focus
+    if (phase === 4) {
+        titleLabel.innerHTML = 'HEAD 2: Grammatical';
+        subtitleLabel.innerHTML = 'Learns: "the" connects to both';
+        
+        objects.heads[1].mesh.material.emissiveIntensity = 0.5 + Math.sin(phaseTime * 4) * 0.3;
+        objects.connections[1].lines.forEach((line) => {
+            line.material.opacity = fadeIn * 0.8;
+        });
+    } else if (objects.heads[1]) {
+        objects.heads[1].mesh.material.emissiveIntensity = 0.2;
+    }
+    
+    // Keep previous connections visible
+    if (phase >= 3) {
+        objects.connections[0].lines.forEach((line) => {
+            line.material.opacity = Math.max(line.material.opacity, 0.4);
+        });
+    }
+    if (phase >= 4) {
+        objects.connections[1].lines.forEach((line) => {
+            line.material.opacity = Math.max(line.material.opacity, 0.4);
+        });
+    }
+    
+    // Phase 5: Output
+    if (phase >= 5) {
+        if (phase === 5) {
+            titleLabel.innerHTML = 'CONCATENATE & PROJECT';
+            subtitleLabel.innerHTML = 'All heads merge into one output';
+        }
+        
+        objects.outputTokens.forEach((item) => {
+            item.mesh.material.opacity = phase >= 5 ? Math.min((phase === 5 ? phaseTime : 10) / 1, 1) : 0;
+            if (item.label) {
+                item.label.style.opacity = phase >= 5 ? '1' : '0';
+            }
+        });
+        
+        combinedLabel.style.opacity = phase >= 5 ? '1' : '0';
+        
+        // Show all connections faintly
+        objects.connections.forEach((conn) => {
+            conn.lines.forEach((line) => {
+                line.material.opacity = Math.max(line.material.opacity, 0.3);
+            });
+        });
+    }
+    
+    // Phase 6: Punchline (now 15 seconds)
+    if (phase === 6) {
+        titleLabel.innerHTML = '🎯 THE POWER OF MULTI-HEAD';
+        subtitleLabel.innerHTML = '8 heads = 8 perspectives learned simultaneously';
+        
+        punchlineBox.style.opacity = fadeIn.toString();
+        
+        // Pulse all heads
+        objects.heads.forEach((head, i) => {
+            head.mesh.material.emissiveIntensity = 0.3 + Math.sin(phaseTime * 2 + i) * 0.2;
+        });
+        
+        // Pulse outputs
+        objects.outputTokens.forEach((item) => {
+            item.mesh.material.emissiveIntensity = 0.4 + Math.sin(phaseTime * 3) * 0.2;
+        });
+    }
+    
+    updateLabelPositions();
+    controls.update();
+    renderer.render(scene, camera);
+}
+
+animate();
+        // ============================================
+        // END ILLUSTRATION CODE
+        // ============================================
+
+        // Reset View button - restore camera position
+        const initialCameraPosition = {
+            x: camera.position.x,
+            y: camera.position.y,
+            z: camera.position.z
+        };
+
+        document.getElementById('reset-view-btn').addEventListener('click', () => {
+            camera.position.set(
+                initialCameraPosition.x,
+                initialCameraPosition.y,
+                initialCameraPosition.z
+            );
+            camera.up.set(0, 1, 0);
+            controls.target.set(0, 0, 0);
+            controls.reset();
+        });
+
+        // Reset Animation button - restart from phase 1
+        // Note: resetAnimation() function must be defined in the illustration code
+        document.getElementById('reset-anim-btn').addEventListener('click', () => {
+            if (typeof resetAnimation === 'function') {
+                resetAnimation();
+            } else {
+                console.warn('resetAnimation() not defined in illustration code');
+            }
+        });
+
+        // Window resize handler
+        window.addEventListener('resize', () => {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        });
+    </script>
+</body>
+</html>

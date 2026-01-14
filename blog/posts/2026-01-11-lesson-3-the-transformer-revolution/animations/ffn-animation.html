@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FFN Animation</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        .control-btn {
+            position: absolute;
+            bottom: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        #reset-view-btn { right: 20px; }
+        #reset-anim-btn { right: 150px; }
+
+        /* Text overlay base styles */
+        .text-overlay {
+            position: absolute;
+            pointer-events: none;
+            font-family: Arial, sans-serif;
+            text-shadow: 0 0 10px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.6);
+            transition: opacity 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    <button id="reset-anim-btn" class="control-btn">⟲ Reset Animation</button>
+    <button id="reset-view-btn" class="control-btn">↺ Reset View</button>
+
+    <!-- Three.js libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TrackballControls.js"></script>
+
+    <script>
+        const container = document.getElementById('container');
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        // ============================================
+        // ILLUSTRATION CODE FROM DATABASE GOES HERE
+        // ============================================
+        // Scene setup
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x000000);
+
+const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+camera.position.set(0, 0, 12);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(width, height);
+container.appendChild(renderer.domElement);
+
+const controls = new THREE.TrackballControls(camera, renderer.domElement);
+controls.rotateSpeed = 2.0;
+controls.zoomSpeed = 1.2;
+controls.panSpeed = 0.8;
+
+// Lighting - bright for visibility
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+scene.add(ambientLight);
+
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+directionalLight.position.set(5, 10, 7);
+scene.add(directionalLight);
+
+const backLight = new THREE.DirectionalLight(0xffffff, 0.4);
+backLight.position.set(-5, -5, -5);
+scene.add(backLight);
+
+// Token data
+const tokens = [
+    { text: "the", color: 0xffffff, x: -3 },
+    { text: "red", color: 0xFF6B6B, x: 0 },
+    { text: "car", color: 0x4ECDC4, x: 3 }
+];
+
+// Create input spheres
+const inputSpheres = [];
+const inputGroup = new THREE.Group();
+inputGroup.position.set(0, 3, 0);
+scene.add(inputGroup);
+
+tokens.forEach((token, i) => {
+    const geometry = new THREE.SphereGeometry(0.4, 32, 32);
+    const material = new THREE.MeshStandardMaterial({ 
+        color: token.color, 
+        emissive: token.color,
+        emissiveIntensity: 0.3
+    });
+    const sphere = new THREE.Mesh(geometry, material);
+    sphere.position.set(token.x, 0, 0);
+    sphere.name = `Input: ${token.text} (enriched from attention)`;
+    inputGroup.add(sphere);
+    inputSpheres.push(sphere);
+});
+
+// Expanded representations (4 small spheres per token)
+const expandedGroups = [];
+const expansionGroup = new THREE.Group();
+expansionGroup.position.set(0, 0.5, 0);
+scene.add(expansionGroup);
+
+tokens.forEach((token, i) => {
+    const group = new THREE.Group();
+    group.position.set(token.x, 0, 0);
+    
+    for (let j = 0; j < 4; j++) {
+        const geometry = new THREE.SphereGeometry(0.25, 32, 32);
+        const material = new THREE.MeshStandardMaterial({ 
+            color: token.color,
+            emissive: token.color,
+            emissiveIntensity: 0.2
+        });
+        const sphere = new THREE.Mesh(geometry, material);
+        const angle = (j / 4) * Math.PI * 2;
+        sphere.position.set(Math.cos(angle) * 0.6, Math.sin(angle) * 0.6, 0);
+        sphere.name = `Expanded dimension ${j+1} of "${token.text}"`;
+        sphere.visible = false;
+        group.add(sphere);
+    }
+    expansionGroup.add(group);
+    expandedGroups.push(group);
+});
+
+// Lightning/spark effect for non-linearity
+const sparkGroup = new THREE.Group();
+sparkGroup.position.set(0, 0.5, 0);
+scene.add(sparkGroup);
+
+const sparkMaterial = new THREE.MeshBasicMaterial({ color: 0xFFD700 });
+const sparks = [];
+
+tokens.forEach((token, i) => {
+    const sparkGeometry = new THREE.OctahedronGeometry(0.3, 0);
+    const spark = new THREE.Mesh(sparkGeometry, sparkMaterial.clone());
+    spark.position.set(token.x, 0, 0);
+    spark.name = "ReLU/GELU Activation - Non-linear transformation";
+    spark.visible = false;
+    sparkGroup.add(spark);
+    sparks.push(spark);
+});
+
+// Output spheres (transformed with golden glow)
+const outputSpheres = [];
+const outputGroup = new THREE.Group();
+outputGroup.position.set(0, -2.5, 0);
+scene.add(outputGroup);
+
+const transformedColors = [0xFFE4B5, 0xFFB347, 0x98D8C8];
+
+tokens.forEach((token, i) => {
+    const geometry = new THREE.SphereGeometry(0.4, 32, 32);
+    const material = new THREE.MeshStandardMaterial({ 
+        color: transformedColors[i],
+        emissive: 0xFFD700,
+        emissiveIntensity: 0.4
+    });
+    const sphere = new THREE.Mesh(geometry, material);
+    sphere.position.set(token.x, 0, 0);
+    sphere.name = `Output: ${token.text} (transformed by FFN)`;
+    sphere.visible = false;
+    outputGroup.add(sphere);
+    outputSpheres.push(sphere);
+});
+
+// Flow arrows
+const arrowMaterial = new THREE.MeshBasicMaterial({ color: 0x888888 });
+
+function createArrow(y, visible = true) {
+    const group = new THREE.Group();
+    const shaftGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.8, 8);
+    const shaft = new THREE.Mesh(shaftGeometry, arrowMaterial);
+    shaft.position.y = 0;
+    group.add(shaft);
+    
+    const headGeometry = new THREE.ConeGeometry(0.15, 0.3, 8);
+    const head = new THREE.Mesh(headGeometry, arrowMaterial);
+    head.position.y = -0.55;
+    head.rotation.x = Math.PI;
+    group.add(head);
+    
+    group.position.y = y;
+    group.visible = visible;
+    return group;
+}
+
+const arrows1 = createArrow(2, false);
+arrows1.name = "Data flow from attention to expansion";
+scene.add(arrows1);
+
+const arrows2 = createArrow(-1, false);
+arrows2.name = "Data flow from activation to compression";
+scene.add(arrows2);
+
+// HTML Labels System
+const labelContainer = document.createElement('div');
+labelContainer.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;';
+container.appendChild(labelContainer);
+
+function createLabel(text, x, y, fontSize = '12px', color = 'white') {
+    const label = document.createElement('div');
+    label.style.cssText = `position:absolute;color:${color};font-size:${fontSize};font-family:Arial,sans-serif;text-align:center;transform:translate(-50%,-50%);white-space:nowrap;text-shadow:0 0 4px rgba(0,0,0,0.8);`;
+    label.textContent = text;
+    label.style.left = x + 'px';
+    label.style.top = y + 'px';
+    labelContainer.appendChild(label);
+    return label;
+}
+
+// Title and subtitle
+const titleDiv = document.createElement('div');
+titleDiv.style.cssText = 'position:absolute;top:20px;left:50%;transform:translateX(-50%);color:#FFD700;font-size:24px;font-family:Arial,sans-serif;font-weight:bold;text-align:center;text-shadow:0 0 10px rgba(255,215,0,0.5);';
+labelContainer.appendChild(titleDiv);
+
+const subtitleDiv = document.createElement('div');
+subtitleDiv.style.cssText = 'position:absolute;top:55px;left:50%;transform:translateX(-50%);color:#cccccc;font-size:14px;font-family:Arial,sans-serif;text-align:center;max-width:80%;';
+labelContainer.appendChild(subtitleDiv);
+
+// Token labels (will be positioned in animate)
+const inputLabels = [];
+const expandLabels = [];
+const outputLabels = [];
+
+tokens.forEach((token, i) => {
+    const inputLabel = createLabel(`"${token.text}" (enriched)`, 0, 0, '11px', '#aaffaa');
+    inputLabel.style.display = 'none';
+    inputLabels.push(inputLabel);
+    
+    const expandLabel = createLabel('', 0, 0, '10px', '#FFD700');
+    expandLabel.style.display = 'none';
+    expandLabels.push(expandLabel);
+    
+    const outputLabel = createLabel(`"${token.text}" (transformed)`, 0, 0, '11px', '#FFD700');
+    outputLabel.style.display = 'none';
+    outputLabels.push(outputLabel);
+});
+
+// Dimension label
+const dimLabel = createLabel('', width/2, height/2 + 30, '14px', '#88ff88');
+dimLabel.style.display = 'none';
+
+// Punchline box
+const punchlineBox = document.createElement('div');
+punchlineBox.style.cssText = `
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    background:rgba(0,0,0,0.95);
+    border:2px solid #FFD700;
+    border-radius:12px;
+    padding:25px 35px;
+    color:white;
+    font-family:Arial,sans-serif;
+    max-width:450px;
+    display:none;
+    box-shadow:0 0 30px rgba(255,215,0,0.3);
+`;
+punchlineBox.innerHTML = `
+    <div style="font-size:20px;color:#FFD700;margin-bottom:15px;font-weight:bold;">🎯 ATTENTION vs FFN</div>
+    <div style="margin-bottom:15px;">
+        <div style="color:#4ECDC4;font-weight:bold;margin-bottom:5px;">ATTENTION = Communication</div>
+        <div style="font-size:13px;color:#aaa;">• Tokens share information with each other</div>
+        <div style="font-size:13px;color:#aaa;">• But it's LINEAR (just weighted sums)</div>
+    </div>
+    <div style="margin-bottom:15px;">
+        <div style="color:#FF6B6B;font-weight:bold;margin-bottom:5px;">FFN = Thinking</div>
+        <div style="font-size:13px;color:#aaa;">• Each token processes what it learned</div>
+        <div style="font-size:13px;color:#aaa;">• NON-LINEAR: can learn complex patterns</div>
+    </div>
+    <div style="border-top:1px solid #444;padding-top:12px;font-size:13px;color:#FFD700;font-style:italic;">
+        Without FFN: A meeting where no one processes<br>what they heard - just passes notes around!
+    </div>
+`;
+labelContainer.appendChild(punchlineBox);
+
+// Tooltip
+const tooltip = document.createElement('div');
+tooltip.style.cssText = 'position:absolute;padding:6px 10px;background:rgba(0,0,0,0.8);color:white;border-radius:4px;font-size:12px;pointer-events:none;display:none;z-index:1000;';
+container.appendChild(tooltip);
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+renderer.domElement.addEventListener('mousemove', (event) => {
+    const rect = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    
+    raycaster.setFromCamera(mouse, camera);
+    const allObjects = [];
+    scene.traverse((obj) => { if (obj.isMesh && obj.visible) allObjects.push(obj); });
+    const intersects = raycaster.intersectObjects(allObjects);
+    
+    if (intersects.length > 0 && intersects[0].object.name) {
+        tooltip.textContent = intersects[0].object.name;
+        tooltip.style.display = 'block';
+        tooltip.style.left = (event.clientX - rect.left + 15) + 'px';
+        tooltip.style.top = (event.clientY - rect.top + 15) + 'px';
+    } else {
+        tooltip.style.display = 'none';
+    }
+});
+
+// Animation phases
+const phases = [
+    { duration: 5, title: "AFTER ATTENTION", subtitle: "Tokens have communicated - but only linearly" },
+    { duration: 6, title: "THE PROBLEM", subtitle: "Linear mixing alone can't learn complex patterns" },
+    { duration: 6, title: "EXPAND: 512 → 2048", subtitle: "Give each token 'thinking space'" },
+    { duration: 5, title: "NON-LINEARITY ⚡", subtitle: "ReLU/GELU - enables learning complex patterns" },
+    { duration: 6, title: "COMPRESS: 2048 → 512", subtitle: "Distill the transformation back" },
+    { duration: 15, title: "🎯 WHY FFN MATTERS", subtitle: "" }
+];
+
+let totalDuration = phases.reduce((sum, p) => sum + p.duration, 0);
+const startTime = Date.now();
+
+function toScreen(position) {
+    const vector = position.clone();
+    vector.project(camera);
+    return {
+        x: (vector.x * 0.5 + 0.5) * width,
+        y: (-vector.y * 0.5 + 0.5) * height
+    };
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+    controls.update();
+    
+    const elapsed = (Date.now() - startTime) / 1000;
+    const loopTime = elapsed % totalDuration;
+    
+    // Determine current phase
+    let phaseTime = 0;
+    let currentPhase = 0;
+    let phaseProgress = 0;
+    
+    for (let i = 0; i < phases.length; i++) {
+        if (loopTime < phaseTime + phases[i].duration) {
+            currentPhase = i;
+            phaseProgress = (loopTime - phaseTime) / phases[i].duration;
+            break;
+        }
+        phaseTime += phases[i].duration;
+    }
+    
+    // Update title and subtitle
+    titleDiv.textContent = phases[currentPhase].title;
+    subtitleDiv.textContent = phases[currentPhase].subtitle;
+    
+    // Reset visibility
+    inputSpheres.forEach(s => s.visible = false);
+    expandedGroups.forEach(g => g.children.forEach(c => c.visible = false));
+    sparks.forEach(s => s.visible = false);
+    outputSpheres.forEach(s => s.visible = false);
+    arrows1.visible = false;
+    arrows2.visible = false;
+    inputLabels.forEach(l => l.style.display = 'none');
+    expandLabels.forEach(l => l.style.display = 'none');
+    outputLabels.forEach(l => l.style.display = 'none');
+    dimLabel.style.display = 'none';
+    punchlineBox.style.display = 'none';
+    
+    // Phase-specific animations
+    if (currentPhase === 0) {
+        // Show input tokens
+        inputSpheres.forEach((sphere, i) => {
+            sphere.visible = true;
+            const worldPos = new THREE.Vector3();
+            sphere.getWorldPosition(worldPos);
+            const screenPos = toScreen(worldPos);
+            inputLabels[i].style.left = screenPos.x + 'px';
+            inputLabels[i].style.top = (screenPos.y + 35) + 'px';
+            inputLabels[i].style.display = 'block';
+            
+            // Gentle pulse
+            const scale = 1 + Math.sin(elapsed * 3) * 0.1;
+            sphere.scale.setScalar(scale);
+        });
+    }
+    else if (currentPhase === 1) {
+        // Problem phase - show tokens with "limitation" effect
+        inputSpheres.forEach((sphere, i) => {
+            sphere.visible = true;
+            const worldPos = new THREE.Vector3();
+            sphere.getWorldPosition(worldPos);
+            const screenPos = toScreen(worldPos);
+            inputLabels[i].style.left = screenPos.x + 'px';
+            inputLabels[i].style.top = (screenPos.y + 35) + 'px';
+            inputLabels[i].style.display = 'block';
+            inputLabels[i].textContent = `"${tokens[i].text}" (limited)`;
+            inputLabels[i].style.color = '#ff8888';
+            
+            // Shake effect
+            sphere.position.x = tokens[i].x + Math.sin(elapsed * 20 + i) * 0.05;
+        });
+    }
+    else if (currentPhase === 2) {
+        // Expansion phase
+        arrows1.visible = true;
+        
+        inputSpheres.forEach((sphere, i) => {
+            sphere.visible = true;
+            inputLabels[i].style.display = 'block';
+            inputLabels[i].textContent = `"${tokens[i].text}"`;
+            inputLabels[i].style.color = '#aaffaa';
+            
+            const worldPos = new THREE.Vector3();
+            sphere.getWorldPosition(worldPos);
+            const screenPos = toScreen(worldPos);
+            inputLabels[i].style.left = screenPos.x + 'px';
+            inputLabels[i].style.top = (screenPos.y + 35) + 'px';
+            
+            // Shrink input as expansion happens
+            const shrinkScale = Math.max(0.3, 1 - phaseProgress * 0.7);
+            sphere.scale.setScalar(shrinkScale);
+        });
+        
+        // Show expanded spheres growing
+        expandedGroups.forEach((group, i) => {
+            group.children.forEach((sphere, j) => {
+                sphere.visible = true;
+                const expandScale = Math.min(1, phaseProgress * 1.5);
+                sphere.scale.setScalar(expandScale);
+                
+                // Spread out animation
+                const angle = (j / 4) * Math.PI * 2 + elapsed;
+                const radius = 0.3 + phaseProgress * 0.5;
+                sphere.position.set(Math.cos(angle) * radius, Math.sin(angle) * radius, 0);
+            });
+            
+            const worldPos = new THREE.Vector3();
+            group.getWorldPosition(worldPos);
+            const screenPos = toScreen(worldPos);
+            expandLabels[i].style.left = screenPos.x + 'px';
+            expandLabels[i].style.top = (screenPos.y + 50) + 'px';
+            expandLabels[i].style.display = 'block';
+            expandLabels[i].textContent = '4× dimensions';
+        });
+        
+        dimLabel.textContent = '512 → 2048 dimensions';
+        dimLabel.style.display = 'block';
+    }
+    else if (currentPhase === 3) {
+        // Non-linearity phase - lightning!
+        expandedGroups.forEach((group, i) => {
+            group.children.forEach((sphere, j) => {
+                sphere.visible = true;
+                const angle = (j / 4) * Math.PI * 2 + elapsed * 2;
+                sphere.position.set(Math.cos(angle) * 0.8, Math.sin(angle) * 0.8, 0);
+                
+                // Flash effect
+                const flashIntensity = (Math.sin(elapsed * 15 + j) + 1) / 2;
+                sphere.material.emissiveIntensity = 0.2 + flashIntensity * 0.8;
+            });
+        });
+        
+        // Show sparks
+        sparks.forEach((spark, i) => {
+            spark.visible = true;
+            spark.rotation.x = elapsed * 5;
+            spark.rotation.y = elapsed * 7;
+            spark.rotation.z = elapsed * 3;
+            
+            const pulseScale = 0.8 + Math.sin(elapsed * 10) * 0.4;
+            spark.scale.setScalar(pulseScale);
+            
+            // Flash color
+            const flash = (Math.sin(elapsed * 20) + 1) / 2;
+            spark.material.color.setRGB(1, 0.8 + flash * 0.2, flash * 0.5);
+        });
+        
+        dimLabel.textContent = '⚡ ReLU/GELU ACTIVATION ⚡';
+        dimLabel.style.color = '#FFD700';
+        dimLabel.style.display = 'block';
+        dimLabel.style.fontSize = '16px';
+    }
+    else if (currentPhase === 4) {
+        // Compression phase
+        arrows2.visible = true;
+        
+        // Shrink expanded spheres
+        expandedGroups.forEach((group, i) => {
+            group.children.forEach((sphere, j) => {
+                sphere.visible = true;
+                const shrinkScale = Math.max(0, 1 - phaseProgress * 1.2);
+                sphere.scale.setScalar(shrinkScale);
+                
+                // Collapse animation
+                const angle = (j / 4) * Math.PI * 2;
+                const radius = 0.8 * (1 - phaseProgress);
+                sphere.position.set(Math.cos(angle) * radius, Math.sin(angle) * radius, 0);
+            });
+        });
+        
+        // Show output spheres growing
+        outputSpheres.forEach((sphere, i) => {
+            sphere.visible = true;
+            const growScale = Math.min(1, phaseProgress * 1.5);
+            sphere.scale.setScalar(growScale);
+            
+            const worldPos = new THREE.Vector3();
+            sphere.getWorldPosition(worldPos);
+            const screenPos = toScreen(worldPos);
+            outputLabels[i].style.left = screenPos.x + 'px';
+            outputLabels[i].style.top = (screenPos.y + 35) + 'px';
+            outputLabels[i].style.display = 'block';
+            
+            // Golden glow pulse
+            sphere.material.emissiveIntensity = 0.3 + Math.sin(elapsed * 4) * 0.2;
+        });
+        
+        dimLabel.textContent = '2048 → 512 dimensions';
+        dimLabel.style.color = '#88ff88';
+        dimLabel.style.display = 'block';
+        dimLabel.style.fontSize = '14px';
+    }
+    else if (currentPhase === 5) {
+        // Punchline phase
+        punchlineBox.style.display = 'block';
+        
+        // Show transformed outputs with celebration
+        outputSpheres.forEach((sphere, i) => {
+            sphere.visible = true;
+            const celebrateScale = 1 + Math.sin(elapsed * 3 + i) * 0.15;
+            sphere.scale.setScalar(celebrateScale);
+            sphere.material.emissiveIntensity = 0.4 + Math.sin(elapsed * 5) * 0.2;
+            
+            const worldPos = new THREE.Vector3();
+            sphere.getWorldPosition(worldPos);
+            const screenPos = toScreen(worldPos);
+            outputLabels[i].style.left = screenPos.x + 'px';
+            outputLabels[i].style.top = (screenPos.y + 35) + 'px';
+            outputLabels[i].style.display = 'block';
+        });
+        
+        // Hide regular titles during punchline
+        titleDiv.textContent = '';
+        subtitleDiv.textContent = '';
+    }
+    
+    renderer.render(scene, camera);
+}
+
+animate();
+        // ============================================
+        // END ILLUSTRATION CODE
+        // ============================================
+
+        // Reset View button - restore camera position
+        const initialCameraPosition = {
+            x: camera.position.x,
+            y: camera.position.y,
+            z: camera.position.z
+        };
+
+        document.getElementById('reset-view-btn').addEventListener('click', () => {
+            camera.position.set(
+                initialCameraPosition.x,
+                initialCameraPosition.y,
+                initialCameraPosition.z
+            );
+            camera.up.set(0, 1, 0);
+            controls.target.set(0, 0, 0);
+            controls.reset();
+        });
+
+        // Reset Animation button - restart from phase 1
+        // Note: resetAnimation() function must be defined in the illustration code
+        document.getElementById('reset-anim-btn').addEventListener('click', () => {
+            if (typeof resetAnimation === 'function') {
+                resetAnimation();
+            } else {
+                console.warn('resetAnimation() not defined in illustration code');
+            }
+        });
+
+        // Window resize handler
+        window.addEventListener('resize', () => {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        });
+    </script>
+</body>
+</html>
