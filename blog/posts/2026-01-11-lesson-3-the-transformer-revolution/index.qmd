@@ -44,9 +44,7 @@ They all mention "transformer" or "attention" somewhere...
 ## Dr. Nova Brooks
 Exactly! The transformer architecture is like the Latin of modern AI - once you learn it, you can read almost any architecture diagram. Let's do a quick recap of where we are in our journey.
 
-In Lesson 1, we discovered that **point estimate policies** fail when there are multiple valid solutions. Averaging "go left" and "go right" gives you "go straight into the obstacle."
-
-In Lesson 2, we learned that **deep generative models** solve this by predicting probability distributions instead of single values. And we dove deep into **Variational Autoencoders** - how they compress data into a latent space and reconstruct it.
+In Lesson 2, we discovered that **point estimate policies** fail when there are multiple valid solutions. Averaging "go left" and "go right" gives you "go straight into the obstacle." We learned that **deep generative models** solve this by predicting probability distributions instead of single values. And we dove deep into **Variational Autoencoders** - how they compress data into a latent space and reconstruct it.
 :::
 
 ::: {.callout-tip}
@@ -138,7 +136,11 @@ An **embedding** is a vector representation of a token that captures its semanti
 
 ::: {.callout-note}
 ## Dr. Nova Brooks
-Imagine each token wearing a uniform - a vector of numbers that represents everything about that word. In our simple example, we might use 3-dimensional embeddings. In reality, models use 512, 768, or even higher dimensions.
+Imagine each token wearing a uniform - a vector of numbers that represents everything about that word. But this isn't just any uniform. Think of it like a sports jersey: the colors tell you the team, the number tells you the position, the patches might tell you achievements.
+
+In the same way, an embedding vector encodes multiple aspects of a word's meaning. One dimension might capture "is this animate or inanimate?", another might encode "is this concrete or abstract?", another might reflect "what category does this belong to?". The full uniform - all the numbers together - gives a complete fingerprint of that word's meaning.
+
+In our simple example, we might use 3-dimensional embeddings. In reality, models use 512, 768, or even higher dimensions - that's a lot of information encoded in each token's uniform!
 
 ![[3] Token embeddings place semantically similar words near each other in vector space. "King" and "crown" cluster together, while unrelated words are distant.](images/chapter-2-embedding-space.png)
 :::
@@ -150,7 +152,29 @@ So "red" gets mapped to something like [0.2, 0.8, 0.1] and "car" gets [0.7, 0.3,
 
 ::: {.callout-note}
 ## Dr. Nova Brooks
-Exactly! But there's a problem. Consider these two sentences:
+Exactly! Let me sketch what that looks like in 3D embedding space:
+
+```
+                          ┌─────────────────────────────────────┐
+     Dimension 2          │                                     │
+     (Color-ness?) 1.0    │          • "red"                    │
+                          │           [0.2, 0.8, 0.1]           │
+                     0.8  │                                     │
+                          │                                     │
+                     0.6  │                                     │
+                          │                                     │
+                     0.4  │                    • "car"          │
+                          │                     [0.7, 0.3, 0.5] │
+                     0.2  │                                     │
+                          │                                     │
+                     0.0  └────────────────────────────────────→
+                          0.0   0.2   0.4   0.6   0.8   1.0
+                                    Dimension 1 (Object-ness?)
+```
+
+See how "red" scores high on dimension 2 (which might encode color-related properties) while "car" scores high on dimension 1 (object-related properties)? These are learned representations - the model figures out what each dimension should encode through training.
+
+But here's the problem. Consider these two sentences:
 
 "The dog chased the car"
 
@@ -170,9 +194,17 @@ Brilliant! That's why we add **positional embeddings** - vectors that encode WHE
 
 The final **input embedding** is: Token Embedding + Positional Embedding
 
+Look at illustration [4] below. Here's what to focus on:
+
+1. **The left side** shows the token embedding - the "semantic uniform" we discussed. This captures WHAT the word means.
+2. **The middle** shows the positional embedding - a different vector that encodes WHERE the word appears (position 0, 1, 2...).
+3. **The right side** shows the sum of both - this is what actually goes into the transformer. Each token now knows both what it means AND where it sits in the sequence.
+
 ![[4] The complete input embedding: token semantics plus positional information. Each token knows what it means AND where it is in the sequence.](images/chapter-2-input-embedding.png)
 
-This was actually known before transformers. The embedding layer is standard practice in NLP. What transformers contributed is what happens NEXT.
+The key intuition: without positional embeddings, "dog bites man" and "man bites dog" would look identical to the transformer - same words, same embeddings. The positional information is what breaks this symmetry.
+
+This embedding layer was actually known before transformers. It's standard practice in NLP. What transformers contributed is what happens NEXT - the attention mechanism.
 :::
 
 # Chapter 3: The Attention Mechanism {#chapter-3}
