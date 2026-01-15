@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ViT Complete Forward Pass</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        .control-btn {
+            position: absolute;
+            bottom: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            opacity: 0;
+            transition: opacity 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+        }
+        body:hover .control-btn {
+            opacity: 1;
+        }
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        #reset-view-btn { right: 20px; }
+        #reset-anim-btn { right: 150px; }
+
+        .text-overlay {
+            position: absolute;
+            pointer-events: none;
+            font-family: Arial, sans-serif;
+            text-shadow: 0 0 10px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.6);
+            transition: opacity 0.5s ease;
+        }
+        #phase-title {
+            top: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            color: #fff;
+            font-weight: bold;
+        }
+        #phase-subtitle {
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 15px;
+            color: #aaa;
+        }
+        #insight-box {
+            bottom: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 100, 150, 0.3);
+            border: 1px solid rgba(78, 205, 196, 0.5);
+            border-radius: 8px;
+            padding: 12px 20px;
+            text-align: center;
+            max-width: 700px;
+        }
+        #insight-title {
+            font-size: 15px;
+            color: #4ecdc4;
+            margin-bottom: 6px;
+        }
+        #insight-text {
+            font-size: 13px;
+            color: #fff;
+            line-height: 1.4;
+        }
+        .stage-label {
+            font-size: 12px;
+            color: #aaa;
+            text-align: center;
+        }
+        #prediction-box {
+            top: 50%;
+            right: 50px;
+            transform: translateY(-50%);
+            background: rgba(46, 204, 113, 0.2);
+            border: 2px solid rgba(46, 204, 113, 0.8);
+            border-radius: 12px;
+            padding: 20px 30px;
+            text-align: center;
+            opacity: 0;
+        }
+        #prediction-label {
+            font-size: 14px;
+            color: #aaa;
+            margin-bottom: 8px;
+        }
+        #prediction-class {
+            font-size: 28px;
+            color: #2ecc71;
+            font-weight: bold;
+        }
+        #prediction-confidence {
+            font-size: 16px;
+            color: #fff;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    <button id="reset-anim-btn" class="control-btn">⟲ Reset Animation</button>
+    <button id="reset-view-btn" class="control-btn">↺ Reset View</button>
+
+    <!-- Text overlays -->
+    <div id="phase-title" class="text-overlay">Vision Transformer: Complete Pipeline</div>
+    <div id="phase-subtitle" class="text-overlay">Same encoder architecture - with image patches as tokens</div>
+
+    <div id="insight-box" class="text-overlay" style="opacity: 0;">
+        <div id="insight-title"></div>
+        <div id="insight-text"></div>
+    </div>
+
+    <div id="prediction-box" class="text-overlay">
+        <div id="prediction-label">Classification</div>
+        <div id="prediction-class">🐕 Dog</div>
+        <div id="prediction-confidence">94.2%</div>
+    </div>
+
+    <!-- Stage labels -->
+    <div id="label-image" class="text-overlay stage-label" style="bottom: 15px; left: 8%;">Input Image</div>
+    <div id="label-patches" class="text-overlay stage-label" style="bottom: 15px; left: 25%;">Patch + Pos Embed</div>
+    <div id="label-attention" class="text-overlay stage-label" style="bottom: 15px; left: 50%;">Self-Attention</div>
+    <div id="label-cls" class="text-overlay stage-label" style="bottom: 15px; left: 72%;">CLS Output</div>
+
+    <!-- Three.js libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TrackballControls.js"></script>
+
+    <script>
+        const container = document.getElementById('container');
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        // Create scene
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000000);
+
+        // Create camera
+        const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+        camera.position.set(0, 2, 14);
+        camera.lookAt(0, 0, 0);
+
+        // Create renderer
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(width, height);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        // Add lights
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(5, 10, 7);
+        scene.add(directionalLight);
+
+        // Create controls
+        const controls = new THREE.TrackballControls(camera, renderer.domElement);
+        controls.rotateSpeed = 2.0;
+        controls.zoomSpeed = 1.2;
+        controls.panSpeed = 0.8;
+
+        // Colors
+        const colors = {
+            image: 0x4ecdc4,
+            patch: 0x4ecdc4,
+            cls: 0xffd93d,
+            pos: 0x9b59b6,
+            attention: 0xff6b6b,
+            output: 0x2ecc71
+        };
+
+        // Stage positions (left to right pipeline)
+        const stageX = {
+            image: -7,
+            patches: -3,
+            attention: 2,
+            clsOutput: 6.5
+        };
+
+        // ==================
+        // STAGE 1: Input Image
+        // ==================
+        const imageSize = 2.5;
+        const imageGeometry = new THREE.PlaneGeometry(imageSize, imageSize);
+
+        // Create image texture
+        const canvas = document.createElement('canvas');
+        canvas.width = 224;
+        canvas.height = 224;
+        const ctx = canvas.getContext('2d');
+
+        // Draw "dog" representation
+        const gradient = ctx.createLinearGradient(0, 0, 224, 224);
+        gradient.addColorStop(0, '#4ecdc4');
+        gradient.addColorStop(0.5, '#45b7aa');
+        gradient.addColorStop(1, '#ffd93d');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, 224, 224);
+
+        // Dog silhouette
+        ctx.fillStyle = '#2d3436';
+        ctx.beginPath();
+        ctx.ellipse(112, 140, 60, 40, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(112, 80, 35, 0, Math.PI * 2);
+        ctx.fill();
+        // Ears
+        ctx.beginPath();
+        ctx.ellipse(85, 55, 15, 25, -0.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(139, 55, 15, 25, 0.3, 0, Math.PI * 2);
+        ctx.fill();
+
+        const texture = new THREE.CanvasTexture(canvas);
+        const imageMaterial = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
+        const imagePlane = new THREE.Mesh(imageGeometry, imageMaterial);
+        imagePlane.position.set(stageX.image, 0, 0);
+        scene.add(imagePlane);
+
+        // Grid overlay on image
+        const gridGroup = new THREE.Group();
+        const gridDivisions = 7; // Simplified 7x7 grid
+        const cellSize = imageSize / gridDivisions;
+        const gridMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0 });
+
+        for (let i = 0; i <= gridDivisions; i++) {
+            // Vertical
+            const vPoints = [
+                new THREE.Vector3(-imageSize/2 + i * cellSize, -imageSize/2, 0.01),
+                new THREE.Vector3(-imageSize/2 + i * cellSize, imageSize/2, 0.01)
+            ];
+            const vGeom = new THREE.BufferGeometry().setFromPoints(vPoints);
+            const vLine = new THREE.Line(vGeom, gridMaterial.clone());
+            gridGroup.add(vLine);
+
+            // Horizontal
+            const hPoints = [
+                new THREE.Vector3(-imageSize/2, -imageSize/2 + i * cellSize, 0.01),
+                new THREE.Vector3(imageSize/2, -imageSize/2 + i * cellSize, 0.01)
+            ];
+            const hGeom = new THREE.BufferGeometry().setFromPoints(hPoints);
+            const hLine = new THREE.Line(hGeom, gridMaterial.clone());
+            gridGroup.add(hLine);
+        }
+        gridGroup.position.set(stageX.image, 0, 0);
+        scene.add(gridGroup);
+
+        // ==================
+        // STAGE 2: Patch Embeddings + Positional
+        // ==================
+        const patchGroup = new THREE.Group();
+        const numPatches = 9; // 3x3 simplified view
+        const patchTokens = [];
+        const posIndicators = [];
+
+        // CLS token (special, at top)
+        const clsGeometry = new THREE.SphereGeometry(0.35, 32, 32);
+        const clsMaterial = new THREE.MeshPhongMaterial({
+            color: colors.cls,
+            emissive: colors.cls,
+            emissiveIntensity: 0.2,
+            transparent: true,
+            opacity: 0
+        });
+        const clsToken = new THREE.Mesh(clsGeometry, clsMaterial);
+        clsToken.position.set(stageX.patches, 2.5, 0);
+        scene.add(clsToken);
+
+        // Patch tokens (arranged vertically)
+        for (let i = 0; i < numPatches; i++) {
+            const row = Math.floor(i / 3);
+            const col = i % 3;
+
+            const geometry = new THREE.BoxGeometry(0.3, 0.3, 0.3);
+            const material = new THREE.MeshPhongMaterial({
+                color: colors.patch,
+                transparent: true,
+                opacity: 0
+            });
+            const token = new THREE.Mesh(geometry, material);
+            token.position.set(stageX.patches + (col - 1) * 0.5, 1.5 - row * 0.8, 0);
+            scene.add(token);
+            patchTokens.push(token);
+
+            // Positional embedding indicator (+)
+            const posGeom = new THREE.SphereGeometry(0.1, 8, 8);
+            const posMat = new THREE.MeshPhongMaterial({
+                color: colors.pos,
+                transparent: true,
+                opacity: 0
+            });
+            const pos = new THREE.Mesh(posGeom, posMat);
+            pos.position.set(token.position.x + 0.25, token.position.y + 0.25, 0);
+            scene.add(pos);
+            posIndicators.push(pos);
+        }
+        scene.add(patchGroup);
+
+        // ==================
+        // STAGE 3: Self-Attention Layer
+        // ==================
+        const attentionGroup = new THREE.Group();
+
+        // Attention block (box representation)
+        const attBlockGeom = new THREE.BoxGeometry(2, 4, 0.5);
+        const attBlockMat = new THREE.MeshPhongMaterial({
+            color: colors.attention,
+            transparent: true,
+            opacity: 0,
+            wireframe: false
+        });
+        const attentionBlock = new THREE.Mesh(attBlockGeom, attBlockMat);
+        attentionBlock.position.set(stageX.attention, 0.5, 0);
+        scene.add(attentionBlock);
+
+        // Internal attention lines (within the block)
+        const attentionLines = [];
+        for (let i = 0; i < 12; i++) {
+            const y1 = 2 - Math.random() * 3;
+            const y2 = 2 - Math.random() * 3;
+            const points = [
+                new THREE.Vector3(-0.8, y1, 0.3),
+                new THREE.Vector3(0.8, y2, 0.3)
+            ];
+            const geom = new THREE.BufferGeometry().setFromPoints(points);
+            const mat = new THREE.LineBasicMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0
+            });
+            const line = new THREE.Line(geom, mat);
+            line.position.set(stageX.attention, 0.5, 0);
+            scene.add(line);
+            attentionLines.push(line);
+        }
+
+        // ==================
+        // STAGE 4: CLS Output
+        // ==================
+        const outputGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+        const outputMaterial = new THREE.MeshPhongMaterial({
+            color: colors.output,
+            emissive: colors.output,
+            emissiveIntensity: 0.3,
+            transparent: true,
+            opacity: 0
+        });
+        const outputSphere = new THREE.Mesh(outputGeometry, outputMaterial);
+        outputSphere.position.set(stageX.clsOutput, 0.5, 0);
+        scene.add(outputSphere);
+
+        // ==================
+        // Arrows between stages
+        // ==================
+        function createArrow(start, end, color) {
+            const dir = new THREE.Vector3().subVectors(end, start).normalize();
+            const length = start.distanceTo(end) - 0.8;
+            const arrow = new THREE.ArrowHelper(dir, start, length, color, 0.3, 0.2);
+            arrow.visible = false;
+            scene.add(arrow);
+            return arrow;
+        }
+
+        const arrow1 = createArrow(
+            new THREE.Vector3(stageX.image + 1.5, 0, 0),
+            new THREE.Vector3(stageX.patches - 0.8, 0, 0),
+            0xffffff
+        );
+        const arrow2 = createArrow(
+            new THREE.Vector3(stageX.patches + 0.8, 0.5, 0),
+            new THREE.Vector3(stageX.attention - 1.2, 0.5, 0),
+            0xffffff
+        );
+        const arrow3 = createArrow(
+            new THREE.Vector3(stageX.attention + 1.2, 0.5, 0),
+            new THREE.Vector3(stageX.clsOutput - 0.7, 0.5, 0),
+            0xffffff
+        );
+
+        // Animation state
+        let phase = 1;
+        let phaseTime = 0;
+        const phaseDurations = [2500, 3000, 3000, 3000, 3500, 3000];
+        let lastTime = Date.now();
+
+        // Text elements
+        const phaseTitle = document.getElementById('phase-title');
+        const phaseSubtitle = document.getElementById('phase-subtitle');
+        const insightBox = document.getElementById('insight-box');
+        const insightTitle = document.getElementById('insight-title');
+        const insightText = document.getElementById('insight-text');
+        const predictionBox = document.getElementById('prediction-box');
+
+        function updatePhase(newPhase) {
+            phase = newPhase;
+            phaseTime = 0;
+
+            switch(phase) {
+                case 1:
+                    phaseTitle.textContent = 'Vision Transformer: Complete Pipeline';
+                    phaseSubtitle.textContent = 'Same encoder architecture - with image patches as tokens';
+                    insightBox.style.opacity = '0';
+                    predictionBox.style.opacity = '0';
+                    break;
+                case 2:
+                    phaseTitle.textContent = 'Step 1: Divide into Patches';
+                    phaseSubtitle.textContent = 'Image → 14×14 grid → 196 patch tokens';
+                    insightBox.style.opacity = '1';
+                    insightTitle.textContent = '📦 Patchify';
+                    insightText.textContent = 'Each 16×16 pixel patch becomes one token. Just like words in a sentence!';
+                    break;
+                case 3:
+                    phaseTitle.textContent = 'Step 2: Add Embeddings';
+                    phaseSubtitle.textContent = 'Patch embedding + Positional embedding + CLS token';
+                    insightTitle.textContent = '➕ Position Matters';
+                    insightText.textContent = 'Each patch gets a learnable positional embedding. CLS token (yellow) prepended to sequence.';
+                    break;
+                case 4:
+                    phaseTitle.textContent = 'Step 3: Self-Attention';
+                    phaseSubtitle.textContent = 'All tokens attend to all tokens (including CLS)';
+                    insightTitle.textContent = '🔗 Same Attention!';
+                    insightText.textContent = 'This is the SAME self-attention from Chapters 3-5. CLS learns which patches are important.';
+                    break;
+                case 5:
+                    phaseTitle.textContent = 'Step 4: Extract CLS Output';
+                    phaseSubtitle.textContent = 'CLS context vector → Classification head';
+                    insightTitle.textContent = '🎯 One Vector';
+                    insightText.textContent = 'After attention, we ONLY use the CLS output. It has aggregated information from ALL patches.';
+                    break;
+                case 6:
+                    phaseTitle.textContent = 'Step 5: Classification';
+                    phaseSubtitle.textContent = 'MLP head → Class probabilities';
+                    insightTitle.textContent = '✅ Same Architecture!';
+                    insightText.textContent = 'ViT = Transformer Encoder with patches as tokens. You already understand everything inside!';
+                    break;
+            }
+        }
+
+        function resetAnimation() {
+            phase = 1;
+            phaseTime = 0;
+            updatePhase(1);
+
+            // Reset grid
+            gridGroup.children.forEach(line => line.material.opacity = 0);
+
+            // Reset patches
+            patchTokens.forEach(p => p.material.opacity = 0);
+            posIndicators.forEach(p => p.material.opacity = 0);
+            clsMaterial.opacity = 0;
+
+            // Reset attention
+            attBlockMat.opacity = 0;
+            attentionLines.forEach(l => l.material.opacity = 0);
+
+            // Reset output
+            outputMaterial.opacity = 0;
+
+            // Reset arrows
+            arrow1.visible = false;
+            arrow2.visible = false;
+            arrow3.visible = false;
+
+            // Reset prediction
+            predictionBox.style.opacity = '0';
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const now = Date.now();
+            const deltaTime = now - lastTime;
+            lastTime = now;
+            phaseTime += deltaTime;
+
+            const progress = Math.min(phaseTime / phaseDurations[phase - 1], 1);
+
+            switch(phase) {
+                case 1:
+                    // Just show image
+                    if (progress >= 1) updatePhase(2);
+                    break;
+
+                case 2:
+                    // Show grid on image
+                    gridGroup.children.forEach(line => {
+                        line.material.opacity = progress * 0.8;
+                    });
+                    arrow1.visible = progress > 0.5;
+                    if (progress >= 1) updatePhase(3);
+                    break;
+
+                case 3:
+                    // Show patch tokens and positional embeddings
+                    patchTokens.forEach((p, i) => {
+                        const delay = i * 0.08;
+                        p.material.opacity = Math.max(0, (progress - delay) * 2);
+                    });
+                    posIndicators.forEach((p, i) => {
+                        const delay = 0.3 + i * 0.05;
+                        p.material.opacity = Math.max(0, (progress - delay) * 2);
+                    });
+                    clsMaterial.opacity = progress;
+                    arrow2.visible = progress > 0.7;
+                    if (progress >= 1) updatePhase(4);
+                    break;
+
+                case 4:
+                    // Show attention block with internal connections
+                    attBlockMat.opacity = Math.min(progress * 1.5, 0.3);
+                    attentionLines.forEach((l, i) => {
+                        const delay = i * 0.05;
+                        l.material.opacity = Math.max(0, (progress - delay) * 1.5) * 0.6;
+                    });
+
+                    // Pulse CLS to show it's attending
+                    clsToken.scale.setScalar(1 + Math.sin(phaseTime * 0.005) * 0.1);
+
+                    arrow3.visible = progress > 0.7;
+                    if (progress >= 1) updatePhase(5);
+                    break;
+
+                case 5:
+                    // Show output sphere growing
+                    outputMaterial.opacity = progress;
+                    outputSphere.scale.setScalar(0.5 + progress * 0.5);
+
+                    // Draw connection from attention to output
+                    if (progress > 0.5) {
+                        outputSphere.rotation.y += 0.02;
+                    }
+                    if (progress >= 1) updatePhase(6);
+                    break;
+
+                case 6:
+                    // Show prediction
+                    predictionBox.style.opacity = String(Math.min(progress * 2, 1));
+
+                    // Pulse output
+                    outputSphere.material.emissiveIntensity = 0.3 + Math.sin(phaseTime * 0.005) * 0.2;
+                    break;
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // Reset buttons
+        const initialCameraPosition = { x: 0, y: 2, z: 14 };
+        document.getElementById('reset-view-btn').addEventListener('click', () => {
+            camera.position.set(initialCameraPosition.x, initialCameraPosition.y, initialCameraPosition.z);
+            camera.up.set(0, 1, 0);
+            controls.target.set(0, 0, 0);
+            controls.reset();
+        });
+
+        document.getElementById('reset-anim-btn').addEventListener('click', resetAnimation);
+
+        // Window resize
+        window.addEventListener('resize', () => {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        });
+
+        // Start
+        animate();
+    </script>
+</body>
+</html>

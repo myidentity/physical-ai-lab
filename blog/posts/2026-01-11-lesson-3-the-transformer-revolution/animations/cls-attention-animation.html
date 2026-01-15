@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLS Token Attention</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        .control-btn {
+            position: absolute;
+            bottom: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            opacity: 0;
+            transition: opacity 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+        }
+        body:hover .control-btn {
+            opacity: 1;
+        }
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        #reset-view-btn { right: 20px; }
+        #reset-anim-btn { right: 150px; }
+
+        /* Text overlay styles */
+        .text-overlay {
+            position: absolute;
+            pointer-events: none;
+            font-family: Arial, sans-serif;
+            text-shadow: 0 0 10px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.6);
+            transition: opacity 0.5s ease;
+        }
+        #phase-title {
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 26px;
+            color: #fff;
+            font-weight: bold;
+        }
+        #phase-subtitle {
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px;
+            color: #aaa;
+        }
+        #insight-box {
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 100, 150, 0.3);
+            border: 1px solid rgba(78, 205, 196, 0.5);
+            border-radius: 8px;
+            padding: 15px 25px;
+            text-align: center;
+            max-width: 650px;
+        }
+        #insight-title {
+            font-size: 16px;
+            color: #4ecdc4;
+            margin-bottom: 8px;
+        }
+        #insight-text {
+            font-size: 14px;
+            color: #fff;
+            line-height: 1.4;
+        }
+        .token-label {
+            font-size: 14px;
+            font-weight: bold;
+        }
+        #qkv-legend {
+            top: 110px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 30px;
+            opacity: 0;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #fff;
+        }
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    <button id="reset-anim-btn" class="control-btn">⟲ Reset Animation</button>
+    <button id="reset-view-btn" class="control-btn">↺ Reset View</button>
+
+    <!-- Text overlays -->
+    <div id="phase-title" class="text-overlay">CLS Token: The Learnable Summary</div>
+    <div id="phase-subtitle" class="text-overlay">A special token prepended to patch sequence</div>
+
+    <div id="qkv-legend" class="text-overlay">
+        <div class="legend-item">
+            <div class="legend-dot" style="background: #e74c3c;"></div>
+            <span>Query (Q) - "What am I looking for?"</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background: #3498db;"></div>
+            <span>Key (K) - "What do I contain?"</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background: #2ecc71;"></div>
+            <span>Value (V) - "Here's my info"</span>
+        </div>
+    </div>
+
+    <div id="insight-box" class="text-overlay" style="opacity: 0;">
+        <div id="insight-title"></div>
+        <div id="insight-text"></div>
+    </div>
+
+    <!-- Token labels -->
+    <div id="label-cls" class="text-overlay token-label" style="color: #ffd93d;">CLS</div>
+    <div id="label-p1" class="text-overlay token-label" style="color: #4ecdc4;">P₁</div>
+    <div id="label-p2" class="text-overlay token-label" style="color: #4ecdc4;">P₂</div>
+    <div id="label-p3" class="text-overlay token-label" style="color: #ff6b6b;">P₃ (face)</div>
+    <div id="label-p4" class="text-overlay token-label" style="color: #ff6b6b;">P₄ (body)</div>
+    <div id="label-p5" class="text-overlay token-label" style="color: #4ecdc4;">P₅</div>
+
+    <!-- Three.js libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TrackballControls.js"></script>
+
+    <script>
+        const container = document.getElementById('container');
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        // Create scene
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000000);
+
+        // Create camera
+        const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+        camera.position.set(0, 1, 10);
+        camera.lookAt(0, 0, 0);
+
+        // Create renderer
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(width, height);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        // Add lights
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(5, 10, 7);
+        scene.add(directionalLight);
+
+        // Create controls
+        const controls = new THREE.TrackballControls(camera, renderer.domElement);
+        controls.rotateSpeed = 2.0;
+        controls.zoomSpeed = 1.2;
+        controls.panSpeed = 0.8;
+
+        // Colors
+        const colors = {
+            cls: 0xffd93d,        // Yellow - CLS token
+            patch: 0x4ecdc4,      // Cyan - regular patches
+            important: 0xff6b6b,  // Red - important patches (face/body)
+            query: 0xe74c3c,      // Red for Q
+            key: 0x3498db,        // Blue for K
+            value: 0x2ecc71       // Green for V
+        };
+
+        // Attention weights (CLS attends more to face/body patches)
+        const attentionWeights = [0.05, 0.08, 0.42, 0.38, 0.07]; // Patches 3,4 have high attention
+
+        // Create tokens
+        const tokenRadius = 0.5;
+        const tokenSpacing = 2.2;
+        const tokenGeometry = new THREE.SphereGeometry(tokenRadius, 32, 32);
+
+        // CLS token (special - larger, gold)
+        const clsGeometry = new THREE.SphereGeometry(tokenRadius * 1.3, 32, 32);
+        const clsMaterial = new THREE.MeshPhongMaterial({
+            color: colors.cls,
+            emissive: colors.cls,
+            emissiveIntensity: 0.2
+        });
+        const clsToken = new THREE.Mesh(clsGeometry, clsMaterial);
+        clsToken.position.set(-5, 0, 0);
+        scene.add(clsToken);
+
+        // Patch tokens
+        const patches = [];
+        const patchColors = [colors.patch, colors.patch, colors.important, colors.important, colors.patch];
+        const patchLabels = ['P₁', 'P₂', 'P₃ (face)', 'P₄ (body)', 'P₅'];
+
+        for (let i = 0; i < 5; i++) {
+            const material = new THREE.MeshPhongMaterial({
+                color: patchColors[i],
+                transparent: true,
+                opacity: 1
+            });
+            const mesh = new THREE.Mesh(tokenGeometry, material);
+            mesh.position.set(-2.5 + i * tokenSpacing, 0, 0);
+            mesh.userData.weight = attentionWeights[i];
+            scene.add(mesh);
+            patches.push(mesh);
+        }
+
+        // Create attention lines (from CLS to each patch)
+        const attentionLines = [];
+        const lineGroup = new THREE.Group();
+        scene.add(lineGroup);
+
+        patches.forEach((patch, i) => {
+            const points = [clsToken.position.clone(), patch.position.clone()];
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+
+            // Line width based on attention weight
+            const material = new THREE.LineBasicMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0,
+                linewidth: 1
+            });
+
+            const line = new THREE.Line(geometry, material);
+            line.userData.weight = attentionWeights[i];
+            lineGroup.add(line);
+            attentionLines.push(line);
+        });
+
+        // Create attention weight tubes (thicker = more attention)
+        const attentionTubes = [];
+        patches.forEach((patch, i) => {
+            const weight = attentionWeights[i];
+            const curve = new THREE.LineCurve3(clsToken.position.clone(), patch.position.clone());
+            const tubeGeometry = new THREE.TubeGeometry(curve, 8, weight * 0.3 + 0.02, 8, false);
+            const tubeMaterial = new THREE.MeshPhongMaterial({
+                color: patchColors[i],
+                transparent: true,
+                opacity: 0,
+                emissive: patchColors[i],
+                emissiveIntensity: 0.3
+            });
+            const tube = new THREE.Mesh(tubeGeometry, tubeMaterial);
+            tube.userData.weight = weight;
+            scene.add(tube);
+            attentionTubes.push(tube);
+        });
+
+        // Q, K, V indicators (small spheres near tokens)
+        const qkvGroup = new THREE.Group();
+        scene.add(qkvGroup);
+
+        // Q from CLS
+        const qGeometry = new THREE.SphereGeometry(0.15, 16, 16);
+        const qMaterial = new THREE.MeshPhongMaterial({ color: colors.query, transparent: true, opacity: 0 });
+        const qSphere = new THREE.Mesh(qGeometry, qMaterial);
+        qSphere.position.set(clsToken.position.x + 0.8, clsToken.position.y + 0.5, 0);
+        qkvGroup.add(qSphere);
+
+        // K from each patch
+        const kSpheres = [];
+        patches.forEach((patch, i) => {
+            const kMaterial = new THREE.MeshPhongMaterial({ color: colors.key, transparent: true, opacity: 0 });
+            const kSphere = new THREE.Mesh(qGeometry, kMaterial);
+            kSphere.position.set(patch.position.x, patch.position.y + 0.8, 0);
+            qkvGroup.add(kSphere);
+            kSpheres.push(kSphere);
+        });
+
+        // V from each patch
+        const vSpheres = [];
+        patches.forEach((patch, i) => {
+            const vMaterial = new THREE.MeshPhongMaterial({ color: colors.value, transparent: true, opacity: 0 });
+            const vSphere = new THREE.Mesh(qGeometry, vMaterial);
+            vSphere.position.set(patch.position.x, patch.position.y - 0.8, 0);
+            qkvGroup.add(vSphere);
+            vSpheres.push(vSphere);
+        });
+
+        // Create output vector (result of attention)
+        const outputGeometry = new THREE.BoxGeometry(0.8, 0.8, 0.8);
+        const outputMaterial = new THREE.MeshPhongMaterial({
+            color: colors.cls,
+            transparent: true,
+            opacity: 0,
+            emissive: colors.cls,
+            emissiveIntensity: 0.3
+        });
+        const outputVector = new THREE.Mesh(outputGeometry, outputMaterial);
+        outputVector.position.set(-5, -3, 0);
+        scene.add(outputVector);
+
+        // Animation state
+        let phase = 1;
+        let phaseTime = 0;
+        const phaseDurations = [2500, 3000, 3500, 4000, 4000];
+        let lastTime = Date.now();
+
+        // Text elements
+        const phaseTitle = document.getElementById('phase-title');
+        const phaseSubtitle = document.getElementById('phase-subtitle');
+        const insightBox = document.getElementById('insight-box');
+        const insightTitle = document.getElementById('insight-title');
+        const insightText = document.getElementById('insight-text');
+        const qkvLegend = document.getElementById('qkv-legend');
+
+        // Label elements
+        const labels = {
+            cls: document.getElementById('label-cls'),
+            p1: document.getElementById('label-p1'),
+            p2: document.getElementById('label-p2'),
+            p3: document.getElementById('label-p3'),
+            p4: document.getElementById('label-p4'),
+            p5: document.getElementById('label-p5')
+        };
+
+        function updateLabelPositions() {
+            const labelData = [
+                { el: labels.cls, pos: clsToken.position, offset: { x: 0, y: -60 } },
+                { el: labels.p1, pos: patches[0].position, offset: { x: 0, y: -50 } },
+                { el: labels.p2, pos: patches[1].position, offset: { x: 0, y: -50 } },
+                { el: labels.p3, pos: patches[2].position, offset: { x: 0, y: -50 } },
+                { el: labels.p4, pos: patches[3].position, offset: { x: 0, y: -50 } },
+                { el: labels.p5, pos: patches[4].position, offset: { x: 0, y: -50 } }
+            ];
+
+            labelData.forEach(({ el, pos, offset }) => {
+                const vector = pos.clone().project(camera);
+                const x = (vector.x * 0.5 + 0.5) * width;
+                const y = (-(vector.y * 0.5) + 0.5) * height;
+                el.style.left = `${x + offset.x}px`;
+                el.style.top = `${y + offset.y}px`;
+                el.style.transform = 'translateX(-50%)';
+            });
+        }
+
+        function updatePhase(newPhase) {
+            phase = newPhase;
+            phaseTime = 0;
+
+            switch(phase) {
+                case 1:
+                    phaseTitle.textContent = 'CLS Token: The Learnable Summary';
+                    phaseSubtitle.textContent = 'A special token prepended to patch sequence';
+                    insightBox.style.opacity = '0';
+                    qkvLegend.style.opacity = '0';
+                    break;
+                case 2:
+                    phaseTitle.textContent = 'Step 1: CLS Creates Query (Q)';
+                    phaseSubtitle.textContent = '"Which patches are important for classification?"';
+                    qkvLegend.style.opacity = '1';
+                    insightBox.style.opacity = '1';
+                    insightTitle.textContent = '🔍 Query';
+                    insightText.textContent = 'CLS token asks: "What visual features should I pay attention to?"';
+                    break;
+                case 3:
+                    phaseTitle.textContent = 'Step 2: Patches Provide Keys (K)';
+                    phaseSubtitle.textContent = 'Each patch says "here\'s what I contain"';
+                    insightTitle.textContent = '🔑 Keys';
+                    insightText.textContent = 'Each patch provides a "signature" that helps CLS know what information it holds.';
+                    break;
+                case 4:
+                    phaseTitle.textContent = 'Step 3: Attention Weights';
+                    phaseSubtitle.textContent = 'Q · K determines relevance (thicker = higher attention)';
+                    insightTitle.textContent = '⚡ Attention Scores';
+                    insightText.textContent = 'Face & body patches get HIGH attention (0.42, 0.38). Background patches get low attention (0.05-0.08).';
+                    break;
+                case 5:
+                    phaseTitle.textContent = 'Step 4: Aggregate Values (V)';
+                    phaseSubtitle.textContent = 'CLS = weighted sum of all patch Values';
+                    insightTitle.textContent = '🎯 Same Q, K, V Mechanism!';
+                    insightText.textContent = 'CLS learns WHAT to attend to during training. For "dog classifier", it attends to face & body patches!';
+                    break;
+            }
+        }
+
+        function resetAnimation() {
+            phase = 1;
+            phaseTime = 0;
+            updatePhase(1);
+
+            // Reset Q, K, V indicators
+            qSphere.material.opacity = 0;
+            kSpheres.forEach(k => k.material.opacity = 0);
+            vSpheres.forEach(v => v.material.opacity = 0);
+
+            // Reset attention tubes
+            attentionTubes.forEach(tube => tube.material.opacity = 0);
+
+            // Reset output
+            outputMaterial.opacity = 0;
+
+            // Reset camera
+            camera.position.set(0, 1, 10);
+            camera.lookAt(0, 0, 0);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const now = Date.now();
+            const deltaTime = now - lastTime;
+            lastTime = now;
+            phaseTime += deltaTime;
+
+            const progress = Math.min(phaseTime / phaseDurations[phase - 1], 1);
+
+            // Update label positions
+            updateLabelPositions();
+
+            // Phase animations
+            switch(phase) {
+                case 1:
+                    // Just show tokens
+                    if (progress >= 1) updatePhase(2);
+                    break;
+
+                case 2:
+                    // Show Q from CLS
+                    qSphere.material.opacity = progress;
+                    // Pulse CLS
+                    clsToken.scale.setScalar(1 + Math.sin(phaseTime * 0.005) * 0.1);
+                    if (progress >= 1) updatePhase(3);
+                    break;
+
+                case 3:
+                    // Show K from each patch
+                    kSpheres.forEach((k, i) => {
+                        const delay = i * 0.15;
+                        k.material.opacity = Math.max(0, (progress - delay) * 1.5);
+                    });
+                    if (progress >= 1) updatePhase(4);
+                    break;
+
+                case 4:
+                    // Show attention tubes with varying thickness
+                    attentionTubes.forEach((tube, i) => {
+                        tube.material.opacity = progress * 0.8;
+                        // Pulse important patches
+                        if (attentionWeights[i] > 0.3) {
+                            patches[i].scale.setScalar(1 + Math.sin(phaseTime * 0.008) * 0.15);
+                        }
+                    });
+                    if (progress >= 1) updatePhase(5);
+                    break;
+
+                case 5:
+                    // Show V from patches and aggregate
+                    vSpheres.forEach((v, i) => {
+                        const delay = i * 0.1;
+                        v.material.opacity = Math.max(0, (progress - delay) * 1.5);
+                    });
+
+                    // Show output vector
+                    if (progress > 0.5) {
+                        outputMaterial.opacity = (progress - 0.5) * 2;
+                        outputVector.rotation.y += 0.02;
+                    }
+
+                    // Animate values flowing to output
+                    if (progress > 0.3 && progress < 0.8) {
+                        attentionTubes.forEach((tube, i) => {
+                            tube.material.emissiveIntensity = 0.3 + attentionWeights[i] * Math.sin(phaseTime * 0.01 + i) * 0.3;
+                        });
+                    }
+                    break;
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // Reset view button
+        const initialCameraPosition = { x: 0, y: 1, z: 10 };
+        document.getElementById('reset-view-btn').addEventListener('click', () => {
+            camera.position.set(initialCameraPosition.x, initialCameraPosition.y, initialCameraPosition.z);
+            camera.up.set(0, 1, 0);
+            controls.target.set(0, 0, 0);
+            controls.reset();
+        });
+
+        // Reset animation button
+        document.getElementById('reset-anim-btn').addEventListener('click', resetAnimation);
+
+        // Window resize handler
+        window.addEventListener('resize', () => {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        });
+
+        // Start animation
+        animate();
+    </script>
+</body>
+</html>

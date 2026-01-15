@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robot Observation Tokenization</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        .control-btn {
+            position: absolute;
+            bottom: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            opacity: 0;
+            transition: opacity 0.3s ease, background 0.3s ease;
+        }
+        body:hover .control-btn { opacity: 1; }
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        #reset-view-btn { right: 20px; }
+        #reset-anim-btn { right: 150px; }
+
+        .text-overlay {
+            position: absolute;
+            pointer-events: none;
+            font-family: Arial, sans-serif;
+            text-shadow: 0 0 10px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.6);
+            transition: opacity 0.5s ease;
+        }
+        #phase-title {
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 26px;
+            color: #fff;
+            font-weight: bold;
+        }
+        #phase-subtitle {
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px;
+            color: #aaa;
+        }
+        #insight-box {
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 100, 150, 0.3);
+            border: 1px solid rgba(78, 205, 196, 0.5);
+            border-radius: 8px;
+            padding: 15px 25px;
+            text-align: center;
+            max-width: 650px;
+        }
+        #insight-title {
+            font-size: 16px;
+            color: #4ecdc4;
+            margin-bottom: 8px;
+        }
+        #insight-text {
+            font-size: 14px;
+            color: #fff;
+            line-height: 1.4;
+        }
+        #punchline-box {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(30, 30, 50, 0.95);
+            border: 2px solid #ffd700;
+            border-radius: 12px;
+            padding: 30px 40px;
+            text-align: center;
+            max-width: 550px;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+        }
+        #punchline-title {
+            font-size: 22px;
+            color: #ffd700;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        #punchline-text {
+            font-size: 16px;
+            color: #fff;
+            line-height: 1.6;
+        }
+        .arm-label {
+            font-size: 12px;
+            position: absolute;
+            white-space: nowrap;
+        }
+        .blue-label { color: #4a9eff; }
+        .orange-label { color: #ff8c42; }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    <button id="reset-anim-btn" class="control-btn">⟲ Reset Animation</button>
+    <button id="reset-view-btn" class="control-btn">↺ Reset View</button>
+
+    <div id="phase-title" class="text-overlay">HOW ROBOT DATA BECOMES TOKENS</div>
+    <div id="phase-subtitle" class="text-overlay">SO-ARM101 Bimanual Observation</div>
+
+    <div id="insight-box" class="text-overlay" style="opacity: 0;">
+        <div id="insight-title"></div>
+        <div id="insight-text"></div>
+    </div>
+
+    <div id="punchline-box">
+        <div id="punchline-title">🤖 Same Tokenization Pattern!</div>
+        <div id="punchline-text">
+            <span style="color: #4ecdc4;">Camera images</span> become <span style="color: #ff6b6b;">ViT patch tokens</span><br><br>
+            <span style="color: #4a9eff;">Joint angles</span> become <span style="color: #ffd93d;">proprioceptive tokens</span><br><br>
+            <strong>One unified sequence → Same transformer encoder!</strong>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TrackballControls.js"></script>
+
+    <script>
+        const container = document.getElementById('container');
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000000);
+
+        const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+        camera.position.set(0, 2, 14);
+        camera.lookAt(0, 0, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(width, height);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(5, 10, 7);
+        scene.add(directionalLight);
+        const backLight = new THREE.PointLight(0x4ecdc4, 0.4, 50);
+        backLight.position.set(-5, -5, -5);
+        scene.add(backLight);
+
+        const controls = new THREE.TrackballControls(camera, renderer.domElement);
+        controls.rotateSpeed = 2.0;
+        controls.zoomSpeed = 1.2;
+        controls.panSpeed = 0.8;
+
+        const colors = {
+            camera: 0x4ecdc4,
+            patch: 0xff6b6b,
+            blueArm: 0x4a9eff,
+            orangeArm: 0xff8c42,
+            joint: 0xffd93d,
+            position: 0x9b59b6,
+            final: 0x28a745
+        };
+
+        // === CREATE CAMERA IMAGE GROUP ===
+        const cameraGroup = new THREE.Group();
+        cameraGroup.position.set(-5, 2, 0);
+
+        // Camera body
+        const cameraBody = new THREE.Mesh(
+            new THREE.BoxGeometry(1.2, 0.8, 0.6),
+            new THREE.MeshPhongMaterial({ color: 0x333333 })
+        );
+        cameraGroup.add(cameraBody);
+
+        // Camera lens
+        const lens = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.25, 0.3, 0.3, 16),
+            new THREE.MeshPhongMaterial({ color: colors.camera, emissive: colors.camera, emissiveIntensity: 0.2 })
+        );
+        lens.rotation.x = Math.PI / 2;
+        lens.position.z = 0.4;
+        cameraGroup.add(lens);
+
+        // Image plane (what camera sees)
+        const imageCanvas = document.createElement('canvas');
+        imageCanvas.width = 224;
+        imageCanvas.height = 224;
+        const imgCtx = imageCanvas.getContext('2d');
+
+        // Draw a robot workspace scene
+        const gradient = imgCtx.createLinearGradient(0, 0, 224, 224);
+        gradient.addColorStop(0, '#2d3436');
+        gradient.addColorStop(0.5, '#4ecdc4');
+        gradient.addColorStop(1, '#636e72');
+        imgCtx.fillStyle = gradient;
+        imgCtx.fillRect(0, 0, 224, 224);
+
+        // Draw a simple "cloth" shape
+        imgCtx.fillStyle = '#ff6b6b';
+        imgCtx.beginPath();
+        imgCtx.moveTo(60, 180);
+        imgCtx.lineTo(164, 180);
+        imgCtx.lineTo(140, 100);
+        imgCtx.lineTo(84, 100);
+        imgCtx.closePath();
+        imgCtx.fill();
+
+        const imageTexture = new THREE.CanvasTexture(imageCanvas);
+        const imagePlane = new THREE.Mesh(
+            new THREE.PlaneGeometry(2.5, 2.5),
+            new THREE.MeshBasicMaterial({ map: imageTexture, side: THREE.DoubleSide, transparent: true, opacity: 0 })
+        );
+        imagePlane.position.set(2, 0, 0);
+        cameraGroup.add(imagePlane);
+
+        // Grid overlay for patches
+        const gridGroup = new THREE.Group();
+        const gridSize = 2.5;
+        const gridDivisions = 7; // Simplified for visibility
+        const cellSize = gridSize / gridDivisions;
+        const gridMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0 });
+
+        for (let i = 0; i <= gridDivisions; i++) {
+            const pos = -gridSize/2 + i * cellSize;
+            // Vertical
+            const vPoints = [new THREE.Vector3(pos, -gridSize/2, 0.01), new THREE.Vector3(pos, gridSize/2, 0.01)];
+            const vLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(vPoints), gridMaterial.clone());
+            gridGroup.add(vLine);
+            // Horizontal
+            const hPoints = [new THREE.Vector3(-gridSize/2, pos, 0.01), new THREE.Vector3(gridSize/2, pos, 0.01)];
+            const hLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(hPoints), gridMaterial.clone());
+            gridGroup.add(hLine);
+        }
+        gridGroup.position.set(2, 0, 0);
+        cameraGroup.add(gridGroup);
+
+        scene.add(cameraGroup);
+
+        // === CREATE ROBOT ARM JOINT GROUPS ===
+        const jointGroups = {
+            blueLeader: [],
+            blueFollower: [],
+            orangeLeader: [],
+            orangeFollower: []
+        };
+
+        function createJointSphere(color, x, y, z) {
+            const sphere = new THREE.Mesh(
+                new THREE.SphereGeometry(0.2, 16, 16),
+                new THREE.MeshPhongMaterial({
+                    color: color,
+                    emissive: color,
+                    emissiveIntensity: 0.2,
+                    transparent: true,
+                    opacity: 0
+                })
+            );
+            sphere.position.set(x, y, z);
+            return sphere;
+        }
+
+        // Blue Leader Arm (6 joints) - Top left
+        const blueLeaderGroup = new THREE.Group();
+        blueLeaderGroup.position.set(-5, -1, 0);
+        for (let i = 0; i < 6; i++) {
+            const joint = createJointSphere(colors.blueArm, i * 0.5, 0, 0);
+            joint.userData.armType = 'blueLeader';
+            joint.userData.jointIndex = i;
+            blueLeaderGroup.add(joint);
+            jointGroups.blueLeader.push(joint);
+        }
+        scene.add(blueLeaderGroup);
+
+        // Blue Follower Arm (6 joints) - Below leader
+        const blueFollowerGroup = new THREE.Group();
+        blueFollowerGroup.position.set(-5, -2, 0);
+        for (let i = 0; i < 6; i++) {
+            const joint = createJointSphere(colors.blueArm, i * 0.5, 0, 0);
+            joint.userData.armType = 'blueFollower';
+            joint.userData.jointIndex = i;
+            blueFollowerGroup.add(joint);
+            jointGroups.blueFollower.push(joint);
+        }
+        scene.add(blueFollowerGroup);
+
+        // Orange Leader Arm (6 joints) - Top right area
+        const orangeLeaderGroup = new THREE.Group();
+        orangeLeaderGroup.position.set(-2, -1, 0);
+        for (let i = 0; i < 6; i++) {
+            const joint = createJointSphere(colors.orangeArm, i * 0.5, 0, 0);
+            joint.userData.armType = 'orangeLeader';
+            joint.userData.jointIndex = i;
+            orangeLeaderGroup.add(joint);
+            jointGroups.orangeLeader.push(joint);
+        }
+        scene.add(orangeLeaderGroup);
+
+        // Orange Follower Arm (6 joints) - Below leader
+        const orangeFollowerGroup = new THREE.Group();
+        orangeFollowerGroup.position.set(-2, -2, 0);
+        for (let i = 0; i < 6; i++) {
+            const joint = createJointSphere(colors.orangeArm, i * 0.5, 0, 0);
+            joint.userData.armType = 'orangeFollower';
+            joint.userData.jointIndex = i;
+            orangeFollowerGroup.add(joint);
+            jointGroups.orangeFollower.push(joint);
+        }
+        scene.add(orangeFollowerGroup);
+
+        // === CREATE PATCH TOKENS (from camera) ===
+        const patchTokens = [];
+        const numPatches = 49; // 7x7 simplified
+        for (let i = 0; i < numPatches; i++) {
+            const row = Math.floor(i / 7);
+            const col = i % 7;
+            const hue = (i / numPatches) * 0.15 + 0.45; // Cyan-ish gradient
+            const token = new THREE.Mesh(
+                new THREE.BoxGeometry(0.18, 0.18, 0.18),
+                new THREE.MeshPhongMaterial({
+                    color: new THREE.Color().setHSL(hue, 0.7, 0.5),
+                    transparent: true,
+                    opacity: 0
+                })
+            );
+            // Start position (in image grid)
+            token.userData.startX = cameraGroup.position.x + 2 + (col - 3) * (gridSize / 7);
+            token.userData.startY = cameraGroup.position.y + (3 - row) * (gridSize / 7);
+            token.userData.startZ = 0;
+            // Final position (in token sequence)
+            token.userData.finalX = 4 + (i % 10) * 0.3;
+            token.userData.finalY = 3 - Math.floor(i / 10) * 0.4;
+            token.userData.finalZ = 0;
+            token.position.set(token.userData.startX, token.userData.startY, token.userData.startZ);
+            scene.add(token);
+            patchTokens.push(token);
+        }
+
+        // === CREATE JOINT TOKENS (proprioceptive) ===
+        const jointTokens = [];
+        let jointIdx = 0;
+        const allJoints = [
+            ...jointGroups.blueLeader,
+            ...jointGroups.blueFollower,
+            ...jointGroups.orangeLeader,
+            ...jointGroups.orangeFollower
+        ];
+        allJoints.forEach((joint, idx) => {
+            const token = new THREE.Mesh(
+                new THREE.SphereGeometry(0.12, 12, 12),
+                new THREE.MeshPhongMaterial({
+                    color: joint.material.color,
+                    transparent: true,
+                    opacity: 0
+                })
+            );
+            token.userData.sourceJoint = joint;
+            token.userData.finalX = 4 + ((numPatches + idx) % 10) * 0.3;
+            token.userData.finalY = 3 - Math.floor((numPatches + idx) / 10) * 0.4;
+            token.userData.finalZ = 0;
+            scene.add(token);
+            jointTokens.push(token);
+        });
+
+        // === POSITIONAL ENCODING MARKERS ===
+        const posMarkers = [];
+        const totalTokens = numPatches + 24;
+        for (let i = 0; i < totalTokens; i++) {
+            const marker = new THREE.Mesh(
+                new THREE.RingGeometry(0.15, 0.2, 16),
+                new THREE.MeshBasicMaterial({
+                    color: colors.position,
+                    transparent: true,
+                    opacity: 0,
+                    side: THREE.DoubleSide
+                })
+            );
+            marker.userData.targetX = 4 + (i % 10) * 0.3;
+            marker.userData.targetY = 3 - Math.floor(i / 10) * 0.4;
+            marker.position.set(marker.userData.targetX, marker.userData.targetY, 0.1);
+            scene.add(marker);
+            posMarkers.push(marker);
+        }
+
+        // === ENCODER BLOCK ===
+        const encoderBlock = new THREE.Mesh(
+            new THREE.BoxGeometry(3.5, 4.5, 0.3),
+            new THREE.MeshPhongMaterial({
+                color: 0x28a745,
+                transparent: true,
+                opacity: 0,
+                emissive: 0x28a745,
+                emissiveIntensity: 0.1
+            })
+        );
+        encoderBlock.position.set(8, 0.5, -1);
+        scene.add(encoderBlock);
+
+        // === ANIMATION STATE ===
+        const phaseTiming = {
+            1: { start: 0, duration: 4000 },
+            2: { start: 4000, duration: 5000 },
+            3: { start: 9000, duration: 5000 },
+            4: { start: 14000, duration: 5000 },
+            5: { start: 19000, duration: 5000 },
+            6: { start: 24000, duration: 5000 },
+            7: { start: 29000, duration: 10000 }
+        };
+        const totalDuration = 39000;
+        let startTime = Date.now();
+
+        const phaseTitle = document.getElementById('phase-title');
+        const phaseSubtitle = document.getElementById('phase-subtitle');
+        const insightBox = document.getElementById('insight-box');
+        const insightTitle = document.getElementById('insight-title');
+        const insightText = document.getElementById('insight-text');
+        const punchlineBox = document.getElementById('punchline-box');
+
+        function getCurrentPhase(elapsed) {
+            for (let p = 7; p >= 1; p--) {
+                if (elapsed >= phaseTiming[p].start) return p;
+            }
+            return 1;
+        }
+
+        function resetAnimation() {
+            startTime = Date.now();
+
+            // Reset image and grid
+            imagePlane.material.opacity = 0;
+            gridGroup.children.forEach(line => line.material.opacity = 0);
+
+            // Reset joints
+            allJoints.forEach(j => j.material.opacity = 0);
+
+            // Reset tokens
+            patchTokens.forEach(t => {
+                t.material.opacity = 0;
+                t.position.set(t.userData.startX, t.userData.startY, t.userData.startZ);
+            });
+            jointTokens.forEach(t => {
+                t.material.opacity = 0;
+                if (t.userData.sourceJoint) {
+                    const srcPos = new THREE.Vector3();
+                    t.userData.sourceJoint.getWorldPosition(srcPos);
+                    t.position.copy(srcPos);
+                }
+            });
+
+            // Reset position markers
+            posMarkers.forEach(m => m.material.opacity = 0);
+
+            // Reset encoder
+            encoderBlock.material.opacity = 0;
+
+            // Reset text
+            punchlineBox.style.opacity = '0';
+            insightBox.style.opacity = '0';
+            phaseTitle.style.opacity = '1';
+            phaseSubtitle.style.opacity = '1';
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const elapsed = (Date.now() - startTime) % totalDuration;
+            const phase = getCurrentPhase(elapsed);
+            const phaseElapsed = elapsed - phaseTiming[phase].start;
+            const progress = Math.min(phaseElapsed / phaseTiming[phase].duration, 1);
+
+            // Update text
+            switch(phase) {
+                case 1:
+                    phaseTitle.textContent = 'HOW ROBOT DATA BECOMES TOKENS';
+                    phaseSubtitle.textContent = 'SO-ARM101 Bimanual Setup';
+                    phaseTitle.style.opacity = '1';
+                    phaseSubtitle.style.opacity = '1';
+                    insightBox.style.opacity = '0';
+                    punchlineBox.style.opacity = '0';
+
+                    // Fade in camera
+                    imagePlane.material.opacity = progress;
+                    break;
+
+                case 2:
+                    phaseTitle.textContent = 'STEP 1: Camera Image → ViT Patches';
+                    phaseSubtitle.textContent = '480×640 image divided into 16×16 patches';
+                    insightBox.style.opacity = '1';
+                    insightTitle.textContent = '📷 Just Like Chapter 6!';
+                    insightText.textContent = 'Same patch tokenization we learned for Vision Transformers - the camera sees the workspace.';
+
+                    // Show grid
+                    gridGroup.children.forEach(line => {
+                        line.material.opacity = Math.min(progress * 1.5, 0.7);
+                    });
+                    break;
+
+                case 3:
+                    phaseTitle.textContent = 'STEP 2: Joint Angles → Proprioceptive Tokens';
+                    phaseSubtitle.textContent = '24 joint angles (6 per arm × 4 arms)';
+                    insightTitle.textContent = '🤖 SO-ARM101 Specific!';
+                    insightText.innerHTML = '<span style="color:#4a9eff">Blue arms</span>: Leader + Follower (right side)<br><span style="color:#ff8c42">Orange arms</span>: Leader + Follower (left side)';
+
+                    // Animate joint spheres appearing
+                    const jointProgress = Math.min(progress * 2, 1);
+                    allJoints.forEach((joint, idx) => {
+                        const delay = idx * 0.03;
+                        const jProgress = Math.max(0, (jointProgress - delay) * 1.5);
+                        joint.material.opacity = Math.min(jProgress, 0.9);
+                        // Pulse effect
+                        joint.material.emissiveIntensity = 0.2 + Math.sin(elapsed * 0.005 + idx) * 0.1;
+                    });
+                    break;
+
+                case 4:
+                    phaseTitle.textContent = 'STEP 3: Linear Projection';
+                    phaseSubtitle.textContent = 'Patches → 768D embeddings, Joints → Joint embeddings';
+                    insightTitle.textContent = '🔄 Same Embedding Dimension';
+                    insightText.textContent = 'Both visual and proprioceptive data project to the same embedding space!';
+
+                    // Animate tokens appearing and starting to move
+                    const tokenProgress = progress;
+                    patchTokens.forEach((token, idx) => {
+                        const delay = idx * 0.01;
+                        const tProgress = Math.max(0, (tokenProgress - delay) * 2);
+                        token.material.opacity = Math.min(tProgress, 0.85);
+                    });
+                    jointTokens.forEach((token, idx) => {
+                        const delay = 0.3 + idx * 0.01;
+                        const tProgress = Math.max(0, (tokenProgress - delay) * 2);
+                        token.material.opacity = Math.min(tProgress, 0.85);
+                        // Position near source joint
+                        if (token.userData.sourceJoint) {
+                            const srcPos = new THREE.Vector3();
+                            token.userData.sourceJoint.getWorldPosition(srcPos);
+                            token.position.copy(srcPos);
+                        }
+                    });
+                    break;
+
+                case 5:
+                    phaseTitle.textContent = 'STEP 4: Add Positional Encodings';
+                    phaseSubtitle.textContent = 'Each token learns WHERE it belongs in the sequence';
+                    insightTitle.textContent = '📍 Position Matters!';
+                    insightText.textContent = 'Callback to Chapter 2: Just like words, patches and joints need positional information.';
+
+                    // Move tokens to final positions and show position markers
+                    const moveProgress = progress;
+                    patchTokens.forEach((token, idx) => {
+                        const ease = moveProgress < 0.5 ? 2 * moveProgress * moveProgress : 1 - Math.pow(-2 * moveProgress + 2, 2) / 2;
+                        token.position.x = token.userData.startX + (token.userData.finalX - token.userData.startX) * ease;
+                        token.position.y = token.userData.startY + (token.userData.finalY - token.userData.startY) * ease;
+                    });
+                    jointTokens.forEach((token, idx) => {
+                        const srcPos = new THREE.Vector3();
+                        if (token.userData.sourceJoint) {
+                            token.userData.sourceJoint.getWorldPosition(srcPos);
+                        }
+                        const ease = moveProgress < 0.5 ? 2 * moveProgress * moveProgress : 1 - Math.pow(-2 * moveProgress + 2, 2) / 2;
+                        token.position.x = srcPos.x + (token.userData.finalX - srcPos.x) * ease;
+                        token.position.y = srcPos.y + (token.userData.finalY - srcPos.y) * ease;
+                        token.position.z = srcPos.z + (token.userData.finalZ - srcPos.z) * ease;
+                    });
+
+                    // Show position markers
+                    posMarkers.forEach((marker, idx) => {
+                        const delay = idx * 0.008;
+                        marker.material.opacity = Math.max(0, (moveProgress - 0.5 - delay) * 2) * 0.6;
+                    });
+                    break;
+
+                case 6:
+                    phaseTitle.textContent = 'STEP 5: Unified Token Sequence';
+                    phaseSubtitle.textContent = '73 tokens ready for transformer encoder!';
+                    insightTitle.textContent = '🎯 Ready for Self-Attention!';
+                    insightText.textContent = '49 patch tokens + 24 joint tokens = One unified sequence. The transformer treats them all equally!';
+
+                    // Show encoder block
+                    encoderBlock.material.opacity = Math.min(progress * 1.5, 0.7);
+                    encoderBlock.material.emissiveIntensity = 0.1 + Math.sin(elapsed * 0.003) * 0.05;
+
+                    // Pulse all tokens
+                    [...patchTokens, ...jointTokens].forEach((token, idx) => {
+                        token.material.emissiveIntensity = 0.2 + Math.sin(elapsed * 0.004 + idx * 0.1) * 0.15;
+                    });
+                    break;
+
+                case 7:
+                    // Hide everything, show punchline
+                    phaseTitle.style.opacity = '0';
+                    phaseSubtitle.style.opacity = '0';
+                    insightBox.style.opacity = '0';
+                    punchlineBox.style.opacity = Math.min(progress * 2, 1);
+
+                    // Fade scene
+                    imagePlane.material.opacity = 1 - progress;
+                    gridGroup.children.forEach(line => line.material.opacity = 0.7 * (1 - progress));
+                    allJoints.forEach(j => j.material.opacity = 0.9 * (1 - progress));
+                    patchTokens.forEach(t => t.material.opacity = 0.85 * (1 - progress));
+                    jointTokens.forEach(t => t.material.opacity = 0.85 * (1 - progress));
+                    posMarkers.forEach(m => m.material.opacity = 0.6 * (1 - progress));
+                    encoderBlock.material.opacity = 0.7 * (1 - progress);
+                    break;
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // Reset buttons
+        const initialCameraPosition = { x: 0, y: 2, z: 14 };
+        document.getElementById('reset-view-btn').addEventListener('click', () => {
+            camera.position.set(initialCameraPosition.x, initialCameraPosition.y, initialCameraPosition.z);
+            camera.up.set(0, 1, 0);
+            controls.target.set(0, 0, 0);
+            controls.reset();
+        });
+        document.getElementById('reset-anim-btn').addEventListener('click', resetAnimation);
+
+        window.addEventListener('resize', () => {
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+            renderer.setSize(w, h);
+        });
+
+        animate();
+    </script>
+</body>
+</html>

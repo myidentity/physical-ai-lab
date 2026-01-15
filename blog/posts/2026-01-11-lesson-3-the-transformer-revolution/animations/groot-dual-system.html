@@ -1,0 +1,2004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GR00T Dual-System Architecture - Interactive Guide</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TrackballControls.js"></script>
+
+    <style>
+        :root {
+            --bg-deep: #0a0a1a;
+            --bg-panel: rgba(15, 15, 35, 0.85);
+            --bg-card: rgba(25, 25, 50, 0.6);
+            --cyan: #00D4AA;
+            --cyan-glow: rgba(0, 212, 170, 0.3);
+            --purple: #6C5CE7;
+            --purple-glow: rgba(108, 92, 231, 0.3);
+            --gold: #ffd700;
+            --gold-glow: rgba(255, 215, 0, 0.25);
+            --coral: #e94560;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b8;
+            --text-muted: #606080;
+            --border-subtle: rgba(255, 255, 255, 0.06);
+            --border-glow: rgba(0, 212, 170, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-deep);
+            min-height: 100vh;
+            display: flex;
+            font-family: 'Sora', sans-serif;
+            overflow: hidden;
+        }
+
+        /* Left: Canvas Area - EXACTLY 55% */
+        .canvas-area {
+            width: 55%;
+            height: 100vh;
+            background: linear-gradient(135deg, #0d0d20 0%, #0a0a1a 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #animation-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        #animation-container canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        /* Reset buttons for canvas */
+        .canvas-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .reset-btn {
+            padding: 8px 14px;
+            background: rgba(20, 20, 40, 0.85);
+            border: 1px solid rgba(0, 212, 170, 0.3);
+            border-radius: 6px;
+            color: var(--cyan);
+            font-family: 'Sora', sans-serif;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(8px);
+        }
+
+        .reset-btn:hover {
+            background: rgba(0, 212, 170, 0.15);
+            border-color: var(--cyan);
+            transform: translateY(-1px);
+        }
+
+        .reset-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Right: Content Panel - EXACTLY 45% */
+        .content-panel {
+            width: 45%;
+            height: 100vh;
+            background: var(--bg-panel);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Animated border glow */
+        .content-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -1px;
+            width: 2px;
+            height: 100%;
+            background: linear-gradient(
+                180deg,
+                transparent 0%,
+                var(--cyan) 20%,
+                var(--purple) 50%,
+                var(--cyan) 80%,
+                transparent 100%
+            );
+            opacity: 0.6;
+            animation: borderPulse 4s ease-in-out infinite;
+        }
+
+        @keyframes borderPulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+
+        /* Subtle grid pattern overlay */
+        .content-panel::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                linear-gradient(rgba(0, 212, 170, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 170, 0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        /* Header */
+        .panel-header {
+            padding: 20px 28px 16px;
+            border-bottom: 1px solid var(--border-subtle);
+            position: relative;
+            z-index: 1;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 4px;
+        }
+
+        .brand-logo {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--cyan), var(--purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 11px;
+            color: white;
+            letter-spacing: -0.5px;
+            box-shadow: 0 4px 20px var(--cyan-glow);
+        }
+
+        .brand-text {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, var(--cyan), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .brand-subtitle {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-left: 44px;
+        }
+
+        /* Section Header */
+        .section-header {
+            padding: 24px 28px 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .section-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: var(--cyan);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-number::before {
+            content: '';
+            width: 16px;
+            height: 1px;
+            background: var(--cyan);
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.03em;
+            line-height: 1.2;
+            margin-bottom: 8px;
+        }
+
+        .section-subtitle {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--gold);
+            letter-spacing: 0.02em;
+        }
+
+        /* Content Area */
+        .content-area {
+            flex: 1;
+            padding: 0 28px 20px;
+            overflow-y: auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .content-area::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .content-area::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .content-area::-webkit-scrollbar-thumb {
+            background: var(--border-glow);
+            border-radius: 2px;
+        }
+
+        /* Section content - hidden by default */
+        .section-content {
+            display: none;
+        }
+
+        .section-content.active {
+            display: block;
+            animation: fadeSlideIn 0.4s ease-out;
+        }
+
+        @keyframes fadeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Insight paragraphs */
+        .insight {
+            font-size: 14px;
+            line-height: 1.75;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .insight strong {
+            color: var(--cyan);
+            font-weight: 500;
+        }
+
+        .insight em {
+            color: var(--purple);
+            font-style: normal;
+            font-weight: 500;
+        }
+
+        .insight .gold {
+            color: var(--gold);
+            font-weight: 600;
+        }
+
+        .insight .coral {
+            color: var(--coral);
+            font-weight: 600;
+        }
+
+        /* Bullet lists */
+        .content-area ul {
+            list-style: none;
+            margin: 16px 0;
+        }
+
+        .content-area > .section-content ul li {
+            font-size: 13px;
+            color: var(--text-secondary);
+            padding: 6px 0 6px 20px;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .content-area > .section-content ul li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 12px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--cyan);
+            opacity: 0.6;
+        }
+
+        .content-area > .section-content ul li em {
+            color: var(--purple);
+            font-style: normal;
+            font-weight: 500;
+        }
+
+        /* Key Insight Box */
+        .key-insight {
+            background: linear-gradient(135deg, var(--bg-card), rgba(0, 212, 170, 0.05));
+            border: 1px solid var(--border-glow);
+            border-radius: 12px;
+            padding: 16px 18px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .key-insight::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--cyan), var(--purple));
+            border-radius: 3px 0 0 3px;
+        }
+
+        .key-insight.eureka {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.08), rgba(0, 212, 170, 0.05));
+            border-color: rgba(255, 215, 0, 0.3);
+        }
+
+        .key-insight.eureka::before {
+            background: linear-gradient(180deg, var(--gold), var(--cyan));
+        }
+
+        .key-insight.problem {
+            background: linear-gradient(135deg, rgba(233, 69, 96, 0.08), rgba(108, 92, 231, 0.05));
+            border-color: rgba(233, 69, 96, 0.3);
+        }
+
+        .key-insight.problem::before {
+            background: linear-gradient(180deg, var(--coral), var(--purple));
+        }
+
+        .key-insight-label {
+            display: inline-block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            background: var(--cyan);
+            color: var(--bg-deep);
+            margin-bottom: 10px;
+        }
+
+        .key-insight.eureka .key-insight-label {
+            background: var(--gold);
+        }
+
+        .key-insight.problem .key-insight-label {
+            background: var(--coral);
+        }
+
+        .key-insight p {
+            font-size: 13px;
+            line-height: 1.65;
+            color: var(--text-secondary);
+            margin: 6px 0 0;
+        }
+
+        .key-insight p strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* Dual System Boxes */
+        .dual-boxes {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .system-box {
+            background: var(--bg-card);
+            border-radius: 10px;
+            padding: 14px 16px;
+            border: 1px solid var(--border-subtle);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .system-box:hover {
+            transform: translateY(-2px);
+            border-color: var(--border-glow);
+        }
+
+        .system-box.system-2 {
+            border-color: rgba(108, 92, 231, 0.3);
+        }
+
+        .system-box.system-2:hover {
+            border-color: var(--purple);
+            box-shadow: 0 8px 30px var(--purple-glow);
+        }
+
+        .system-box.system-1 {
+            border-color: rgba(0, 212, 170, 0.3);
+        }
+
+        .system-box.system-1:hover {
+            border-color: var(--cyan);
+            box-shadow: 0 8px 30px var(--cyan-glow);
+        }
+
+        .system-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+        }
+
+        .system-box.system-2::before {
+            background: linear-gradient(90deg, var(--purple), transparent);
+        }
+
+        .system-box.system-1::before {
+            background: linear-gradient(90deg, var(--cyan), transparent);
+        }
+
+        .system-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 4px;
+        }
+
+        .system-2 .system-label { color: var(--purple); }
+        .system-1 .system-label { color: var(--cyan); }
+
+        .system-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .system-box ul {
+            list-style: none;
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+
+        .system-box li {
+            padding: 2px 0 !important;
+        }
+
+        .system-box li::before {
+            content: '>' !important;
+            margin-right: 6px;
+            opacity: 0.5;
+            position: static !important;
+            background: none !important;
+        }
+
+        .system-box strong {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* Stats Row */
+        .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 20px 0;
+            padding: 16px;
+            background: var(--bg-card);
+            border-radius: 10px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .stat.purple .stat-value { color: var(--purple); }
+        .stat.cyan .stat-value { color: var(--cyan); }
+        .stat.gold .stat-value { color: var(--gold); }
+
+        .stat-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Punchline special styling */
+        .punchline-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--gold);
+            text-align: center;
+            margin: 24px 0 16px;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .punchline-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Navigation */
+        .navigation {
+            padding: 16px 28px;
+            border-top: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(10, 10, 26, 0.8);
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 1;
+        }
+
+        .nav-btn {
+            font-family: 'Sora', sans-serif;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-glow);
+            background: transparent;
+            color: var(--cyan);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: var(--cyan-glow);
+            border-color: var(--cyan);
+            transform: translateY(-1px);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .nav-dots {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-dot:hover {
+            background: var(--text-secondary);
+            transform: scale(1.2);
+        }
+
+        .nav-dot.active {
+            background: var(--cyan);
+            box-shadow: 0 0 12px var(--cyan-glow);
+        }
+
+        .nav-dot.active::after {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            right: -4px;
+            bottom: -4px;
+            border-radius: 50%;
+            border: 1px solid var(--cyan);
+            opacity: 0.3;
+            animation: dotPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes dotPulse {
+            0%, 100% { transform: scale(1); opacity: 0.3; }
+            50% { transform: scale(1.3); opacity: 0; }
+        }
+
+        .nav-counter {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            min-width: 50px;
+            text-align: center;
+        }
+
+        /* Loading state */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 26, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .loading-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-subtle);
+            border-top-color: var(--cyan);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Left: Canvas Area -->
+    <div class="canvas-area">
+        <div id="animation-container"></div>
+        <div class="canvas-controls">
+            <button class="reset-btn" id="reset-view-btn">↻ Reset View</button>
+            <button class="reset-btn" id="reset-animation-btn">▶ Reset Animation</button>
+        </div>
+        <div class="loading-overlay" id="loading">
+            <div class="loading-spinner"></div>
+        </div>
+    </div>
+
+    <!-- Right: Content Panel -->
+    <div class="content-panel">
+        <!-- Header -->
+        <div class="panel-header">
+            <div class="brand">
+                <div class="brand-logo">N</div>
+                <span class="brand-text">NVIDIA GR00T</span>
+            </div>
+            <div class="brand-subtitle">Building Intuition for Robot Foundation Models</div>
+        </div>
+
+        <!-- Section Header -->
+        <div class="section-header">
+            <div class="section-number" id="section-number">Section 1 of 7</div>
+            <h1 class="section-title" id="section-title">The Central Question</h1>
+            <div class="section-subtitle" id="section-subtitle">How do you teach a robot to understand?</div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- Section 1 Content -->
+            <div class="section-content active" data-section="1">
+                <p class="insight">Watch how effortlessly you perform everyday tasks. <strong>Reaching for an apple. Picking up a cup. Folding a shirt.</strong></p>
+                <p class="insight">You don't think about the <em>thousands</em> of micro-decisions your brain makes every second. You just... do it.</p>
+
+                <div class="key-insight">
+                    <span class="key-insight-label">The Question</span>
+                    <p><strong>But can a robot do the same?</strong></p>
+                    <p>What seems trivial to you is monumentally complex for machines. This is where our journey begins.</p>
+                </div>
+
+                <ul>
+                    <li>Humans perform manipulation tasks <em>unconsciously</em></li>
+                    <li>Every action involves <em>millions</em> of neural computations</li>
+                    <li>Robots must <strong>learn</strong> what we take for granted</li>
+                </ul>
+            </div>
+
+            <!-- Section 2 Content -->
+            <div class="section-content" data-section="2">
+                <p class="insight">Here's the problem: <span class="coral">A robot brain is TOO smart</span>. That sounds backwards, right?</p>
+                <p class="insight">NVIDIA's Eagle-2 Vision-Language Model has <strong>2 billion parameters</strong>. Each decision requires polling all of them.</p>
+
+                <div class="key-insight problem">
+                    <span class="key-insight-label">The Dilemma</span>
+                    <p><strong>2 billion voters x 120 decisions/second = 240 TRILLION operations</strong></p>
+                    <p>That's computationally <em>impossible</em> in real-time.</p>
+                </div>
+
+                <div class="stats-row">
+                    <div class="stat purple">
+                        <div class="stat-value">2B</div>
+                        <div class="stat-label">Parameters</div>
+                    </div>
+                    <div class="stat cyan">
+                        <div class="stat-value">120Hz</div>
+                        <div class="stat-label">Required</div>
+                    </div>
+                    <div class="stat gold">
+                        <div class="stat-value">8ms</div>
+                        <div class="stat-label">Per Decision</div>
+                    </div>
+                </div>
+
+                <p class="insight">Smart is SLOW. And smooth robot motion demands <span class="gold">SPEED</span>. This is the fundamental tension.</p>
+            </div>
+
+            <!-- Section 3 Content -->
+            <div class="section-content" data-section="3">
+                <p class="insight">Here's a profound insight: <strong>YOUR brain already solved this problem.</strong></p>
+                <p class="insight">Psychologist Daniel Kahneman won a Nobel Prize for describing how human cognition works with <em>two systems</em>.</p>
+
+                <div class="dual-boxes">
+                    <div class="system-box system-2">
+                        <div class="system-label">System 2</div>
+                        <div class="system-name">Slow Thinking</div>
+                        <ul>
+                            <li><strong>17 x 24 = ?</strong></li>
+                            <li>Deliberate reasoning</li>
+                            <li>Effortful focus</li>
+                            <li>Conscious decisions</li>
+                        </ul>
+                    </div>
+                    <div class="system-box system-1">
+                        <div class="system-label">System 1</div>
+                        <div class="system-name">Fast Intuition</div>
+                        <ul>
+                            <li><strong>Catch a ball!</strong></li>
+                            <li>Automatic reactions</li>
+                            <li>Effortless speed</li>
+                            <li>Pattern matching</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="key-insight eureka">
+                    <span class="key-insight-label">Insight</span>
+                    <p>System 2 <strong>teaches</strong> System 1 once. Then System 1 executes <em>forever</em> at lightning speed.</p>
+                </div>
+            </div>
+
+            <!-- Section 4 Content -->
+            <div class="section-content" data-section="4">
+                <p class="insight">NVIDIA's GR00T architecture <span class="gold">copies your brain's strategy</span>. Two systems, two speeds, one harmonious flow.</p>
+
+                <div class="dual-boxes">
+                    <div class="system-box system-2">
+                        <div class="system-label">System 2</div>
+                        <div class="system-name">Eagle-2 VLM</div>
+                        <ul>
+                            <li><strong>2B parameters</strong></li>
+                            <li>~10 Hz (slow)</li>
+                            <li>Vision + Language</li>
+                            <li>Deep understanding</li>
+                        </ul>
+                    </div>
+                    <div class="system-box system-1">
+                        <div class="system-label">System 1</div>
+                        <div class="system-name">Diffusion Policy</div>
+                        <ul>
+                            <li><strong>550M parameters</strong></li>
+                            <li>120 Hz (fast!)</li>
+                            <li>Action generation</li>
+                            <li>Smooth execution</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="key-insight">
+                    <span class="key-insight-label">Architecture</span>
+                    <p>Camera + Voice -> <strong style="color: var(--purple);">System 2</strong> -> Understanding -> <strong style="color: var(--cyan);">System 1</strong> -> Smooth Actions</p>
+                </div>
+
+                <p class="insight">But wait... <span class="coral">HOW can System 1 run 12x faster</span> with fewer parameters? That's the key insight coming next!</p>
+            </div>
+
+            <!-- Section 5 Content -->
+            <div class="section-content" data-section="5">
+                <p class="insight">Here's the insight that makes GR00T <span class="gold">brilliant</span>:</p>
+                <p class="insight">When you say <em>"pick up the red cup"</em>...</p>
+
+                <ul>
+                    <li>The cup doesn't <em>MOVE</em> 120 times per second</li>
+                    <li>The color doesn't <em>CHANGE</em> 120 times per second</li>
+                    <li>The <em>GOAL</em> doesn't change 120 times per second</li>
+                </ul>
+
+                <div class="key-insight eureka">
+                    <span class="key-insight-label">Eureka!</span>
+                    <p><strong>Understanding is STABLE.</strong></p>
+                    <p>System 2 only needs to understand <em>ONCE</em>. That understanding STAYS THE SAME while System 1 generates a <strong>CONTINUOUS stream</strong> of smooth actions.</p>
+                </div>
+
+                <p class="insight">It's like a GPS destination: once set, it doesn't change while you're driving. Your hands make <span class="gold">1000 micro-adjustments</span>, but the destination stays the same.</p>
+            </div>
+
+            <!-- Section 6 Content -->
+            <div class="section-content" data-section="6">
+                <p class="insight">But there's one more secret: <strong>Diffusion models don't generate actions step-by-step</strong>.</p>
+                <p class="insight">Unlike traditional approaches that compute one action at a time (slow!), diffusion generates an <span class="gold">ENTIRE trajectory at once</span>.</p>
+
+                <div class="dual-boxes">
+                    <div class="system-box" style="border-color: rgba(128, 128, 128, 0.3);">
+                        <div class="system-label" style="color: #888;">Old Way</div>
+                        <div class="system-name" style="color: #888;">Step-by-Step</div>
+                        <ul>
+                            <li>One action at a time</li>
+                            <li>Slow and sequential</li>
+                            <li>Can't see ahead</li>
+                        </ul>
+                    </div>
+                    <div class="system-box system-1">
+                        <div class="system-label">Diffusion</div>
+                        <div class="system-name">All At Once</div>
+                        <ul>
+                            <li><strong>Whole trajectory</strong></li>
+                            <li>Parallel denoising</li>
+                            <li>Sees the full path</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="key-insight">
+                    <span class="key-insight-label">The Secret</span>
+                    <p><strong>One forward pass = ENTIRE trajectory.</strong></p>
+                    <p>Noise -> Velocity Field -> Smooth Curve. All computed <em>simultaneously</em>.</p>
+                </div>
+            </div>
+
+            <!-- Section 7 Content - PUNCHLINE -->
+            <div class="section-content" data-section="7">
+                <div class="punchline-text">Think Slow. Act Fast.</div>
+                <div class="punchline-subtitle">Understanding is stable. Execution must be fast.</div>
+
+                <p class="insight">You've just learned <strong>the secret</strong> behind NVIDIA's GR00T robot foundation model.</p>
+
+                <div class="dual-boxes">
+                    <div class="system-box system-2">
+                        <div class="system-label">THINK</div>
+                        <div class="system-name">Eagle-2 VLM</div>
+                        <ul>
+                            <li>2B params - ~10Hz</li>
+                            <li>Deep understanding</li>
+                            <li><strong style="color: var(--gold);">Frozen insight</strong></li>
+                        </ul>
+                    </div>
+                    <div class="system-box system-1">
+                        <div class="system-label">ACT</div>
+                        <div class="system-name">Diffusion Policy</div>
+                        <ul>
+                            <li>550M params - 120Hz</li>
+                            <li>Rapid execution</li>
+                            <li><strong>Smooth trajectories</strong></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="key-insight eureka">
+                    <span class="key-insight-label">The Complete Picture</span>
+                    <p>Voice Command -> <strong style="color: var(--purple);">Slow Understanding</strong> -> <span style="color: var(--gold);">Frozen Insight</span> -> <strong style="color: var(--cyan);">Fast Actions</strong> -> Robot Success!</p>
+                </div>
+
+                <p class="insight">Just like your brain: <span class="gold">understand once, execute flawlessly.</span></p>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="navigation">
+            <button class="nav-btn" id="prev-btn" disabled>
+                <span>&larr;</span> Previous
+            </button>
+
+            <div class="nav-dots" id="nav-dots">
+                <div class="nav-dot active" data-section="1" title="The Central Question"></div>
+                <div class="nav-dot" data-section="2" title="The Robot's Dilemma"></div>
+                <div class="nav-dot" data-section="3" title="Kahneman's Insight"></div>
+                <div class="nav-dot" data-section="4" title="GR00T's Two Brains"></div>
+                <div class="nav-dot" data-section="5" title="THE KEY INSIGHT"></div>
+                <div class="nav-dot" data-section="6" title="The Diffusion Secret"></div>
+                <div class="nav-dot" data-section="7" title="Think Slow. Act Fast."></div>
+            </div>
+
+            <div class="nav-counter" id="nav-counter">1 / 7</div>
+
+            <button class="nav-btn" id="next-btn">
+                Next <span>&rarr;</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Section 1 Code -->
+    <script id="section-1-code" type="text/animation">
+// Section 1: The Central Question
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a1a);
+
+const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
+camera.position.set(0, 3, 8);
+camera.lookAt(0, 1, 0);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(width, height);
+renderer.shadowMap.enabled = true;
+container.appendChild(renderer.domElement);
+
+const controls = new THREE.TrackballControls(camera, renderer.domElement);
+controls.rotateSpeed = 2.0;
+
+// Store references for reset buttons
+window.currentCamera = camera;
+window.currentControls = controls;
+window.initialCameraPosition = camera.position.clone();
+
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+scene.add(ambientLight);
+const mainLight = new THREE.DirectionalLight(0xffffff, 0.8);
+mainLight.position.set(5, 10, 5);
+scene.add(mainLight);
+
+// Text overlays - positioned in upper area, not blocking scene
+const textOverlay1 = document.createElement('div');
+textOverlay1.style.cssText = 'position:absolute;top:25px;left:50%;transform:translateX(-50%);color:#ffffff;font-size:20px;font-weight:600;text-align:center;opacity:0;transition:opacity 0.5s;text-shadow:2px 2px 8px rgba(0,0,0,0.8),0 0 20px rgba(255,255,255,0.3);font-family:Sora,sans-serif;letter-spacing:0.5px;';
+textOverlay1.textContent = '"Pick up the red apple"';
+container.appendChild(textOverlay1);
+
+const textOverlay2 = document.createElement('div');
+textOverlay2.style.cssText = 'position:absolute;bottom:80px;left:50%;transform:translateX(-50%);color:#00ffff;font-size:18px;font-weight:600;text-align:center;opacity:0;transition:opacity 0.5s;text-shadow:2px 2px 8px rgba(0,0,0,0.9),0 0 25px rgba(0,255,255,0.4);font-family:Sora,sans-serif;max-width:90%;';
+textOverlay2.textContent = 'How do you teach a robot to UNDERSTAND?';
+container.appendChild(textOverlay2);
+
+// Materials
+const humanMaterial = new THREE.MeshStandardMaterial({ color: 0xf4a460, emissive: 0xffa500, emissiveIntensity: 0.2 });
+const robotMaterial = new THREE.MeshStandardMaterial({ color: 0xc0c0c0, metalness: 0.9, roughness: 0.2 });
+
+// Table
+const tableTop = new THREE.Mesh(new THREE.BoxGeometry(5, 0.2, 3), new THREE.MeshStandardMaterial({ color: 0x4a3728 }));
+tableTop.position.set(-1.5, 0, 0);
+scene.add(tableTop);
+
+// Apple
+const appleGroup = new THREE.Group();
+const apple = new THREE.Mesh(new THREE.SphereGeometry(0.25, 32, 32), new THREE.MeshStandardMaterial({ color: 0xe94560 }));
+appleGroup.add(apple);
+appleGroup.position.set(-1.5, 0.4, 0);
+appleGroup.name = "Red Apple";
+scene.add(appleGroup);
+
+// Human arm
+const humanArmGroup = new THREE.Group();
+const upperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.8, 16), humanMaterial);
+humanArmGroup.add(upperArm);
+const palm = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.12, 0.15), humanMaterial);
+palm.position.set(0, -1.25, 0);
+humanArmGroup.add(palm);
+humanArmGroup.position.set(-3, 3.5, 0);
+humanArmGroup.name = "Human Arm";
+scene.add(humanArmGroup);
+
+// Robot arm
+const robotArmGroup = new THREE.Group();
+const robotBase = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.4, 0.2, 16), robotMaterial);
+robotArmGroup.add(robotBase);
+robotArmGroup.position.set(1, 0.1, 0);
+robotArmGroup.name = "Robot Arm";
+scene.add(robotArmGroup);
+
+// Question marks
+const questionMarks = [];
+for (let i = 0; i < 3; i++) {
+    const qGroup = new THREE.Group();
+    const curve = new THREE.Mesh(new THREE.TorusGeometry(0.1, 0.03, 8, 16, Math.PI * 1.5), new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0 }));
+    curve.rotation.z = Math.PI;
+    qGroup.add(curve);
+    const dot = new THREE.Mesh(new THREE.SphereGeometry(0.04, 8, 8), new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0 }));
+    dot.position.y = -0.2;
+    qGroup.add(dot);
+    qGroup.position.set(1 + (i - 1) * 0.5, 2.5 + i * 0.3, 0.5 - i * 0.2);
+    qGroup.visible = false;
+    scene.add(qGroup);
+    questionMarks.push(qGroup);
+}
+
+const startTime = Date.now();
+function animate() {
+    requestAnimationFrame(animate);
+    const elapsed = Date.now() - startTime;
+    const phase = Math.min(elapsed / 10000, 1);
+    const time = elapsed / 1000;
+
+    if (phase < 0.2) {
+        textOverlay1.style.opacity = Math.min(phase * 10, 1);
+    } else if (phase < 0.6) {
+        const p = (phase - 0.2) / 0.4;
+        humanArmGroup.position.x = -3 + p * 1.5;
+        humanArmGroup.position.y = 3.5 - p * 2.3;
+    } else if (phase < 0.8) {
+        questionMarks.forEach((q, i) => {
+            q.visible = true;
+            q.children.forEach(child => { child.material.opacity = 1; });
+            q.position.y = 2.5 + i * 0.3 + Math.sin(time * 2 + i) * 0.1;
+        });
+        textOverlay1.style.opacity = '0';
+    } else {
+        textOverlay2.style.opacity = Math.min((phase - 0.8) * 5, 1);
+    }
+
+    controls.update();
+    renderer.render(scene, camera);
+}
+animate();
+    </script>
+
+    <!-- Section 2 Code -->
+    <script id="section-2-code" type="text/animation">
+// Section 2: The Robot's Dilemma
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a15);
+
+const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+camera.position.set(0, 30, 80);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(width, height);
+container.appendChild(renderer.domElement);
+
+const controls = new THREE.TrackballControls(camera, renderer.domElement);
+controls.rotateSpeed = 2.0;
+
+// Store references for reset buttons
+window.currentCamera = camera;
+window.currentControls = controls;
+window.initialCameraPosition = camera.position.clone();
+
+// Text overlays for Section 2
+const textTitle = document.createElement('div');
+textTitle.style.cssText = 'position:absolute;top:20px;left:50%;transform:translateX(-50%);color:#6C5CE7;font-size:18px;font-weight:700;text-align:center;opacity:0;transition:opacity 0.5s;text-shadow:2px 2px 8px rgba(0,0,0,0.9);font-family:Sora,sans-serif;';
+textTitle.textContent = '2 BILLION Parameters';
+container.appendChild(textTitle);
+
+const textStats = document.createElement('div');
+textStats.style.cssText = 'position:absolute;top:60px;left:50%;transform:translateX(-50%);color:#ffd700;font-size:14px;font-weight:600;text-align:center;opacity:0;transition:opacity 0.5s;text-shadow:2px 2px 6px rgba(0,0,0,0.9);font-family:Sora,sans-serif;';
+textStats.textContent = '120 decisions/second needed';
+container.appendChild(textStats);
+
+const textImpossible = document.createElement('div');
+textImpossible.style.cssText = 'position:absolute;bottom:80px;left:50%;transform:translateX(-50%);color:#ff4444;font-size:22px;font-weight:700;text-align:center;opacity:0;transition:opacity 0.5s;text-shadow:0 0 20px rgba(255,68,68,0.6),2px 2px 8px rgba(0,0,0,0.9);font-family:Sora,sans-serif;';
+textImpossible.textContent = 'IMPOSSIBLE';
+container.appendChild(textImpossible);
+
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+scene.add(ambientLight);
+const purpleLight = new THREE.PointLight(0x6C5CE7, 2, 100);
+purpleLight.position.set(0, 20, 0);
+scene.add(purpleLight);
+
+// Stadium
+const stadiumGroup = new THREE.Group();
+stadiumGroup.position.x = -20;
+const stadium = new THREE.Mesh(new THREE.CylinderGeometry(35, 40, 5, 64), new THREE.MeshPhongMaterial({ color: 0x2d2d44, emissive: 0x6C5CE7, emissiveIntensity: 0.1 }));
+stadium.position.y = -5;
+stadium.name = "Stadium - 2 Billion Parameters";
+stadiumGroup.add(stadium);
+scene.add(stadiumGroup);
+
+// Voters (particles)
+const voterCount = 8000;
+const voterPositions = new Float32Array(voterCount * 3);
+const voterColors = new Float32Array(voterCount * 3);
+const voterOriginalPositions = [];
+
+for (let i = 0; i < voterCount; i++) {
+    const tier = Math.floor(Math.random() * 5);
+    const angle = Math.random() * Math.PI * 2;
+    const radius = 15 + tier * 4;
+    voterPositions[i * 3] = Math.cos(angle) * radius;
+    voterPositions[i * 3 + 1] = tier * 3;
+    voterPositions[i * 3 + 2] = Math.sin(angle) * radius;
+    voterOriginalPositions.push({ x: voterPositions[i * 3], y: voterPositions[i * 3 + 1], z: voterPositions[i * 3 + 2] });
+    voterColors[i * 3] = 0.4; voterColors[i * 3 + 1] = 0.3; voterColors[i * 3 + 2] = 0.9;
+}
+
+const voterGeo = new THREE.BufferGeometry();
+voterGeo.setAttribute('position', new THREE.BufferAttribute(voterPositions, 3));
+voterGeo.setAttribute('color', new THREE.BufferAttribute(voterColors, 3));
+const voters = new THREE.Points(voterGeo, new THREE.PointsMaterial({ size: 0.4, vertexColors: true }));
+voters.position.x = -20;
+scene.add(voters);
+
+// Robot brain
+const brainCore = new THREE.Mesh(new THREE.DodecahedronGeometry(4, 1), new THREE.MeshPhongMaterial({ color: 0x6C5CE7, emissive: 0x6C5CE7, emissiveIntensity: 0.3, transparent: true, opacity: 0.8 }));
+brainCore.position.set(-20, 8, 0);
+brainCore.name = "Robot Brain";
+scene.add(brainCore);
+
+// Clock
+const clockGroup = new THREE.Group();
+clockGroup.position.set(15, 25, -20);
+const clockFace = new THREE.Mesh(new THREE.CylinderGeometry(6, 6, 1, 32), new THREE.MeshPhongMaterial({ color: 0x1a1a2e }));
+clockFace.rotation.x = Math.PI / 2;
+clockGroup.add(clockFace);
+const clockHand = new THREE.Mesh(new THREE.BoxGeometry(0.3, 4.5, 0.2), new THREE.MeshPhongMaterial({ color: 0xffd700 }));
+clockHand.position.y = 2;
+const clockHandPivot = new THREE.Group();
+clockHandPivot.add(clockHand);
+clockHandPivot.position.z = 0.7;
+clockGroup.add(clockHandPivot);
+clockGroup.visible = false;
+scene.add(clockGroup);
+
+// Failure X
+const failureGroup = new THREE.Group();
+const xMat = new THREE.MeshPhongMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 0.5 });
+const xBar1 = new THREE.Mesh(new THREE.BoxGeometry(2, 20, 2), xMat);
+xBar1.rotation.z = Math.PI / 4;
+const xBar2 = new THREE.Mesh(new THREE.BoxGeometry(2, 20, 2), xMat);
+xBar2.rotation.z = -Math.PI / 4;
+failureGroup.add(xBar1, xBar2);
+failureGroup.position.set(-20, 15, 0);
+failureGroup.visible = false;
+scene.add(failureGroup);
+
+const startTime = Date.now();
+function animate() {
+    requestAnimationFrame(animate);
+    const elapsed = Date.now() - startTime;
+    const progress = Math.min(elapsed / 12000, 1);
+    const time = elapsed * 0.001;
+
+    let phase = 0;
+    if (progress < 0.25) phase = 1;
+    else if (progress < 0.5) phase = 2;
+    else if (progress < 0.75) phase = 3;
+    else phase = 4;
+
+    // Update text overlays based on phase
+    textTitle.style.opacity = (phase >= 1) ? '1' : '0';
+    textStats.style.opacity = (phase >= 2) ? '1' : '0';
+    textImpossible.style.opacity = (phase >= 4) ? '1' : '0';
+
+    if (phase >= 2) {
+        clockGroup.visible = true;
+        clockHandPivot.rotation.z = -time * 8;
+    }
+
+    if (phase === 3) {
+        clockHandPivot.rotation.z = -time * 15;
+        const positions = voters.geometry.attributes.position.array;
+        const colors = voters.geometry.attributes.color.array;
+        for (let i = 0; i < voterCount; i++) {
+            const orig = voterOriginalPositions[i];
+            positions[i * 3] = orig.x + Math.sin(time * 10 + i) * 0.5;
+            if (Math.random() > 0.95) { colors[i * 3] = 1; colors[i * 3 + 1] = 0.2; colors[i * 3 + 2] = 0.2; }
+        }
+        voters.geometry.attributes.position.needsUpdate = true;
+        voters.geometry.attributes.color.needsUpdate = true;
+        brainCore.scale.setScalar(1 + Math.sin(time * 20) * 0.2);
+    }
+
+    if (phase === 4) {
+        failureGroup.visible = true;
+        brainCore.material.color.setHex(0xff3333);
+    }
+
+    controls.update();
+    renderer.render(scene, camera);
+}
+animate();
+    </script>
+
+    <!-- Section 3 Code -->
+    <script id="section-3-code" type="text/animation">
+// Section 3: Kahneman's Insight
+const overlayContainer = document.createElement('div');
+overlayContainer.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;font-family:Inter,-apple-system,sans-serif;';
+container.appendChild(overlayContainer);
+
+function createOverlayText(id, styles, text) {
+    const div = document.createElement('div');
+    div.id = id;
+    div.innerHTML = text;
+    div.style.cssText = 'position:absolute;color:white;text-shadow:0 2px 10px rgba(0,0,0,0.9);opacity:0;transition:opacity 0.5s;' + styles;
+    overlayContainer.appendChild(div);
+    return div;
+}
+
+const mathQuestion = createOverlayText('math-q', 'top:15%;left:8%;font-size:1.6rem;font-weight:600;color:#a78bfa;', '"What\'s 17 x 24?"');
+const catchText = createOverlayText('catch-t', 'top:15%;right:25%;font-size:1.8rem;font-weight:700;color:#00D4AA;', 'Catch!');
+const system2Label = createOverlayText('sys2-label', 'bottom:20%;left:8%;font-size:1.3rem;font-weight:600;color:#a78bfa;border-left:3px solid #6C5CE7;padding-left:10px;', 'System 2<br><small style="opacity:0.8">Deliberate</small>');
+const system1Label = createOverlayText('sys1-label', 'bottom:20%;right:25%;font-size:1.3rem;font-weight:600;color:#00D4AA;border-left:3px solid #00D4AA;padding-left:10px;', 'System 1<br><small style="opacity:0.8">Automatic</small>');
+const finalInsight = createOverlayText('final-insight', 'bottom:6%;left:50%;transform:translateX(-50%);font-size:1.5rem;font-weight:700;text-align:center;color:#ffd700;', 'Learn ONCE -> Execute FOREVER');
+
+function updateTextOverlays(phase) {
+    mathQuestion.style.opacity = (phase >= 0 && phase < 3) ? '1' : '0';
+    catchText.style.opacity = (phase >= 1 && phase < 3) ? '1' : '0';
+    system2Label.style.opacity = (phase >= 2) ? '1' : '0';
+    system1Label.style.opacity = (phase >= 2) ? '1' : '0';
+    finalInsight.style.opacity = (phase >= 3) ? '1' : '0';
+}
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a1a);
+const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+camera.position.set(0, 2, 12);
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(width, height);
+container.appendChild(renderer.domElement);
+const controls = new THREE.TrackballControls(camera, renderer.domElement);
+
+// Store references for reset buttons
+window.currentCamera = camera;
+window.currentControls = controls;
+window.initialCameraPosition = camera.position.clone();
+
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+scene.add(ambientLight);
+const purpleLight = new THREE.PointLight(0x6C5CE7, 1.5, 20);
+purpleLight.position.set(-5, 5, 5);
+scene.add(purpleLight);
+const cyanLight = new THREE.PointLight(0x00D4AA, 1.5, 20);
+cyanLight.position.set(2, 5, 5);
+scene.add(cyanLight);
+
+const purpleMat = new THREE.MeshStandardMaterial({ color: 0x6C5CE7 });
+const cyanMat = new THREE.MeshStandardMaterial({ color: 0x00D4AA });
+
+// System 2 - Thinking person
+const system2Group = new THREE.Group();
+system2Group.position.set(-4.5, -1, 0);
+const head2 = new THREE.Mesh(new THREE.SphereGeometry(0.35, 16, 16), purpleMat);
+head2.position.set(0, 2.3, 0.8);
+system2Group.add(head2);
+const torso2 = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.3, 1, 8), purpleMat);
+torso2.position.set(0, 1.5, 0.8);
+system2Group.add(torso2);
+scene.add(system2Group);
+
+// System 1 - Catching person
+const system1Group = new THREE.Group();
+system1Group.position.set(0.5, -1, 0);
+const head1 = new THREE.Mesh(new THREE.SphereGeometry(0.35, 16, 16), cyanMat);
+head1.position.set(0, 2.5, 0);
+system1Group.add(head1);
+const torso1 = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.32, 1.2, 8), cyanMat);
+torso1.position.set(0, 1.5, 0);
+system1Group.add(torso1);
+const ball = new THREE.Mesh(new THREE.SphereGeometry(0.25, 16, 16), new THREE.MeshStandardMaterial({ color: 0xff6b6b, emissive: 0xff6b6b, emissiveIntensity: 0.2 }));
+ball.position.set(-2, 4, 0);
+ball.visible = false;
+system1Group.add(ball);
+scene.add(system1Group);
+
+const startTime = Date.now();
+function animate() {
+    requestAnimationFrame(animate);
+    const elapsed = (Date.now() - startTime) / 1000;
+    const loopTime = elapsed % 10;
+
+    if (loopTime < 3) {
+        head2.position.y = 2.3 + Math.sin(elapsed * 2) * 0.03;
+        ball.visible = false;
+    } else if (loopTime < 6) {
+        const p = (loopTime - 3) / 3;
+        ball.visible = true;
+        ball.position.x = -2 + p * 3;
+        ball.position.y = 4 - p * 1.5;
+    } else if (loopTime < 8) {
+        ball.visible = true;
+        ball.position.set(0.7, 2.9, 0.4);
+    }
+
+    let phase = 0;
+    if (loopTime < 3) phase = 0;
+    else if (loopTime < 6) phase = 1;
+    else if (loopTime < 8) phase = 2;
+    else phase = 3;
+
+    updateTextOverlays(phase);
+    controls.update();
+    renderer.render(scene, camera);
+}
+animate();
+    </script>
+
+    <!-- Section 4 Code -->
+    <script id="section-4-code" type="text/animation">
+// Section 4: GR00T's Two Brains
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a0f);
+const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+camera.position.set(0, 0, 15);
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(width, height);
+container.appendChild(renderer.domElement);
+const controls = new THREE.TrackballControls(camera, renderer.domElement);
+
+// Store references for reset buttons
+window.currentCamera = camera;
+window.currentControls = controls;
+window.initialCameraPosition = camera.position.clone();
+
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+scene.add(ambientLight);
+const purpleLight = new THREE.PointLight(0x6C5CE7, 1.5, 50);
+purpleLight.position.set(-10, 5, 10);
+scene.add(purpleLight);
+const cyanLight = new THREE.PointLight(0x00D4AA, 1.5, 50);
+cyanLight.position.set(10, 5, 10);
+scene.add(cyanLight);
+
+// System 2
+const system2Mat = new THREE.MeshPhongMaterial({ color: 0x6C5CE7, emissive: 0x6C5CE7, emissiveIntensity: 0.3, transparent: true, opacity: 0 });
+const system2 = new THREE.Mesh(new THREE.BoxGeometry(3.5, 3.5, 3.5), system2Mat);
+system2.position.set(-5, 0, 0);
+system2.name = "System 2: Eagle-2 VLM - 2B params, ~10Hz";
+scene.add(system2);
+
+// System 1
+const system1Mat = new THREE.MeshPhongMaterial({ color: 0x00D4AA, emissive: 0x00D4AA, emissiveIntensity: 0.3, transparent: true, opacity: 0 });
+const system1 = new THREE.Mesh(new THREE.BoxGeometry(2.2, 2.2, 2.2), system1Mat);
+system1.position.set(5, 0, 0);
+system1.name = "System 1: Diffusion Policy - 550M params, 120Hz";
+scene.add(system1);
+
+// Understanding
+const understandingMat = new THREE.MeshPhongMaterial({ color: 0xffd700, emissive: 0xffd700, emissiveIntensity: 0.5, transparent: true, opacity: 0 });
+const understanding = new THREE.Mesh(new THREE.DodecahedronGeometry(0.6, 0), understandingMat);
+understanding.position.set(-3, 0, 0);
+scene.add(understanding);
+
+// Labels
+const sys2Label = document.createElement('div');
+sys2Label.innerHTML = '<div style="font-family:Arial;text-align:center;"><div style="font-size:14px;font-weight:bold;color:#9B8AFF;">SYSTEM 2</div><div style="font-size:18px;font-weight:bold;color:#9B8AFF;">Eagle-2 VLM</div><div style="font-size:12px;color:#9B8AFF;opacity:0.8;">2B params - ~10 Hz</div></div>';
+sys2Label.style.cssText = 'position:absolute;left:10%;top:15%;opacity:0;transition:opacity 0.5s;';
+container.appendChild(sys2Label);
+
+const sys1Label = document.createElement('div');
+sys1Label.innerHTML = '<div style="font-family:Arial;text-align:center;"><div style="font-size:14px;font-weight:bold;color:#00D4AA;">SYSTEM 1</div><div style="font-size:18px;font-weight:bold;color:#00D4AA;">Diffusion</div><div style="font-size:12px;color:#00D4AA;opacity:0.8;">550M params - 120 Hz</div></div>';
+sys1Label.style.cssText = 'position:absolute;right:10%;top:15%;opacity:0;transition:opacity 0.5s;';
+container.appendChild(sys1Label);
+
+const questionLabel = document.createElement('div');
+questionLabel.innerHTML = '<div style="font-family:Arial;text-align:center;color:#e94560;font-size:18px;font-weight:bold;">But HOW can System 1 run 12x faster?</div>';
+questionLabel.style.cssText = 'position:absolute;left:50%;bottom:10%;transform:translateX(-50%);opacity:0;transition:opacity 0.5s;';
+container.appendChild(questionLabel);
+
+const startTime = Date.now();
+function animate() {
+    requestAnimationFrame(animate);
+    const elapsed = (Date.now() - startTime) / 1000;
+
+    if (elapsed < 3) {
+        const p = elapsed / 3;
+        system2Mat.opacity = p;
+        sys2Label.style.opacity = p;
+        const slowPulse = Math.sin(elapsed * Math.PI * 2) * 0.5 + 0.5;
+        system2Mat.emissiveIntensity = 0.3 + slowPulse * 0.4;
+    } else if (elapsed < 6) {
+        const p = (elapsed - 3) / 3;
+        system1Mat.opacity = p;
+        sys1Label.style.opacity = p;
+    } else if (elapsed < 9) {
+        const p = (elapsed - 6) / 3;
+        understandingMat.opacity = 1;
+        understanding.position.x = -3 + p * 6;
+        understanding.rotation.y += 0.03;
+    } else {
+        questionLabel.style.opacity = '1';
+        const slowPulse = Math.sin(elapsed * Math.PI * 2) * 0.5 + 0.5;
+        system2Mat.emissiveIntensity = 0.3 + slowPulse * 0.4;
+        const fastPulse = Math.sin(elapsed * Math.PI * 8) * 0.5 + 0.5;
+        system1Mat.emissiveIntensity = 0.3 + fastPulse * 0.4;
+    }
+
+    system2.rotation.y += 0.003;
+    system1.rotation.y += 0.008;
+    understanding.rotation.x += 0.01;
+
+    controls.update();
+    renderer.render(scene, camera);
+}
+animate();
+    </script>
+
+    <!-- Section 5 Code -->
+    <script id="section-5-code" type="text/animation">
+// Section 5: THE KEY INSIGHT
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a0f);
+const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+camera.position.z = 12;
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(width, height);
+container.appendChild(renderer.domElement);
+const controls = new THREE.TrackballControls(camera, renderer.domElement);
+
+// Store references for reset buttons
+window.currentCamera = camera;
+window.currentControls = controls;
+window.initialCameraPosition = camera.position.clone();
+
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+scene.add(ambientLight);
+const goldLight = new THREE.PointLight(0xffd700, 1.5, 50);
+goldLight.position.set(0, 5, 10);
+scene.add(goldLight);
+
+// Understanding (Golden Dodecahedron)
+const understandingMat = new THREE.MeshPhongMaterial({ color: 0xffd700, emissive: 0xffd700, emissiveIntensity: 0.3, transparent: true, opacity: 0 });
+const understanding = new THREE.Mesh(new THREE.DodecahedronGeometry(1.5, 0), understandingMat);
+understanding.name = "The Understanding - Stable knowledge";
+scene.add(understanding);
+
+// God-rays
+const godRays = [];
+for (let i = 0; i < 24; i++) {
+    const angle = (i / 24) * Math.PI * 2;
+    const ray = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 4, 8), new THREE.MeshBasicMaterial({ color: 0xffd700, transparent: true, opacity: 0 }));
+    ray.position.set(Math.cos(angle) * 3, Math.sin(angle) * 3, 0);
+    ray.rotation.z = angle + Math.PI / 2;
+    ray.scale.set(0, 0, 0);
+    scene.add(ray);
+    godRays.push(ray);
+}
+
+// System 2
+const system2Mat = new THREE.MeshPhongMaterial({ color: 0x9D4EDD, emissive: 0x9D4EDD, emissiveIntensity: 0.2, transparent: true, opacity: 0.8 });
+const system2 = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.5, 1.5), system2Mat);
+system2.position.set(-5, 0, 0);
+scene.add(system2);
+
+// System 1
+const system1Mat = new THREE.MeshPhongMaterial({ color: 0x00D4AA, emissive: 0x00D4AA, emissiveIntensity: 0.3, transparent: true, opacity: 0.8 });
+const system1 = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.5, 1.5), system1Mat);
+system1.position.set(5, 0, 0);
+scene.add(system1);
+
+// Action dots
+const actionDots = [];
+for (let i = 0; i < 120; i++) {
+    const dot = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 8), new THREE.MeshBasicMaterial({ color: 0x00D4AA, transparent: true, opacity: 0 }));
+    dot.userData = { active: false, t: 0 };
+    scene.add(dot);
+    actionDots.push(dot);
+}
+
+// Title
+const titleText = document.createElement('div');
+titleText.style.cssText = 'position:absolute;top:10%;left:50%;transform:translateX(-50%);color:#ffd700;font-size:28px;font-weight:bold;text-align:center;opacity:0;transition:opacity 0.5s;text-shadow:0 0 20px #ffd700;';
+titleText.textContent = 'Understanding is STABLE';
+container.appendChild(titleText);
+
+const bottomText = document.createElement('div');
+bottomText.style.cssText = 'position:absolute;bottom:12%;left:50%;transform:translateX(-50%);color:white;font-size:22px;font-weight:bold;text-align:center;opacity:0;transition:opacity 0.5s;';
+bottomText.innerHTML = 'Understand ONCE -> Execute <span style="color:#00D4AA;font-size:28px;">120x</span> per SECOND';
+container.appendChild(bottomText);
+
+const startTime = Date.now();
+function animate() {
+    requestAnimationFrame(animate);
+    const elapsed = (Date.now() - startTime) / 1000;
+
+    if (elapsed < 3) {
+        system2Mat.emissiveIntensity = 0.2 + Math.sin(elapsed * 5) * 0.2;
+    } else if (elapsed < 6) {
+        const t = (elapsed - 3) / 3;
+        understandingMat.opacity = t;
+        godRays.forEach((ray, i) => {
+            ray.material.opacity = t * 0.6;
+            ray.scale.setScalar(t);
+        });
+        titleText.style.opacity = t;
+    } else if (elapsed < 10) {
+        const t = (elapsed - 6) / 4;
+        system1Mat.emissiveIntensity = 0.3 + Math.sin(elapsed * 20) * 0.3;
+        const activeDots = Math.floor(t * 120);
+        actionDots.forEach((dot, i) => {
+            if (i < activeDots) {
+                dot.userData.active = true;
+                const angle = i * 0.3;
+                const radius = 2 + ((activeDots - i) / 30) * 3;
+                dot.position.set(system1.position.x - radius * Math.cos(angle), Math.sin(i * 0.2) * 2, ((activeDots - i) / 30) * 2);
+                dot.material.opacity = Math.max(0, 1 - (activeDots - i) / 30);
+            }
+        });
+        bottomText.style.opacity = t;
+    } else {
+        understanding.rotation.y += 0.005;
+        godRays.forEach((ray, i) => {
+            ray.material.opacity = 0.4 + Math.sin(elapsed * 2 + i * 0.3) * 0.2;
+        });
+    }
+
+    controls.update();
+    renderer.render(scene, camera);
+}
+animate();
+    </script>
+
+    <!-- Section 6 Code -->
+    <script id="section-6-code" type="text/animation">
+// Section 6: The Diffusion Secret
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a0f);
+const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+camera.position.z = 15;
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(width, height);
+container.appendChild(renderer.domElement);
+const controls = new THREE.TrackballControls(camera, renderer.domElement);
+
+// Store references for reset buttons
+window.currentCamera = camera;
+window.currentControls = controls;
+window.initialCameraPosition = camera.position.clone();
+
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+scene.add(ambientLight);
+const cyanLight = new THREE.PointLight(0x00d4aa, 1, 50);
+cyanLight.position.set(5, 0, 5);
+scene.add(cyanLight);
+
+// Left side - Sequential dots
+const leftGroup = new THREE.Group();
+leftGroup.position.x = -5;
+const sequentialDots = [];
+for (let i = 0; i < 15; i++) {
+    const dot = new THREE.Mesh(new THREE.SphereGeometry(0.15, 16, 16), new THREE.MeshStandardMaterial({ color: 0x666666, emissive: 0x222222 }));
+    const t = i / 14;
+    dot.position.set((t - 0.5) * 6, Math.sin(t * Math.PI * 2) * 2, 0);
+    dot.visible = false;
+    dot.scale.set(0, 0, 0);
+    leftGroup.add(dot);
+    sequentialDots.push(dot);
+}
+scene.add(leftGroup);
+
+// Right side - Noise particles
+const rightGroup = new THREE.Group();
+rightGroup.position.x = 5;
+const noiseParticles = [];
+const targetPositions = [];
+for (let i = 0; i < 40; i++) {
+    const t = i / 39;
+    targetPositions.push({ x: (t - 0.5) * 8, y: Math.sin(t * Math.PI * 2.5) * 2.5, z: Math.cos(t * Math.PI * 1.5) * 1.5 });
+}
+for (let i = 0; i < 40; i++) {
+    const particle = new THREE.Mesh(new THREE.SphereGeometry(0.12, 16, 16), new THREE.MeshStandardMaterial({ color: 0x00d4aa, emissive: 0x006655, emissiveIntensity: 0.5 }));
+    particle.userData.startPos = { x: (Math.random() - 0.5) * 10, y: (Math.random() - 0.5) * 8, z: (Math.random() - 0.5) * 4 };
+    particle.userData.targetPos = targetPositions[i];
+    particle.position.set(particle.userData.startPos.x, particle.userData.startPos.y, particle.userData.startPos.z);
+    particle.visible = false;
+    rightGroup.add(particle);
+    noiseParticles.push(particle);
+}
+
+// Trajectory
+const trajectoryMat = new THREE.MeshStandardMaterial({ color: 0x00ffcc, emissive: 0x00aa88, transparent: true, opacity: 0 });
+const trajectoryPoints = [];
+for (let i = 0; i < 100; i++) {
+    const t = i / 99;
+    trajectoryPoints.push(new THREE.Vector3((t - 0.5) * 8, Math.sin(t * Math.PI * 2.5) * 2.5, Math.cos(t * Math.PI * 1.5) * 1.5));
+}
+const trajectoryCurve = new THREE.CatmullRomCurve3(trajectoryPoints);
+const trajectoryMesh = new THREE.Mesh(new THREE.TubeGeometry(trajectoryCurve, 100, 0.08, 8, false), trajectoryMat);
+rightGroup.add(trajectoryMesh);
+scene.add(rightGroup);
+
+// Labels
+const leftLabel = document.createElement('div');
+leftLabel.innerHTML = '<div style="font-size:18px;font-weight:bold;">Step-by-Step</div><div style="font-size:24px;font-weight:bold;margin-top:5px;">SLOW</div>';
+leftLabel.style.cssText = 'position:absolute;left:15%;top:15%;color:#888888;text-align:center;font-family:Arial;transform:translateX(-50%);';
+container.appendChild(leftLabel);
+
+const rightLabel = document.createElement('div');
+rightLabel.innerHTML = '<div style="font-size:18px;font-weight:bold;">Diffusion</div><div style="font-size:24px;font-weight:bold;margin-top:5px;">ALL AT ONCE</div>';
+rightLabel.style.cssText = 'position:absolute;right:15%;top:15%;color:#00d4aa;text-align:center;font-family:Arial;transform:translateX(50%);';
+container.appendChild(rightLabel);
+
+const bottomText = document.createElement('div');
+bottomText.innerHTML = 'One forward pass = <span style="color:#00ffcc;">ENTIRE</span> trajectory';
+bottomText.style.cssText = 'position:absolute;bottom:10%;left:50%;transform:translateX(-50%);color:#ffd700;font-size:22px;font-weight:bold;font-family:Arial;text-align:center;opacity:0;transition:opacity 0.5s;';
+container.appendChild(bottomText);
+
+const startTime = Date.now();
+let currentDot = 0, lastDotTime = 0;
+function animate() {
+    requestAnimationFrame(animate);
+    const elapsed = Date.now() - startTime;
+    const progress = Math.min(elapsed / 12000, 1);
+
+    if (progress < 0.25) {
+        if (elapsed - lastDotTime > 200 && currentDot < sequentialDots.length) {
+            sequentialDots[currentDot].visible = true;
+            currentDot++;
+            lastDotTime = elapsed;
+        }
+        sequentialDots.forEach(dot => {
+            if (dot.visible) {
+                const scale = Math.min(dot.scale.x + 0.1, 1);
+                dot.scale.set(scale, scale, scale);
+            }
+        });
+    } else if (progress < 0.5) {
+        const p = (progress - 0.25) / 0.25;
+        noiseParticles.forEach((particle, i) => {
+            const delay = i / 40 * 0.5;
+            const pp = Math.max(0, (p - delay) / (1 - delay));
+            if (pp > 0) {
+                particle.visible = true;
+                const scale = Math.min(pp * 2, 1);
+                particle.scale.set(scale, scale, scale);
+            }
+        });
+    } else if (progress < 0.75) {
+        const p = (progress - 0.5) / 0.25;
+        noiseParticles.forEach((particle, i) => {
+            const s = particle.userData.startPos;
+            const t = particle.userData.targetPos;
+            particle.position.x = s.x + (t.x - s.x) * p * 0.5;
+            particle.position.y = s.y + (t.y - s.y) * p * 0.5;
+            particle.position.z = s.z + (t.z - s.z) * p * 0.5;
+        });
+    } else {
+        const p = (progress - 0.75) / 0.25;
+        noiseParticles.forEach((particle) => {
+            const s = particle.userData.startPos;
+            const t = particle.userData.targetPos;
+            const total = 0.5 + p * 0.5;
+            particle.position.x = s.x + (t.x - s.x) * total;
+            particle.position.y = s.y + (t.y - s.y) * total;
+            particle.position.z = s.z + (t.z - s.z) * total;
+            if (p > 0.8) particle.position.set(t.x, t.y, t.z);
+        });
+        trajectoryMat.opacity = p * 0.8;
+        bottomText.style.opacity = p > 0.3 ? '1' : '0';
+    }
+
+    controls.update();
+    renderer.render(scene, camera);
+}
+animate();
+    </script>
+
+    <!-- Section 7 Code -->
+    <script id="section-7-code" type="text/animation">
+// Section 7: Think Slow. Act Fast. (15 seconds)
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a0f);
+const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+camera.position.set(0, 2, 18);
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(width, height);
+container.appendChild(renderer.domElement);
+const controls = new THREE.TrackballControls(camera, renderer.domElement);
+
+// Store references for reset buttons
+window.currentCamera = camera;
+window.currentControls = controls;
+window.initialCameraPosition = camera.position.clone();
+
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+scene.add(ambientLight);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+directionalLight.position.set(5, 10, 7);
+scene.add(directionalLight);
+
+const allMeshes = [];
+
+// Input
+const inputGroup = new THREE.Group();
+inputGroup.position.set(-8, 0, 0);
+const bubbleMat = new THREE.MeshPhongMaterial({ color: 0x00d4aa, transparent: true, opacity: 0, emissive: 0x00d4aa, emissiveIntensity: 0.2 });
+const speechBubble = new THREE.Mesh(new THREE.SphereGeometry(1.2, 32, 32), bubbleMat);
+speechBubble.scale.set(1.3, 1, 0.6);
+inputGroup.add(speechBubble);
+allMeshes.push(speechBubble);
+scene.add(inputGroup);
+
+// System 2
+const system2Group = new THREE.Group();
+system2Group.position.set(-3.5, 0, 0);
+const system2Mat = new THREE.MeshPhongMaterial({ color: 0x6C5CE7, transparent: true, opacity: 0.9, emissive: 0x6C5CE7, emissiveIntensity: 0.3 });
+const system2Box = new THREE.Mesh(new THREE.BoxGeometry(2.5, 2.5, 2.5), system2Mat);
+system2Group.add(system2Box);
+allMeshes.push(system2Box);
+scene.add(system2Group);
+
+// Understanding
+const understandingGroup = new THREE.Group();
+understandingGroup.position.set(0.5, 0, 0);
+const dodecMat = new THREE.MeshPhongMaterial({ color: 0xffd700, emissive: 0xffd700, emissiveIntensity: 0, transparent: true, opacity: 0 });
+const understanding = new THREE.Mesh(new THREE.DodecahedronGeometry(1.0, 0), dodecMat);
+understandingGroup.add(understanding);
+allMeshes.push(understanding);
+scene.add(understandingGroup);
+
+// System 1
+const system1Group = new THREE.Group();
+system1Group.position.set(4, 0, 0);
+const system1Mat = new THREE.MeshPhongMaterial({ color: 0x00D4AA, transparent: true, opacity: 0.9, emissive: 0x00D4AA, emissiveIntensity: 0.2 });
+const system1Box = new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.8, 1.8), system1Mat);
+system1Group.add(system1Box);
+allMeshes.push(system1Box);
+scene.add(system1Group);
+
+// Robot arm
+const robotGroup = new THREE.Group();
+robotGroup.position.set(8, -1, 0);
+const baseMat = new THREE.MeshPhongMaterial({ color: 0x444444 });
+const base = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.6, 0.3, 16), baseMat);
+robotGroup.add(base);
+const lowerArm = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 1.5, 12), baseMat);
+lowerArm.position.set(0, 0.9, 0);
+robotGroup.add(lowerArm);
+const upperArmPivot = new THREE.Group();
+upperArmPivot.position.set(0, 1.65, 0);
+const upperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 1.2, 12), baseMat);
+upperArm.position.set(0, 0.6, 0);
+upperArmPivot.add(upperArm);
+const gripperBase = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), new THREE.MeshPhongMaterial({ color: 0x00D4AA }));
+gripperBase.position.set(0, 1.2, 0);
+upperArmPivot.add(gripperBase);
+robotGroup.add(upperArmPivot);
+
+// Cup
+const cupGroup = new THREE.Group();
+cupGroup.position.set(0.8, 0.4, 0);
+const cupMat = new THREE.MeshPhongMaterial({ color: 0xe94560, emissive: 0xe94560, emissiveIntensity: 0.2, side: THREE.DoubleSide });
+const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.2, 0.5, 16, 1, true), cupMat);
+cupGroup.add(cup);
+allMeshes.push(cup);
+robotGroup.add(cupGroup);
+scene.add(robotGroup);
+
+// Trajectory particles
+const trajectoryParticles = [];
+for (let i = 0; i < 20; i++) {
+    const particle = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 8), new THREE.MeshBasicMaterial({ color: 0x00D4AA, transparent: true, opacity: 0 }));
+    trajectoryParticles.push(particle);
+    scene.add(particle);
+}
+
+// Labels
+const titleDiv = document.createElement('div');
+titleDiv.style.cssText = 'position:absolute;top:30px;left:50%;transform:translateX(-50%);color:white;font-size:36px;font-weight:bold;text-align:center;opacity:0;transition:opacity 0.5s;text-shadow:0 0 20px rgba(255,255,255,0.5);';
+titleDiv.textContent = 'Think Slow. Act Fast.';
+container.appendChild(titleDiv);
+
+const subtitleDiv = document.createElement('div');
+subtitleDiv.style.cssText = 'position:absolute;top:80px;left:50%;transform:translateX(-50%);color:#ffd700;font-size:20px;text-align:center;opacity:0;transition:opacity 0.5s;';
+subtitleDiv.textContent = 'Understanding is stable. Execution must be fast.';
+container.appendChild(subtitleDiv);
+
+const successText = document.createElement('div');
+successText.style.cssText = 'position:absolute;color:#00ff88;font-size:16px;font-weight:bold;text-align:center;opacity:0;transition:opacity 0.5s;text-shadow:0 0 15px #00ff88;right:10%;top:40%;';
+successText.textContent = 'SUCCESS';
+container.appendChild(successText);
+
+const animationDuration = 15000;
+const startTime = Date.now();
+function animate() {
+    requestAnimationFrame(animate);
+    const elapsed = Date.now() - startTime;
+    const t = (elapsed % animationDuration) / animationDuration;
+    const phase = t * 15;
+
+    if (elapsed % animationDuration < 50) {
+        bubbleMat.opacity = 0; dodecMat.opacity = 0; dodecMat.emissiveIntensity = 0;
+        titleDiv.style.opacity = '0'; subtitleDiv.style.opacity = '0'; successText.style.opacity = '0';
+        upperArmPivot.rotation.z = 0;
+        trajectoryParticles.forEach(p => p.material.opacity = 0);
+    }
+
+    if (phase < 2) { bubbleMat.opacity = phase / 2; }
+    else if (phase < 4) { system2Mat.emissiveIntensity = 0.3 + Math.sin(elapsed * 0.003) * 0.15; }
+    else if (phase < 6) { const p = (phase - 4) / 2; dodecMat.opacity = p; dodecMat.emissiveIntensity = p * 0.8; }
+    else if (phase < 8) { system1Mat.emissiveIntensity = 0.2 + Math.sin(elapsed * 0.02) * 0.2; }
+    else if (phase < 10) {
+        trajectoryParticles.forEach((particle, i) => {
+            const pp = ((phase - 8) / 2 + i / 20) % 1;
+            particle.position.set(5 + pp * 2.5, Math.sin(pp * Math.PI * 2) * 0.3, 0);
+            particle.material.opacity = pp < 0.9 ? 0.8 : (1 - pp) * 8;
+        });
+    }
+    else if (phase < 12) { upperArmPivot.rotation.z = ((phase - 10) / 2) * 0.4; }
+    else {
+        const p = Math.min((phase - 12) / 1, 1);
+        upperArmPivot.rotation.z = 0.4;
+        titleDiv.style.opacity = p.toString();
+        if (phase >= 13) subtitleDiv.style.opacity = Math.min((phase - 13) / 0.5, 1).toString();
+        successText.style.opacity = p.toString();
+        cupMat.emissiveIntensity = 0.2 + p * 0.5;
+    }
+
+    if (phase >= 2) { system2Box.scale.setScalar(1 + Math.sin(elapsed * 0.003) * 0.03); }
+    if (phase >= 6) { system1Box.scale.setScalar(1 + Math.sin(elapsed * 0.025) * 0.05); }
+
+    controls.update();
+    renderer.render(scene, camera);
+}
+animate();
+    </script>
+
+    <script>
+        // Section metadata
+        const sections = [
+            { id: 1, title: "The Central Question", subtitle: "How do you teach a robot to understand?" },
+            { id: 2, title: "The Robot's Dilemma", subtitle: "Smart is slow. But robots need speed." },
+            { id: 3, title: "Kahneman's Insight", subtitle: "Your brain already solved this problem." },
+            { id: 4, title: "GR00T's Two Brains", subtitle: "NVIDIA copied your brain's strategy." },
+            { id: 5, title: "THE KEY INSIGHT", subtitle: "Understanding doesn't change at 120Hz!" },
+            { id: 6, title: "The Diffusion Secret", subtitle: "Generate entire trajectories at once." },
+            { id: 7, title: "Think Slow. Act Fast.", subtitle: "Understanding is stable. Execution must be fast." }
+        ];
+
+        let currentSection = 1;
+        let animationContainer = document.getElementById('animation-container');
+
+        // Load animation for section
+        function loadAnimation(sectionId) {
+            document.getElementById('loading').classList.add('active');
+
+            // Clear existing content
+            while (animationContainer.firstChild) {
+                animationContainer.removeChild(animationContainer.firstChild);
+            }
+
+            const container = animationContainer;
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            try {
+                const codeElement = document.getElementById('section-' + sectionId + '-code');
+                if (codeElement) {
+                    const code = codeElement.textContent;
+                    const animFunc = new Function('container', 'width', 'height', 'THREE', code);
+                    animFunc(container, width, height, THREE);
+                }
+            } catch (e) {
+                console.error('Animation error for section ' + sectionId + ':', e);
+            }
+
+            setTimeout(() => {
+                document.getElementById('loading').classList.remove('active');
+            }, 300);
+        }
+
+        // Navigate to section
+        function navigateToSection(sectionId) {
+            if (sectionId < 1 || sectionId > 7) return;
+
+            currentSection = sectionId;
+            const section = sections[sectionId - 1];
+
+            document.getElementById('section-number').textContent = 'Section ' + sectionId + ' of 7';
+            document.getElementById('section-title').textContent = section.title;
+            document.getElementById('section-subtitle').textContent = section.subtitle;
+
+            document.querySelectorAll('.section-content').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.querySelector('.section-content[data-section="' + sectionId + '"]').classList.add('active');
+
+            document.querySelectorAll('.nav-dot').forEach(dot => {
+                dot.classList.toggle('active', parseInt(dot.dataset.section) === sectionId);
+            });
+
+            document.getElementById('nav-counter').textContent = sectionId + ' / 7';
+            document.getElementById('prev-btn').disabled = sectionId === 1;
+            document.getElementById('next-btn').disabled = sectionId === 7;
+
+            loadAnimation(sectionId);
+        }
+
+        // Event listeners
+        document.getElementById('prev-btn').addEventListener('click', () => {
+            navigateToSection(currentSection - 1);
+        });
+
+        document.getElementById('next-btn').addEventListener('click', () => {
+            navigateToSection(currentSection + 1);
+        });
+
+        document.querySelectorAll('.nav-dot').forEach(dot => {
+            dot.addEventListener('click', () => {
+                navigateToSection(parseInt(dot.dataset.section));
+            });
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                navigateToSection(currentSection + 1);
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                navigateToSection(currentSection - 1);
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            loadAnimation(currentSection);
+        });
+
+        // Reset View button - resets camera to initial position
+        document.getElementById('reset-view-btn').addEventListener('click', () => {
+            // Reset camera position if stored
+            if (window.currentCamera && window.initialCameraPosition) {
+                window.currentCamera.position.copy(window.initialCameraPosition);
+                if (window.currentControls) {
+                    window.currentControls.reset();
+                }
+            } else {
+                // Fallback: reload animation
+                loadAnimation(currentSection);
+            }
+        });
+
+        // Reset Animation button - restarts the animation
+        document.getElementById('reset-animation-btn').addEventListener('click', () => {
+            loadAnimation(currentSection);
+        });
+
+        // Initial load
+        navigateToSection(1);
+    </script>
+</body>
+</html>

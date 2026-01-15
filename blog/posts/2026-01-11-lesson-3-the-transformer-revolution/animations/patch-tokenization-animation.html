@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ViT Patch Tokenization</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        .control-btn {
+            position: absolute;
+            bottom: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            opacity: 0;
+            transition: opacity 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+        }
+        body:hover .control-btn {
+            opacity: 1;
+        }
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        #reset-view-btn { right: 20px; }
+        #reset-anim-btn { right: 150px; }
+
+        /* Text overlay styles */
+        .text-overlay {
+            position: absolute;
+            pointer-events: none;
+            font-family: Arial, sans-serif;
+            text-shadow: 0 0 10px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.6);
+            transition: opacity 0.5s ease;
+        }
+        #phase-title {
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 26px;
+            color: #fff;
+            font-weight: bold;
+        }
+        #phase-subtitle {
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px;
+            color: #aaa;
+        }
+        #insight-box {
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 100, 150, 0.3);
+            border: 1px solid rgba(78, 205, 196, 0.5);
+            border-radius: 8px;
+            padding: 15px 25px;
+            text-align: center;
+            max-width: 600px;
+        }
+        #insight-title {
+            font-size: 16px;
+            color: #4ecdc4;
+            margin-bottom: 8px;
+        }
+        #insight-text {
+            font-size: 14px;
+            color: #fff;
+            line-height: 1.4;
+        }
+        .dimension-label {
+            font-size: 14px;
+            color: #ffd93d;
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    <button id="reset-anim-btn" class="control-btn">⟲ Reset Animation</button>
+    <button id="reset-view-btn" class="control-btn">↺ Reset View</button>
+
+    <!-- Text overlays -->
+    <div id="phase-title" class="text-overlay">STEP 1: The Image</div>
+    <div id="phase-subtitle" class="text-overlay">224 × 224 pixels (RGB)</div>
+
+    <div id="insight-box" class="text-overlay" style="opacity: 0;">
+        <div id="insight-title"></div>
+        <div id="insight-text"></div>
+    </div>
+
+    <!-- Three.js libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TrackballControls.js"></script>
+
+    <script>
+        const container = document.getElementById('container');
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        // Create scene
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000000);
+
+        // Create camera
+        const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+        camera.position.set(0, 0, 12);
+        camera.lookAt(0, 0, 0);
+
+        // Create renderer
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(width, height);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        // Add lights
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(5, 10, 7);
+        scene.add(directionalLight);
+
+        // Create controls
+        const controls = new THREE.TrackballControls(camera, renderer.domElement);
+        controls.rotateSpeed = 2.0;
+        controls.zoomSpeed = 1.2;
+        controls.panSpeed = 0.8;
+
+        // Colors
+        const colors = {
+            image: 0x4ecdc4,      // Cyan
+            patch: 0xff6b6b,     // Coral
+            token: 0xffd93d,     // Yellow
+            embedding: 0x9b59b6  // Purple
+        };
+
+        // Create the image plane (represents 224x224 image)
+        const imageSize = 5;
+        const imageGeometry = new THREE.PlaneGeometry(imageSize, imageSize);
+
+        // Create a gradient texture to represent an image
+        const canvas = document.createElement('canvas');
+        canvas.width = 224;
+        canvas.height = 224;
+        const ctx = canvas.getContext('2d');
+
+        // Draw a simple "dog" representation with gradient patches
+        const gradient = ctx.createLinearGradient(0, 0, 224, 224);
+        gradient.addColorStop(0, '#4ecdc4');
+        gradient.addColorStop(0.3, '#45b7aa');
+        gradient.addColorStop(0.6, '#ff6b6b');
+        gradient.addColorStop(1, '#ffd93d');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, 224, 224);
+
+        // Add some shapes to make it look like a scene
+        ctx.fillStyle = '#2d3436';
+        ctx.beginPath();
+        ctx.arc(112, 100, 50, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#636e72';
+        ctx.beginPath();
+        ctx.arc(112, 90, 30, 0, Math.PI * 2);
+        ctx.fill();
+
+        const texture = new THREE.CanvasTexture(canvas);
+        const imageMaterial = new THREE.MeshBasicMaterial({
+            map: texture,
+            side: THREE.DoubleSide
+        });
+        const imagePlane = new THREE.Mesh(imageGeometry, imageMaterial);
+        imagePlane.position.set(-4, 0, 0);
+        scene.add(imagePlane);
+
+        // Create grid lines for patches (14x14 grid)
+        const gridGroup = new THREE.Group();
+        const gridSize = imageSize;
+        const gridDivisions = 14;
+        const cellSize = gridSize / gridDivisions;
+
+        // Create grid lines
+        const lineMaterial = new THREE.LineBasicMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0
+        });
+
+        // Vertical lines
+        for (let i = 0; i <= gridDivisions; i++) {
+            const x = -gridSize/2 + i * cellSize;
+            const points = [
+                new THREE.Vector3(x, -gridSize/2, 0.01),
+                new THREE.Vector3(x, gridSize/2, 0.01)
+            ];
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const line = new THREE.Line(geometry, lineMaterial.clone());
+            gridGroup.add(line);
+        }
+
+        // Horizontal lines
+        for (let i = 0; i <= gridDivisions; i++) {
+            const y = -gridSize/2 + i * cellSize;
+            const points = [
+                new THREE.Vector3(-gridSize/2, y, 0.01),
+                new THREE.Vector3(gridSize/2, y, 0.01)
+            ];
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const line = new THREE.Line(geometry, lineMaterial.clone());
+            gridGroup.add(line);
+        }
+
+        gridGroup.position.set(-4, 0, 0);
+        scene.add(gridGroup);
+
+        // Create highlighted patch (one 16x16 patch)
+        const highlightGeometry = new THREE.PlaneGeometry(cellSize * 0.95, cellSize * 0.95);
+        const highlightMaterial = new THREE.MeshBasicMaterial({
+            color: colors.patch,
+            transparent: true,
+            opacity: 0
+        });
+        const highlightPatch = new THREE.Mesh(highlightGeometry, highlightMaterial);
+        // Position at patch (7, 7) - center of the image
+        highlightPatch.position.set(-4 + cellSize * (7 - 6.5), cellSize * (7 - 6.5), 0.02);
+        scene.add(highlightPatch);
+
+        // Create token sequence (small cubes representing patch embeddings)
+        const tokenGroup = new THREE.Group();
+        const tokenSize = 0.25;
+        const tokensPerRow = 14;
+        const tokenSpacing = 0.35;
+        const tokens = [];
+
+        for (let i = 0; i < 196; i++) {
+            const row = Math.floor(i / tokensPerRow);
+            const col = i % tokensPerRow;
+
+            const hue = (i / 196) * 0.3; // Gradient from cyan to green
+            const color = new THREE.Color().setHSL(hue + 0.5, 0.7, 0.5);
+
+            const geometry = new THREE.BoxGeometry(tokenSize, tokenSize, tokenSize);
+            const material = new THREE.MeshPhongMaterial({
+                color: color,
+                transparent: true,
+                opacity: 0
+            });
+            const token = new THREE.Mesh(geometry, material);
+
+            // Final position in sequence
+            token.userData.finalX = 3 + (col - 7) * tokenSpacing;
+            token.userData.finalY = 2 - row * tokenSpacing;
+            token.userData.finalZ = 0;
+
+            // Start position (from image location)
+            const patchRow = Math.floor(i / 14);
+            const patchCol = i % 14;
+            token.userData.startX = -4 + cellSize * (patchCol - 6.5);
+            token.userData.startY = cellSize * (6.5 - patchRow);
+            token.userData.startZ = 0;
+
+            token.position.set(token.userData.startX, token.userData.startY, token.userData.startZ);
+
+            tokenGroup.add(token);
+            tokens.push(token);
+        }
+        scene.add(tokenGroup);
+
+        // Create arrow from image to tokens
+        const arrowStart = new THREE.Vector3(-1, 0, 0);
+        const arrowEnd = new THREE.Vector3(1, 0, 0);
+        const arrowDir = new THREE.Vector3().subVectors(arrowEnd, arrowStart).normalize();
+        const arrow = new THREE.ArrowHelper(arrowDir, arrowStart, 2, 0xffffff, 0.3, 0.2);
+        arrow.visible = false;
+        scene.add(arrow);
+
+        // Animation state
+        let phase = 1;
+        let phaseTime = 0;
+        const phaseDurations = [2000, 3000, 3000, 3000, 4000]; // ms per phase
+        let lastTime = Date.now();
+
+        // Text elements
+        const phaseTitle = document.getElementById('phase-title');
+        const phaseSubtitle = document.getElementById('phase-subtitle');
+        const insightBox = document.getElementById('insight-box');
+        const insightTitle = document.getElementById('insight-title');
+        const insightText = document.getElementById('insight-text');
+
+        function updatePhase(newPhase) {
+            phase = newPhase;
+            phaseTime = 0;
+
+            switch(phase) {
+                case 1:
+                    phaseTitle.textContent = 'STEP 1: The Image';
+                    phaseSubtitle.textContent = '224 × 224 pixels (RGB)';
+                    insightBox.style.opacity = '0';
+                    break;
+                case 2:
+                    phaseTitle.textContent = 'STEP 2: Divide into Patches';
+                    phaseSubtitle.textContent = '14 × 14 grid = 196 patches (each 16×16 pixels)';
+                    break;
+                case 3:
+                    phaseTitle.textContent = 'STEP 3: Flatten Each Patch';
+                    phaseSubtitle.textContent = '16 × 16 × 3 (RGB) = 768 values per patch';
+                    insightBox.style.opacity = '1';
+                    insightTitle.textContent = '💡 Key Insight';
+                    insightText.textContent = 'Each 16×16 patch becomes a 768-dimensional vector - just like a word embedding!';
+                    break;
+                case 4:
+                    phaseTitle.textContent = 'STEP 4: Linear Projection';
+                    phaseSubtitle.textContent = '768 values → 512-dim embedding (learnable)';
+                    insightText.textContent = 'A linear layer projects the flattened patch into the embedding dimension we want.';
+                    break;
+                case 5:
+                    phaseTitle.textContent = 'STEP 5: Token Sequence';
+                    phaseSubtitle.textContent = '196 patch tokens ready for self-attention!';
+                    insightTitle.textContent = '🎯 Same Architecture!';
+                    insightText.textContent = '196 patches → 196 tokens → Same attention mechanism we learned for text!';
+                    break;
+            }
+        }
+
+        function resetAnimation() {
+            phase = 1;
+            phaseTime = 0;
+            updatePhase(1);
+
+            // Reset grid opacity
+            gridGroup.children.forEach(line => {
+                line.material.opacity = 0;
+            });
+
+            // Reset highlight
+            highlightMaterial.opacity = 0;
+
+            // Reset tokens
+            tokens.forEach(token => {
+                token.material.opacity = 0;
+                token.position.set(token.userData.startX, token.userData.startY, token.userData.startZ);
+            });
+
+            // Reset arrow
+            arrow.visible = false;
+
+            // Reset camera
+            camera.position.set(0, 0, 12);
+            camera.lookAt(0, 0, 0);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const now = Date.now();
+            const deltaTime = now - lastTime;
+            lastTime = now;
+            phaseTime += deltaTime;
+
+            const progress = Math.min(phaseTime / phaseDurations[phase - 1], 1);
+
+            // Phase animations
+            switch(phase) {
+                case 1:
+                    // Just show the image
+                    if (progress >= 1) updatePhase(2);
+                    break;
+
+                case 2:
+                    // Animate grid appearing
+                    gridGroup.children.forEach(line => {
+                        line.material.opacity = Math.min(progress * 1.5, 0.8);
+                    });
+                    if (progress >= 1) updatePhase(3);
+                    break;
+
+                case 3:
+                    // Highlight one patch
+                    highlightMaterial.opacity = 0.3 + Math.sin(phaseTime * 0.005) * 0.2;
+                    if (progress >= 1) updatePhase(4);
+                    break;
+
+                case 4:
+                    // Show arrow and prepare tokens
+                    arrow.visible = true;
+                    // Fade in first few tokens
+                    const tokensToShow = Math.floor(progress * 50);
+                    for (let i = 0; i < tokensToShow && i < tokens.length; i++) {
+                        tokens[i].material.opacity = Math.min(tokens[i].material.opacity + 0.1, 0.9);
+                    }
+                    if (progress >= 1) updatePhase(5);
+                    break;
+
+                case 5:
+                    // Animate all tokens moving to sequence positions
+                    tokens.forEach((token, i) => {
+                        const delay = i * 0.005;
+                        const tokenProgress = Math.max(0, Math.min((progress - delay) * 1.5, 1));
+
+                        // Smooth easing
+                        const ease = tokenProgress < 0.5
+                            ? 2 * tokenProgress * tokenProgress
+                            : 1 - Math.pow(-2 * tokenProgress + 2, 2) / 2;
+
+                        token.material.opacity = 0.9;
+                        token.position.x = token.userData.startX + (token.userData.finalX - token.userData.startX) * ease;
+                        token.position.y = token.userData.startY + (token.userData.finalY - token.userData.startY) * ease;
+                        token.position.z = token.userData.startZ + (token.userData.finalZ - token.userData.startZ) * ease;
+                    });
+
+                    // Move camera to see both
+                    if (progress < 0.3) {
+                        camera.position.x = progress * 3 * 2;
+                        camera.position.z = 12 + progress * 3 * 2;
+                    }
+                    break;
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // Reset view button
+        const initialCameraPosition = { x: 0, y: 0, z: 12 };
+        document.getElementById('reset-view-btn').addEventListener('click', () => {
+            camera.position.set(initialCameraPosition.x, initialCameraPosition.y, initialCameraPosition.z);
+            camera.up.set(0, 1, 0);
+            controls.target.set(0, 0, 0);
+            controls.reset();
+        });
+
+        // Reset animation button
+        document.getElementById('reset-anim-btn').addEventListener('click', resetAnimation);
+
+        // Window resize handler
+        window.addEventListener('resize', () => {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        });
+
+        // Start animation
+        animate();
+    </script>
+</body>
+</html>

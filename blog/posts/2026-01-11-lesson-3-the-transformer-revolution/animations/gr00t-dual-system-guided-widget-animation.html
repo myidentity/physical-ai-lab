@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GR00T Dual-System Guided Widget</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        .control-btn {
+            position: absolute;
+            bottom: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            opacity: 0;
+            transition: opacity 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+        }
+        body:hover .control-btn {
+            opacity: 1;
+        }
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        #reset-view-btn { right: 20px; }
+        #reset-anim-btn { right: 150px; }
+
+        /* Text overlay base styles */
+        .text-overlay {
+            position: absolute;
+            pointer-events: none;
+            font-family: Arial, sans-serif;
+            text-shadow: 0 0 10px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.6);
+            transition: opacity 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    <button id="reset-anim-btn" class="control-btn">⟲ Reset Animation</button>
+    <button id="reset-view-btn" class="control-btn">↺ Reset View</button>
+
+    <!-- Three.js libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TrackballControls.js"></script>
+
+    <script>
+        const container = document.getElementById('container');
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        // ============================================
+        // ILLUSTRATION CODE FROM DATABASE GOES HERE
+        // ============================================
+        // GR00T Dual-System Guided Widget v2 - Polished from Claude Web + Our Narrative
+// Multi-section educational experience with Three.js animations
+// Based on: Claude Web's UI structure + Our synthesized script v4
+
+// Use Illustration Studio variables: width, height, container
+
+const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+camera.position.set(0, 0, 12);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(width, height);
+renderer.setClearColor(0x0a0a1a, 1);
+container.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+
+// Lighting
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+scene.add(ambientLight);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+directionalLight.position.set(5, 5, 5);
+scene.add(directionalLight);
+
+// Colors (matching our design system)
+const system2Color = 0x6C5CE7;  // Purple - VLM thinking
+const system1Color = 0x00D4AA;  // Cyan - fast action
+const goldColor = 0xffd700;     // Understanding flow
+const inputRed = 0xFF6B6B;      // Vision input
+const inputYellow = 0xFFD93D;   // Language input
+
+// ========== SECTIONS DEFINITION ==========
+const sections = [
+    {
+        id: 'intro',
+        title: 'The Central Question',
+        subtitle: 'How do you teach a robot to understand?',
+        content: `
+            <p class="insight">Imagine you're asked to pick up a red apple from a bowl.</p>
+            <p class="insight">Your brain does something remarkable: in a fraction of a second,
+            you <strong>SEE</strong> the apple, <strong>UNDERSTAND</strong> the request,
+            and your hand <strong>MOVES</strong>—smoothly, effortlessly.</p>
+            <p class="insight">Now here's the question NVIDIA asked:</p>
+            <div class="key-insight">
+                <span class="label">The challenge</span>
+                <p><strong>Can we build this same cognitive architecture for robots?</strong></p>
+            </div>
+        `
+    },
+    {
+        id: 'paradox',
+        title: "The Robot's Dilemma",
+        subtitle: 'Smart is slow. Fast is dumb.',
+        content: `
+            <p class="insight">To understand language and vision, you need a <strong>BIG</strong> neural network.
+            We're talking <em>2 BILLION parameters</em>.</p>
+            <p class="insight">Here's the problem: Imagine you need <strong>2 billion committee members</strong>
+            to vote on every decision. How long would that take?</p>
+            <p class="insight"><strong>Too long.</strong> A robot arm needs new commands every 8 milliseconds—
+            that's 120 decisions per second.</p>
+            <div class="key-insight">
+                <span class="label">The math</span>
+                <p>2 billion voters × 120 times per second = <strong>240 TRILLION votes per second</strong></p>
+                <p style="color: #FF6B6B; font-size: 1.2rem;">It's impossible.</p>
+            </div>
+        `
+    },
+    {
+        id: 'kahneman',
+        title: "Kahneman's Insight",
+        subtitle: 'Your brain already solved this problem',
+        content: `
+            <p class="insight">Psychologist Daniel Kahneman discovered something fascinating about human cognition.</p>
+            <div class="dual-boxes">
+                <div class="system-box system-2">
+                    <div class="system-number">System 2</div>
+                    <div class="system-name">The Thinker</div>
+                    <p>Slow, deliberate. "What's 17 × 24?"</p>
+                </div>
+                <div class="system-box system-1">
+                    <div class="system-number">System 1</div>
+                    <div class="system-name">The Doer</div>
+                    <p>Fast, automatic. "Catch this ball!"</p>
+                </div>
+            </div>
+            <div class="key-insight">
+                <span class="label">The pattern</span>
+                <p>You don't THINK about catching a ball. Your System 2 figured out how to catch <em>ONCE</em>.
+                Then System 1 just DOES it, automatically.</p>
+            </div>
+        `
+    },
+    {
+        id: 'groot',
+        title: "GR00T's Two Brains",
+        subtitle: 'One thinks. One acts.',
+        content: `
+            <p class="insight">NVIDIA said: "Let's give robots Kahneman's architecture."</p>
+            <div class="dual-boxes">
+                <div class="system-box system-2">
+                    <div class="system-number">System 2 — Eagle-2 VLM</div>
+                    <div class="system-name">2 Billion Parameters</div>
+                    <p>• Sees the camera image<br>
+                       • Understands language<br>
+                       • Figures out WHAT to do<br>
+                       • Runs at <strong>~10 Hz</strong> (slow, but smart)</p>
+                </div>
+                <div class="system-box system-1">
+                    <div class="system-number">System 1 — Diffusion</div>
+                    <div class="system-name">550 Million Parameters</div>
+                    <p>• Receives the "understanding"<br>
+                       • Generates smooth motor commands<br>
+                       • Runs at <strong>120 Hz</strong> (fast, fluid)</p>
+                </div>
+            </div>
+            <p class="insight" style="color: #ffd700; text-align: center; margin-top: 1.5rem;">
+                But wait... HOW can System 1 run so fast?
+            </p>
+        `
+    },
+    {
+        id: 'insight',
+        title: "THE KEY INSIGHT",
+        subtitle: "Understanding doesn't change at 120Hz!",
+        content: `
+            <p class="insight">Here's the insight that makes GR00T brilliant:</p>
+            <p class="insight">When you say "pick up the red cup"...</p>
+            <ul style="color: #ccc; font-size: 1.1rem; line-height: 2;">
+                <li>The cup doesn't <em>MOVE</em> 120 times per second</li>
+                <li>The color doesn't <em>CHANGE</em> 120 times per second</li>
+                <li>The <em>GOAL</em> doesn't change 120 times per second</li>
+            </ul>
+            <div class="key-insight" style="background: linear-gradient(135deg, rgba(255,215,0,0.2), rgba(0,212,170,0.1)); border-color: #ffd700;">
+                <span class="label" style="background: #ffd700; color: #000;">EUREKA!</span>
+                <p style="font-size: 1.3rem;"><strong>Understanding is STABLE.</strong></p>
+                <p>System 2 only needs to understand <em>ONCE</em>. That understanding STAYS THE SAME
+                while System 1 generates a <strong>CONTINUOUS stream</strong> of smooth actions.</p>
+            </div>
+        `
+    },
+    {
+        id: 'diffusion',
+        title: 'The Diffusion Secret',
+        subtitle: "Diffusion doesn't step—it FLOWS",
+        content: `
+            <p class="insight">But there's one more trick that makes System 1 lightning fast.</p>
+            <p class="insight">Traditional approaches generate actions <strong>one-at-a-time</strong>:
+            action₁, then action₂, then action₃...</p>
+            <p class="insight">Diffusion is different. It generates an <strong>ENTIRE TRAJECTORY at once</strong>.</p>
+            <div class="key-insight">
+                <span class="label">How it works</span>
+                <p>Start with pure noise. Let a velocity field <em>sculpt</em> it into a smooth curve—
+                <strong>simultaneously</strong>.</p>
+                <p style="color: #00D4AA; font-size: 1.1rem; margin-top: 0.5rem;">
+                    One forward pass = entire motion sequence (16 actions).
+                </p>
+            </div>
+        `
+    },
+    {
+        id: 'summary',
+        title: 'Think Slow. Act Fast.',
+        subtitle: 'The best of both worlds',
+        content: `
+            <div class="summary-box">
+                <div class="summary-flow">
+                    <span>🎤 "Pick up the red cup"</span>
+                    <span>→</span>
+                    <span style="color: #6C5CE7;">🧠 System 2</span>
+                    <span>→</span>
+                    <span style="color: #ffd700;">Understanding</span>
+                    <span>→</span>
+                    <span style="color: #00D4AA;">⚡ System 1</span>
+                    <span>→</span>
+                    <span>🦾</span>
+                </div>
+                <div class="summary-stats">
+                    <div class="stat"><span style="color: #6C5CE7;">2B params</span><br>~10 Hz<br>Smart</div>
+                    <div class="stat"><span style="color: #00D4AA;">550M params</span><br>120 Hz<br>Fast</div>
+                </div>
+                <div class="key-insight" style="margin-top: 1rem;">
+                    <span class="label">Remember</span>
+                    <p><strong>Understanding is stable. Execution must be fast. Decouple them. Win at both.</strong></p>
+                    <p style="color: #888; font-size: 0.9rem; margin-top: 0.5rem;">
+                        Inspired by Kahneman's "Thinking Fast and Slow"
+                    </p>
+                </div>
+            </div>
+        `
+    }
+];
+
+let currentSection = 0;
+let animationTime = 0;
+
+// ========== 3D OBJECTS FOR EACH SECTION ==========
+
+// Common: Two system boxes (will be reused across sections)
+const system2Geo = new THREE.BoxGeometry(2.5, 2, 0.3);
+const system2Mat = new THREE.MeshPhongMaterial({ color: system2Color, transparent: true, opacity: 0.9 });
+const system2Box = new THREE.Mesh(system2Geo, system2Mat);
+system2Box.position.set(-3, 0, 0);
+
+const system1Geo = new THREE.BoxGeometry(2.5, 2, 0.3);
+const system1Mat = new THREE.MeshPhongMaterial({ color: system1Color, transparent: true, opacity: 0.9 });
+const system1Box = new THREE.Mesh(system1Geo, system1Mat);
+system1Box.position.set(3, 0, 0);
+
+scene.add(system2Box);
+scene.add(system1Box);
+
+// Voter particles (for paradox section)
+const voterParticles = [];
+for (let i = 0; i < 50; i++) {
+    const geo = new THREE.SphereGeometry(0.08, 8, 8);
+    const mat = new THREE.MeshPhongMaterial({
+        color: inputRed,
+        transparent: true,
+        opacity: 0,
+        emissive: inputRed,
+        emissiveIntensity: 0.3
+    });
+    const particle = new THREE.Mesh(geo, mat);
+    particle.userData.baseX = (Math.random() - 0.5) * 4;
+    particle.userData.baseY = (Math.random() - 0.5) * 3;
+    particle.userData.delay = Math.random() * 2;
+    voterParticles.push(particle);
+    scene.add(particle);
+}
+
+// Understanding packet (for groot and insight sections)
+const understandingGeo = new THREE.DodecahedronGeometry(0.5);
+const understandingMat = new THREE.MeshPhongMaterial({
+    color: goldColor,
+    transparent: true,
+    opacity: 0,
+    emissive: goldColor,
+    emissiveIntensity: 0.5
+});
+const understandingPacket = new THREE.Mesh(understandingGeo, understandingMat);
+scene.add(understandingPacket);
+
+// Action trajectory particles (for insight and diffusion sections)
+const actionParticles = [];
+for (let i = 0; i < 20; i++) {
+    const geo = new THREE.SphereGeometry(0.1, 12, 12);
+    const mat = new THREE.MeshPhongMaterial({
+        color: system1Color,
+        transparent: true,
+        opacity: 0,
+        emissive: system1Color,
+        emissiveIntensity: 0.4
+    });
+    const particle = new THREE.Mesh(geo, mat);
+    particle.userData.index = i;
+    actionParticles.push(particle);
+    scene.add(particle);
+}
+
+// Noise particles (for diffusion section)
+const noiseParticles = [];
+for (let i = 0; i < 30; i++) {
+    const geo = new THREE.SphereGeometry(0.06, 8, 8);
+    const mat = new THREE.MeshPhongMaterial({
+        color: 0xff6b6b,
+        transparent: true,
+        opacity: 0
+    });
+    const particle = new THREE.Mesh(geo, mat);
+    particle.userData.targetY = Math.sin(i * 0.3) * 2;
+    particle.userData.noiseY = (Math.random() - 0.5) * 3;
+    noiseParticles.push(particle);
+    scene.add(particle);
+}
+
+// ========== HTML OVERLAY ==========
+const overlay = document.createElement('div');
+overlay.style.cssText = `
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; font-family: 'Segoe UI', Arial, sans-serif;
+    display: flex; flex-direction: column;
+`;
+container.appendChild(overlay);
+
+// Header
+const header = document.createElement('div');
+header.style.cssText = `
+    background: linear-gradient(90deg, rgba(0,212,170,0.1), transparent, rgba(108,92,231,0.1));
+    padding: 12px 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1);
+    pointer-events: auto;
+`;
+header.innerHTML = `
+    <div style="font-size: 20px; font-weight: 700; letter-spacing: -0.03em;
+         background: linear-gradient(135deg, #00D4AA, #6C5CE7);
+         -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+        NVIDIA GR00T
+    </div>
+    <div style="font-size: 11px; color: #888; margin-top: 3px;">
+        Building Intuition for Robot Foundation Models
+    </div>
+`;
+overlay.appendChild(header);
+
+// Main content area - split view
+const mainContent = document.createElement('div');
+mainContent.style.cssText = `
+    flex: 1; display: flex; position: relative;
+`;
+overlay.appendChild(mainContent);
+
+// Left side: 3D canvas area (transparent, just for positioning)
+const canvasArea = document.createElement('div');
+canvasArea.style.cssText = `
+    flex: 1; position: relative;
+`;
+mainContent.appendChild(canvasArea);
+
+// Right side: Content panel
+const contentPanel = document.createElement('div');
+contentPanel.style.cssText = `
+    width: 45%; background: rgba(10, 10, 26, 0.95); padding: 20px;
+    overflow-y: auto; pointer-events: auto; border-left: 1px solid rgba(255,255,255,0.1);
+`;
+mainContent.appendChild(contentPanel);
+
+// Section title in content panel
+const sectionTitle = document.createElement('div');
+sectionTitle.style.cssText = `
+    font-size: 22px; font-weight: 600; color: #fff; margin-bottom: 5px;
+`;
+contentPanel.appendChild(sectionTitle);
+
+// Section subtitle
+const sectionSubtitle = document.createElement('div');
+sectionSubtitle.style.cssText = `
+    font-size: 13px; color: #00D4AA; margin-bottom: 20px;
+    font-family: monospace;
+`;
+contentPanel.appendChild(sectionSubtitle);
+
+// Section content
+const sectionContent = document.createElement('div');
+sectionContent.style.cssText = `
+    font-size: 14px; color: #ccc; line-height: 1.7;
+`;
+contentPanel.appendChild(sectionContent);
+
+// Navigation bar
+const navBar = document.createElement('div');
+navBar.style.cssText = `
+    display: flex; justify-content: center; align-items: center; gap: 15px;
+    padding: 12px; background: rgba(0,0,0,0.5); pointer-events: auto;
+`;
+overlay.appendChild(navBar);
+
+// Previous button
+const prevBtn = document.createElement('button');
+prevBtn.textContent = '← Previous';
+prevBtn.style.cssText = `
+    background: transparent; border: 1px solid #00D4AA; color: #00D4AA;
+    padding: 8px 20px; border-radius: 6px; font-size: 12px; cursor: pointer;
+    transition: all 0.3s ease;
+`;
+prevBtn.onmouseenter = () => prevBtn.style.background = 'rgba(0,212,170,0.2)';
+prevBtn.onmouseleave = () => prevBtn.style.background = 'transparent';
+prevBtn.onclick = () => { if (currentSection > 0) goToSection(currentSection - 1); };
+navBar.appendChild(prevBtn);
+
+// Dot indicators
+const dotContainer = document.createElement('div');
+dotContainer.style.cssText = `display: flex; gap: 8px;`;
+navBar.appendChild(dotContainer);
+
+const dots = [];
+sections.forEach((s, i) => {
+    const dot = document.createElement('div');
+    dot.style.cssText = `
+        width: 10px; height: 10px; border-radius: 50%; background: #333;
+        cursor: pointer; transition: all 0.3s ease;
+    `;
+    dot.onclick = () => goToSection(i);
+    dot.title = s.title;
+    dotContainer.appendChild(dot);
+    dots.push(dot);
+});
+
+// Section counter
+const sectionCounter = document.createElement('div');
+sectionCounter.style.cssText = `
+    color: #888; font-size: 11px; min-width: 80px; text-align: center;
+`;
+navBar.appendChild(sectionCounter);
+
+// Next button
+const nextBtn = document.createElement('button');
+nextBtn.textContent = 'Next →';
+nextBtn.style.cssText = `
+    background: transparent; border: 1px solid #00D4AA; color: #00D4AA;
+    padding: 8px 20px; border-radius: 6px; font-size: 12px; cursor: pointer;
+    transition: all 0.3s ease;
+`;
+nextBtn.onmouseenter = () => nextBtn.style.background = 'rgba(0,212,170,0.2)';
+nextBtn.onmouseleave = () => nextBtn.style.background = 'transparent';
+nextBtn.onclick = () => { if (currentSection < sections.length - 1) goToSection(currentSection + 1); };
+navBar.appendChild(nextBtn);
+
+// Add CSS for content styling
+const style = document.createElement('style');
+style.textContent = `
+    .insight { font-size: 14px; margin-bottom: 15px; color: #ccc; }
+    .insight strong { color: #00D4AA; }
+    .insight em { color: #6C5CE7; font-style: italic; }
+
+    .key-insight {
+        background: linear-gradient(135deg, rgba(0,212,170,0.1), rgba(108,92,231,0.1));
+        border-left: 3px solid #00D4AA; padding: 12px; margin: 15px 0;
+        border-radius: 0 8px 8px 0;
+    }
+    .key-insight .label {
+        display: inline-block; background: #00D4AA; color: #000;
+        padding: 2px 8px; border-radius: 4px; font-size: 10px;
+        font-weight: bold; text-transform: uppercase; margin-bottom: 5px;
+    }
+    .key-insight p { margin: 5px 0 0; font-size: 13px; }
+
+    .dual-boxes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 15px 0; }
+    .system-box { padding: 12px; border-radius: 8px; border: 1px solid; }
+    .system-2 { border-color: #6C5CE7; background: rgba(108,92,231,0.1); }
+    .system-1 { border-color: #00D4AA; background: rgba(0,212,170,0.1); }
+    .system-number { font-size: 10px; text-transform: uppercase; opacity: 0.7; }
+    .system-2 .system-number { color: #6C5CE7; }
+    .system-1 .system-number { color: #00D4AA; }
+    .system-name { font-size: 14px; font-weight: 600; margin: 3px 0 8px; }
+    .system-2 .system-name { color: #6C5CE7; }
+    .system-1 .system-name { color: #00D4AA; }
+    .system-box p { font-size: 11px; color: #aaa; margin: 0; line-height: 1.5; }
+
+    .summary-box { text-align: center; }
+    .summary-flow { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
+                    font-size: 14px; margin-bottom: 15px; }
+    .summary-stats { display: flex; justify-content: center; gap: 30px; margin: 15px 0; }
+    .stat { text-align: center; font-size: 12px; color: #888; line-height: 1.5; }
+`;
+document.head.appendChild(style);
+
+// ========== SECTION NAVIGATION ==========
+function goToSection(index) {
+    currentSection = index;
+    const section = sections[currentSection];
+
+    // Update content
+    sectionTitle.textContent = section.title;
+    sectionSubtitle.textContent = section.subtitle;
+    sectionContent.innerHTML = section.content;
+
+    // Update dots
+    dots.forEach((dot, i) => {
+        dot.style.background = i === currentSection ? '#00D4AA' : '#333';
+        dot.style.boxShadow = i === currentSection ? '0 0 10px #00D4AA' : 'none';
+    });
+
+    // Update counter
+    sectionCounter.textContent = `${currentSection + 1} / ${sections.length}`;
+
+    // Update buttons
+    prevBtn.style.opacity = currentSection === 0 ? '0.3' : '1';
+    prevBtn.style.pointerEvents = currentSection === 0 ? 'none' : 'auto';
+    nextBtn.style.opacity = currentSection === sections.length - 1 ? '0.3' : '1';
+    nextBtn.style.pointerEvents = currentSection === sections.length - 1 ? 'none' : 'auto';
+
+    // Reset animation
+    animationTime = 0;
+}
+
+// Initialize first section
+goToSection(0);
+
+// ========== ANIMATION LOOP ==========
+function animate() {
+    requestAnimationFrame(animate);
+    animationTime += 0.016;
+
+    const section = sections[currentSection].id;
+
+    // Hide everything by default
+    system2Box.visible = false;
+    system1Box.visible = false;
+    understandingPacket.material.opacity = 0;
+    voterParticles.forEach(p => p.material.opacity = 0);
+    actionParticles.forEach(p => p.material.opacity = 0);
+    noiseParticles.forEach(p => p.material.opacity = 0);
+
+    // Section-specific animations
+    if (section === 'intro') {
+        // Simple pulsing central glow
+        system2Box.visible = true;
+        system1Box.visible = true;
+        system2Box.position.set(-3, 0, 0);
+        system1Box.position.set(3, 0, 0);
+        system2Box.scale.setScalar(1 + Math.sin(animationTime * 2) * 0.05);
+        system1Box.scale.setScalar(1 + Math.sin(animationTime * 2) * 0.05);
+    }
+
+    else if (section === 'paradox') {
+        // Show stressed voters trying to vote fast
+        system2Box.visible = true;
+        system2Box.position.set(0, 0, 0);
+        system2Box.scale.setScalar(1.2 + Math.sin(animationTime * 4) * 0.1);
+
+        voterParticles.forEach((p, i) => {
+            p.material.opacity = 0.7;
+            const t = animationTime + p.userData.delay;
+            p.position.x = p.userData.baseX + Math.sin(t * 3) * 0.2;
+            p.position.y = p.userData.baseY + Math.cos(t * 2) * 0.2;
+            p.position.z = 0.5;
+            // Particles raise hands (vote) frantically
+            p.scale.setScalar(0.8 + Math.sin(t * 6) * 0.3);
+        });
+    }
+
+    else if (section === 'kahneman') {
+        // Show human brain split - left slow, right fast
+        system2Box.visible = true;
+        system1Box.visible = true;
+        system2Box.position.set(-3, 0, 0);
+        system1Box.position.set(3, 0, 0);
+
+        // System 2 pulses slowly
+        system2Box.scale.setScalar(1 + Math.sin(animationTime * 1) * 0.05);
+
+        // System 1 pulses rapidly
+        system1Box.scale.setScalar(1 + Math.sin(animationTime * 5) * 0.08);
+    }
+
+    else if (section === 'groot') {
+        // Show the two systems with arrow between
+        system2Box.visible = true;
+        system1Box.visible = true;
+        system2Box.position.set(-3.5, 0, 0);
+        system1Box.position.set(3.5, 0, 0);
+
+        system2Box.scale.setScalar(1 + Math.sin(animationTime * 1.5) * 0.03);
+        system1Box.scale.setScalar(1 + Math.sin(animationTime * 4) * 0.05);
+
+        // Understanding packet flows between them
+        understandingPacket.material.opacity = 0.9;
+        const flowT = (animationTime % 3) / 3;
+        understandingPacket.position.x = -3.5 + flowT * 7;
+        understandingPacket.position.y = 0;
+        understandingPacket.position.z = 0.5;
+        understandingPacket.rotation.y = animationTime * 2;
+    }
+
+    else if (section === 'insight') {
+        // THE CLIMAX: Understanding freezes, actions stream out
+        system2Box.visible = true;
+        system1Box.visible = true;
+        system2Box.position.set(-4, 0, 0);
+        system1Box.position.set(3, 0, 0);
+
+        // Understanding packet FREEZES in the middle
+        understandingPacket.material.opacity = 1;
+        understandingPacket.position.set(0, 0.5, 1);
+        understandingPacket.rotation.y = animationTime * 0.3; // slow rotation
+        understandingPacket.scale.setScalar(1.5 + Math.sin(animationTime) * 0.1);
+
+        // Action particles STREAM out from System 1
+        actionParticles.forEach((p, i) => {
+            const delay = i * 0.15;
+            const t = Math.max(0, (animationTime - delay) % 2);
+            if (t > 0) {
+                p.material.opacity = Math.min(t * 2, 0.9 - t * 0.4);
+                p.position.x = 3 + t * 2.5;
+                p.position.y = Math.sin(i * 0.4) * 1.5;
+                p.position.z = 0.5;
+            }
+        });
+    }
+
+    else if (section === 'diffusion') {
+        // Show noise -> trajectory transformation
+        system1Box.visible = true;
+        system1Box.position.set(0, 0, 0);
+
+        noiseParticles.forEach((p, i) => {
+            p.material.opacity = 0.8;
+            const t = (animationTime % 4) / 4; // 0 to 1
+
+            // Start positions: random noise
+            const noiseX = (i - 15) * 0.25;
+            const noiseY = p.userData.noiseY;
+
+            // End positions: smooth trajectory
+            const targetX = (i - 15) * 0.25;
+            const targetY = p.userData.targetY;
+
+            // Interpolate noise -> trajectory
+            p.position.x = noiseX + (targetX - noiseX) * t;
+            p.position.y = noiseY + (targetY - noiseY) * t;
+            p.position.z = 0.5;
+
+            // Change color from red (noise) to green (trajectory)
+            const r = 1 - t * 0.7;
+            const g = 0.4 + t * 0.4;
+            const b = 0.4 + t * 0.27;
+            p.material.color.setRGB(r, g, b);
+        });
+    }
+
+    else if (section === 'summary') {
+        // Final summary: both systems side by side, particles flowing
+        system2Box.visible = true;
+        system1Box.visible = true;
+        system2Box.position.set(-3, 0, 0);
+        system1Box.position.set(3, 0, 0);
+        system2Box.scale.setScalar(1);
+        system1Box.scale.setScalar(1);
+
+        // Gentle glow
+        system2Mat.emissive.setHex(0x222044);
+        system1Mat.emissive.setHex(0x113333);
+
+        // Flowing particles
+        actionParticles.slice(0, 5).forEach((p, i) => {
+            const t = (animationTime * 0.5 + i * 0.4) % 2;
+            p.material.opacity = 0.6;
+            p.position.x = -3 + t * 6;
+            p.position.y = 0;
+            p.position.z = 0.5 + Math.sin(t * Math.PI) * 0.5;
+        });
+    }
+
+    renderer.render(scene, camera);
+}
+
+function resetAnimation() {
+    currentSection = 0;
+    animationTime = 0;
+    goToSection(0);
+}
+
+animate();
+
+        // ============================================
+        // END ILLUSTRATION CODE
+        // ============================================
+
+        // Reset View button - restore camera position
+        const initialCameraPosition = {
+            x: camera.position.x,
+            y: camera.position.y,
+            z: camera.position.z
+        };
+
+        document.getElementById('reset-view-btn').addEventListener('click', () => {
+            camera.position.set(
+                initialCameraPosition.x,
+                initialCameraPosition.y,
+                initialCameraPosition.z
+            );
+            camera.up.set(0, 1, 0);
+            controls.target.set(0, 0, 0);
+            controls.reset();
+        });
+
+        // Reset Animation button - restart from phase 1
+        // Note: resetAnimation() function must be defined in the illustration code
+        document.getElementById('reset-anim-btn').addEventListener('click', () => {
+            if (typeof resetAnimation === 'function') {
+                resetAnimation();
+            } else {
+                console.warn('resetAnimation() not defined in illustration code');
+            }
+        });
+
+        // Window resize handler
+        window.addEventListener('resize', () => {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        });
+    </script>
+</body>
+</html>

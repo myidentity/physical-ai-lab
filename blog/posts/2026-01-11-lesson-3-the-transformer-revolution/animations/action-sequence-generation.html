@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Action Sequence Generation</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        .control-btn {
+            position: absolute;
+            bottom: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            opacity: 0;
+            transition: opacity 0.3s ease, background 0.3s ease;
+        }
+        body:hover .control-btn { opacity: 1; }
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        #reset-view-btn { right: 20px; }
+        #reset-anim-btn { right: 150px; }
+
+        .text-overlay {
+            position: absolute;
+            pointer-events: none;
+            font-family: Arial, sans-serif;
+            text-shadow: 0 0 10px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.6);
+            transition: opacity 0.5s ease;
+        }
+        #phase-title {
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 26px;
+            color: #fff;
+            font-weight: bold;
+        }
+        #phase-subtitle {
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px;
+            color: #aaa;
+        }
+        #insight-box {
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(100, 50, 0, 0.3);
+            border: 1px solid rgba(255, 107, 107, 0.5);
+            border-radius: 8px;
+            padding: 15px 25px;
+            text-align: center;
+            max-width: 650px;
+        }
+        #insight-title {
+            font-size: 16px;
+            color: #ff6b6b;
+            margin-bottom: 8px;
+        }
+        #insight-text {
+            font-size: 14px;
+            color: #fff;
+            line-height: 1.4;
+        }
+        #punchline-box {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(30, 30, 50, 0.95);
+            border: 2px solid #ffd700;
+            border-radius: 12px;
+            padding: 30px 40px;
+            text-align: center;
+            max-width: 580px;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+        }
+        #punchline-title {
+            font-size: 22px;
+            color: #ffd700;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        #punchline-text {
+            font-size: 16px;
+            color: #fff;
+            line-height: 1.6;
+        }
+        .kv-label {
+            font-size: 14px;
+            color: #4ecdc4;
+        }
+        .q-label {
+            font-size: 14px;
+            color: #ff6b6b;
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    <button id="reset-anim-btn" class="control-btn">⟲ Reset Animation</button>
+    <button id="reset-view-btn" class="control-btn">↺ Reset View</button>
+
+    <div id="phase-title" class="text-overlay">DECODER GENERATES ROBOT ACTIONS</div>
+    <div id="phase-subtitle" class="text-overlay">From Observation to Action Sequence</div>
+
+    <div id="insight-box" class="text-overlay" style="opacity: 0;">
+        <div id="insight-title"></div>
+        <div id="insight-text"></div>
+    </div>
+
+    <div id="punchline-box">
+        <div id="punchline-title">⚡ The Action Generation Loop</div>
+        <div id="punchline-text">
+            <span style="color: #4ecdc4;">Encoder</span> processes observation → Creates <span style="color: #2e86ab;">K, V</span> memory<br><br>
+            <span style="color: #ff6b6b;">Decoder</span> asks via <span style="color: #ff6b6b;">Q</span>uery: "What should I do?"<br><br>
+            <strong>Cross-attention bridges observation → action!</strong><br>
+            <span style="color: #ffd93d;">One observation → 10 coordinated action steps</span>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TrackballControls.js"></script>
+
+    <script>
+        const container = document.getElementById('container');
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000000);
+
+        const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+        camera.position.set(0, 0, 16);
+        camera.lookAt(0, 0, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(width, height);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(5, 10, 7);
+        scene.add(directionalLight);
+        const backLight = new THREE.PointLight(0xff6b6b, 0.4, 50);
+        backLight.position.set(-5, -5, -5);
+        scene.add(backLight);
+
+        const controls = new THREE.TrackballControls(camera, renderer.domElement);
+        controls.rotateSpeed = 2.0;
+        controls.zoomSpeed = 1.2;
+        controls.panSpeed = 0.8;
+
+        const colors = {
+            encoder: 0x4ecdc4,
+            decoder: 0xff6b6b,
+            key: 0x2e86ab,
+            value: 0x28a745,
+            query: 0xff6b6b,
+            action: 0xffd93d,
+            attention: 0x9b59b6,
+            bos: 0xffffff
+        };
+
+        // === ENCODER BLOCK (left side) ===
+        const encoderGroup = new THREE.Group();
+        encoderGroup.position.set(-5, 0, 0);
+
+        const encoderBlock = new THREE.Mesh(
+            new THREE.BoxGeometry(3, 5, 0.5),
+            new THREE.MeshPhongMaterial({
+                color: colors.encoder,
+                transparent: true,
+                opacity: 0,
+                emissive: colors.encoder,
+                emissiveIntensity: 0.15
+            })
+        );
+        encoderGroup.add(encoderBlock);
+
+        // Observation tokens inside encoder
+        const obsTokens = [];
+        for (let i = 0; i < 8; i++) {
+            const token = new THREE.Mesh(
+                new THREE.SphereGeometry(0.2, 16, 16),
+                new THREE.MeshPhongMaterial({
+                    color: colors.encoder,
+                    transparent: true,
+                    opacity: 0,
+                    emissive: colors.encoder,
+                    emissiveIntensity: 0.2
+                })
+            );
+            token.position.set((i % 2 - 0.5) * 0.8, 2 - Math.floor(i / 2) * 0.8, 0.3);
+            encoderGroup.add(token);
+            obsTokens.push(token);
+        }
+        scene.add(encoderGroup);
+
+        // === KEY AND VALUE VECTORS (from encoder) ===
+        const kvVectors = [];
+        for (let i = 0; i < 8; i++) {
+            // Key vector
+            const keyVec = new THREE.Mesh(
+                new THREE.BoxGeometry(0.15, 0.5, 0.15),
+                new THREE.MeshPhongMaterial({
+                    color: colors.key,
+                    transparent: true,
+                    opacity: 0,
+                    emissive: colors.key,
+                    emissiveIntensity: 0.2
+                })
+            );
+            keyVec.position.set(-2.5, 2 - i * 0.5, 0);
+            keyVec.userData.type = 'key';
+            keyVec.userData.index = i;
+            scene.add(keyVec);
+            kvVectors.push(keyVec);
+
+            // Value vector
+            const valVec = new THREE.Mesh(
+                new THREE.BoxGeometry(0.15, 0.5, 0.15),
+                new THREE.MeshPhongMaterial({
+                    color: colors.value,
+                    transparent: true,
+                    opacity: 0,
+                    emissive: colors.value,
+                    emissiveIntensity: 0.2
+                })
+            );
+            valVec.position.set(-2, 2 - i * 0.5, 0);
+            valVec.userData.type = 'value';
+            valVec.userData.index = i;
+            scene.add(valVec);
+            kvVectors.push(valVec);
+        }
+
+        // === DECODER BLOCK (right side) ===
+        const decoderGroup = new THREE.Group();
+        decoderGroup.position.set(5, 0, 0);
+
+        const decoderBlock = new THREE.Mesh(
+            new THREE.BoxGeometry(3, 5, 0.5),
+            new THREE.MeshPhongMaterial({
+                color: colors.decoder,
+                transparent: true,
+                opacity: 0,
+                emissive: colors.decoder,
+                emissiveIntensity: 0.15
+            })
+        );
+        decoderGroup.add(decoderBlock);
+        scene.add(decoderGroup);
+
+        // === BOS TOKEN ===
+        const bosToken = new THREE.Mesh(
+            new THREE.OctahedronGeometry(0.3),
+            new THREE.MeshPhongMaterial({
+                color: colors.bos,
+                transparent: true,
+                opacity: 0,
+                emissive: colors.bos,
+                emissiveIntensity: 0.3
+            })
+        );
+        bosToken.position.set(5, 2.5, 0.3);
+        scene.add(bosToken);
+
+        // === QUERY VECTOR (from decoder) ===
+        const queryVec = new THREE.Mesh(
+            new THREE.ConeGeometry(0.2, 0.6, 8),
+            new THREE.MeshPhongMaterial({
+                color: colors.query,
+                transparent: true,
+                opacity: 0,
+                emissive: colors.query,
+                emissiveIntensity: 0.3
+            })
+        );
+        queryVec.rotation.z = Math.PI / 2;
+        queryVec.position.set(3, 2, 0);
+        scene.add(queryVec);
+
+        // === ATTENTION LINES (decoder → encoder) ===
+        const attentionLines = [];
+        const attentionWeights = [0.05, 0.1, 0.35, 0.25, 0.1, 0.05, 0.05, 0.05]; // Weights to K/V pairs
+        for (let i = 0; i < 8; i++) {
+            const points = [
+                new THREE.Vector3(3, 2, 0),
+                new THREE.Vector3(-2.5, 2 - i * 0.5, 0)
+            ];
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const line = new THREE.Line(geometry, new THREE.LineBasicMaterial({
+                color: colors.attention,
+                transparent: true,
+                opacity: 0,
+                linewidth: 2
+            }));
+            line.userData.weight = attentionWeights[i];
+            attentionLines.push(line);
+            scene.add(line);
+        }
+
+        // === ACTION TOKENS (output sequence) ===
+        const actionTokens = [];
+        const actionLabels = ['a₁', 'a₂', 'a₃', 'a₄', 'a₅'];
+        for (let i = 0; i < 5; i++) {
+            const action = new THREE.Mesh(
+                new THREE.BoxGeometry(0.4, 0.4, 0.4),
+                new THREE.MeshPhongMaterial({
+                    color: colors.action,
+                    transparent: true,
+                    opacity: 0,
+                    emissive: colors.action,
+                    emissiveIntensity: 0.2
+                })
+            );
+            action.position.set(5, 1.5 - i * 0.8, 0.3);
+            action.userData.generated = false;
+            action.userData.targetY = 1.5 - i * 0.8;
+            scene.add(action);
+            actionTokens.push(action);
+        }
+
+        // === VALUE FLOW PARTICLES ===
+        const particles = [];
+        for (let i = 0; i < 30; i++) {
+            const particle = new THREE.Mesh(
+                new THREE.SphereGeometry(0.06, 8, 8),
+                new THREE.MeshBasicMaterial({
+                    color: colors.value,
+                    transparent: true,
+                    opacity: 0
+                })
+            );
+            particle.userData.sourceIdx = Math.floor(Math.random() * 8);
+            particle.userData.progress = Math.random();
+            particle.userData.speed = 0.3 + Math.random() * 0.3;
+            scene.add(particle);
+            particles.push(particle);
+        }
+
+        // === ANIMATION STATE ===
+        const phaseTiming = {
+            1: { start: 0, duration: 4000 },
+            2: { start: 4000, duration: 5000 },
+            3: { start: 9000, duration: 5000 },
+            4: { start: 14000, duration: 6000 },
+            5: { start: 20000, duration: 6000 },
+            6: { start: 26000, duration: 6000 },
+            7: { start: 32000, duration: 12000 }
+        };
+        const totalDuration = 44000;
+        let startTime = Date.now();
+
+        const phaseTitle = document.getElementById('phase-title');
+        const phaseSubtitle = document.getElementById('phase-subtitle');
+        const insightBox = document.getElementById('insight-box');
+        const insightTitle = document.getElementById('insight-title');
+        const insightText = document.getElementById('insight-text');
+        const punchlineBox = document.getElementById('punchline-box');
+
+        function getCurrentPhase(elapsed) {
+            for (let p = 7; p >= 1; p--) {
+                if (elapsed >= phaseTiming[p].start) return p;
+            }
+            return 1;
+        }
+
+        function resetAnimation() {
+            startTime = Date.now();
+
+            // Reset encoder
+            encoderBlock.material.opacity = 0;
+            obsTokens.forEach(t => t.material.opacity = 0);
+
+            // Reset K/V vectors
+            kvVectors.forEach(v => v.material.opacity = 0);
+
+            // Reset decoder
+            decoderBlock.material.opacity = 0;
+            bosToken.material.opacity = 0;
+            queryVec.material.opacity = 0;
+
+            // Reset attention lines
+            attentionLines.forEach(l => l.material.opacity = 0);
+
+            // Reset action tokens
+            actionTokens.forEach(a => {
+                a.material.opacity = 0;
+                a.userData.generated = false;
+            });
+
+            // Reset particles
+            particles.forEach(p => p.material.opacity = 0);
+
+            // Reset text
+            punchlineBox.style.opacity = '0';
+            insightBox.style.opacity = '0';
+            phaseTitle.style.opacity = '1';
+            phaseSubtitle.style.opacity = '1';
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const elapsed = (Date.now() - startTime) % totalDuration;
+            const phase = getCurrentPhase(elapsed);
+            const phaseElapsed = elapsed - phaseTiming[phase].start;
+            const progress = Math.min(phaseElapsed / phaseTiming[phase].duration, 1);
+
+            // Continuous animations
+            const time = elapsed * 0.001;
+
+            switch(phase) {
+                case 1:
+                    phaseTitle.textContent = 'DECODER GENERATES ROBOT ACTIONS';
+                    phaseSubtitle.textContent = 'Cross-Attention: Decoder Queries Encoder';
+                    phaseTitle.style.opacity = '1';
+                    phaseSubtitle.style.opacity = '1';
+                    insightBox.style.opacity = '0';
+                    punchlineBox.style.opacity = '0';
+
+                    // Fade in encoder block
+                    encoderBlock.material.opacity = Math.min(progress * 1.5, 0.7);
+                    break;
+
+                case 2:
+                    phaseTitle.textContent = 'STEP 1: Encoder Creates Memory';
+                    phaseSubtitle.textContent = 'Observation → Key (K) and Value (V) vectors';
+                    insightBox.style.opacity = '1';
+                    insightTitle.textContent = '📦 Encoder Output';
+                    insightText.innerHTML = '<span style="color:#2e86ab">K (Keys)</span>: "Here\'s what I have"<br><span style="color:#28a745">V (Values)</span>: "Here\'s the information to share"';
+
+                    // Show observation tokens
+                    obsTokens.forEach((t, idx) => {
+                        const delay = idx * 0.08;
+                        t.material.opacity = Math.min(Math.max(0, (progress - delay) * 3), 0.9);
+                        t.material.emissiveIntensity = 0.2 + Math.sin(time * 3 + idx) * 0.1;
+                    });
+
+                    // Show K/V vectors
+                    kvVectors.forEach((v, idx) => {
+                        const delay = 0.3 + idx * 0.03;
+                        v.material.opacity = Math.min(Math.max(0, (progress - delay) * 2), 0.85);
+                    });
+                    break;
+
+                case 3:
+                    phaseTitle.textContent = 'STEP 2: Decoder Starts with BOS';
+                    phaseSubtitle.textContent = 'Beginning-Of-Sequence token asks: "What first?"';
+                    insightTitle.textContent = '🎯 Autoregressive Start';
+                    insightText.textContent = 'Just like Chapter 5: The decoder needs a starting point. BOS says "begin generating!"';
+
+                    // Show decoder block
+                    decoderBlock.material.opacity = Math.min(progress * 1.5, 0.7);
+
+                    // Show BOS token
+                    bosToken.material.opacity = Math.min(Math.max(0, (progress - 0.3) * 2), 0.9);
+                    bosToken.rotation.y = time * 2;
+                    bosToken.material.emissiveIntensity = 0.3 + Math.sin(time * 4) * 0.15;
+                    break;
+
+                case 4:
+                    phaseTitle.textContent = 'STEP 3: Cross-Attention Query';
+                    phaseSubtitle.textContent = 'Decoder sends Q to ask: "Given observation, what action?"';
+                    insightTitle.textContent = '🔍 Cross-Attention Bridge';
+                    insightText.innerHTML = 'The <span style="color:#ff6b6b">Query (Q)</span> from decoder asks each <span style="color:#2e86ab">Key (K)</span>: "Are you relevant for this action?"';
+
+                    // Show query vector
+                    queryVec.material.opacity = Math.min(progress * 2, 0.9);
+                    queryVec.position.x = 3 - Math.sin(time * 2) * 0.3;
+
+                    // Show attention lines with weights
+                    attentionLines.forEach((line, idx) => {
+                        const delay = 0.2 + idx * 0.05;
+                        const lineOpacity = Math.min(Math.max(0, (progress - delay) * 2), line.userData.weight * 2);
+                        line.material.opacity = lineOpacity;
+                    });
+                    break;
+
+                case 5:
+                    phaseTitle.textContent = 'STEP 4: Values Flow → First Action';
+                    phaseSubtitle.textContent = 'Weighted sum of Values creates action context';
+                    insightTitle.textContent = '💡 Information Flow';
+                    insightText.textContent = 'High attention weight = more Value flows. The decoder now knows what action to generate!';
+
+                    // Animate particles flowing
+                    particles.forEach((p, idx) => {
+                        p.material.opacity = 0.7;
+                        const srcIdx = p.userData.sourceIdx;
+                        const weight = attentionWeights[srcIdx];
+
+                        // Particle flows from K/V to decoder
+                        p.userData.progress += p.userData.speed * 0.01 * (weight * 3 + 0.5);
+                        if (p.userData.progress > 1) p.userData.progress = 0;
+
+                        const startX = -2;
+                        const startY = 2 - srcIdx * 0.5;
+                        const endX = 5;
+                        const endY = 1.5;
+
+                        const t = p.userData.progress;
+                        p.position.x = startX + (endX - startX) * t;
+                        p.position.y = startY + (endY - startY) * t + Math.sin(t * Math.PI) * 0.5;
+                        p.position.z = Math.sin(t * Math.PI) * 0.5;
+
+                        p.material.opacity = Math.sin(t * Math.PI) * 0.8 * weight * 3;
+                    });
+
+                    // Show first action token
+                    actionTokens[0].material.opacity = Math.min(progress * 2, 0.9);
+                    actionTokens[0].material.emissiveIntensity = 0.2 + Math.sin(time * 4) * 0.15;
+                    break;
+
+                case 6:
+                    phaseTitle.textContent = 'STEP 5: Autoregressive Loop';
+                    phaseSubtitle.textContent = 'Each action feeds back → Generate next action';
+                    insightTitle.textContent = '🔄 Cascading Actions';
+                    insightText.textContent = 'Like Chapter 5\'s text generation: Each output becomes input for the next. 5 action steps unfold!';
+
+                    // Continue particles
+                    particles.forEach((p, idx) => {
+                        p.userData.progress += p.userData.speed * 0.008;
+                        if (p.userData.progress > 1) p.userData.progress = 0;
+
+                        const srcIdx = p.userData.sourceIdx;
+                        const weight = attentionWeights[srcIdx];
+                        const startX = -2;
+                        const startY = 2 - srcIdx * 0.5;
+                        const currentAction = Math.min(Math.floor(progress * 5), 4);
+                        const endX = 5;
+                        const endY = 1.5 - currentAction * 0.8;
+
+                        const t = p.userData.progress;
+                        p.position.x = startX + (endX - startX) * t;
+                        p.position.y = startY + (endY - startY) * t + Math.sin(t * Math.PI) * 0.5;
+                        p.position.z = Math.sin(t * Math.PI) * 0.5;
+                        p.material.opacity = Math.sin(t * Math.PI) * 0.6 * weight * 2;
+                    });
+
+                    // Cascade action tokens
+                    actionTokens.forEach((action, idx) => {
+                        const actionDelay = idx * 0.18;
+                        const actionProgress = Math.max(0, (progress - actionDelay) * 2);
+                        action.material.opacity = Math.min(actionProgress, 0.9);
+                        if (actionProgress > 0.5) {
+                            action.material.emissiveIntensity = 0.2 + Math.sin(time * 4 + idx) * 0.15;
+                        }
+                    });
+                    break;
+
+                case 7:
+                    // Punchline - hide scene, show summary
+                    phaseTitle.style.opacity = '0';
+                    phaseSubtitle.style.opacity = '0';
+                    insightBox.style.opacity = '0';
+                    punchlineBox.style.opacity = Math.min(progress * 2, 1);
+
+                    // Fade scene
+                    const fadeOut = 1 - progress;
+                    encoderBlock.material.opacity = 0.7 * fadeOut;
+                    decoderBlock.material.opacity = 0.7 * fadeOut;
+                    obsTokens.forEach(t => t.material.opacity = 0.9 * fadeOut);
+                    kvVectors.forEach(v => v.material.opacity = 0.85 * fadeOut);
+                    bosToken.material.opacity = 0.9 * fadeOut;
+                    queryVec.material.opacity = 0.9 * fadeOut;
+                    attentionLines.forEach(l => l.material.opacity = l.material.opacity * fadeOut);
+                    actionTokens.forEach(a => a.material.opacity = 0.9 * fadeOut);
+                    particles.forEach(p => p.material.opacity = p.material.opacity * fadeOut);
+                    break;
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // Reset buttons
+        const initialCameraPosition = { x: 0, y: 0, z: 16 };
+        document.getElementById('reset-view-btn').addEventListener('click', () => {
+            camera.position.set(initialCameraPosition.x, initialCameraPosition.y, initialCameraPosition.z);
+            camera.up.set(0, 1, 0);
+            controls.target.set(0, 0, 0);
+            controls.reset();
+        });
+        document.getElementById('reset-anim-btn').addEventListener('click', resetAnimation);
+
+        window.addEventListener('resize', () => {
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+            renderer.setSize(w, h);
+        });
+
+        animate();
+    </script>
+</body>
+</html>

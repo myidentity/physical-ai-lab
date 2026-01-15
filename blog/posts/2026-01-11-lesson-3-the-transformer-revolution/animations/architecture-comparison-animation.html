@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Architecture Comparison Animation</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        .control-btn {
+            position: absolute;
+            bottom: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            opacity: 0;
+            transition: opacity 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+        }
+        body:hover .control-btn {
+            opacity: 1;
+        }
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        #reset-view-btn { right: 20px; }
+        #reset-anim-btn { right: 150px; }
+
+        /* Text overlay base styles */
+        .text-overlay {
+            position: absolute;
+            pointer-events: none;
+            font-family: Arial, sans-serif;
+            text-shadow: 0 0 10px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.6);
+            transition: opacity 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    <button id="reset-anim-btn" class="control-btn">⟲ Reset Animation</button>
+    <button id="reset-view-btn" class="control-btn">↺ Reset View</button>
+
+    <!-- Three.js libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TrackballControls.js"></script>
+
+    <script>
+        const container = document.getElementById('container');
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        // ============================================
+        // ILLUSTRATION CODE FROM DATABASE GOES HERE
+        // ============================================
+        // Architecture Comparison Animation
+// Shows OpenVLA vs SmolVLA vs GR00T action generation approaches
+
+const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+camera.position.set(0, 0, 18);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(width, height);
+renderer.setClearColor(0x0a0a1a, 1);
+container.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+
+// Lighting
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+scene.add(ambientLight);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+directionalLight.position.set(5, 5, 5);
+scene.add(directionalLight);
+
+// Colors for each architecture
+const openVLAColor = 0x9b59b6; // Purple
+const smolVLAColor = 0xe94560; // Coral
+const grootColor = 0x00b4d8;   // Cyan
+const tokenColor = 0xffd700;   // Gold for tokens
+const noiseColor = 0xff6b6b;   // Red for noise
+const smoothColor = 0x00ff88;  // Green for smooth output
+
+// Column positions
+const colX = { openVLA: -6, smolVLA: 0, groot: 6 };
+
+// ========== ARCHITECTURE BOXES ==========
+// OpenVLA box
+const openVLAGeo = new THREE.BoxGeometry(3, 2, 0.3);
+const openVLAMat = new THREE.MeshPhongMaterial({ color: openVLAColor, transparent: true, opacity: 0.9 });
+const openVLABox = new THREE.Mesh(openVLAGeo, openVLAMat);
+openVLABox.position.set(colX.openVLA, 2, 0);
+scene.add(openVLABox);
+
+// SmolVLA box
+const smolVLAGeo = new THREE.BoxGeometry(3, 2, 0.3);
+const smolVLAMat = new THREE.MeshPhongMaterial({ color: smolVLAColor, transparent: true, opacity: 0.9 });
+const smolVLABox = new THREE.Mesh(smolVLAGeo, smolVLAMat);
+smolVLABox.position.set(colX.smolVLA, 2, 0);
+scene.add(smolVLABox);
+
+// GR00T box (dual system - two sub-boxes)
+const grootSys2Geo = new THREE.BoxGeometry(1.3, 1.5, 0.3);
+const grootSys2Mat = new THREE.MeshPhongMaterial({ color: grootColor, transparent: true, opacity: 0.9 });
+const grootSys2Box = new THREE.Mesh(grootSys2Geo, grootSys2Mat);
+grootSys2Box.position.set(colX.groot - 0.8, 2, 0);
+scene.add(grootSys2Box);
+
+const grootSys1Geo = new THREE.BoxGeometry(1.3, 1.5, 0.3);
+const grootSys1Mat = new THREE.MeshPhongMaterial({ color: 0xe94560, transparent: true, opacity: 0.9 });
+const grootSys1Box = new THREE.Mesh(grootSys1Geo, grootSys1Mat);
+grootSys1Box.position.set(colX.groot + 0.8, 2, 0);
+scene.add(grootSys1Box);
+
+// ========== AUTOREGRESSIVE TOKENS (OpenVLA) ==========
+const tokens = [];
+for (let i = 0; i < 8; i++) {
+    const tokenGeo = new THREE.BoxGeometry(0.3, 0.3, 0.1);
+    const tokenMat = new THREE.MeshPhongMaterial({
+        color: tokenColor,
+        transparent: true,
+        opacity: 0,
+        emissive: tokenColor,
+        emissiveIntensity: 0.3
+    });
+    const token = new THREE.Mesh(tokenGeo, tokenMat);
+    token.position.set(colX.openVLA - 1.2 + i * 0.35, -1.5, 0);
+    token.userData.index = i;
+    tokens.push(token);
+    scene.add(token);
+}
+
+// ========== FLOW MATCHING PARTICLES (SmolVLA) ==========
+const flowParticles = [];
+const numFlowParticles = 15;
+const flowTargets = [];
+
+for (let i = 0; i < numFlowParticles; i++) {
+    const t = i / (numFlowParticles - 1);
+    flowTargets.push(new THREE.Vector3(
+        colX.smolVLA - 1.2 + t * 2.4,
+        -1.5 + Math.sin(t * Math.PI * 2) * 0.5,
+        0
+    ));
+}
+
+for (let i = 0; i < numFlowParticles; i++) {
+    const pGeo = new THREE.SphereGeometry(0.12, 12, 12);
+    const pMat = new THREE.MeshPhongMaterial({
+        color: noiseColor,
+        transparent: true,
+        opacity: 0,
+        emissive: noiseColor,
+        emissiveIntensity: 0.3
+    });
+    const p = new THREE.Mesh(pGeo, pMat);
+    p.userData.noisePos = new THREE.Vector3(
+        colX.smolVLA + (Math.random() - 0.5) * 2,
+        -1.5 + (Math.random() - 0.5) * 2,
+        (Math.random() - 0.5) * 0.5
+    );
+    p.userData.targetPos = flowTargets[i].clone();
+    p.position.copy(p.userData.noisePos);
+    flowParticles.push(p);
+    scene.add(p);
+}
+
+// ========== 120Hz OUTPUT (GR00T) ==========
+const grootOutputs = [];
+for (let i = 0; i < 20; i++) {
+    const oGeo = new THREE.SphereGeometry(0.08, 10, 10);
+    const oMat = new THREE.MeshPhongMaterial({
+        color: smoothColor,
+        transparent: true,
+        opacity: 0,
+        emissive: smoothColor,
+        emissiveIntensity: 0.4
+    });
+    const o = new THREE.Mesh(oGeo, oMat);
+    o.userData.delay = i * 0.02;
+    o.userData.baseY = -1.5 + Math.sin(i * 0.3) * 0.4;
+    grootOutputs.push(o);
+    scene.add(o);
+}
+
+// ========== HTML OVERLAY ==========
+const overlay = document.createElement('div');
+overlay.style.cssText = `
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    font-family: 'Segoe UI', Arial, sans-serif;
+`;
+container.appendChild(overlay);
+
+// Phase title
+const phaseTitle = document.createElement('div');
+phaseTitle.style.cssText = `
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 20px;
+    font-weight: bold;
+    color: #00d9ff;
+    text-shadow: 2px 2px 6px rgba(0,0,0,0.9);
+    white-space: nowrap;
+`;
+overlay.appendChild(phaseTitle);
+
+// Phase subtitle
+const phaseSubtitle = document.createElement('div');
+phaseSubtitle.style.cssText = `
+    position: absolute;
+    top: 35px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 13px;
+    color: #cccccc;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.9);
+    white-space: nowrap;
+`;
+overlay.appendChild(phaseSubtitle);
+
+// Architecture labels
+const labels = [
+    { text: 'OpenVLA<br><span style="font-size:9px;color:#888;">7B • Autoregressive</span>', x: '16%', color: '#9b59b6' },
+    { text: 'SmolVLA<br><span style="font-size:9px;color:#888;">450M • Flow Matching</span>', x: '50%', color: '#e94560' },
+    { text: 'GR00T<br><span style="font-size:9px;color:#888;">2.5B • Dual System</span>', x: '84%', color: '#00b4d8' }
+];
+
+labels.forEach(lbl => {
+    const el = document.createElement('div');
+    el.style.cssText = `
+        position: absolute;
+        top: 18%;
+        left: ${lbl.x};
+        transform: translateX(-50%);
+        font-size: 12px;
+        font-weight: bold;
+        color: ${lbl.color};
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.9);
+        text-align: center;
+        line-height: 1.4;
+    `;
+    el.innerHTML = lbl.text;
+    overlay.appendChild(el);
+});
+
+// Method labels (bottom)
+const methodLabels = [
+    { text: '→ Token by token', x: '16%', color: '#ffd700' },
+    { text: '→ All at once', x: '50%', color: '#00ff88' },
+    { text: '→ 120Hz stream', x: '84%', color: '#00ff88' }
+];
+
+const methodElements = methodLabels.map(lbl => {
+    const el = document.createElement('div');
+    el.style.cssText = `
+        position: absolute;
+        bottom: 12%;
+        left: ${lbl.x};
+        transform: translateX(-50%);
+        font-size: 11px;
+        font-weight: bold;
+        color: ${lbl.color};
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.9);
+        text-align: center;
+        opacity: 0;
+    `;
+    el.innerHTML = lbl.text;
+    overlay.appendChild(el);
+    return el;
+});
+
+// Punchline box
+const punchline = document.createElement('div');
+punchline.style.cssText = `
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, rgba(155,89,182,0.15) 0%, rgba(0,180,216,0.15) 50%, rgba(233,69,96,0.15) 100%);
+    border: 2px solid #ffd700;
+    border-radius: 12px;
+    padding: 20px 30px;
+    text-align: center;
+    opacity: 0;
+`;
+punchline.innerHTML = `
+    <div style="font-size: 18px; font-weight: bold; color: #ffd700; margin-bottom: 10px;">
+        Three Architectures, Same Building Blocks
+    </div>
+    <div style="font-size: 13px; color: #fff; line-height: 1.8;">
+        <span style="color: #9b59b6;">●</span> <b>OpenVLA</b>: Maximum power (7B), one token at a time<br>
+        <span style="color: #e94560;">●</span> <b>SmolVLA</b>: Elegant efficiency (450M), flow matching<br>
+        <span style="color: #00b4d8;">●</span> <b>GR00T</b>: Cognitive design (2.5B), dual-system<br><br>
+        <span style="color: #aaa; font-size: 11px;">All use: ViT + Attention + Cross-Attention</span>
+    </div>
+`;
+overlay.appendChild(punchline);
+
+// Animation phases
+const phases = [
+    { title: "Architecture Comparison", subtitle: "Three production VLA designs", duration: 3000 },
+    { title: "OpenVLA: Autoregressive", subtitle: "Generate tokens one by one...", duration: 4000 },
+    { title: "SmolVLA: Flow Matching", subtitle: "Noise → all tokens at once!", duration: 4000 },
+    { title: "GR00T: Dual-System", subtitle: "Think slow (VLM) → Act fast (120Hz)", duration: 4000 },
+    { title: "All Running Together", subtitle: "Compare the three approaches", duration: 5000 },
+    { title: "", subtitle: "", duration: 5000 }
+];
+
+let currentPhase = 0;
+let phaseStartTime = Date.now();
+let animationTime = 0;
+
+function updatePhase() {
+    const now = Date.now();
+    const elapsed = now - phaseStartTime;
+
+    if (elapsed > phases[currentPhase].duration) {
+        currentPhase = (currentPhase + 1) % phases.length;
+        phaseStartTime = now;
+
+        if (currentPhase === 0) {
+            // Reset all animations
+            tokens.forEach(t => t.material.opacity = 0);
+            flowParticles.forEach(p => {
+                p.position.copy(p.userData.noisePos);
+                p.material.opacity = 0;
+                p.material.color.setHex(noiseColor);
+            });
+            grootOutputs.forEach(o => o.material.opacity = 0);
+        }
+    }
+
+    const phase = currentPhase;
+    const t = elapsed / phases[phase].duration;
+
+    phaseTitle.textContent = phases[phase].title;
+    phaseSubtitle.textContent = phases[phase].subtitle;
+
+    // Default visibility
+    const showBoxes = phase < 5;
+    openVLABox.visible = showBoxes;
+    smolVLABox.visible = showBoxes;
+    grootSys2Box.visible = showBoxes;
+    grootSys1Box.visible = showBoxes;
+
+    methodElements.forEach(el => el.style.opacity = '0');
+
+    // Phase 1: OpenVLA autoregressive
+    if (phase === 1) {
+        openVLAMat.emissive.setHex(0x220033);
+        openVLABox.scale.setScalar(1 + Math.sin(animationTime * 3) * 0.03);
+
+        tokens.forEach((token, i) => {
+            const tokenT = Math.max(0, t - i * 0.1);
+            if (tokenT > 0) {
+                token.material.opacity = Math.min(tokenT * 3, 0.9);
+                token.position.y = -1.5 + Math.sin(animationTime * 4 + i) * 0.05;
+            }
+        });
+        methodElements[0].style.opacity = '1';
+    } else if (phase !== 4) {
+        openVLAMat.emissive.setHex(0x000000);
+        openVLABox.scale.setScalar(1);
+    }
+
+    // Phase 2: SmolVLA flow matching
+    if (phase === 2) {
+        smolVLAMat.emissive.setHex(0x331111);
+        smolVLABox.scale.setScalar(1 + Math.sin(animationTime * 3) * 0.03);
+
+        flowParticles.forEach((p, i) => {
+            p.material.opacity = 0.8;
+            const flowT = Math.min(t * 1.5, 1);
+            p.position.lerpVectors(p.userData.noisePos, p.userData.targetPos, flowT);
+
+            if (flowT > 0.7) {
+                p.material.color.setHex(smoothColor);
+                p.material.emissive.setHex(smoothColor);
+            }
+        });
+        methodElements[1].style.opacity = '1';
+    } else if (phase !== 4) {
+        smolVLAMat.emissive.setHex(0x000000);
+        smolVLABox.scale.setScalar(1);
+    }
+
+    // Phase 3: GR00T dual system
+    if (phase === 3) {
+        grootSys2Mat.emissive.setHex(0x003344);
+        grootSys1Mat.emissive.setHex(0x331111);
+
+        grootSys2Box.scale.setScalar(1 + Math.sin(animationTime * 2) * 0.03);
+        grootSys1Box.scale.setScalar(1 + Math.sin(animationTime * 6) * 0.02);
+
+        grootOutputs.forEach((o, i) => {
+            const outT = Math.max(0, t - 0.3 - o.userData.delay);
+            if (outT > 0) {
+                o.material.opacity = Math.min(outT * 4, 0.9);
+                o.position.set(
+                    colX.groot - 1 + outT * 2.5,
+                    o.userData.baseY,
+                    0
+                );
+            }
+        });
+        methodElements[2].style.opacity = '1';
+    } else if (phase !== 4) {
+        grootSys2Mat.emissive.setHex(0x000000);
+        grootSys1Mat.emissive.setHex(0x000000);
+        grootSys2Box.scale.setScalar(1);
+        grootSys1Box.scale.setScalar(1);
+    }
+
+    // Phase 4: All running together
+    if (phase === 4) {
+        methodElements.forEach(el => el.style.opacity = '1');
+
+        // OpenVLA tokens cycling
+        tokens.forEach((token, i) => {
+            const cycleT = ((animationTime * 0.5) + i * 0.1) % 1;
+            token.material.opacity = 0.6 + Math.sin(cycleT * Math.PI * 2) * 0.3;
+        });
+
+        // SmolVLA particles holding position
+        flowParticles.forEach((p, i) => {
+            p.material.opacity = 0.8;
+            p.position.copy(p.userData.targetPos);
+            p.material.color.setHex(smoothColor);
+        });
+
+        // GR00T continuous output
+        grootOutputs.forEach((o, i) => {
+            const streamT = ((animationTime * 2) + i * 0.05) % 1;
+            o.material.opacity = 0.5 + streamT * 0.4;
+            o.position.set(
+                colX.groot - 1 + streamT * 2.5,
+                o.userData.baseY + Math.sin(animationTime * 3 + i) * 0.1,
+                0
+            );
+        });
+
+        // All boxes pulse gently
+        openVLAMat.emissive.setHex(0x110011);
+        smolVLAMat.emissive.setHex(0x110505);
+        grootSys2Mat.emissive.setHex(0x001111);
+        grootSys1Mat.emissive.setHex(0x110505);
+    }
+
+    // Phase 5: Punchline
+    if (phase === 5) {
+        openVLABox.visible = false;
+        smolVLABox.visible = false;
+        grootSys2Box.visible = false;
+        grootSys1Box.visible = false;
+        tokens.forEach(t => t.visible = false);
+        flowParticles.forEach(p => p.visible = false);
+        grootOutputs.forEach(o => o.visible = false);
+        punchline.style.opacity = '1';
+    } else {
+        tokens.forEach(t => t.visible = phase >= 1);
+        flowParticles.forEach(p => p.visible = phase >= 2);
+        grootOutputs.forEach(o => o.visible = phase >= 3);
+        punchline.style.opacity = '0';
+    }
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+    animationTime += 0.016;
+    updatePhase();
+    renderer.render(scene, camera);
+}
+
+function resetAnimation() {
+    currentPhase = 0;
+    phaseStartTime = Date.now();
+    animationTime = 0;
+    tokens.forEach(t => {
+        t.material.opacity = 0;
+        t.visible = false;
+    });
+    flowParticles.forEach(p => {
+        p.position.copy(p.userData.noisePos);
+        p.material.opacity = 0;
+        p.material.color.setHex(noiseColor);
+        p.visible = false;
+    });
+    grootOutputs.forEach(o => {
+        o.material.opacity = 0;
+        o.visible = false;
+    });
+}
+
+animate();
+
+        // ============================================
+        // END ILLUSTRATION CODE
+        // ============================================
+
+        // Reset View button - restore camera position
+        const initialCameraPosition = {
+            x: camera.position.x,
+            y: camera.position.y,
+            z: camera.position.z
+        };
+
+        document.getElementById('reset-view-btn').addEventListener('click', () => {
+            camera.position.set(
+                initialCameraPosition.x,
+                initialCameraPosition.y,
+                initialCameraPosition.z
+            );
+            camera.up.set(0, 1, 0);
+            controls.target.set(0, 0, 0);
+            controls.reset();
+        });
+
+        // Reset Animation button - restart from phase 1
+        // Note: resetAnimation() function must be defined in the illustration code
+        document.getElementById('reset-anim-btn').addEventListener('click', () => {
+            if (typeof resetAnimation === 'function') {
+                resetAnimation();
+            } else {
+                console.warn('resetAnimation() not defined in illustration code');
+            }
+        });
+
+        // Window resize handler
+        window.addEventListener('resize', () => {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        });
+    </script>
+</body>
+</html>

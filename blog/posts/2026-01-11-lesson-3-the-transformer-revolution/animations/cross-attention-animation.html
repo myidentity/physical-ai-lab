@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cross-Attention Animation</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        .control-btn {
+            position: absolute;
+            bottom: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            opacity: 0;
+            transition: opacity 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+        }
+        body:hover .control-btn {
+            opacity: 1;
+        }
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        #reset-view-btn { right: 20px; }
+        #reset-anim-btn { right: 150px; }
+
+        /* Text overlay base styles */
+        .text-overlay {
+            position: absolute;
+            pointer-events: none;
+            font-family: Arial, sans-serif;
+            text-shadow: 0 0 10px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.6);
+            transition: opacity 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    <button id="reset-anim-btn" class="control-btn">⟲ Reset Animation</button>
+    <button id="reset-view-btn" class="control-btn">↺ Reset View</button>
+
+    <!-- Three.js libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TrackballControls.js"></script>
+
+    <script>
+        const container = document.getElementById('container');
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        // ============================================
+        // ILLUSTRATION CODE FROM DATABASE GOES HERE
+        // ============================================
+        // Cross-Attention: The Decoder's Window to the Encoder
+// Using HTML overlays for ALL text (crisp at any size)
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a1a);
+
+const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
+camera.position.set(0, 0, 12); // Close for visibility
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(width, height);
+container.appendChild(renderer.domElement);
+
+const controls = new THREE.TrackballControls(camera, renderer.domElement);
+controls.rotateSpeed = 2.0;
+controls.noPan = false;
+controls.noZoom = false;
+
+// Lighting - Ambient + Directional for good visibility
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+scene.add(ambientLight);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+directionalLight.position.set(5, 10, 7);
+scene.add(directionalLight);
+const pointLight = new THREE.PointLight(0xffffff, 0.4);
+pointLight.position.set(-5, 5, 5);
+scene.add(pointLight);
+
+// ============ TOOLTIP SYSTEM ============
+const tooltip = document.createElement('div');
+tooltip.style.cssText = `
+    position: absolute;
+    padding: 6px 10px;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    border-radius: 4px;
+    font-size: 12px;
+    pointer-events: none;
+    display: none;
+    z-index: 1000;
+    font-family: Arial, sans-serif;
+`;
+container.appendChild(tooltip);
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+renderer.domElement.addEventListener('mousemove', (event) => {
+    const rect = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(scene.children, true);
+
+    const hit = intersects.find(i => i.object.name && i.object.visible);
+    if (hit) {
+        tooltip.textContent = hit.object.name;
+        tooltip.style.display = 'block';
+        tooltip.style.left = (event.clientX - rect.left + 15) + 'px';
+        tooltip.style.top = (event.clientY - rect.top + 15) + 'px';
+    } else {
+        tooltip.style.display = 'none';
+    }
+});
+
+renderer.domElement.addEventListener('mouseleave', () => {
+    tooltip.style.display = 'none';
+});
+
+// ============ HTML TEXT OVERLAY SYSTEM ============
+const textOverlay = document.createElement('div');
+textOverlay.style.cssText = `
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    font-family: 'Arial', sans-serif;
+    overflow: hidden;
+`;
+container.appendChild(textOverlay);
+
+// Create label helper
+function createLabel(id, text, x, y, fontSize, color, extraStyles = '') {
+    const label = document.createElement('div');
+    label.id = id;
+    label.style.cssText = `
+        position: absolute;
+        left: ${x}%;
+        top: ${y}%;
+        transform: translate(-50%, -50%);
+        font-size: ${fontSize}px;
+        font-weight: bold;
+        color: ${color};
+        text-shadow: 2px 2px 4px black, -1px -1px 2px black;
+        white-space: nowrap;
+        transition: opacity 0.3s;
+        ${extraStyles}
+    `;
+    label.textContent = text;
+    textOverlay.appendChild(label);
+    return label;
+}
+
+// Static labels
+const encoderTitle = createLabel('encoder-title', 'ENCODER OUTPUT', 25, 8, 24, '#88ccff');
+const decoderTitle = createLabel('decoder-title', 'DECODER', 75, 8, 24, '#ffcc44');
+const bridgeTitle = createLabel('bridge-title', 'THE BRIDGE', 50, 15, 18, '#666666');
+
+// Token labels (positioned to match 3D positions)
+const labelThe = createLabel('label-the', '"the"', 22, 35, 20, '#ffffff');
+const labelRed = createLabel('label-red', '"red"', 22, 50, 20, '#ff6b6b');
+const labelCar = createLabel('label-car', '"car"', 22, 65, 20, '#4ecdc4');
+const labelBos = createLabel('label-bos', 'BOS', 78, 50, 20, '#ffd700');
+
+// Phase title and subtitle (will be updated)
+const phaseTitle = createLabel('phase-title', '', 50, 88, 28, '#ffffff');
+const phaseSubtitle = createLabel('phase-subtitle', '', 50, 94, 18, '#aaaaaa');
+
+// Dynamic labels (hidden initially)
+const queryLabel = createLabel('query-label', 'Query from BOS', 60, 40, 16, '#ffd700');
+queryLabel.style.opacity = '0';
+
+const keyLabel = createLabel('key-label', 'K = "Am I relevant?"', 15, 78, 14, '#88ff88');
+keyLabel.style.opacity = '0';
+
+const valueLabel = createLabel('value-label', 'V = "Here\'s my meaning"', 15, 84, 14, '#ff88ff');
+valueLabel.style.opacity = '0';
+
+// Attention weight labels
+const weightLabels = [];
+[{ y: 42, w: '0.1' }, { y: 50, w: '0.2' }, { y: 58, w: '0.7' }].forEach((item, i) => {
+    const label = createLabel(`weight-${i}`, item.w, 50, item.y, 16, '#44aaff');
+    label.style.opacity = '0';
+    weightLabels.push(label);
+});
+
+const contextLabel = createLabel('context-label', 'BOS + encoder context', 75, 60, 14, '#4ecdc4');
+contextLabel.style.opacity = '0';
+
+// Punchline box (hidden initially)
+const punchlineBox = document.createElement('div');
+punchlineBox.style.cssText = `
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(15, 25, 50, 0.97);
+    border: 3px solid #ffd700;
+    border-radius: 20px;
+    padding: 30px 40px;
+    max-width: 550px;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.5s;
+    pointer-events: none;
+`;
+punchlineBox.innerHTML = `
+    <div style="font-size: 26px; color: #ffd700; margin-bottom: 20px; text-shadow: 2px 2px 4px black;">
+        🎯 CROSS-ATTENTION: The Bridge
+    </div>
+    <div style="font-size: 17px; color: #88ccff; margin: 12px 0; text-shadow: 1px 1px 2px black;">
+        <b>SELF-ATTENTION:</b> Tokens talk to EACH OTHER (same sequence)
+    </div>
+    <div style="font-size: 17px; color: #ffaa44; margin: 12px 0; text-shadow: 1px 1px 2px black;">
+        <b>CROSS-ATTENTION:</b> Decoder talks to ENCODER (different sequences!)
+    </div>
+    <div style="margin: 20px 0; text-align: left; padding-left: 20px;">
+        <div style="font-size: 15px; color: #ffd700; margin: 8px 0;">• Query: "What should I generate?" (from decoder)</div>
+        <div style="font-size: 15px; color: #88ff88; margin: 8px 0;">• Keys: "Am I relevant?" (from encoder)</div>
+        <div style="font-size: 15px; color: #ff88ff; margin: 8px 0;">• Values: "Here's my meaning" (from encoder)</div>
+    </div>
+    <div style="font-size: 18px; color: #88ffff; margin-top: 20px; text-shadow: 1px 1px 2px black;">
+        The decoder asks, the encoder answers.
+    </div>
+`;
+textOverlay.appendChild(punchlineBox);
+
+// ============ 3D ELEMENTS ============
+
+// Token colors
+const tokenColors = {
+    the: 0xffffff,
+    red: 0xff6b6b,
+    car: 0x4ecdc4,
+    bos: 0xffd700
+};
+
+// Encoder tokens (left side)
+const encoderMeshes = [];
+const encoderWords = ['the', 'red', 'car'];
+const encoderPositions = [
+    { x: -3.5, y: 2, z: 0 },
+    { x: -3.5, y: 0, z: 0 },
+    { x: -3.5, y: -2, z: 0 }
+];
+
+encoderWords.forEach((word, i) => {
+    const geometry = new THREE.SphereGeometry(0.5, 32, 32);
+    const material = new THREE.MeshStandardMaterial({
+        color: tokenColors[word],
+        emissive: tokenColors[word],
+        emissiveIntensity: 0.3,
+        metalness: 0.4,
+        roughness: 0.3
+    });
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(encoderPositions[i].x, encoderPositions[i].y, encoderPositions[i].z);
+    mesh.name = `Encoder token: "${word}" - Context vector from input`;
+    scene.add(mesh);
+    encoderMeshes.push({ mesh, word, material });
+});
+
+// Decoder BOS token (right side)
+const bosGeometry = new THREE.SphereGeometry(0.6, 32, 32);
+const bosMaterial = new THREE.MeshStandardMaterial({
+    color: tokenColors.bos,
+    emissive: tokenColors.bos,
+    emissiveIntensity: 0.3,
+    metalness: 0.4,
+    roughness: 0.3
+});
+const bosMesh = new THREE.Mesh(bosGeometry, bosMaterial);
+bosMesh.position.set(3.5, 0, 0);
+bosMesh.name = 'Decoder BOS token - Beginning of Sequence, asks "what should I generate?"';
+scene.add(bosMesh);
+
+// BOS context ring (hidden initially)
+const bosRing = new THREE.Mesh(
+    new THREE.TorusGeometry(0.9, 0.08, 16, 32),
+    new THREE.MeshBasicMaterial({ color: 0x4ecdc4, transparent: true, opacity: 0 })
+);
+bosRing.position.copy(bosMesh.position);
+bosRing.name = 'Context ring - BOS has received encoder information';
+scene.add(bosRing);
+
+// Bridge line (dashed vertical)
+const bridgeGeometry = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(0, 3.5, 0),
+    new THREE.Vector3(0, -3.5, 0)
+]);
+const bridgeMaterial = new THREE.LineDashedMaterial({
+    color: 0x444444,
+    dashSize: 0.3,
+    gapSize: 0.2
+});
+const bridgeLine = new THREE.Line(bridgeGeometry, bridgeMaterial);
+bridgeLine.computeLineDistances();
+bridgeLine.name = 'The Bridge - Separates encoder (left) from decoder (right)';
+scene.add(bridgeLine);
+
+// Query arrows (curved lines from BOS to each encoder token)
+const queryArrows = [];
+encoderPositions.forEach((pos, i) => {
+    const curve = new THREE.QuadraticBezierCurve3(
+        new THREE.Vector3(2.9, 0, 0),
+        new THREE.Vector3(0, pos.y * 0.5, 0),
+        new THREE.Vector3(pos.x + 0.5, pos.y, 0)
+    );
+    const points = curve.getPoints(30);
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    const material = new THREE.LineBasicMaterial({ color: 0xffd700, transparent: true, opacity: 0 });
+    const line = new THREE.Line(geometry, material);
+    line.name = `Query arrow to "${encoderWords[i]}" - Decoder asking encoder for relevance`;
+    scene.add(line);
+    queryArrows.push({ line, material, curve });
+});
+
+// Attention connection lines
+const attentionWeights = [0.1, 0.2, 0.7];
+const attentionLines = [];
+encoderPositions.forEach((pos, i) => {
+    const geometry = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(pos.x + 0.5, pos.y, 0),
+        new THREE.Vector3(2.9, 0, 0)
+    ]);
+    const material = new THREE.LineBasicMaterial({
+        color: 0x44aaff,
+        transparent: true,
+        opacity: 0,
+        linewidth: 2
+    });
+    const line = new THREE.Line(geometry, material);
+    line.name = `Attention: "${encoderWords[i]}" → BOS (weight: ${attentionWeights[i]})`;
+    scene.add(line);
+    attentionLines.push({ line, material, weight: attentionWeights[i] });
+});
+
+// Value flow particles
+const valueParticles = [];
+encoderMeshes.forEach((enc, i) => {
+    const particles = [];
+    for (let p = 0; p < 6; p++) {
+        const geometry = new THREE.SphereGeometry(0.12, 8, 8);
+        const material = new THREE.MeshBasicMaterial({
+            color: tokenColors[enc.word],
+            transparent: true,
+            opacity: 0
+        });
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.visible = false;
+        mesh.name = `Value particle from "${enc.word}" - Carrying meaning to decoder`;
+        scene.add(mesh);
+        particles.push({ mesh, material, offset: p * 0.18, weight: attentionWeights[i] });
+    }
+    valueParticles.push(particles);
+});
+
+// Collect all scene objects for hiding during punchline
+const allSceneObjects = [...encoderMeshes.map(e => e.mesh), bosMesh, bosRing, bridgeLine,
+    ...queryArrows.map(q => q.line), ...attentionLines.map(a => a.line)];
+valueParticles.forEach(particles => particles.forEach(p => allSceneObjects.push(p.mesh)));
+
+const allLabels = [encoderTitle, decoderTitle, bridgeTitle, labelThe, labelRed, labelCar,
+    labelBos, queryLabel, keyLabel, valueLabel, contextLabel, ...weightLabels];
+
+// ============ ANIMATION ============
+const phaseTiming = {
+    1: { start: 0, duration: 4 },
+    2: { start: 4, duration: 5 },
+    3: { start: 9, duration: 5 },
+    4: { start: 14, duration: 6 },
+    5: { start: 20, duration: 5 },
+    6: { start: 25, duration: 4 },
+    7: { start: 29, duration: 15 }
+};
+const totalDuration = 44;
+let startTime = Date.now();
+
+function setPhaseText(title, subtitle) {
+    phaseTitle.textContent = title;
+    phaseSubtitle.textContent = subtitle;
+}
+
+function hideAllForPunchline() {
+    allSceneObjects.forEach(obj => obj.visible = false);
+    allLabels.forEach(l => l.style.opacity = '0');
+    phaseTitle.style.opacity = '0';
+    phaseSubtitle.style.opacity = '0';
+}
+
+function showScene() {
+    encoderMeshes.forEach(e => e.mesh.visible = true);
+    bosMesh.visible = true;
+    bridgeLine.visible = true;
+    [encoderTitle, decoderTitle, bridgeTitle, labelThe, labelRed, labelCar, labelBos].forEach(l => l.style.opacity = '1');
+    phaseTitle.style.opacity = '1';
+    phaseSubtitle.style.opacity = '1';
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+    controls.update();
+
+    const elapsed = ((Date.now() - startTime) / 1000) % totalDuration;
+    const time = Date.now() * 0.001;
+
+    // Determine current phase
+    let currentPhase = 1;
+    for (let p = 7; p >= 1; p--) {
+        if (elapsed >= phaseTiming[p].start) {
+            currentPhase = p;
+            break;
+        }
+    }
+
+    const phaseElapsed = elapsed - phaseTiming[currentPhase].start;
+    const phaseProgress = phaseElapsed / phaseTiming[currentPhase].duration;
+
+    // Reset dynamic elements
+    queryArrows.forEach(q => q.material.opacity = 0);
+    queryLabel.style.opacity = '0';
+    keyLabel.style.opacity = '0';
+    valueLabel.style.opacity = '0';
+    weightLabels.forEach(l => l.style.opacity = '0');
+    attentionLines.forEach(a => a.material.opacity = 0);
+    valueParticles.forEach(particles => particles.forEach(p => { p.mesh.visible = false; p.material.opacity = 0; }));
+    bosRing.material.opacity = 0;
+    contextLabel.style.opacity = '0';
+    punchlineBox.style.opacity = '0';
+
+    if (currentPhase < 7) {
+        showScene();
+    }
+
+    // Phase-specific animations
+    if (currentPhase === 1) {
+        setPhaseText('PHASE 1: THE SETUP', 'Encoder has understood the input');
+        encoderMeshes.forEach((enc, i) => {
+            enc.material.emissiveIntensity = 0.3 + Math.sin(time * 2 + i) * 0.15;
+        });
+    }
+    else if (currentPhase === 2) {
+        setPhaseText('PHASE 2: DECODER ASKS', '"What should I generate first?"');
+        bosMaterial.emissiveIntensity = 0.4 + Math.sin(time * 4) * 0.3;
+        bosMesh.scale.setScalar(1 + Math.sin(time * 4) * 0.1);
+
+        if (phaseProgress > 0.3) {
+            const arrowProgress = Math.min(1, (phaseProgress - 0.3) / 0.5);
+            queryArrows.forEach(q => {
+                q.material.opacity = arrowProgress * 0.8;
+            });
+            queryLabel.style.opacity = String(arrowProgress);
+        }
+    }
+    else if (currentPhase === 3) {
+        setPhaseText('PHASE 3: ENCODER ANSWERS', 'Keys check relevance, Values carry meaning');
+        queryArrows.forEach(q => q.material.opacity = 0.6);
+        queryLabel.style.opacity = '0.7';
+        keyLabel.style.opacity = '1';
+        valueLabel.style.opacity = '1';
+
+        encoderMeshes.forEach((enc, i) => {
+            enc.material.emissiveIntensity = 0.4 + Math.sin(time * 3 + i) * 0.2;
+        });
+    }
+    else if (currentPhase === 4) {
+        setPhaseText('PHASE 4: ATTENTION SCORES', 'Which encoder token matters most?');
+
+        attentionLines.forEach((al, i) => {
+            al.material.opacity = al.weight * (0.6 + Math.sin(time * 2) * 0.2);
+        });
+
+        weightLabels.forEach((l, i) => {
+            l.style.opacity = '1';
+            l.style.transform = `translate(-50%, -50%) scale(${1 + attentionWeights[i] * 0.3})`;
+        });
+
+        encoderMeshes.forEach((enc, i) => {
+            enc.material.emissiveIntensity = 0.2 + attentionWeights[i] * 0.5;
+            enc.mesh.scale.setScalar(0.9 + attentionWeights[i] * 0.3);
+        });
+    }
+    else if (currentPhase === 5) {
+        setPhaseText('PHASE 5: INFORMATION FLOWS', 'Values flow weighted by attention');
+
+        attentionLines.forEach((al, i) => al.material.opacity = al.weight * 0.5);
+
+        valueParticles.forEach((particles, i) => {
+            const startPos = encoderMeshes[i].mesh.position;
+            particles.forEach(p => {
+                p.mesh.visible = true;
+                const t = ((phaseProgress * 1.5 + p.offset) % 1);
+                p.mesh.position.lerpVectors(startPos, bosMesh.position, t);
+                p.material.opacity = p.weight * Math.sin(t * Math.PI);
+            });
+        });
+    }
+    else if (currentPhase === 6) {
+        setPhaseText('PHASE 6: CONTEXT RECEIVED', 'BOS now knows to generate "car"');
+
+        bosRing.material.opacity = 0.8;
+        bosRing.rotation.z = time * 2;
+
+        bosMaterial.emissiveIntensity = 0.5 + Math.sin(time * 3) * 0.2;
+        contextLabel.style.opacity = '1';
+    }
+    else if (currentPhase === 7) {
+        hideAllForPunchline();
+        punchlineBox.style.opacity = String(Math.min(1, phaseProgress * 3));
+    }
+
+    renderer.render(scene, camera);
+}
+
+function resetAnimation() {
+    startTime = Date.now();
+}
+
+animate();
+
+        // ============================================
+        // END ILLUSTRATION CODE
+        // ============================================
+
+        // Reset View button - restore camera position
+        const initialCameraPosition = {
+            x: camera.position.x,
+            y: camera.position.y,
+            z: camera.position.z
+        };
+
+        document.getElementById('reset-view-btn').addEventListener('click', () => {
+            camera.position.set(
+                initialCameraPosition.x,
+                initialCameraPosition.y,
+                initialCameraPosition.z
+            );
+            camera.up.set(0, 1, 0);
+            controls.target.set(0, 0, 0);
+            controls.reset();
+        });
+
+        // Reset Animation button - restart from phase 1
+        // Note: resetAnimation() function must be defined in the illustration code
+        document.getElementById('reset-anim-btn').addEventListener('click', () => {
+            if (typeof resetAnimation === 'function') {
+                resetAnimation();
+            } else {
+                console.warn('resetAnimation() not defined in illustration code');
+            }
+        });
+
+        // Window resize handler
+        window.addEventListener('resize', () => {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        });
+    </script>
+</body>
+</html>

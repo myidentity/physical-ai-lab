@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter 5 Capstone: The Complete Decoder Journey</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        .control-btn {
+            position: absolute;
+            bottom: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            opacity: 0;
+            transition: opacity 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+        }
+        body:hover .control-btn {
+            opacity: 1;
+        }
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        #reset-view-btn { right: 20px; }
+        #reset-anim-btn { right: 150px; }
+
+        /* Text overlay base styles */
+        .text-overlay {
+            position: absolute;
+            pointer-events: none;
+            font-family: Arial, sans-serif;
+            text-shadow: 0 0 10px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.6);
+            transition: opacity 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    <button id="reset-anim-btn" class="control-btn">⟲ Reset Animation</button>
+    <button id="reset-view-btn" class="control-btn">↺ Reset View</button>
+
+    <!-- Three.js libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TrackballControls.js"></script>
+
+    <script>
+        const container = document.getElementById('container');
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        // ============================================
+        // ILLUSTRATION CODE FROM DATABASE GOES HERE
+        // ============================================
+        // Chapter 5 Capstone: The Complete Decoder Journey
+// Shows full encoder-decoder pipeline with autoregressive generation
+// Using HTML overlays for ALL text (crisp at any size)
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a1a);
+
+const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
+camera.position.set(0, 0, 14);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(width, height);
+container.appendChild(renderer.domElement);
+
+const controls = new THREE.TrackballControls(camera, renderer.domElement);
+controls.rotateSpeed = 2.0;
+controls.noPan = false;
+controls.noZoom = false;
+
+// Store initial camera state for resetAnimation (template handles reset-view)
+const _initCamPos = camera.position.clone();
+const _initCamTarget = controls.target.clone();
+
+// Lighting
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+scene.add(ambientLight);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+directionalLight.position.set(5, 10, 7);
+scene.add(directionalLight);
+
+// ============ HTML TEXT OVERLAY SYSTEM ============
+const textOverlay = document.createElement('div');
+textOverlay.style.cssText = `
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    font-family: 'Arial', sans-serif;
+    overflow: hidden;
+`;
+container.appendChild(textOverlay);
+
+function createLabel(id, text, x, y, fontSize, color, extraStyles = '') {
+    const label = document.createElement('div');
+    label.id = id;
+    label.style.cssText = `
+        position: absolute;
+        left: ${x}%;
+        top: ${y}%;
+        transform: translate(-50%, -50%);
+        font-size: ${fontSize}px;
+        font-weight: bold;
+        color: ${color};
+        text-shadow: 2px 2px 4px black, -1px -1px 2px black;
+        white-space: nowrap;
+        transition: opacity 0.5s;
+        ${extraStyles}
+    `;
+    label.textContent = text;
+    textOverlay.appendChild(label);
+    return label;
+}
+
+// ============ STATIC LABELS ============
+const encoderTitle = createLabel('encoder-title', 'ENCODER', 20, 6, 22, '#88ccff');
+const decoderTitle = createLabel('decoder-title', 'DECODER', 80, 6, 22, '#ffcc44');
+const bridgeTitle = createLabel('bridge-title', 'CROSS-ATTENTION', 50, 6, 16, '#ff88ff');
+
+// Input token labels
+const labelThe = createLabel('label-the', '"the"', 12, 30, 18, '#ffffff');
+const labelRed = createLabel('label-red', '"red"', 12, 50, 18, '#ff6b6b');
+const labelCar = createLabel('label-car', '"car"', 12, 70, 18, '#4ecdc4');
+
+// Phase display
+const phaseTitle = createLabel('phase-title', '', 50, 92, 26, '#ffffff');
+const phaseSubtitle = createLabel('phase-subtitle', '', 50, 97, 16, '#aaaaaa');
+
+// Dynamic labels (hidden initially)
+const kvLabel = createLabel('kv-label', 'K, V ready', 25, 85, 14, '#88ff88');
+kvLabel.style.opacity = '0';
+
+const queryLabel = createLabel('query-label', 'Q: "What\'s first?"', 65, 35, 14, '#ffd700');
+queryLabel.style.opacity = '0';
+
+// Attention weight labels
+const weightLabels = [];
+['0.1', '0.2', '0.7'].forEach((w, i) => {
+    const label = createLabel(`weight-${i}`, w, 45, 30 + i * 20, 14, '#44aaff');
+    label.style.opacity = '0';
+    weightLabels.push(label);
+});
+
+// Decoder output labels (will appear during autoregressive loop)
+const outputLabels = [];
+const outputTokens = ['BOS', 'गाड़ी', 'लाल', 'है', 'EOS'];
+const outputColors = ['#ffd700', '#ff88ff', '#88ff88', '#88ccff', '#ff6666'];
+outputTokens.forEach((tok, i) => {
+    const label = createLabel(`output-${i}`, tok, 88, 25 + i * 12, 16, outputColors[i]);
+    label.style.opacity = '0';
+    outputLabels.push(label);
+});
+
+// Vocabulary bar label
+const vocabLabel = createLabel('vocab-label', 'Vocabulary: P(next word)', 50, 82, 14, '#aaaaaa');
+vocabLabel.style.opacity = '0';
+
+// ============ 3D OBJECTS ============
+const allObjects = [];
+
+// Encoder tokens (left side)
+function createSphere(color, x, y, z, name) {
+    const geo = new THREE.SphereGeometry(0.6, 32, 32);
+    const mat = new THREE.MeshPhongMaterial({ color, shininess: 100 });
+    const sphere = new THREE.Mesh(geo, mat);
+    sphere.position.set(x, y, z);
+    sphere.name = name;
+    scene.add(sphere);
+    allObjects.push(sphere);
+    return sphere;
+}
+
+const encoderTokens = [
+    createSphere(0xffffff, -5, 2, 0, '"the" context'),
+    createSphere(0xff6b6b, -5, 0, 0, '"red" context'),
+    createSphere(0x4ecdc4, -5, -2, 0, '"car" context')
+];
+
+// Decoder tokens (right side) - will be revealed progressively
+const decoderTokens = [
+    createSphere(0xffd700, 5, 3, 0, 'BOS (start)'),
+    createSphere(0xff88ff, 5, 1.5, 0, 'गाड़ी (car)'),
+    createSphere(0x88ff88, 5, 0, 0, 'लाल (red)'),
+    createSphere(0x88ccff, 5, -1.5, 0, 'है (is)'),
+    createSphere(0xff6666, 5, -3, 0, 'EOS (end)')
+];
+// Hide all except BOS initially
+decoderTokens.forEach((t, i) => { if (i > 0) t.visible = false; });
+
+// Bridge line (dashed)
+const bridgeGeo = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(0, 4, 0),
+    new THREE.Vector3(0, -4, 0)
+]);
+const bridgeMat = new THREE.LineDashedMaterial({ color: 0x444466, dashSize: 0.3, gapSize: 0.2 });
+const bridgeLine = new THREE.Line(bridgeGeo, bridgeMat);
+bridgeLine.computeLineDistances();
+scene.add(bridgeLine);
+allObjects.push(bridgeLine);
+
+// Query arrows (from decoder to encoder)
+const queryArrows = [];
+function createArrow(from, to, color) {
+    const dir = new THREE.Vector3().subVectors(to, from).normalize();
+    const length = from.distanceTo(to) - 1;
+    const arrow = new THREE.ArrowHelper(dir, from, length, color, 0.3, 0.2);
+    arrow.visible = false;
+    scene.add(arrow);
+    allObjects.push(arrow);
+    queryArrows.push(arrow);
+    return arrow;
+}
+
+const bosPos = new THREE.Vector3(4.2, 3, 0);
+encoderTokens.forEach((t, i) => {
+    createArrow(bosPos, t.position.clone().add(new THREE.Vector3(0.8, 0, 0)), 0xffd700);
+});
+
+// Value flow lines (from encoder to decoder) - appear during value aggregation
+const valueLines = [];
+function createValueLine(from, to, color) {
+    const curve = new THREE.QuadraticBezierCurve3(
+        from,
+        new THREE.Vector3(0, (from.y + to.y) / 2, 2),
+        to
+    );
+    const points = curve.getPoints(20);
+    const geo = new THREE.BufferGeometry().setFromPoints(points);
+    const mat = new THREE.LineBasicMaterial({ color, linewidth: 2, transparent: true, opacity: 0.8 });
+    const line = new THREE.Line(geo, mat);
+    line.visible = false;
+    scene.add(line);
+    allObjects.push(line);
+    valueLines.push(line);
+    return line;
+}
+
+encoderTokens.forEach((t, i) => {
+    const colors = [0xffffff, 0xff6b6b, 0x4ecdc4];
+    createValueLine(t.position.clone(), decoderTokens[1].position.clone(), colors[i]);
+});
+
+// Vocabulary bar (appears during softmax phase)
+const vocabBar = new THREE.Group();
+const vocabWords = ['गाड़ी', 'लाल', 'है', 'का', 'एक'];
+const vocabProbs = [0.7, 0.15, 0.08, 0.04, 0.03];
+let xOffset = -3;
+vocabWords.forEach((word, i) => {
+    const barHeight = vocabProbs[i] * 4;
+    const geo = new THREE.BoxGeometry(0.8, barHeight, 0.3);
+    const mat = new THREE.MeshPhongMaterial({
+        color: i === 0 ? 0xff88ff : 0x444488,
+        transparent: true,
+        opacity: 0.8
+    });
+    const bar = new THREE.Mesh(geo, mat);
+    bar.position.set(xOffset, -3.5 + barHeight/2, 0);
+    vocabBar.add(bar);
+    xOffset += 1.2;
+});
+vocabBar.visible = false;
+scene.add(vocabBar);
+allObjects.push(vocabBar);
+
+// ============ PUNCHLINE BOX ============
+const punchlineBox = document.createElement('div');
+punchlineBox.style.cssText = `
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(15, 25, 50, 0.97);
+    border: 3px solid #ffd700;
+    border-radius: 20px;
+    padding: 30px 40px;
+    max-width: 600px;
+    opacity: 0;
+    transition: opacity 0.8s;
+    pointer-events: none;
+    z-index: 100;
+`;
+punchlineBox.innerHTML = `
+    <div style="color: #ffd700; font-size: 24px; font-weight: bold; margin-bottom: 20px; text-align: center;">
+        🎯 THE DECODER'S JOURNEY
+    </div>
+    <div style="color: #88ccff; font-size: 16px; margin-bottom: 12px;">
+        <b>1. ENCODER:</b> Processes input ONCE → creates K, V
+    </div>
+    <div style="color: #ffd700; font-size: 16px; margin-bottom: 12px;">
+        <b>2. DECODER:</b> Starts with BOS, generates token-by-token
+    </div>
+    <div style="color: #ff88ff; font-size: 16px; margin-bottom: 12px;">
+        <b>3. CROSS-ATTENTION:</b> Q asks, K/V answer (the bridge!)
+    </div>
+    <div style="color: #44aaff; font-size: 16px; margin-bottom: 12px;">
+        <b>4. SOFTMAX:</b> Picks most likely next word
+    </div>
+    <div style="color: #4ecdc4; font-size: 16px; margin-bottom: 20px;">
+        <b>5. AUTOREGRESSIVE:</b> Output becomes next input
+    </div>
+    <div style="color: #aaaaaa; font-size: 14px; text-align: center; font-style: italic; border-top: 1px solid #444; padding-top: 15px;">
+        The encoder understands. The decoder generates.<br>
+        Cross-attention is the conversation between them.
+    </div>
+`;
+textOverlay.appendChild(punchlineBox);
+
+// ============ ANIMATION STATE ============
+let currentPhase = 0;
+let phaseTime = 0;
+const phases = [
+    { name: 'THE INPUT', subtitle: '"the red car" enters the encoder', duration: 3000 },
+    { name: 'ENCODER PROCESSES', subtitle: 'Self-attention creates context vectors', duration: 4000 },
+    { name: 'DECODER STARTS', subtitle: 'BOS token: "Begin generation!"', duration: 3000 },
+    { name: 'CROSS-ATTENTION', subtitle: 'Decoder asks encoder for guidance', duration: 5000 },
+    { name: 'VOCABULARY PROJECTION', subtitle: 'Softmax selects "गाड़ी" (car)', duration: 4000 },
+    { name: 'AUTOREGRESSIVE LOOP', subtitle: 'Each output feeds back as input', duration: 6000 },
+    { name: 'GENERATION COMPLETE', subtitle: '"the red car" → "गाड़ी लाल है"', duration: 4000 },
+    { name: 'THE COMPLETE PICTURE', subtitle: '', duration: 8000 }
+];
+
+function updatePhase(phase) {
+    const p = phases[phase];
+    phaseTitle.textContent = `PHASE ${phase + 1}: ${p.name}`;
+    phaseSubtitle.textContent = p.subtitle;
+
+    // Reset visibility
+    kvLabel.style.opacity = '0';
+    queryLabel.style.opacity = '0';
+    weightLabels.forEach(l => l.style.opacity = '0');
+    vocabLabel.style.opacity = '0';
+    queryArrows.forEach(a => a.visible = false);
+    valueLines.forEach(l => l.visible = false);
+    vocabBar.visible = false;
+
+    // Show/hide based on phase
+    if (phase === 0) {
+        // Input phase - pulse encoder tokens
+        encoderTokens.forEach(t => { t.visible = true; t.scale.setScalar(1); });
+        decoderTokens.forEach((t, i) => { t.visible = i === 0; });
+        outputLabels.forEach((l, i) => { l.style.opacity = i === 0 ? '1' : '0'; });
+    } else if (phase === 1) {
+        // Encoder processes - show K,V ready
+        kvLabel.style.opacity = '1';
+    } else if (phase === 2) {
+        // Decoder starts - highlight BOS
+        outputLabels[0].style.opacity = '1';
+    } else if (phase === 3) {
+        // Cross-attention - show query arrows
+        queryLabel.style.opacity = '1';
+        queryArrows.forEach(a => a.visible = true);
+        setTimeout(() => {
+            weightLabels.forEach(l => l.style.opacity = '1');
+        }, 1500);
+    } else if (phase === 4) {
+        // Vocabulary projection
+        vocabBar.visible = true;
+        vocabLabel.style.opacity = '1';
+        valueLines.forEach(l => l.visible = true);
+        decoderTokens[1].visible = true;
+        outputLabels[1].style.opacity = '1';
+    } else if (phase === 5) {
+        // Autoregressive loop - reveal tokens one by one
+        vocabBar.visible = false;
+        decoderTokens[1].visible = true;
+        outputLabels[1].style.opacity = '1';
+        setTimeout(() => {
+            decoderTokens[2].visible = true;
+            outputLabels[2].style.opacity = '1';
+        }, 2000);
+        setTimeout(() => {
+            decoderTokens[3].visible = true;
+            outputLabels[3].style.opacity = '1';
+        }, 4000);
+    } else if (phase === 6) {
+        // Complete - show all outputs
+        decoderTokens.forEach(t => t.visible = true);
+        outputLabels.forEach(l => l.style.opacity = '1');
+        setTimeout(() => {
+            decoderTokens[4].visible = true;
+            outputLabels[4].style.opacity = '1';
+        }, 1000);
+    } else if (phase === 7) {
+        // Punchline - hide scene, show summary
+        allObjects.forEach(obj => obj.visible = false);
+        encoderTitle.style.opacity = '0';
+        decoderTitle.style.opacity = '0';
+        bridgeTitle.style.opacity = '0';
+        labelThe.style.opacity = '0';
+        labelRed.style.opacity = '0';
+        labelCar.style.opacity = '0';
+        outputLabels.forEach(l => l.style.opacity = '0');
+        phaseTitle.style.opacity = '0';
+        phaseSubtitle.style.opacity = '0';
+        punchlineBox.style.opacity = '1';
+    }
+}
+
+function resetAnimation() {
+    currentPhase = 0;
+    phaseTime = 0;
+
+    // Reset all visibility
+    allObjects.forEach(obj => obj.visible = true);
+    bridgeLine.visible = true;
+    queryArrows.forEach(a => a.visible = false);
+    valueLines.forEach(l => l.visible = false);
+    vocabBar.visible = false;
+
+    decoderTokens.forEach((t, i) => { t.visible = i === 0; });
+
+    // Reset labels
+    encoderTitle.style.opacity = '1';
+    decoderTitle.style.opacity = '1';
+    bridgeTitle.style.opacity = '1';
+    labelThe.style.opacity = '1';
+    labelRed.style.opacity = '1';
+    labelCar.style.opacity = '1';
+    outputLabels.forEach((l, i) => { l.style.opacity = i === 0 ? '1' : '0'; });
+    phaseTitle.style.opacity = '1';
+    phaseSubtitle.style.opacity = '1';
+    punchlineBox.style.opacity = '0';
+
+    // Reset camera
+    camera.position.copy(_initCamPos);
+    controls.target.copy(_initCamTarget);
+    controls.update();
+
+    updatePhase(0);
+}
+
+// Start
+updatePhase(0);
+
+// ============ ANIMATION LOOP ============
+let lastTime = Date.now();
+
+function animate() {
+    requestAnimationFrame(animate);
+
+    const now = Date.now();
+    const delta = now - lastTime;
+    lastTime = now;
+
+    phaseTime += delta;
+
+    // Phase transitions
+    if (phaseTime > phases[currentPhase].duration) {
+        phaseTime = 0;
+        currentPhase = (currentPhase + 1) % phases.length;
+        updatePhase(currentPhase);
+    }
+
+    // Gentle rotation for encoder tokens
+    encoderTokens.forEach((t, i) => {
+        if (t.visible) {
+            t.rotation.y += 0.005;
+            // Pulse effect in phase 0
+            if (currentPhase === 0) {
+                const pulse = 1 + 0.1 * Math.sin(Date.now() * 0.003 + i);
+                t.scale.setScalar(pulse);
+            }
+        }
+    });
+
+    // Gentle rotation for visible decoder tokens
+    decoderTokens.forEach(t => {
+        if (t.visible) {
+            t.rotation.y += 0.008;
+        }
+    });
+
+    controls.update();
+    renderer.render(scene, camera);
+}
+
+animate();
+
+        // ============================================
+        // END ILLUSTRATION CODE
+        // ============================================
+
+        // Reset View button - restore camera position
+        const initialCameraPosition = {
+            x: camera.position.x,
+            y: camera.position.y,
+            z: camera.position.z
+        };
+
+        document.getElementById('reset-view-btn').addEventListener('click', () => {
+            camera.position.set(
+                initialCameraPosition.x,
+                initialCameraPosition.y,
+                initialCameraPosition.z
+            );
+            camera.up.set(0, 1, 0);
+            controls.target.set(0, 0, 0);
+            controls.reset();
+        });
+
+        // Reset Animation button - restart from phase 1
+        // Note: resetAnimation() function must be defined in the illustration code
+        document.getElementById('reset-anim-btn').addEventListener('click', () => {
+            if (typeof resetAnimation === 'function') {
+                resetAnimation();
+            } else {
+                console.warn('resetAnimation() not defined in illustration code');
+            }
+        });
+
+        // Window resize handler
+        window.addEventListener('resize', () => {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        });
+    </script>
+</body>
+</html>

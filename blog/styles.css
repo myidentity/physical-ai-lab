@@ -191,6 +191,52 @@ p code, li code, td code {
   color: #8B6914;  /* Darker gold for better contrast */
 }
 
+/* Animation callouts - Remove left border for embedded iframes */
+.callout-important:has(iframe) {
+  border-left: none !important;
+  border-radius: 8px !important;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+  border: 1px solid rgba(0, 217, 255, 0.2) !important;
+}
+
+.callout-important:has(iframe) .callout-header {
+  background: transparent !important;
+}
+
+.callout-important:has(iframe) .callout-icon-container {
+  display: none !important;
+}
+
+.callout-important:has(iframe) .callout-title-container {
+  color: #00d9ff !important;
+}
+
+.callout-important:has(iframe) .callout-body,
+.callout-important:has(iframe) .callout-body p,
+.callout-important:has(iframe) .callout-body em,
+.callout-important:has(iframe) .callout-body strong,
+.callout-important:has(iframe) .callout-body span,
+.callout-important:has(iframe) .callout-body li,
+.callout-important:has(iframe) .callout-body td,
+.callout-important:has(iframe) .callout-body th {
+  color: #e0e0e0 !important;
+}
+
+/* Tables within animation callouts */
+.callout-important:has(iframe) table {
+  background: rgba(0, 0, 0, 0.2) !important;
+  border-color: rgba(0, 217, 255, 0.3) !important;
+}
+
+.callout-important:has(iframe) table th {
+  background: rgba(0, 217, 255, 0.15) !important;
+  color: #00d9ff !important;
+}
+
+.callout-important:has(iframe) table td {
+  border-color: rgba(0, 217, 255, 0.2) !important;
+}
+
 /* ═══════════════════════════════════════════════════════════════
    Navigation & Layout
    ═══════════════════════════════════════════════════════════════ */
