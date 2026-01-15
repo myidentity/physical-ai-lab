@@ -918,3 +918,40 @@ input[type="submit"] {
   margin: 0 0 1rem 0 !important;
   color: #666 !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Blog Post Reading Mode - Hide sidebar, expand content
+   Applies only to blog posts (pages without .quarto-banner-title-block)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Hide the left sidebar on blog post pages */
+body.nav-sidebar:has(main.content:not(.quarto-banner-title-block)) #quarto-sidebar,
+body.nav-sidebar:has(main.content:not(.quarto-banner-title-block)) #quarto-sidebar-glass {
+  display: none !important;
+  width: 0 !important;
+}
+
+/* Hide the sidebar toggle button on blog posts */
+body.nav-sidebar:has(main.content:not(.quarto-banner-title-block)) .quarto-secondary-nav {
+  display: none !important;
+}
+
+/* Remove sidebar offset - content starts from left edge */
+body.nav-sidebar.docked:has(main.content:not(.quarto-banner-title-block)) #quarto-content {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+}
+
+/* Override the page grid - remove left columns, start content near left edge */
+body.nav-sidebar.docked:has(main.content:not(.quarto-banner-title-block)) .page-columns {
+  grid-template-columns:
+    [screen-start screen-start-inset page-start page-start-inset body-start-outset body-start] 2rem
+    [body-content-start] minmax(500px, 1200px)
+    [body-content-end body-end body-end-outset page-end-inset page-end] 1fr
+    [screen-end-inset screen-end] !important;
+}
+
+/* Ensure document content uses the new grid column */
+body.nav-sidebar.docked:has(main.content:not(.quarto-banner-title-block)) #quarto-document-content {
+  grid-column: body-content-start / body-content-end !important;
+}
