@@ -1,0 +1,1613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Action Chunking - Canvas Navigator</title>
+    <!-- Typography: Sora for headings, JetBrains Mono for code/labels -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #0a0a1a;
+            --cyan: #00D4AA;
+            --coral: #e94560;
+            --gold: #ffd700;
+            --purple: #6C5CE7;
+            --text-light: #e4e4e7;
+            --text-muted: #9ca3af;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-deep);
+            font-family: 'Sora', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+            color: var(--text-light);
+        }
+
+        /* Canvas Navigator guided-widget container (1200x700) */
+        .guided-widget {
+            width: 1200px;
+            height: 700px;
+            max-width: 1200px;
+            max-height: 100vh;
+            margin: 0 auto;
+            display: flex;
+            background: var(--bg-deep);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        /* 45% Canvas area */
+        .canvas-area {
+            width: 45%;
+            flex: 0 0 45%;
+            position: relative;
+            min-width: 0;
+            background: var(--bg-deep);
+        }
+
+        /* 45% Content/Narrative panel */
+        .content-panel {
+            width: 45%;
+            flex: 0 0 45%;
+            background: rgba(20, 20, 40, 0.95);
+            border-left: 1px solid rgba(99, 102, 241, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* 10% Navigation strip */
+        .nav-strip {
+            flex: 0 0 10%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(15, 15, 35, 0.95);
+            border-left: 1px solid rgba(99, 102, 241, 0.2);
+            padding: 10px;
+        }
+
+        /* Canvas controls - hover-to-show */
+        .canvas-controls {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            display: flex;
+            gap: 8px;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .canvas-area:hover .canvas-controls {
+            opacity: 1;
+        }
+
+        /* Tooltip for 3D object hover */
+        .object-tooltip {
+            position: absolute;
+            background: rgba(20, 20, 40, 0.95);
+            border: 1px solid var(--cyan);
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--cyan);
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0, 212, 170, 0.2);
+        }
+
+        .canvas-controls button {
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            color: var(--text-light);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            transition: all 0.2s;
+        }
+
+        .canvas-controls button:hover {
+            background: rgba(99, 102, 241, 0.4);
+        }
+
+        /* Old .main-container, #canvas-container, .narrative-panel removed - using .guided-widget, .canvas-area, .content-panel instead */
+
+        .narrative-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .narrative-header h2 {
+            font-size: 18px;
+            color: var(--cyan);
+            margin-bottom: 8px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .narrative-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .narrative-content h3 {
+            font-size: 16px;
+            color: var(--gold);
+            margin-bottom: 12px;
+        }
+
+        .narrative-content p {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-light);
+            margin-bottom: 16px;
+        }
+
+        .narrative-content .key-point {
+            background: rgba(99, 102, 241, 0.15);
+            border-left: 3px solid var(--purple);
+            padding: 12px 16px;
+            margin: 16px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .narrative-content .key-point strong {
+            color: var(--cyan);
+        }
+
+        /* Section Indicator */
+        .section-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding: 16px;
+            border-top: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .section-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .section-dot:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .section-dot.active {
+            background: var(--cyan);
+            border-color: var(--cyan);
+            box-shadow: 0 0 10px var(--cyan);
+        }
+
+        .section-dot[data-section="1"],
+        .section-dot[data-section="2"] { --dot-color: var(--coral); }
+        .section-dot[data-section="3"],
+        .section-dot[data-section="4"] { --dot-color: var(--cyan); }
+        .section-dot[data-section="5"] { --dot-color: var(--gold); }
+
+        .section-dot[data-section].active {
+            background: var(--dot-color);
+            border-color: var(--dot-color);
+            box-shadow: 0 0 10px var(--dot-color);
+        }
+
+        /* Navigation Controls */
+        .nav-controls {
+            display: flex;
+            gap: 12px;
+            padding: 16px 20px;
+            border-top: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .nav-btn {
+            flex: 1;
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            color: var(--text-light);
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: rgba(99, 102, 241, 0.4);
+            border-color: rgba(99, 102, 241, 0.6);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* Loading state */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-deep);
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(0, 212, 170, 0.3);
+            border-top-color: var(--cyan);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Emotion badge in narrative */
+        .emotion-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+
+        .emotion-concern { background: rgba(233, 69, 96, 0.2); color: var(--coral); }
+        .emotion-alarm { background: rgba(255, 68, 68, 0.2); color: #ff6b6b; }
+        .emotion-eureka { background: rgba(0, 212, 170, 0.2); color: var(--cyan); }
+        .emotion-satisfaction { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+        .emotion-triumph { background: rgba(255, 215, 0, 0.2); color: var(--gold); }
+    </style>
+</head>
+<body>
+    <!-- Loading State -->
+    <div class="loading" id="loading">
+        <div class="loading-spinner"></div>
+        <div>Loading Action Chunking Animation...</div>
+    </div>
+
+    <div class="guided-widget main-container">
+        <!-- Left: Canvas (45%) -->
+        <div id="canvas-container" class="canvas-area">
+            <div class="canvas-controls">
+                <button id="reset-view-btn">Reset View</button>
+                <button id="reset-animation-btn">Reset Animation</button>
+            </div>
+            <div id="object-tooltip" class="object-tooltip"></div>
+        </div>
+
+        <!-- Right: Narrative Panel (45%) -->
+        <div class="narrative-panel content-panel">
+            <div class="narrative-header">
+                <h2>Action Chunking</h2>
+                <div class="section-title" id="section-title">Section 1 of 5</div>
+            </div>
+
+            <div class="narrative-content" id="narrative-content">
+                <!-- Content injected by JavaScript -->
+            </div>
+
+            <div class="section-indicator">
+                <div class="section-dot active" data-section="1" title="The Problem"></div>
+                <div class="section-dot" data-section="2" title="Error Compounding"></div>
+                <div class="section-dot" data-section="3" title="Action Chunking"></div>
+                <div class="section-dot" data-section="4" title="Benefits"></div>
+                <div class="section-dot" data-section="5" title="The Sweet Spot"></div>
+            </div>
+
+            <div class="nav-controls">
+                <button class="nav-btn" id="prev-btn" disabled>← Previous</button>
+                <button class="nav-btn" id="next-btn">Next →</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TrackballControls.js"></script>
+
+    <script>
+        // ========================================
+        // NARRATIVE CONTENT FOR EACH SECTION
+        // ========================================
+        const narrativeContent = {
+            1: {
+                title: "The Problem - Token by Token",
+                emotion: "concern",
+                emotionLabel: "😟 Concern",
+                content: `
+                    <p>Watch the robot arm attempt to reach its target. Each prediction is made one step at a time - just like how language models generate text token by token.</p>
+                    <div class="key-point">
+                        <strong>The Issue:</strong> Each small prediction error (ε) compounds over time, causing the trajectory to drift further and further from the ideal path.
+                    </div>
+                    <p>Notice how the coral-colored actual path deviates significantly from the dotted cyan target trajectory.</p>
+                    <p>This is the <strong>autoregressive prediction problem</strong> - the robot has no global awareness of the full trajectory.</p>
+                `
+            },
+            2: {
+                title: "Error Compounding",
+                emotion: "alarm",
+                emotionLabel: "😰 Alarm",
+                content: `
+                    <p>Now see the math behind the problem. The left panel shows the error zone growing exponentially as the robot moves.</p>
+                    <div class="key-point">
+                        <strong>The Math:</strong> ε₁ + ε₂ + ε₃ + ... + ε₁₀₀₀ = CATASTROPHE
+                    </div>
+                    <p>With 1000 predictions to complete a task, you have 1000 opportunities to make mistakes.</p>
+                    <p>The error curve on the right shows how small errors compound into massive drift - this is why token-by-token prediction fails for robotics.</p>
+                `
+            },
+            3: {
+                title: "The Insight - Action Chunking",
+                emotion: "eureka",
+                emotionLabel: "💡 Eureka",
+                content: `
+                    <p>Here's the breakthrough: instead of predicting one action at a time, predict <strong>100 actions at once</strong>!</p>
+                    <div class="key-point">
+                        <strong>K = 100:</strong> Each colored arc represents a "chunk" of 100 coordinated actions predicted together.
+                    </div>
+                    <p>The gold diamond markers show the checkpoint boundaries between chunks.</p>
+                    <p><strong>Before:</strong> 1000 individual predictions<br>
+                    <strong>After:</strong> Just 10 chunk predictions!</p>
+                    <p>That's 100× fewer opportunities for error to compound.</p>
+                `
+            },
+            4: {
+                title: "Benefits - Smooth & Accurate",
+                emotion: "satisfaction",
+                emotionLabel: "😊 Satisfaction",
+                content: `
+                    <p>This side-by-side comparison shows the dramatic difference.</p>
+                    <div class="key-point">
+                        <strong>Left (Token by Token):</strong> Jerky, uncoordinated motion that misses the target.
+                    </div>
+                    <div class="key-point">
+                        <strong>Right (Action Chunking):</strong> Smooth, coordinated motion that reaches the target!
+                    </div>
+                    <p>Action chunking doesn't just reduce errors - it produces more natural, human-like motion because actions within a chunk are coordinated together.</p>
+                `
+            },
+            5: {
+                title: "The Sweet Spot",
+                emotion: "triumph",
+                emotionLabel: "🎯 Triumph",
+                content: `
+                    <p>K=100 is the "sweet spot" - not too big, not too small.</p>
+                    <div class="key-point">
+                        <strong>K=10:</strong> ❌ Chunks too small - can't course correct between chunks
+                    </div>
+                    <div class="key-point">
+                        <strong>K=1000:</strong> ❌ Chunks too big - too many predictions, errors compound
+                    </div>
+                    <div class="key-point">
+                        <strong>K=100:</strong> ✅ Just right! Smooth motion + ability to course correct at checkpoints
+                    </div>
+                    <p><em>"The fewer decisions you make, the fewer mistakes you can make."</em></p>
+                `
+            }
+        };
+
+        // ========================================
+        // STATE
+        // ========================================
+        const state = {
+            currentSection: 1,
+            totalSections: 5,
+            scene: null,
+            camera: null,
+            renderer: null,
+            controls: null,
+            animationId: null,
+            currentObjects: [],
+            currentOverlays: []
+        };
+
+        // ========================================
+        // DOM REFERENCES
+        // ========================================
+        const container = document.getElementById('canvas-container');
+        const loadingEl = document.getElementById('loading');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const resetViewBtn = document.getElementById('reset-view-btn');
+        const resetAnimationBtn = document.getElementById('reset-animation-btn');
+        const sectionDots = document.querySelectorAll('.section-dot');
+        const narrativeEl = document.getElementById('narrative-content');
+        const sectionTitleEl = document.getElementById('section-title');
+        const tooltipEl = document.getElementById('object-tooltip');
+
+        // Raycaster for hover tooltips
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        // ========================================
+        // THREE.JS SETUP
+        // ========================================
+        function initThreeJS() {
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            // Scene
+            state.scene = new THREE.Scene();
+            state.scene.background = new THREE.Color(0x1a1a2e); // Lighter background
+
+            // Camera
+            state.camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+            state.camera.position.set(0, 2, 12);
+            window.currentCamera = state.camera;
+            window.initialCameraPosition = state.camera.position.clone();
+
+            // Renderer
+            state.renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+            state.renderer.setSize(width, height);
+            state.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(state.renderer.domElement);
+
+            // Controls
+            state.controls = new THREE.TrackballControls(state.camera, state.renderer.domElement);
+            state.controls.rotateSpeed = 2.0;
+            state.controls.zoomSpeed = 1.2;
+            state.controls.panSpeed = 0.8;
+            state.controls.dynamicDampingFactor = 0.15;
+            window.currentControls = state.controls;
+
+            // Handle resize
+            window.addEventListener('resize', onResize);
+
+            // Tooltip on hover - track mouse and raycast to 3D objects
+            container.addEventListener('mousemove', (e) => {
+                const rect = container.getBoundingClientRect();
+                mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+                raycaster.setFromCamera(mouse, state.camera);
+                const intersects = raycaster.intersectObjects(state.scene.children, true);
+
+                if (intersects.length > 0 && intersects[0].object.name) {
+                    tooltipEl.textContent = intersects[0].object.name;
+                    tooltipEl.style.left = (e.clientX - rect.left + 12) + 'px';
+                    tooltipEl.style.top = (e.clientY - rect.top - 28) + 'px';
+                    tooltipEl.style.display = 'block';
+                } else {
+                    tooltipEl.style.display = 'none';
+                }
+            });
+
+            // Hide tooltip when mouse leaves canvas
+            container.addEventListener('mouseleave', () => {
+                tooltipEl.style.display = 'none';
+            });
+        }
+
+        function onResize() {
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            state.camera.aspect = width / height;
+            state.camera.updateProjectionMatrix();
+            state.renderer.setSize(width, height);
+        }
+
+        // ========================================
+        // SCENE CLEANUP
+        // ========================================
+        function clearScene() {
+            // Cancel animation
+            if (state.animationId) {
+                cancelAnimationFrame(state.animationId);
+                state.animationId = null;
+            }
+
+            // Remove all objects
+            while (state.scene.children.length > 0) {
+                const obj = state.scene.children[0];
+                state.scene.remove(obj);
+                if (obj.geometry) obj.geometry.dispose();
+                if (obj.material) {
+                    if (Array.isArray(obj.material)) {
+                        obj.material.forEach(m => m.dispose());
+                    } else {
+                        obj.material.dispose();
+                    }
+                }
+            }
+
+            // Remove HTML overlays
+            state.currentOverlays.forEach(el => el.remove());
+            state.currentOverlays = [];
+        }
+
+        // ========================================
+        // SECTION LOADERS
+        // ========================================
+        function loadSection1() {
+            const scene = state.scene;
+            const camera = state.camera;
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            camera.position.set(0, 2, 12);
+            window.initialCameraPosition = camera.position.clone();
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 10, 7);
+            scene.add(directionalLight);
+            const pointLight = new THREE.PointLight(0x00D4AA, 0.5, 20);
+            pointLight.position.set(-3, 3, 3);
+            scene.add(pointLight);
+
+            // Materials - brighter arm segments for visibility
+            const armMaterial = new THREE.MeshStandardMaterial({ color: 0x5a5a7a, roughness: 0.5, metalness: 0.4, emissive: 0x3a3a5a, emissiveIntensity: 0.3 });
+            const jointMaterial = new THREE.MeshStandardMaterial({ color: 0x00D4AA, roughness: 0.3, metalness: 0.6, emissive: 0x00D4AA, emissiveIntensity: 0.4 });
+
+            // Robot Arm
+            const robotArm = new THREE.Group();
+            robotArm.position.set(-2, -1, 0);
+            robotArm.name = "Robot Arm - 6-DOF Manipulator";
+
+            const baseGeom = new THREE.CylinderGeometry(0.6, 0.7, 0.3, 32);
+            const base = new THREE.Mesh(baseGeom, armMaterial);
+            base.name = "Base Joint";
+            robotArm.add(base);
+
+            const joint1Geom = new THREE.SphereGeometry(0.25, 16, 16);
+            const joint1 = new THREE.Mesh(joint1Geom, jointMaterial);
+            joint1.position.y = 0.3;
+            joint1.name = "Joint 1";
+            robotArm.add(joint1);
+
+            const seg1Geom = new THREE.CylinderGeometry(0.12, 0.15, 1.2, 16);
+            const seg1 = new THREE.Mesh(seg1Geom, armMaterial);
+            seg1.position.y = 0.9;
+            robotArm.add(seg1);
+
+            const joint2 = new THREE.Mesh(joint1Geom.clone(), jointMaterial);
+            joint2.position.y = 1.5;
+            robotArm.add(joint2);
+
+            const seg2Geom = new THREE.CylinderGeometry(0.1, 0.12, 1.0, 16);
+            const seg2 = new THREE.Mesh(seg2Geom, armMaterial);
+            seg2.position.set(0.3, 1.9, 0);
+            seg2.rotation.z = -0.5;
+            robotArm.add(seg2);
+
+            const joint3 = new THREE.Mesh(joint1Geom.clone(), jointMaterial);
+            joint3.scale.set(0.8, 0.8, 0.8);
+            joint3.position.set(0.6, 2.3, 0);
+            robotArm.add(joint3);
+
+            const seg3Geom = new THREE.CylinderGeometry(0.08, 0.1, 0.8, 16);
+            const seg3 = new THREE.Mesh(seg3Geom, armMaterial);
+            seg3.position.set(0.9, 2.5, 0);
+            seg3.rotation.z = -0.8;
+            robotArm.add(seg3);
+
+            const endEffectorGeom = new THREE.BoxGeometry(0.15, 0.3, 0.15);
+            const endEffector = new THREE.Mesh(endEffectorGeom, jointMaterial);
+            endEffector.position.set(1.2, 2.6, 0);
+            robotArm.add(endEffector);
+
+            scene.add(robotArm);
+
+            // Target Trajectory (dotted cyan curve)
+            const targetCurve = new THREE.QuadraticBezierCurve3(
+                new THREE.Vector3(-4, 0, 0),
+                new THREE.Vector3(0, 3, 0),
+                new THREE.Vector3(4, 0, 0)
+            );
+            const targetPoints = targetCurve.getPoints(100);
+            const targetGeom = new THREE.BufferGeometry().setFromPoints(targetPoints);
+            const targetMaterial = new THREE.LineDashedMaterial({
+                color: 0x00D4AA, dashSize: 0.2, gapSize: 0.1, opacity: 0.6, transparent: true
+            });
+            const targetTrajectory = new THREE.Line(targetGeom, targetMaterial);
+            targetTrajectory.computeLineDistances();
+            targetTrajectory.name = "Target Trajectory - Ideal Path";
+            scene.add(targetTrajectory);
+
+            // Actual Path (deviating coral curve)
+            const actualCurve = new THREE.CubicBezierCurve3(
+                new THREE.Vector3(-4, 0, 0),
+                new THREE.Vector3(-1, 2, 0.5),
+                new THREE.Vector3(1, 0.5, -0.3),
+                new THREE.Vector3(4, -1.5, 0)
+            );
+            const actualPoints = actualCurve.getPoints(100);
+            const actualGeom = new THREE.BufferGeometry().setFromPoints(actualPoints);
+            const actualMaterial = new THREE.LineBasicMaterial({ color: 0xe94560, linewidth: 3 });
+            const actualPath = new THREE.Line(actualGeom, actualMaterial);
+            actualPath.name = "Actual Path - With Compounding Errors";
+            scene.add(actualPath);
+
+            // Prediction Markers
+            const predictionMarkers = [];
+            const markerGeom = new THREE.SphereGeometry(0.15, 16, 16);
+            for (let i = 0; i < 20; i++) {
+                const t = i / 19;
+                const pos = actualCurve.getPoint(t);
+                const markerMaterial = new THREE.MeshStandardMaterial({ color: 0xe94560, emissive: 0xe94560, emissiveIntensity: 0.3 });
+                const marker = new THREE.Mesh(markerGeom, markerMaterial);
+                marker.position.copy(pos);
+                marker.scale.set(0.5, 0.5, 0.5);
+                marker.name = `Prediction Step ${i + 1}`;
+                scene.add(marker);
+                predictionMarkers.push(marker);
+            }
+
+            // Error Vectors
+            const arrowMaterial = new THREE.LineBasicMaterial({ color: 0xff6b6b, transparent: true, opacity: 0.7 });
+            const errorVectors = [];
+            for (let i = 0; i < 8; i++) {
+                const t = (i + 1) / 9;
+                const targetPos = targetCurve.getPoint(t);
+                const actualPos = actualCurve.getPoint(t);
+                const points = [targetPos, actualPos];
+                const geom = new THREE.BufferGeometry().setFromPoints(points);
+                const line = new THREE.Line(geom, arrowMaterial.clone());
+                line.name = `Error Vector ${i + 1}`;
+                scene.add(line);
+                errorVectors.push(line);
+            }
+
+            // Error Particle
+            const particleMaterial = new THREE.MeshStandardMaterial({ color: 0xe94560, emissive: 0xe94560, emissiveIntensity: 0.5 });
+            const errorParticle = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), particleMaterial);
+            errorParticle.scale.set(0.5, 0.5, 0.5);
+            errorParticle.name = "Current Prediction Token";
+            scene.add(errorParticle);
+
+            // HTML Overlays
+            const overlayContainer = document.createElement('div');
+            overlayContainer.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;';
+            container.appendChild(overlayContainer);
+            state.currentOverlays.push(overlayContainer);
+
+            const title = document.createElement('div');
+            title.innerHTML = '😟 TOKEN-BY-TOKEN PREDICTION';
+            title.style.cssText = 'position:absolute;top:5%;left:10%;font-size:18px;font-weight:bold;color:#e94560;font-family:Arial,sans-serif;';
+            overlayContainer.appendChild(title);
+
+            const counter = document.createElement('div');
+            counter.style.cssText = 'position:absolute;top:5%;right:10%;font-size:24px;font-family:monospace;color:#00D4AA;';
+            overlayContainer.appendChild(counter);
+
+            const bottomText = document.createElement('div');
+            bottomText.innerHTML = 'Each step: small error ε → compounds to large deviation';
+            bottomText.style.cssText = 'position:absolute;bottom:10%;left:50%;transform:translateX(-50%);font-size:16px;color:#8892b0;font-family:Arial,sans-serif;text-align:center;';
+            overlayContainer.appendChild(bottomText);
+
+            // Animation
+            let time = 0;
+            let particleT = 0;
+            let counterValue = 1;
+            let lastCounterUpdate = 0;
+
+            function animate() {
+                state.animationId = requestAnimationFrame(animate);
+                time += 0.016;
+
+                particleT += 0.008;
+                if (particleT > 1) particleT = 0;
+                const particlePos = actualCurve.getPoint(particleT);
+                errorParticle.position.copy(particlePos);
+
+                predictionMarkers.forEach((marker, i) => {
+                    const pulse = 0.8 + 0.4 * Math.sin(time * 3 + i * 0.3);
+                    marker.scale.setScalar(0.5 * pulse);
+                });
+
+                errorVectors.forEach((line, i) => {
+                    const opacity = 0.4 + 0.6 * Math.abs(Math.sin(time * 2 + i * 0.5));
+                    line.material.opacity = opacity;
+                });
+
+                if (time - lastCounterUpdate > 0.5) {
+                    counterValue = (counterValue % 20) + 1;
+                    counter.textContent = `t = ${counterValue}`;
+                    lastCounterUpdate = time;
+                }
+
+                robotArm.rotation.y = Math.sin(time * 0.5) * 0.1;
+
+                state.controls.update();
+                state.renderer.render(scene, camera);
+            }
+            animate();
+        }
+
+        function loadSection2() {
+            const scene = state.scene;
+            const camera = state.camera;
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            camera.position.set(0, 2, 18);
+            window.initialCameraPosition = camera.position.clone();
+
+            // Lighting - enhanced for visibility
+            const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+            scene.add(ambientLight);
+            const pointLight = new THREE.PointLight(0xffffff, 1.2, 100);
+            pointLight.position.set(0, 10, 10);
+            scene.add(pointLight);
+            // Add coral accent light for error zone
+            const coralLight = new THREE.PointLight(0xe94560, 0.6, 30);
+            coralLight.position.set(-8, 0, 5);
+            scene.add(coralLight);
+
+            // Divider
+            const dividerGeom = new THREE.PlaneGeometry(0.05, 12);
+            const dividerMat = new THREE.MeshBasicMaterial({ color: 0x3a3a5a, transparent: true, opacity: 0.3, side: THREE.DoubleSide });
+            const divider = new THREE.Mesh(dividerGeom, dividerMat);
+            divider.name = 'Panel Divider';
+            scene.add(divider);
+
+            // LEFT PANEL - Error Zone (scaled to fit ±7.5 visible bounds)
+            const leftGroup = new THREE.Group();
+            leftGroup.position.x = -3.5;  // Reduced from -5 to fit bounds
+            scene.add(leftGroup);
+
+            const robot = new THREE.Mesh(
+                new THREE.BoxGeometry(0.4, 0.4, 0.4),
+                new THREE.MeshStandardMaterial({ color: 0x00D4AA, emissive: 0x00D4AA, emissiveIntensity: 0.4 })
+            );
+            robot.position.set(-2, -2, 0);  // Reduced from -3 to fit bounds
+            robot.name = 'Robot Agent';
+            leftGroup.add(robot);
+
+            const target = new THREE.Mesh(
+                new THREE.SphereGeometry(0.3, 16, 16),
+                new THREE.MeshStandardMaterial({ color: 0xffcc00, emissive: 0xffcc00, emissiveIntensity: 0.5 })
+            );
+            target.position.set(2, 2, 0);  // Reduced from 3 to fit bounds
+            target.name = 'Target Position';
+            leftGroup.add(target);
+
+            const pathPoints = [];
+            for (let i = 0; i <= 20; i++) {
+                const t = i / 20;
+                pathPoints.push(new THREE.Vector3(-2 + t * 4, -2 + t * 4, 0));  // Scaled down path
+            }
+            const pathGeom = new THREE.BufferGeometry().setFromPoints(pathPoints);
+            const pathMat = new THREE.LineDashedMaterial({ color: 0x4a4a6a, dashSize: 0.3, gapSize: 0.2 });
+            const pathLine = new THREE.Line(pathGeom, pathMat);
+            pathLine.computeLineDistances();
+            pathLine.name = 'Intended Path';
+            leftGroup.add(pathLine);
+
+            // Error zone (cone) - increased opacity for visibility
+            const errorZoneGeom = new THREE.ConeGeometry(0.5, 4, 32, 1, true);  // Slightly smaller cone
+            const errorZoneMat = new THREE.MeshBasicMaterial({ color: 0xe94560, transparent: true, opacity: 0.5, side: THREE.DoubleSide });
+            const errorZone = new THREE.Mesh(errorZoneGeom, errorZoneMat);
+            errorZone.position.set(-2, 0.5, 0);  // Reduced from -3 to fit bounds
+            errorZone.rotation.z = -Math.atan2(4, 4);
+            errorZone.rotation.x = Math.PI / 2;
+            errorZone.name = 'Error Accumulation Zone';
+            leftGroup.add(errorZone);
+
+            // RIGHT PANEL - Error curve (scaled to fit ±7.5 visible bounds)
+            const rightGroup = new THREE.Group();
+            rightGroup.position.x = 3.5;  // Reduced from 5 to fit bounds
+            scene.add(rightGroup);
+
+            // Axes (scaled to fit ±7.5 visible bounds)
+            const axisMatX = new THREE.LineBasicMaterial({ color: 0x3a3a5a });
+            const axisPointsX = [new THREE.Vector3(-3, -3, 0), new THREE.Vector3(3, -3, 0)];  // Reduced from ±4
+            const axisX = new THREE.Line(new THREE.BufferGeometry().setFromPoints(axisPointsX), axisMatX);
+            rightGroup.add(axisX);
+
+            const axisPointsY = [new THREE.Vector3(-3, -3, 0), new THREE.Vector3(-3, 4, 0)];  // Reduced from -4
+            const axisY = new THREE.Line(new THREE.BufferGeometry().setFromPoints(axisPointsY), axisMatX);
+            rightGroup.add(axisY);
+
+            // Error curve (scaled to fit bounds)
+            const curvePoints = [];
+            for (let i = 0; i <= 100; i++) {
+                const t = i / 100;
+                curvePoints.push(new THREE.Vector3(-2.5 + t * 5, -2.5 + Math.pow(t, 2) * 5, 0));  // Reduced width
+            }
+            const curveGeom = new THREE.BufferGeometry().setFromPoints(curvePoints);
+            curveGeom.setDrawRange(0, 0);
+            const errorCurve = new THREE.Line(curveGeom, new THREE.LineBasicMaterial({ color: 0xe94560 }));
+            errorCurve.name = 'Exponential Error Curve';
+            rightGroup.add(errorCurve);
+
+            // Error bars - brighter with emission (scaled to fit bounds)
+            const errorBars = [];
+            for (let i = 0; i < 10; i++) {
+                const t = i / 9;
+                const bar = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.3, 0.1, 0.1),
+                    new THREE.MeshStandardMaterial({ color: 0xff6b6b, emissive: 0xff6b6b, emissiveIntensity: 0.4 })
+                );
+                bar.position.set(-2.5 + t * 5, -3, 0);  // Reduced width to match curve
+                bar.name = `Error Bar Step ${(i + 1) * 100}`;
+                rightGroup.add(bar);
+                errorBars.push({ mesh: bar, targetHeight: 0.2 + Math.pow(t, 2) * 4 });
+            }
+
+            // HTML Overlays
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;';
+            container.appendChild(overlay);
+            state.currentOverlays.push(overlay);
+
+            const titleLabel = document.createElement('div');
+            titleLabel.innerHTML = '😰 COMPOUNDING ERRORS';
+            titleLabel.style.cssText = 'position:absolute;top:3%;left:50%;transform:translateX(-50%);font-size:22px;font-weight:bold;color:#e94560;';
+            overlay.appendChild(titleLabel);
+
+            const stepLabel = document.createElement('div');
+            stepLabel.innerHTML = 'Step: 1/1000';
+            stepLabel.style.cssText = 'position:absolute;top:15%;left:75%;transform:translateX(-50%);font-size:18px;font-family:monospace;color:#00D4AA;';
+            overlay.appendChild(stepLabel);
+
+            const equationLabel = document.createElement('div');
+            equationLabel.innerHTML = 'ε₁ + ε₂ + ε₃ + ... + ε₁₀₀₀';
+            equationLabel.style.cssText = 'position:absolute;top:50%;left:75%;transform:translateX(-50%);font-size:16px;font-family:monospace;color:#e94560;opacity:0;transition:opacity 1s;';
+            overlay.appendChild(equationLabel);
+
+            const bottomMsg = document.createElement('div');
+            bottomMsg.innerHTML = '1000 predictions = 1000 error opportunities';
+            bottomMsg.style.cssText = 'position:absolute;top:88%;left:50%;transform:translateX(-50%);font-size:18px;font-weight:bold;color:#ff4444;padding:8px 16px;border:2px solid coral;border-radius:8px;background:rgba(0,0,0,0.5);';
+            overlay.appendChild(bottomMsg);
+
+            const catastropheLabel = document.createElement('div');
+            catastropheLabel.innerHTML = 'Total drift: CATASTROPHIC';
+            catastropheLabel.style.cssText = 'position:absolute;top:75%;left:75%;transform:translateX(-50%);font-size:14px;font-weight:bold;color:#ff4444;';
+            overlay.appendChild(catastropheLabel);
+
+            setTimeout(() => { equationLabel.style.opacity = '1'; }, 2000);
+
+            // Animation
+            let time = 0;
+            let curveProgress = 0;
+            let errorZoneScale = 0.5;
+            const stepSequence = [1, 10, 50, 100, 500, 1000];
+            let stepIndex = 0;
+            let stepTimer = 0;
+
+            function animate() {
+                state.animationId = requestAnimationFrame(animate);
+                time += 0.016;
+
+                dividerMat.opacity = 0.3 + Math.sin(time * 2) * 0.15;
+
+                errorZoneScale = Math.min(errorZoneScale + 0.002, 3.0);
+                const pulseScale = errorZoneScale * (1 + Math.sin(time * 3) * 0.05);
+                errorZone.scale.set(pulseScale, 1, pulseScale);
+
+                curveProgress = Math.min(curveProgress + 0.5, 101);
+                curveGeom.setDrawRange(0, Math.floor(curveProgress));
+
+                stepTimer += 0.016;
+                if (stepTimer > 0.8 - stepIndex * 0.1) {
+                    stepTimer = 0;
+                    if (stepIndex < stepSequence.length - 1) stepIndex++;
+                }
+                stepLabel.innerHTML = `Step: ${stepSequence[stepIndex]}/1000`;
+
+                errorBars.forEach((bar) => {
+                    const progress = Math.min(time / 3, 1);
+                    const currentHeight = bar.targetHeight * progress;
+                    bar.mesh.scale.y = currentHeight / 0.1;
+                    bar.mesh.position.y = -3 + currentHeight / 2;
+                });
+
+                catastropheLabel.style.opacity = 0.5 + Math.sin(time * 4) * 0.5;
+
+                const robotT = Math.min(time / 8, 1);
+                const drift = Math.sin(time * 2) * 0.3 * robotT;
+                robot.position.x = -3 + robotT * 6 + drift;
+                robot.position.y = -2 + robotT * 4 - drift * 0.5;
+
+                state.controls.update();
+                state.renderer.render(scene, camera);
+            }
+            animate();
+        }
+
+        function loadSection3() {
+            const scene = state.scene;
+            const camera = state.camera;
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            camera.position.set(0, 2, 12);
+            window.initialCameraPosition = camera.position.clone();
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(-5, 8, 5);
+            scene.add(directionalLight);
+            const pointLight = new THREE.PointLight(0x00D4AA, 0.5, 20);
+            pointLight.position.set(2, 3, 5);
+            scene.add(pointLight);
+
+            const cyanColor = 0x00D4AA;
+            const purpleColor = 0x6C5CE7;
+            const goldColor = 0xffd700;
+
+            // Robot arm
+            const robotArm = new THREE.Group();
+            robotArm.position.set(-4, -2, 0);
+
+            const baseMat = new THREE.MeshStandardMaterial({ color: 0x5a5a7a, metalness: 0.6, roughness: 0.4, emissive: 0x3a3a5a, emissiveIntensity: 0.4 });
+            const jointMat = new THREE.MeshStandardMaterial({ color: cyanColor, emissive: cyanColor, emissiveIntensity: 0.5 });
+
+            const base = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.6, 0.3, 32), baseMat);
+            robotArm.add(base);
+
+            const segments = [{ height: 1.0, radius: 0.15, y: 0.65 }, { height: 0.8, radius: 0.12, y: 1.55 }, { height: 0.6, radius: 0.1, y: 2.25 }];
+            let prevY = 0.15;
+            segments.forEach((seg, i) => {
+                const joint = new THREE.Mesh(new THREE.SphereGeometry(seg.radius + 0.05, 16, 16), jointMat);
+                joint.position.y = prevY + 0.1;
+                robotArm.add(joint);
+                const segment = new THREE.Mesh(new THREE.CylinderGeometry(seg.radius, seg.radius, seg.height, 16), baseMat);
+                segment.position.y = prevY + 0.1 + seg.height / 2;
+                robotArm.add(segment);
+                prevY = prevY + 0.1 + seg.height;
+            });
+
+            const effector = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.2, 8), jointMat);
+            effector.position.y = prevY + 0.15;
+            effector.rotation.x = Math.PI;
+            robotArm.add(effector);
+            scene.add(robotArm);
+
+            // Checkpoints
+            const checkpoints = [];
+            for (let i = 0; i <= 10; i++) {
+                const t = i / 10;
+                checkpoints.push(new THREE.Vector3(-3 + t * 7, 1.5 + Math.sin(t * Math.PI) * 2, Math.sin(t * Math.PI * 2) * 0.8));
+            }
+
+            // Chunked trajectories
+            const chunkCurves = [];
+            const chunkMeshes = [];
+            for (let i = 0; i < 10; i++) {
+                const start = checkpoints[i];
+                const end = checkpoints[i + 1];
+                const mid = new THREE.Vector3().lerpVectors(start, end, 0.5);
+                mid.y += 0.3;
+                const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
+                chunkCurves.push(curve);
+
+                const color = i % 2 === 0 ? cyanColor : purpleColor;
+                const tubeGeom = new THREE.TubeGeometry(curve, 20, 0.04, 8, false);
+                const tubeMat = new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.3, transparent: true, opacity: 0.8 });
+                const tube = new THREE.Mesh(tubeGeom, tubeMat);
+                tube.name = `Chunk ${i + 1}`;
+                scene.add(tube);
+                chunkMeshes.push({ tube, tubeMat });
+            }
+
+            // Chunk particles
+            const chunkParticles = [];
+            for (let i = 0; i < 10; i++) {
+                const color = i % 2 === 0 ? cyanColor : purpleColor;
+                const particle = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.15, 16, 16),
+                    new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.6 })
+                );
+                particle.userData.t = Math.random();
+                particle.userData.curveIndex = i;
+                scene.add(particle);
+                chunkParticles.push(particle);
+            }
+
+            // Checkpoint markers
+            const checkpointMarkers = [];
+            for (let i = 0; i <= 10; i++) {
+                const diamond = new THREE.Mesh(
+                    new THREE.OctahedronGeometry(0.15, 0),
+                    new THREE.MeshStandardMaterial({ color: goldColor, emissive: goldColor, emissiveIntensity: 0.5 })
+                );
+                diamond.position.copy(checkpoints[i]);
+                scene.add(diamond);
+                checkpointMarkers.push(diamond);
+            }
+
+            // Target cup
+            const cupMat = new THREE.MeshStandardMaterial({ color: cyanColor, emissive: cyanColor, emissiveIntensity: 0.5, transparent: true, opacity: 0.8, side: THREE.DoubleSide });
+            const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.3, 0.8, 32, 1, true), cupMat);
+            const cupGroup = new THREE.Group();
+            cupGroup.add(cup);
+            cupGroup.position.set(4.5, -0.5, 0);
+            scene.add(cupGroup);
+
+            // HTML Overlays
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:hidden;';
+            container.appendChild(overlay);
+            state.currentOverlays.push(overlay);
+
+            const titleEl = document.createElement('div');
+            titleEl.innerHTML = '💡 ACTION CHUNKING';
+            titleEl.style.cssText = 'position:absolute;top:6%;left:12%;font-size:22px;font-weight:bold;color:#00D4AA;text-shadow:0 0 25px rgba(0,212,170,0.5);';
+            overlay.appendChild(titleEl);
+
+            const kValue = document.createElement('div');
+            kValue.innerHTML = 'K = 100';
+            kValue.style.cssText = 'position:absolute;top:6%;right:12%;font-size:28px;font-weight:bold;font-family:monospace;color:#6C5CE7;text-shadow:0 0 20px rgba(108,92,231,0.5);background:rgba(108,92,231,0.15);padding:8px 16px;border-radius:8px;';
+            overlay.appendChild(kValue);
+
+            const insightLabel = document.createElement('div');
+            insightLabel.innerHTML = 'Predict 100 actions at once!';
+            insightLabel.style.cssText = 'position:absolute;top:18%;left:50%;transform:translateX(-50%);font-size:16px;color:#e4e4e7;opacity:0;transition:opacity 1s;';
+            overlay.appendChild(insightLabel);
+            setTimeout(() => { insightLabel.style.opacity = '1'; }, 2000);
+
+            const beforeStat = document.createElement('div');
+            beforeStat.innerHTML = 'Before: 1000 predictions';
+            beforeStat.style.cssText = 'position:absolute;top:88%;left:18%;font-size:14px;color:#e94560;text-decoration:line-through;';
+            overlay.appendChild(beforeStat);
+
+            const afterStat = document.createElement('div');
+            afterStat.innerHTML = 'After: 10 predictions';
+            afterStat.style.cssText = 'position:absolute;top:88%;right:18%;font-size:14px;font-weight:bold;color:#00D4AA;text-shadow:0 0 15px rgba(0,212,170,0.4);';
+            overlay.appendChild(afterStat);
+
+            const summaryLabel = document.createElement('div');
+            summaryLabel.innerHTML = '10 predictions instead of 1000!';
+            summaryLabel.style.cssText = 'position:absolute;top:94%;left:50%;transform:translateX(-50%);font-size:18px;font-weight:bold;color:#00D4AA;background:rgba(0,212,170,0.15);padding:10px 20px;border-radius:8px;opacity:0;transition:opacity 1s;';
+            overlay.appendChild(summaryLabel);
+            setTimeout(() => { summaryLabel.style.opacity = '1'; }, 3000);
+
+            // Animation
+            const clock = new THREE.Clock();
+            function animate() {
+                state.animationId = requestAnimationFrame(animate);
+                const time = clock.getElapsedTime();
+
+                chunkParticles.forEach((particle, i) => {
+                    particle.userData.t += 0.015;
+                    if (particle.userData.t > 1) particle.userData.t = 0;
+                    const point = chunkCurves[i].getPoint(particle.userData.t);
+                    particle.position.copy(point);
+                });
+
+                checkpointMarkers.forEach((marker, i) => {
+                    const scale = 0.5 + 0.3 * Math.sin(time * 4 + i * 0.5);
+                    marker.scale.setScalar(scale);
+                    marker.rotation.y = time * 2;
+                });
+
+                cupMat.emissiveIntensity = 0.5 + 0.5 * Math.sin(time * 1.5);
+
+                chunkMeshes.forEach((chunk, i) => {
+                    const phase = time * 2 + i * 0.5;
+                    chunk.tubeMat.opacity = 0.7 + 0.3 * Math.sin(phase);
+                    chunk.tubeMat.emissiveIntensity = 0.3 + 0.2 * Math.sin(phase);
+                });
+
+                state.controls.update();
+                state.renderer.render(scene, camera);
+            }
+            animate();
+        }
+
+        function loadSection4() {
+            const scene = state.scene;
+            const camera = state.camera;
+
+            camera.position.set(0, 2, 18);
+            window.initialCameraPosition = camera.position.clone();
+
+            // Lighting
+            scene.add(new THREE.AmbientLight(0xffffff, 1.0));
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            dirLight.position.set(-5, 10, 5);
+            scene.add(dirLight);
+
+            const coralColor = 0xe94560;
+            const cyanColor = 0x00D4AA;
+            const successGreen = 0x22c55e;
+            const failRed = 0xff4444;
+
+            // LEFT PANEL - Token by Token (much brighter materials)
+            const leftArmGroup = new THREE.Group();
+            leftArmGroup.position.set(-6, -1, 0);
+            const leftBase = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.6, 0.3, 32), new THREE.MeshStandardMaterial({ color: 0x6a6a8a, metalness: 0.6, emissive: 0x4a4a6a, emissiveIntensity: 0.4 }));
+            leftArmGroup.add(leftBase);
+            const leftSeg1 = new THREE.Mesh(new THREE.BoxGeometry(0.3, 1.5, 0.3), new THREE.MeshStandardMaterial({ color: 0x5a5a7a, emissive: 0x3a3a5a, emissiveIntensity: 0.4 }));
+            leftSeg1.position.set(0, 0.9, 0);
+            leftArmGroup.add(leftSeg1);
+            const leftJoint = new THREE.Mesh(new THREE.SphereGeometry(0.25, 16, 16), new THREE.MeshStandardMaterial({ color: coralColor, emissive: coralColor, emissiveIntensity: 0.5 }));
+            leftJoint.position.set(0, 1.7, 0);
+            leftArmGroup.add(leftJoint);
+            scene.add(leftArmGroup);
+
+            // Left jerky path
+            const leftPathPoints = [];
+            for (let i = 0; i <= 50; i++) {
+                const t = i / 50;
+                leftPathPoints.push(new THREE.Vector3(-5 + t * 3.5, 1 + Math.sin(t * Math.PI) * 1.5 + (Math.random() - 0.5) * 0.4, (Math.random() - 0.5) * 0.3));
+            }
+            const leftPath = new THREE.Line(new THREE.BufferGeometry().setFromPoints(leftPathPoints), new THREE.LineBasicMaterial({ color: coralColor, transparent: true, opacity: 0.7 }));
+            scene.add(leftPath);
+
+            const leftParticle = new THREE.Mesh(new THREE.SphereGeometry(0.15, 16, 16), new THREE.MeshStandardMaterial({ color: coralColor, emissive: coralColor, emissiveIntensity: 0.8 }));
+            leftParticle.userData.t = 0;
+            scene.add(leftParticle);
+
+            // Left target (missed)
+            const leftTarget = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.1, 32), new THREE.MeshStandardMaterial({ color: 0x5a5a6a, transparent: true, opacity: 0.6, emissive: 0x3a3a4a, emissiveIntensity: 0.3 }));
+            leftTarget.position.set(-1.5, 0.5, 0);
+            scene.add(leftTarget);
+
+            // Miss X
+            const xMaterial = new THREE.MeshStandardMaterial({ color: failRed, emissive: failRed, emissiveIntensity: 0.5, transparent: true });
+            const xBar1 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.08, 0.08), xMaterial);
+            const xBar2 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.08, 0.08), xMaterial.clone());
+            xBar1.rotation.z = Math.PI / 4;
+            xBar2.rotation.z = -Math.PI / 4;
+            const missIndicator = new THREE.Group();
+            missIndicator.add(xBar1, xBar2);
+            missIndicator.position.set(-1.5, 0.8, 0);
+            scene.add(missIndicator);
+
+            // RIGHT PANEL - Action Chunking (much brighter materials)
+            const rightArmGroup = new THREE.Group();
+            rightArmGroup.position.set(2, -1, 0);
+            const rightBase = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.6, 0.3, 32), new THREE.MeshStandardMaterial({ color: 0x6a6a8a, metalness: 0.6, emissive: 0x4a4a6a, emissiveIntensity: 0.4 }));
+            rightArmGroup.add(rightBase);
+            const rightSeg1 = new THREE.Mesh(new THREE.BoxGeometry(0.3, 1.5, 0.3), new THREE.MeshStandardMaterial({ color: 0x5a5a7a, emissive: 0x3a3a5a, emissiveIntensity: 0.4 }));
+            rightSeg1.position.set(0, 0.9, 0);
+            rightArmGroup.add(rightSeg1);
+            const rightJoint = new THREE.Mesh(new THREE.SphereGeometry(0.25, 16, 16), new THREE.MeshStandardMaterial({ color: cyanColor, emissive: cyanColor, emissiveIntensity: 0.5 }));
+            rightJoint.position.set(0, 1.7, 0);
+            rightArmGroup.add(rightJoint);
+            scene.add(rightArmGroup);
+
+            // Right smooth path
+            const p0 = new THREE.Vector3(3, 1, 0), p1 = new THREE.Vector3(4, 3, 0), p2 = new THREE.Vector3(5, 2.5, 0), p3 = new THREE.Vector3(6.5, 0.5, 0);
+            const rightPathPoints = [];
+            for (let i = 0; i <= 50; i++) {
+                const t = i / 50;
+                const mt = 1 - t, t2 = t * t, t3 = t2 * t, mt2 = mt * mt, mt3 = mt2 * mt;
+                rightPathPoints.push(new THREE.Vector3(
+                    mt3 * p0.x + 3 * mt2 * t * p1.x + 3 * mt * t2 * p2.x + t3 * p3.x,
+                    mt3 * p0.y + 3 * mt2 * t * p1.y + 3 * mt * t2 * p2.y + t3 * p3.y,
+                    0
+                ));
+            }
+            const rightPath = new THREE.Line(new THREE.BufferGeometry().setFromPoints(rightPathPoints), new THREE.LineBasicMaterial({ color: cyanColor, transparent: true, opacity: 0.9 }));
+            scene.add(rightPath);
+
+            const rightParticle = new THREE.Mesh(new THREE.SphereGeometry(0.18, 16, 16), new THREE.MeshStandardMaterial({ color: cyanColor, emissive: cyanColor, emissiveIntensity: 1.0 }));
+            rightParticle.userData.t = 0;
+            scene.add(rightParticle);
+
+            // Trail particles
+            const trailParticles = [];
+            for (let i = 0; i < 15; i++) {
+                const trail = new THREE.Mesh(new THREE.SphereGeometry(0.15, 8, 8), new THREE.MeshStandardMaterial({ color: cyanColor, emissive: cyanColor, emissiveIntensity: 0.5, transparent: true, opacity: 0 }));
+                scene.add(trail);
+                trailParticles.push({ mesh: trail, targetOpacity: 0 });
+            }
+
+            // Right target (hit)
+            const rightTarget = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.1, 32), new THREE.MeshStandardMaterial({ color: cyanColor, emissive: cyanColor, emissiveIntensity: 0.3 }));
+            rightTarget.position.set(6.5, 0.5, 0);
+            scene.add(rightTarget);
+
+            // Success checkmark
+            const checkMaterial = new THREE.MeshStandardMaterial({ color: successGreen, emissive: successGreen, emissiveIntensity: 0.6 });
+            const checkBar1 = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.08, 0.08), checkMaterial);
+            const checkBar2 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.08, 0.08), checkMaterial);
+            checkBar1.position.set(-0.1, 0, 0);
+            checkBar1.rotation.z = -Math.PI / 4;
+            checkBar2.position.set(0.15, 0.1, 0);
+            checkBar2.rotation.z = Math.PI / 4;
+            const checkGroup = new THREE.Group();
+            checkGroup.add(checkBar1, checkBar2);
+            checkGroup.position.set(6.5, 0.9, 0);
+            scene.add(checkGroup);
+
+            // Divider
+            const divider = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, -3, 0), new THREE.Vector3(0, 4, 0)]), new THREE.LineBasicMaterial({ color: 0x3a3a5a, transparent: true, opacity: 0.5 }));
+            scene.add(divider);
+
+            // HTML Overlays
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;';
+            container.appendChild(overlay);
+            state.currentOverlays.push(overlay);
+
+            overlay.innerHTML = `
+                <div style="position:absolute;top:3%;left:50%;transform:translateX(-50%);font-size:22px;font-weight:bold;color:#00D4AA;text-shadow:0 0 25px rgba(0,212,170,0.5);">😊 SMOOTH TRAJECTORIES</div>
+                <div style="position:absolute;top:10%;left:25%;transform:translateX(-50%);font-size:16px;font-weight:bold;color:#e94560;text-shadow:0 0 15px rgba(233,69,96,0.4);">Token by Token</div>
+                <div style="position:absolute;top:85%;left:25%;transform:translateX(-50%);font-size:14px;font-weight:bold;text-transform:uppercase;color:#ff4444;background:rgba(255,68,68,0.2);padding:8px 12px;border-radius:6px;">❌ MISSED TARGET</div>
+                <div style="position:absolute;top:10%;left:75%;transform:translateX(-50%);font-size:16px;font-weight:bold;color:#00D4AA;text-shadow:0 0 15px rgba(0,212,170,0.4);">Action Chunking</div>
+                <div id="rightResult" style="position:absolute;top:85%;left:75%;transform:translateX(-50%);font-size:14px;font-weight:bold;text-transform:uppercase;color:#22c55e;background:rgba(34,197,94,0.2);padding:8px 12px;border-radius:6px;">✅ TARGET REACHED</div>
+                <div id="insightLabel4" style="position:absolute;top:92%;left:50%;transform:translateX(-50%);font-size:16px;color:#e4e4e7;background:rgba(100,100,120,0.3);padding:10px 20px;border-radius:8px;opacity:0;transition:opacity 1s;">Fewer errors + Coordinated motion = SUCCESS</div>
+            `;
+            setTimeout(() => { document.getElementById('insightLabel4').style.opacity = '1'; }, 3000);
+
+            // Animation
+            let trailIndex = 0;
+            const clock = new THREE.Clock();
+            function animate() {
+                state.animationId = requestAnimationFrame(animate);
+                const time = clock.getElapsedTime();
+
+                // Left particle - jerky
+                leftParticle.userData.t += 0.012;
+                if (leftParticle.userData.t > 1) leftParticle.userData.t = 0;
+                const leftIdx = Math.floor(leftParticle.userData.t * (leftPathPoints.length - 1));
+                const leftPoint = leftPathPoints[Math.min(leftIdx, leftPathPoints.length - 1)];
+                leftParticle.position.copy(leftPoint);
+                leftParticle.position.x += (Math.random() - 0.5) * 0.06;
+                leftParticle.position.y += (Math.random() - 0.5) * 0.06;
+
+                // Right particle - smooth
+                rightParticle.userData.t += 0.008;
+                if (rightParticle.userData.t > 1) rightParticle.userData.t = 0;
+                const rt = rightParticle.userData.t;
+                const rmt = 1 - rt, rt2 = rt * rt, rt3 = rt2 * rt, rmt2 = rmt * rmt, rmt3 = rmt2 * rmt;
+                rightParticle.position.x = rmt3 * p0.x + 3 * rmt2 * rt * p1.x + 3 * rmt * rt2 * p2.x + rt3 * p3.x;
+                rightParticle.position.y = rmt3 * p0.y + 3 * rmt2 * rt * p1.y + 3 * rmt * rt2 * p2.y + rt3 * p3.y;
+
+                // Trail
+                if (Math.floor(time * 20) % 2 === 0) {
+                    const trail = trailParticles[trailIndex];
+                    trail.mesh.position.copy(rightParticle.position);
+                    trail.targetOpacity = 0.8;
+                    trailIndex = (trailIndex + 1) % trailParticles.length;
+                }
+                trailParticles.forEach(t => { t.targetOpacity *= 0.96; t.mesh.material.opacity = t.targetOpacity; });
+
+                // Indicators
+                const missOpacity = 0.5 + 0.5 * Math.sin(time * 3);
+                xBar1.material.opacity = missOpacity;
+                xBar2.material.opacity = missOpacity;
+                checkGroup.scale.setScalar(0.8 + 0.4 * Math.sin(time * 2.5));
+                rightTarget.material.emissiveIntensity = 0.3 + 0.3 * Math.sin(time * 1.5);
+
+                state.controls.update();
+                state.renderer.render(scene, camera);
+            }
+            animate();
+        }
+
+        function loadSection5() {
+            const scene = state.scene;
+            const camera = state.camera;
+
+            camera.position.set(0, 3, 14);
+            window.initialCameraPosition = camera.position.clone();
+
+            // Lighting
+            scene.add(new THREE.AmbientLight(0xffffff, 1.0));
+            scene.add(new THREE.AmbientLight(0xffd700, 0.4)); // Golden accent
+            const dirLight = new THREE.DirectionalLight(0xffd700, 1.0);
+            dirLight.position.set(5, 8, 3);
+            scene.add(dirLight);
+            const fillLight = new THREE.DirectionalLight(0x00D4AA, 0.4);
+            fillLight.position.set(-5, 2, 5);
+            scene.add(fillLight);
+
+            const baseMat = new THREE.MeshStandardMaterial({ color: 0x5a5a7a, metalness: 0.6, roughness: 0.4, emissive: 0x3a3a5a, emissiveIntensity: 0.4 });
+            const goldMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.9, roughness: 0.2, emissive: 0xffd700, emissiveIntensity: 0.5 });
+
+            // Robot Arm
+            const robotArmGroup = new THREE.Group();
+            const base = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 1, 0.5, 32), baseMat);
+            base.position.set(-4, -2, 0);
+            robotArmGroup.add(base);
+
+            const joint1 = new THREE.Mesh(new THREE.SphereGeometry(0.35, 16, 16), goldMat);
+            joint1.position.set(-4, -1.5, 0);
+            robotArmGroup.add(joint1);
+
+            const arm1 = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.2, 2, 16), baseMat);
+            arm1.position.set(-3.3, -0.8, 0);
+            arm1.rotation.z = Math.PI / 4;
+            robotArmGroup.add(arm1);
+
+            const joint2 = new THREE.Mesh(new THREE.SphereGeometry(0.3, 16, 16), goldMat);
+            joint2.position.set(-2.6, 0, 0);
+            robotArmGroup.add(joint2);
+
+            const arm2 = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.15, 2.5, 16), baseMat);
+            arm2.position.set(-1.3, 0.3, 0);
+            arm2.rotation.z = Math.PI / 10;
+            robotArmGroup.add(arm2);
+
+            const joint3 = new THREE.Mesh(new THREE.SphereGeometry(0.25, 16, 16), goldMat);
+            joint3.position.set(0, 0.5, 0);
+            robotArmGroup.add(joint3);
+
+            const arm3 = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, 2, 16), baseMat);
+            arm3.position.set(1.2, 0.4, 0);
+            arm3.rotation.z = Math.PI / 20;
+            robotArmGroup.add(arm3);
+
+            // Gripper
+            const gripperGroup = new THREE.Group();
+            gripperGroup.position.set(2.5, 0.3, 0);
+            const gripperBase = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.4, 0.3), baseMat);
+            gripperGroup.add(gripperBase);
+            const finger1 = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.6, 0.15), goldMat);
+            finger1.position.set(0.2, -0.3, 0);
+            gripperGroup.add(finger1);
+            const finger2 = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.6, 0.15), goldMat);
+            finger2.position.set(-0.2, -0.3, 0);
+            gripperGroup.add(finger2);
+            robotArmGroup.add(gripperGroup);
+            scene.add(robotArmGroup);
+
+            // Target Cup
+            const cupMat = new THREE.MeshStandardMaterial({ color: 0x00D4AA, metalness: 0.3, emissive: 0x00D4AA, emissiveIntensity: 0.5 });
+            const targetCup = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.2, 0.7, 32), cupMat);
+            targetCup.position.set(2.5, -0.3, 0);
+            scene.add(targetCup);
+
+            // Golden Trajectory
+            const trajectoryPoints = [];
+            for (let i = 0; i <= 50; i++) {
+                const t = i / 50;
+                trajectoryPoints.push(new THREE.Vector3(-4 + t * 6.5, -1.5 + Math.sin(t * Math.PI) * 2.5 - t * 0.5, Math.sin(t * Math.PI * 2) * 0.3));
+            }
+            const trajectoryCurve = new THREE.CatmullRomCurve3(trajectoryPoints);
+            const trajectoryMat = new THREE.MeshStandardMaterial({ color: 0xffd700, emissive: 0xffd700, emissiveIntensity: 0.6, transparent: true, opacity: 0.9 });
+            const goldenTrajectory = new THREE.Mesh(new THREE.TubeGeometry(trajectoryCurve, 100, 0.05, 8, false), trajectoryMat);
+            scene.add(goldenTrajectory);
+
+            // Checkpoints
+            const chunkCheckpoints = [];
+            for (let i = 0; i < 10; i++) {
+                const t = (i + 0.5) / 10;
+                const pos = trajectoryCurve.getPoint(t);
+                const checkpointMat = new THREE.MeshStandardMaterial({ color: 0xffd700, emissive: 0xffd700, emissiveIntensity: 0.5, transparent: true, opacity: 0.9 });
+                const checkpoint = new THREE.Mesh(new THREE.OctahedronGeometry(0.15), checkpointMat);
+                checkpoint.position.copy(pos);
+                checkpoint.userData.phase = i * 0.5;
+                scene.add(checkpoint);
+                chunkCheckpoints.push(checkpoint);
+            }
+
+            // Sweet Spot Ring
+            const sweetSpotRingMat = new THREE.MeshStandardMaterial({ color: 0xffd700, emissive: 0xffd700, emissiveIntensity: 0.8, transparent: true, opacity: 0.8 });
+            const sweetSpotRing = new THREE.Mesh(new THREE.TorusGeometry(1.2, 0.08, 16, 64), sweetSpotRingMat);
+            sweetSpotRing.position.set(0, 3.5, 0);
+            sweetSpotRing.rotation.x = Math.PI / 2;
+            scene.add(sweetSpotRing);
+
+            const innerRing = new THREE.Mesh(new THREE.TorusGeometry(0.8, 0.05, 16, 64), new THREE.MeshStandardMaterial({ color: 0x00D4AA, emissive: 0x00D4AA, emissiveIntensity: 0.5, transparent: true, opacity: 0.7 }));
+            innerRing.position.set(0, 3.5, 0);
+            innerRing.rotation.x = Math.PI / 2;
+            scene.add(innerRing);
+
+            // Celebration Particles
+            const celebrationParticles = [];
+            const particleColors = [0xffd700, 0x00D4AA, 0x6C5CE7];
+            const shapes = [new THREE.OctahedronGeometry(0.08), new THREE.BoxGeometry(0.1, 0.1, 0.1), new THREE.TetrahedronGeometry(0.1)];
+            for (let i = 0; i < 80; i++) {
+                const particleMat = new THREE.MeshStandardMaterial({ color: particleColors[i % 3], emissive: particleColors[i % 3], emissiveIntensity: 0.6, transparent: true, opacity: 0.7 });
+                const particle = new THREE.Mesh(shapes[i % 3], particleMat);
+                particle.position.set((Math.random() - 0.5) * 16, (Math.random() - 0.5) * 10, (Math.random() - 0.5) * 8);
+                particle.userData.phase = Math.random() * Math.PI * 2;
+                particle.userData.speed = 0.5 + Math.random() * 0.5;
+                scene.add(particle);
+                celebrationParticles.push(particle);
+            }
+
+            // Platform - brighter for visibility
+            const platform = new THREE.Mesh(new THREE.BoxGeometry(12, 0.2, 6), new THREE.MeshStandardMaterial({ color: 0x3a3a5a, metalness: 0.5, emissive: 0x2a2a4a, emissiveIntensity: 0.2 }));
+            platform.position.set(-1, -2.5, 0);
+            scene.add(platform);
+
+            // HTML Overlays
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:hidden;';
+            container.appendChild(overlay);
+            state.currentOverlays.push(overlay);
+
+            overlay.innerHTML = `
+                <div id="title5" style="position:absolute;left:50%;top:3%;transform:translateX(-50%);font-size:26px;font-weight:bold;color:#ffd700;text-shadow:0 0 30px rgba(255,215,0,0.6);white-space:nowrap;">🎯 K=100: THE SWEET SPOT</div>
+                <div style="position:absolute;left:10%;top:12%;font-size:18px;font-weight:bold;color:#00D4AA;text-shadow:0 0 20px rgba(0,212,170,0.5);">100× fewer errors</div>
+                <div style="position:absolute;right:10%;top:12%;font-size:18px;font-weight:bold;color:#6C5CE7;text-shadow:0 0 20px rgba(108,92,231,0.5);">Same smooth motion</div>
+                <div style="position:absolute;left:5%;top:50%;transform:translateY(-50%);font-size:14px;color:#e94560;background:rgba(233,69,96,0.15);padding:10px 15px;border-radius:8px;border-left:3px solid #e94560;"><strong>K=10</strong><br>❌ Can't course correct</div>
+                <div style="position:absolute;right:5%;top:50%;transform:translateY(-50%);font-size:14px;color:#e94560;background:rgba(233,69,96,0.15);padding:10px 15px;border-radius:8px;border-right:3px solid #e94560;text-align:right;"><strong>K=1000</strong><br>❌ Too many predictions</div>
+                <div id="centerWinner" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:18px;font-weight:bold;color:#ffd700;background:rgba(255,215,0,0.2);padding:15px 25px;border-radius:12px;border:2px solid #ffd700;text-align:center;opacity:0;transition:opacity 0.5s, box-shadow 0.3s;"><strong>K=100</strong><br>✅ Just right!</div>
+                <div style="position:absolute;left:50%;bottom:12%;transform:translateX(-50%);font-size:16px;color:#e4e4e7;background:rgba(100,100,120,0.3);padding:12px 24px;border-radius:8px;white-space:nowrap;">Smooth motion + Course correction opportunity</div>
+                <div id="conclusion5" style="position:absolute;left:50%;bottom:3%;transform:translateX(-50%);font-size:14px;font-style:italic;color:#9ca3af;opacity:0;transition:opacity 1s;white-space:nowrap;">"The fewer decisions you make, the fewer mistakes you can make."</div>
+            `;
+
+            const centerWinner = document.getElementById('centerWinner');
+            const conclusion5 = document.getElementById('conclusion5');
+            const title5 = document.getElementById('title5');
+
+            let animationStartTime = Date.now();
+            function animate() {
+                state.animationId = requestAnimationFrame(animate);
+                const elapsed = (Date.now() - animationStartTime) / 1000;
+                const time = elapsed;
+
+                if (elapsed > 2) {
+                    centerWinner.style.opacity = '1';
+                    centerWinner.style.boxShadow = `0 0 ${20 + 10 * Math.sin(time * 2)}px rgba(255,215,0,0.5)`;
+                }
+                if (elapsed > 4) conclusion5.style.opacity = '1';
+
+                title5.style.textShadow = `0 0 ${20 + 10 * Math.sin(time * 1.5)}px rgba(255,215,0,0.6)`;
+
+                celebrationParticles.forEach(p => {
+                    p.position.y += (Math.random() - 0.3) * 0.015 * p.userData.speed;
+                    p.position.x += (Math.random() - 0.5) * 0.008;
+                    p.rotation.x += 0.02;
+                    p.rotation.z += 0.015;
+                    p.material.opacity = 0.3 + 0.4 * Math.sin(time * 3 + p.userData.phase);
+                    if (p.position.y > 6) p.position.y = -4;
+                    if (p.position.y < -5) p.position.y = 5;
+                });
+
+                goldenTrajectory.material.opacity = 0.7 + 0.3 * Math.sin(time * 1.5);
+                goldenTrajectory.material.emissiveIntensity = 0.4 + 0.3 * Math.sin(time * 1.5);
+
+                chunkCheckpoints.forEach((cp, i) => {
+                    const wave = Math.sin(time * 2 - i * 0.5);
+                    cp.material.emissiveIntensity = 0.5 + 0.5 * wave;
+                    cp.scale.setScalar(0.8 + 0.2 * wave);
+                    cp.rotation.y += 0.03;
+                });
+
+                sweetSpotRing.rotation.z += 0.01;
+                sweetSpotRing.material.opacity = 0.6 + 0.3 * Math.sin(time * 2);
+                innerRing.rotation.z -= 0.015;
+
+                targetCup.material.emissiveIntensity = 0.5 + 0.3 * Math.sin(time * 2);
+                targetCup.rotation.y += 0.005;
+
+                finger1.position.x = 0.15 + 0.05 * Math.sin(time * 1.5);
+                finger2.position.x = -0.15 - 0.05 * Math.sin(time * 1.5);
+
+                joint1.material.emissiveIntensity = 0.3 + 0.2 * Math.sin(time * 2);
+                joint2.material.emissiveIntensity = 0.3 + 0.2 * Math.sin(time * 2 + 0.5);
+                joint3.material.emissiveIntensity = 0.3 + 0.2 * Math.sin(time * 2 + 1);
+
+                state.controls.update();
+                state.renderer.render(scene, camera);
+            }
+            animate();
+        }
+
+        // ========================================
+        // SECTION MANAGEMENT
+        // ========================================
+        function loadSection(sectionNumber) {
+            clearScene();
+            state.controls.target.set(0, 0, 0);
+
+            switch (sectionNumber) {
+                case 1: loadSection1(); break;
+                case 2: loadSection2(); break;
+                case 3: loadSection3(); break;
+                case 4: loadSection4(); break;
+                case 5: loadSection5(); break;
+            }
+
+            state.controls.update();
+
+            // Update UI
+            sectionDots.forEach((dot, i) => {
+                dot.classList.toggle('active', i + 1 === sectionNumber);
+            });
+            prevBtn.disabled = sectionNumber === 1;
+            nextBtn.disabled = sectionNumber === state.totalSections;
+
+            // Update narrative
+            const content = narrativeContent[sectionNumber];
+            sectionTitleEl.textContent = `Section ${sectionNumber} of 5`;
+            narrativeEl.innerHTML = `
+                <span class="emotion-badge emotion-${content.emotion}">${content.emotionLabel}</span>
+                <h3>${content.title}</h3>
+                ${content.content}
+            `;
+        }
+
+        function goToSection(sectionNumber) {
+            if (sectionNumber < 1 || sectionNumber > state.totalSections) return;
+            if (sectionNumber === state.currentSection) return;
+            state.currentSection = sectionNumber;
+            loadSection(sectionNumber);
+        }
+
+        function nextSection() { goToSection(state.currentSection + 1); }
+        function prevSection() { goToSection(state.currentSection - 1); }
+
+        function resetView() {
+            // Reset camera position
+            if (window.initialCameraPosition) {
+                state.camera.position.copy(window.initialCameraPosition);
+            } else {
+                state.camera.position.set(0, 2, 12);
+            }
+            state.camera.lookAt(0, 0, 0);
+            state.camera.up.set(0, 1, 0);
+
+            // Reset TrackballControls - need to reset internal state
+            state.controls.target.set(0, 0, 0);
+            state.controls.reset();  // This resets the internal state
+            state.controls.update();
+        }
+
+        // ========================================
+        // EVENT LISTENERS
+        // ========================================
+        prevBtn.addEventListener('click', prevSection);
+        nextBtn.addEventListener('click', nextSection);
+        resetViewBtn.addEventListener('click', resetView);
+        resetAnimationBtn.addEventListener('click', resetAnimation);
+
+        // Reset Animation function - reload current section
+        function resetAnimation() {
+            const currentSection = state.currentSection;
+            clearScene();
+            loadSection(currentSection);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') prevSection();
+            if (e.key === 'ArrowRight') nextSection();
+            if (e.key === 'r' || e.key === 'R') resetView();
+            if (e.key === 'a' || e.key === 'A') resetAnimation();
+        });
+
+        sectionDots.forEach((dot, i) => {
+            dot.addEventListener('click', () => goToSection(i + 1));
+        });
+
+        // ========================================
+        // INITIALIZATION
+        // ========================================
+        function init() {
+            initThreeJS();
+            loadSection(1);
+            loadingEl.style.display = 'none';
+        }
+
+        init();
+    </script>
+</body>
+</html>

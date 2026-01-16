@@ -1,0 +1,3364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three Innovations of ACT - Interactive Guide</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TrackballControls.js"></script>
+
+    <style>
+        :root {
+            --bg-deep: #0a0a1a;
+            --bg-panel: rgba(15, 15, 35, 0.85);
+            --bg-card: rgba(25, 25, 50, 0.6);
+            --cyan: #00D4AA;
+            --cyan-glow: rgba(0, 212, 170, 0.3);
+            --purple: #6C5CE7;
+            --purple-glow: rgba(108, 92, 231, 0.3);
+            --gold: #ffd700;
+            --gold-glow: rgba(255, 215, 0, 0.25);
+            --coral: #e94560;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b8;
+            --text-muted: #606080;
+            --border-subtle: rgba(255, 255, 255, 0.06);
+            --border-glow: rgba(0, 212, 170, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-deep);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Sora', sans-serif;
+            overflow: hidden;
+        }
+
+        /* Main container - constrained to 1200px */
+        .main-container {
+            width: 100%;
+            max-width: 1200px;
+            height: 700px;
+            display: flex;
+            justify-content: space-between;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Left: Canvas Area - 45% */
+        .canvas-area {
+            width: 45%;
+            height: 100%;
+            background: linear-gradient(135deg, #0d0d20 0%, #0a0a1a 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #animation-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        #animation-container canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        /* Reset buttons - hidden by default, show on hover */
+        .canvas-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .canvas-area:hover .canvas-controls {
+            opacity: 1;
+        }
+
+        .reset-btn {
+            padding: 8px 14px;
+            background: rgba(20, 20, 40, 0.85);
+            border: 1px solid rgba(0, 212, 170, 0.3);
+            border-radius: 6px;
+            color: var(--cyan);
+            font-family: 'Sora', sans-serif;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(8px);
+        }
+
+        .reset-btn:hover {
+            background: rgba(0, 212, 170, 0.15);
+            border-color: var(--cyan);
+            transform: translateY(-1px);
+        }
+
+        /* Right: Content Panel - 45% */
+        .content-panel {
+            width: 45%;
+            height: 100%;
+            background: var(--bg-panel);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .content-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -1px;
+            width: 2px;
+            height: 100%;
+            background: linear-gradient(180deg, transparent 0%, var(--cyan) 20%, var(--purple) 50%, var(--cyan) 80%, transparent 100%);
+            opacity: 0.6;
+            animation: borderPulse 4s ease-in-out infinite;
+        }
+
+        @keyframes borderPulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+
+        /* Header */
+        .panel-header {
+            padding: 20px 28px 16px;
+            border-bottom: 1px solid var(--border-subtle);
+            position: relative;
+            z-index: 1;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 4px;
+        }
+
+        .brand-logo {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--cyan), var(--purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 11px;
+            color: white;
+            letter-spacing: -0.5px;
+            box-shadow: 0 4px 20px var(--cyan-glow);
+        }
+
+        .brand-text {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, var(--cyan), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .brand-subtitle {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-left: 44px;
+        }
+
+        /* Section Header */
+        .section-header {
+            padding: 24px 28px 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .section-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: var(--cyan);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-number::before {
+            content: '';
+            width: 16px;
+            height: 1px;
+            background: var(--cyan);
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.03em;
+            line-height: 1.2;
+            margin-bottom: 8px;
+        }
+
+        .section-subtitle {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--gold);
+            letter-spacing: 0.02em;
+        }
+
+        /* Content Area */
+        .content-area {
+            flex: 1;
+            padding: 0 28px 20px;
+            overflow-y: auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .content-area::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .content-area::-webkit-scrollbar-thumb {
+            background: var(--border-glow);
+            border-radius: 2px;
+        }
+
+        /* Section content */
+        .section-content {
+            display: none;
+        }
+
+        .section-content.active {
+            display: block;
+            animation: fadeSlideIn 0.4s ease-out;
+        }
+
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .insight {
+            font-size: 14px;
+            line-height: 1.75;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .insight strong { color: var(--cyan); font-weight: 500; }
+        .insight em { color: var(--purple); font-style: normal; font-weight: 500; }
+        .insight .gold { color: var(--gold); font-weight: 600; }
+        .insight .coral { color: var(--coral); font-weight: 600; }
+
+        .content-area ul {
+            list-style: none;
+            margin: 16px 0;
+        }
+
+        .content-area > .section-content ul li {
+            font-size: 13px;
+            color: var(--text-secondary);
+            padding: 6px 0 6px 20px;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .content-area > .section-content ul li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 12px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--cyan);
+            opacity: 0.6;
+        }
+
+        /* Key Insight Box */
+        .key-insight {
+            background: linear-gradient(135deg, var(--bg-card), rgba(0, 212, 170, 0.05));
+            border: 1px solid var(--border-glow);
+            border-radius: 12px;
+            padding: 16px 18px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .key-insight::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--cyan), var(--purple));
+            border-radius: 3px 0 0 3px;
+        }
+
+        .key-insight.eureka {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.08), rgba(0, 212, 170, 0.05));
+            border-color: rgba(255, 215, 0, 0.3);
+        }
+
+        .key-insight.eureka::before {
+            background: linear-gradient(180deg, var(--gold), var(--cyan));
+        }
+
+        .key-insight.problem {
+            background: linear-gradient(135deg, rgba(233, 69, 96, 0.08), rgba(108, 92, 231, 0.05));
+            border-color: rgba(233, 69, 96, 0.3);
+        }
+
+        .key-insight.problem::before {
+            background: linear-gradient(180deg, var(--coral), var(--purple));
+        }
+
+        .key-insight-label {
+            display: inline-block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            background: var(--cyan);
+            color: var(--bg-deep);
+            margin-bottom: 10px;
+        }
+
+        .key-insight.eureka .key-insight-label { background: var(--gold); }
+        .key-insight.problem .key-insight-label { background: var(--coral); }
+
+        .key-insight p {
+            font-size: 13px;
+            line-height: 1.65;
+            color: var(--text-secondary);
+            margin: 6px 0 0;
+        }
+
+        .key-insight p strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* Punchline styling */
+        .punchline-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--gold);
+            text-align: center;
+            margin: 24px 0 16px;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .punchline-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Navigation */
+        .navigation {
+            padding: 16px 28px;
+            border-top: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(10, 10, 26, 0.8);
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 1;
+        }
+
+        .nav-btn {
+            font-family: 'Sora', sans-serif;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-glow);
+            background: transparent;
+            color: var(--cyan);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: var(--cyan-glow);
+            border-color: var(--cyan);
+            transform: translateY(-1px);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .nav-dots {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-dot:hover {
+            background: var(--text-secondary);
+            transform: scale(1.2);
+        }
+
+        .nav-dot.active {
+            background: var(--cyan);
+            box-shadow: 0 0 12px var(--cyan-glow);
+        }
+
+        .nav-counter {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            min-width: 50px;
+            text-align: center;
+        }
+
+        /* Loading state */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 26, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .loading-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-subtle);
+            border-top-color: var(--cyan);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+<div class="main-container">
+    <!-- Left: Canvas Area -->
+    <div class="canvas-area">
+        <div id="animation-container"></div>
+        <div class="canvas-controls">
+            <button class="reset-btn" id="reset-view-btn">↻ Reset View</button>
+            <button class="reset-btn" id="reset-animation-btn">▶ Reset Animation</button>
+        </div>
+        <div class="loading-overlay" id="loading">
+            <div class="loading-spinner"></div>
+        </div>
+    </div>
+
+    <!-- Right: Content Panel -->
+    <div class="content-panel">
+        <!-- Header -->
+        <div class="panel-header">
+            <div class="brand">
+                <div class="brand-logo">ACT</div>
+                <span class="brand-text">Action Chunking with Transformers</span>
+            </div>
+            <div class="brand-subtitle">Three Software Innovations</div>
+        </div>
+
+        <!-- Section Header -->
+        <div class="section-header">
+            <div class="section-number" id="section-number">Section 1 of 5</div>
+            <h1 class="section-title" id="section-title">The Imitation Problem</h1>
+            <div class="section-subtitle" id="section-subtitle">Why averaging destroys good solutions</div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- Section 1 Content: The Imitation Problem -->
+            <div class="section-content active" data-section="1">
+                <p class="insight">Watch the animation: a <strong>human arm</strong> (cyan) and a <strong>robot arm</strong> (red) both try to reach the same target.</p>
+                <p class="insight">The human takes <em>multiple different paths</em> - sometimes from the left, sometimes from the right. All valid!</p>
+
+                <div class="key-insight problem">
+                    <span class="key-insight-label">The Problem</span>
+                    <p><strong>What if the robot averages these paths?</strong></p>
+                    <p>The average of left + right = straight into the obstacle!</p>
+                </div>
+
+                <ul>
+                    <li>Human demonstrations show <em>multiple valid solutions</em></li>
+                    <li>Simple neural networks try to <strong>average</strong> them</li>
+                    <li>The average is often <span class="coral">INVALID</span></li>
+                </ul>
+            </div>
+
+            <!-- Section 2 Content: Action Chunking -->
+            <div class="section-content" data-section="2">
+                <p class="insight">Now watch <strong>two robots race</strong>: one predicts <span class="coral">single actions</span>, one predicts <span class="gold">action chunks</span>.</p>
+                <p class="insight">The single-action robot <em>jitters and drifts</em>. The chunking robot moves <strong>smoothly</strong>.</p>
+
+                <div class="key-insight">
+                    <span class="key-insight-label">Action Chunking</span>
+                    <p><strong>Predict K=100 actions at once!</strong></p>
+                    <p>Instead of "what's next?", ask "what's the next 100 steps?"</p>
+                </div>
+
+                <ul>
+                    <li>Single-action prediction: errors <em>compound</em> over time</li>
+                    <li>Action chunking: predict a <strong>smooth trajectory</strong></li>
+                    <li>Execute chunk → get fresh prediction → <span class="gold">reset errors</span></li>
+                </ul>
+
+                <div class="key-insight eureka">
+                    <span class="key-insight-label">Result</span>
+                    <p><strong>Smooth motion</strong> instead of jerky steps!</p>
+                </div>
+            </div>
+
+            <!-- Section 3 Content: CVAE Architecture -->
+            <div class="section-content" data-section="3">
+                <p class="insight">The <strong>Conditional VAE</strong> (CVAE) solves the averaging problem. It captures the <em>style</em> of each demonstration.</p>
+
+                <div class="key-insight">
+                    <span class="key-insight-label">How CVAE Works</span>
+                    <p><strong>Encoder compresses demonstration → latent Z</strong></p>
+                    <p>Z captures "which approach" - left, right, high, low...</p>
+                </div>
+
+                <p class="insight">Watch: multiple trajectories enter the encoder. The <span class="gold">Z variable</span> (gold) emerges - it <strong>selects one style</strong>, doesn't average!</p>
+
+                <ul>
+                    <li>Encoder: actions + images → <strong>latent Z</strong></li>
+                    <li>Z is a <em>style variable</em> - not an average</li>
+                    <li>Decoder: Z + current state → <strong>coherent trajectory</strong></li>
+                </ul>
+            </div>
+
+            <!-- Section 4 Content: Temporal Ensembling -->
+            <div class="section-content" data-section="4">
+                <p class="insight"><strong>Temporal ensembling</strong> makes predictions even smoother by blending overlapping chunks.</p>
+
+                <div class="key-insight">
+                    <span class="key-insight-label">The Technique</span>
+                    <p><strong>Multiple chunks overlap in time</strong></p>
+                    <p>Blend them with exponential weighting → ultra-smooth motion</p>
+                </div>
+
+                <p class="insight">Watch the animation: older predictions <span class="coral">fade out</span>, newer predictions get <span class="gold">more weight</span>.</p>
+
+                <ul>
+                    <li>Each timestep has <em>multiple predictions</em> from different chunks</li>
+                    <li>Blend with weights: newer = <strong>more trusted</strong></li>
+                    <li>Result: <span class="gold">seamless trajectory</span> execution</li>
+                </ul>
+            </div>
+
+            <!-- Section 5 Content: The Breakthrough (Punchline) -->
+            <div class="section-content" data-section="5">
+                <div class="punchline-text">Demo → Style → Fusion → Chunk → Smooth</div>
+                <div class="punchline-subtitle">The complete ACT pipeline</div>
+
+                <p class="insight">You've just learned the <strong>three software innovations</strong> that made ACT successful on $20K hardware!</p>
+
+                <div class="key-insight eureka">
+                    <span class="key-insight-label">The Complete Picture</span>
+                    <p><strong>1. CVAE</strong>: Capture style, don't average</p>
+                    <p><strong>2. Action Chunking</strong>: Predict K actions at once</p>
+                    <p><strong>3. Temporal Ensembling</strong>: Blend for smoothness</p>
+                </div>
+
+                <p class="insight">These ideas aren't new - <em>but combining them correctly</em> made bimanual manipulation <span class="gold">actually work</span>.</p>
+
+                <ul>
+                    <li>84% success on Ziplock opening (others: 0-12%)</li>
+                    <li>96% success on battery insertion (others: 0-8%)</li>
+                    <li><strong>Same hardware, different software</strong></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="navigation">
+            <button class="nav-btn" id="prev-btn" disabled>
+                <span>&larr;</span> Previous
+            </button>
+
+            <div class="nav-dots" id="nav-dots">
+                <div class="nav-dot active" data-section="1" title="The Imitation Problem"></div>
+                <div class="nav-dot" data-section="2" title="Action Chunking"></div>
+                <div class="nav-dot" data-section="3" title="CVAE Architecture"></div>
+                <div class="nav-dot" data-section="4" title="Temporal Ensembling"></div>
+                <div class="nav-dot" data-section="5" title="The Breakthrough"></div>
+            </div>
+
+            <div class="nav-counter" id="nav-counter">1 / 5</div>
+
+            <button class="nav-btn" id="next-btn">
+                Next <span>&rarr;</span>
+            </button>
+        </div>
+    </div>
+</div><!-- end main-container -->
+
+
+    <!-- Section 1 Code -->
+    <script id="section-1-code" type="text/animation">
+// Scene setup
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a1a);
+
+const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+camera.position.set(0.0, 3.0, 15.4);
+camera.lookAt(0, 0, 0);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(width, height);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+container.appendChild(renderer.domElement);
+
+const controls = new THREE.TrackballControls(camera, renderer.domElement);
+controls.rotateSpeed = 2.0;
+controls.zoomSpeed = 1.2;
+controls.panSpeed = 0.8;
+
+// Store references for reset buttons
+window.currentCamera = camera;
+window.currentControls = controls;
+window.initialCameraPosition = camera.position.clone();
+
+// Lighting - bright ambient for visibility
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+scene.add(ambientLight);
+
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+directionalLight.position.set(5, 10, 7);
+scene.add(directionalLight);
+
+const backLight = new THREE.DirectionalLight(0x4444ff, 0.5);
+backLight.position.set(-5, 5, -5);
+scene.add(backLight);
+
+// Colors
+const humanColor = 0x00d4ff;
+const robotColor = 0xff6b6b;
+const targetColor = 0xffd700;
+
+// Target cube
+const targetGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+const targetMaterial = new THREE.MeshStandardMaterial({ 
+    color: targetColor, 
+    emissive: targetColor, 
+    emissiveIntensity: 0.3 
+});
+const targetCube = new THREE.Mesh(targetGeometry, targetMaterial);
+targetCube.position.set(0, 3, 0);
+targetCube.name = "Target Cube - Goal position";
+scene.add(targetCube);
+
+// Create arm function
+function createArm(color, xOffset, name) {
+    const arm = new THREE.Group();
+    arm.name = name;
+    
+    // Materials
+    const segmentMaterial = new THREE.MeshStandardMaterial({ 
+        color: color, 
+        emissive: color, 
+        emissiveIntensity: 0.2 
+    });
+    const jointMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0xffffff, 
+        emissive: color, 
+        emissiveIntensity: 0.3 
+    });
+    
+    // Base/Shoulder
+    const baseGeometry = new THREE.SphereGeometry(0.3, 16, 16);
+    const base = new THREE.Mesh(baseGeometry, jointMaterial);
+    base.position.set(0, -2, 0);
+    base.name = name + " - Shoulder Joint";
+    arm.add(base);
+    
+    // Upper arm segment
+    const upperArmGeometry = new THREE.CylinderGeometry(0.12, 0.12, 2, 12);
+    const upperArm = new THREE.Mesh(upperArmGeometry, segmentMaterial);
+    upperArm.position.set(0, -1, 0);
+    upperArm.name = name + " - Upper Arm";
+    arm.add(upperArm);
+    
+    // Elbow joint
+    const elbowGeometry = new THREE.SphereGeometry(0.2, 16, 16);
+    const elbow = new THREE.Mesh(elbowGeometry, jointMaterial);
+    elbow.position.set(0, 0, 0);
+    elbow.name = name + " - Elbow Joint";
+    arm.add(elbow);
+    
+    // Forearm segment
+    const forearmGeometry = new THREE.CylinderGeometry(0.1, 0.1, 1.8, 12);
+    const forearm = new THREE.Mesh(forearmGeometry, segmentMaterial);
+    forearm.position.set(0, 0.9, 0);
+    forearm.name = name + " - Forearm";
+    arm.add(forearm);
+    
+    // Hand/End effector
+    const handGeometry = new THREE.SphereGeometry(0.18, 16, 16);
+    const hand = new THREE.Mesh(handGeometry, jointMaterial);
+    hand.position.set(0, 1.8, 0);
+    hand.name = name + " - Hand (End Effector)";
+    arm.add(hand);
+    
+    arm.position.x = xOffset;
+    
+    return { group: arm, base, upperArm, elbow, forearm, hand };
+}
+
+// Create arms
+const humanArm = createArm(humanColor, -3.5, "Human Arm");
+const robotArm = createArm(robotColor, 3.5, "Robot Arm");
+scene.add(humanArm.group);
+scene.add(robotArm.group);
+
+// Trail systems
+function createTrail(color) {
+    const maxPoints = 200;
+    const positions = new Float32Array(maxPoints * 3);
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setDrawRange(0, 0);
+    
+    const material = new THREE.LineBasicMaterial({ 
+        color: color, 
+        transparent: true, 
+        opacity: 0.7 
+    });
+    
+    const line = new THREE.Line(geometry, material);
+    line.name = "Motion Trail";
+    
+    return { line, positions, pointCount: 0, maxPoints };
+}
+
+const humanTrail = createTrail(humanColor);
+const robotTrail = createTrail(robotColor);
+scene.add(humanTrail.line);
+scene.add(robotTrail.line);
+
+// Error particles array
+const errorParticles = [];
+
+function createErrorParticle(position) {
+    const geometry = new THREE.SphereGeometry(0.08, 8, 8);
+    const material = new THREE.MeshBasicMaterial({ 
+        color: 0xff0000, 
+        transparent: true, 
+        opacity: 1 
+    });
+    const particle = new THREE.Mesh(geometry, material);
+    particle.position.copy(position);
+    particle.name = "Error Correction Particle";
+    particle.userData.life = 1.0;
+    particle.userData.velocity = new THREE.Vector3(
+        (Math.random() - 0.5) * 0.1,
+        Math.random() * 0.1,
+        (Math.random() - 0.5) * 0.1
+    );
+    scene.add(particle);
+    errorParticles.push(particle);
+}
+
+// Animation state
+let startTime = Date.now();
+const animationDuration = 20000; // 20 seconds
+
+// Inverse kinematics helper - simple 2-link IK
+function calculateArmPose(targetPos, basePos, armLength1, armLength2) {
+    const dx = targetPos.x - basePos.x;
+    const dy = targetPos.y - basePos.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    const maxReach = armLength1 + armLength2;
+    
+    // Clamp to reachable distance
+    const clampedDist = Math.min(distance, maxReach * 0.95);
+    const angle = Math.atan2(dy, dx);
+    
+    // Law of cosines for elbow angle
+    const cosElbow = (armLength1 * armLength1 + armLength2 * armLength2 - clampedDist * clampedDist) / (2 * armLength1 * armLength2);
+    const elbowAngle = Math.acos(Math.max(-1, Math.min(1, cosElbow)));
+    
+    // Shoulder angle
+    const cosAlpha = (armLength1 * armLength1 + clampedDist * clampedDist - armLength2 * armLength2) / (2 * armLength1 * clampedDist);
+    const alpha = Math.acos(Math.max(-1, Math.min(1, cosAlpha)));
+    const shoulderAngle = angle + alpha;
+    
+    return { shoulderAngle, elbowAngle };
+}
+
+// Update arm pose visually
+function updateArmVisual(armData, shoulderAngle, elbowAngle) {
+    const armLength1 = 2.0;
+    const armLength2 = 1.8;
+    const baseY = -2;
+    
+    // Shoulder rotation
+    const shoulderRotation = shoulderAngle - Math.PI / 2;
+    
+    // Upper arm position and rotation
+    armData.upperArm.rotation.z = shoulderRotation;
+    const upperArmMidX = Math.cos(shoulderAngle) * (armLength1 / 2);
+    const upperArmMidY = baseY + Math.sin(shoulderAngle) * (armLength1 / 2);
+    armData.upperArm.position.set(upperArmMidX, upperArmMidY, 0);
+    
+    // Elbow position
+    const elbowX = Math.cos(shoulderAngle) * armLength1;
+    const elbowY = baseY + Math.sin(shoulderAngle) * armLength1;
+    armData.elbow.position.set(elbowX, elbowY, 0);
+    
+    // Forearm angle (world space)
+    const forearmWorldAngle = shoulderAngle - (Math.PI - elbowAngle);
+    armData.forearm.rotation.z = forearmWorldAngle - Math.PI / 2;
+    
+    // Forearm position
+    const forearmMidX = elbowX + Math.cos(forearmWorldAngle) * (armLength2 / 2);
+    const forearmMidY = elbowY + Math.sin(forearmWorldAngle) * (armLength2 / 2);
+    armData.forearm.position.set(forearmMidX, forearmMidY, 0);
+    
+    // Hand position
+    const handX = elbowX + Math.cos(forearmWorldAngle) * armLength2;
+    const handY = elbowY + Math.sin(forearmWorldAngle) * armLength2;
+    armData.hand.position.set(handX, handY, 0);
+    
+    return new THREE.Vector3(handX, handY, 0);
+}
+
+// Add trail point
+function addTrailPoint(trail, position, armOffset) {
+    if (trail.pointCount < trail.maxPoints) {
+        const idx = trail.pointCount * 3;
+        trail.positions[idx] = position.x + armOffset;
+        trail.positions[idx + 1] = position.y;
+        trail.positions[idx + 2] = position.z;
+        trail.pointCount++;
+        trail.line.geometry.attributes.position.needsUpdate = true;
+        trail.line.geometry.setDrawRange(0, trail.pointCount);
+    }
+}
+
+// Smooth interpolation for human
+function smoothStep(t) {
+    return t * t * (3 - 2 * t);
+}
+
+// Jerky interpolation for robot
+function jerkyStep(t, steps) {
+    const stepSize = 1 / steps;
+    const currentStep = Math.floor(t / stepSize);
+    const stepProgress = (t - currentStep * stepSize) / stepSize;
+    
+    // Add overshoot and oscillation
+    const targetStepValue = (currentStep + 1) * stepSize;
+    const overshoot = Math.sin(stepProgress * Math.PI) * 0.15;
+    const oscillation = Math.sin(stepProgress * Math.PI * 4) * 0.05 * (1 - stepProgress);
+    
+    return Math.min(1, currentStep * stepSize + stepProgress * stepSize + overshoot + oscillation);
+}
+
+// HTML Text Overlays
+const textOverlay = document.createElement('div');
+textOverlay.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;font-family:"Segoe UI",sans-serif;';
+container.appendChild(textOverlay);
+
+const titleText = document.createElement('div');
+titleText.style.cssText = 'position:absolute;top:8%;left:50%;transform:translateX(-50%);text-align:center;font-size:28px;font-weight:bold;text-shadow:0 0 20px rgba(0,0,0,0.8),2px 2px 4px black;transition:opacity 0.5s;';
+textOverlay.appendChild(titleText);
+
+const subtitleText = document.createElement('div');
+subtitleText.style.cssText = 'position:absolute;top:15%;left:50%;transform:translateX(-50%);text-align:center;font-size:18px;text-shadow:0 0 20px rgba(0,0,0,0.8),2px 2px 4px black;color:white;transition:opacity 0.5s;';
+textOverlay.appendChild(subtitleText);
+
+const centerText = document.createElement('div');
+centerText.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;font-size:32px;font-weight:bold;text-shadow:0 0 20px rgba(0,0,0,0.8),2px 2px 4px black;color:white;opacity:0;transition:opacity 0.5s;';
+textOverlay.appendChild(centerText);
+
+// Tooltip
+const tooltip = document.createElement('div');
+tooltip.style.cssText = 'position:absolute;padding:6px 10px;background:rgba(0,0,0,0.8);color:white;border-radius:4px;font-size:12px;pointer-events:none;opacity:0;transition:opacity 0.2s;z-index:1000;';
+container.appendChild(tooltip);
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+renderer.domElement.addEventListener('mousemove', (event) => {
+    const rect = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(scene.children, true);
+    
+    if (intersects.length > 0 && intersects[0].object.name) {
+        tooltip.textContent = intersects[0].object.name;
+        tooltip.style.left = (event.clientX - rect.left + 15) + 'px';
+        tooltip.style.top = (event.clientY - rect.top + 15) + 'px';
+        tooltip.style.opacity = '1';
+    } else {
+        tooltip.style.opacity = '0';
+    }
+});
+
+// Animation targets
+const restPose = new THREE.Vector3(0, 1, 0);
+const targetPose = new THREE.Vector3(0, 3, 0);
+
+let lastRobotJerkTime = 0;
+let frameCount = 0;
+
+function animate() {
+    requestAnimationFrame(animate);
+    
+    const elapsed = Date.now() - startTime;
+    const phase = elapsed / animationDuration;
+    
+    frameCount++;
+    
+    // Phase calculations
+    const phase1End = 0.25; // 5s
+    const phase2End = 0.6;  // 12s
+    const phase3End = 0.85; // 17s
+    
+    // Human arm animation (smooth)
+    let humanProgress = 0;
+    if (phase < phase1End) {
+        humanProgress = smoothStep(phase / phase1End);
+    } else {
+        humanProgress = 1;
+    }
+    
+    const humanTarget = new THREE.Vector3().lerpVectors(restPose, targetPose, humanProgress);
+    humanTarget.x = -3.5;
+    const humanPose = calculateArmPose(
+        new THREE.Vector3(humanTarget.x + 3.5, humanTarget.y, 0),
+        new THREE.Vector3(0, -2, 0),
+        2.0, 1.8
+    );
+    const humanHandPos = updateArmVisual(humanArm, humanPose.shoulderAngle, humanPose.elbowAngle);
+    
+    if (phase < phase1End && frameCount % 3 === 0) {
+        addTrailPoint(humanTrail, humanHandPos, -3.5);
+    }
+    
+    // Robot arm animation (jerky, delayed)
+    let robotProgress = 0;
+    if (phase > phase1End && phase < phase2End) {
+        const robotPhase = (phase - phase1End) / (phase2End - phase1End);
+        robotProgress = jerkyStep(robotPhase, 8);
+        
+        // Create error particles on jerks
+        if (elapsed - lastRobotJerkTime > 300 && Math.random() > 0.7) {
+            const robotHandWorld = new THREE.Vector3();
+            robotArm.hand.getWorldPosition(robotHandWorld);
+            createErrorParticle(robotHandWorld);
+            lastRobotJerkTime = elapsed;
+        }
+    } else if (phase >= phase2End) {
+        robotProgress = 1;
+    }
+    
+    const robotTarget = new THREE.Vector3().lerpVectors(restPose, targetPose, robotProgress);
+    robotTarget.x = 3.5;
+    const robotPose = calculateArmPose(
+        new THREE.Vector3(robotTarget.x - 3.5, robotTarget.y, 0),
+        new THREE.Vector3(0, -2, 0),
+        2.0, 1.8
+    );
+    const robotHandPos = updateArmVisual(robotArm, robotPose.shoulderAngle, robotPose.elbowAngle);
+    
+    if (phase > phase1End && phase < phase2End && frameCount % 2 === 0) {
+        addTrailPoint(robotTrail, robotHandPos, 3.5);
+    }
+    
+    // Update error particles
+    for (let i = errorParticles.length - 1; i >= 0; i--) {
+        const particle = errorParticles[i];
+        particle.userData.life -= 0.02;
+        particle.material.opacity = particle.userData.life;
+        particle.position.add(particle.userData.velocity);
+        particle.userData.velocity.y -= 0.002;
+        
+        if (particle.userData.life <= 0) {
+            scene.remove(particle);
+            errorParticles.splice(i, 1);
+        }
+    }
+    
+    // Update text overlays
+    if (phase < phase1End) {
+        titleText.style.color = '#00d4ff';
+        titleText.textContent = 'HUMAN DEMONSTRATION';
+        titleText.style.opacity = '1';
+        subtitleText.textContent = 'Smooth, natural motion';
+        subtitleText.style.opacity = '1';
+        centerText.style.opacity = '0';
+    } else if (phase < phase2End) {
+        titleText.style.color = '#ff6b6b';
+        titleText.textContent = 'ROBOT REPLAY';
+        subtitleText.textContent = 'Single-step prediction';
+        subtitleText.style.color = '#ffaa99';
+        centerText.style.opacity = '0';
+    } else if (phase < phase3End) {
+        titleText.style.opacity = '0';
+        subtitleText.style.opacity = '0';
+        centerText.innerHTML = '<span style="color:#ffd700">THE GAP</span><br><span style="font-size:20px">Why can\'t robots just copy what they see?</span>';
+        centerText.style.opacity = '1';
+    } else {
+        // Fade out
+        const fadeProgress = (phase - phase3End) / (1 - phase3End);
+        centerText.style.opacity = String(1 - fadeProgress);
+        humanTrail.line.material.opacity = 0.7 * (1 - fadeProgress);
+        robotTrail.line.material.opacity = 0.7 * (1 - fadeProgress);
+    }
+    
+    // Loop animation
+    if (phase >= 1) {
+        startTime = Date.now();
+        humanTrail.pointCount = 0;
+        robotTrail.pointCount = 0;
+        humanTrail.line.geometry.setDrawRange(0, 0);
+        robotTrail.line.geometry.setDrawRange(0, 0);
+        
+        // Clear error particles
+        errorParticles.forEach(p => scene.remove(p));
+        errorParticles.length = 0;
+    }
+    
+    // Rotate target cube
+    targetCube.rotation.y += 0.02;
+    targetCube.rotation.x += 0.01;
+    
+    controls.update();
+    renderer.render(scene, camera);
+}
+
+animate();
+    </script>
+
+    <!-- Section 2 Code -->
+    <script id="section-2-code" type="text/animation">
+// Scene setup
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a1a);
+
+const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+camera.position.set(0.0, 8.0, 25.2);
+camera.lookAt(0, 0, 0);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(width, height);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+container.appendChild(renderer.domElement);
+
+// Controls
+const controls = new THREE.TrackballControls(camera, renderer.domElement);
+controls.rotateSpeed = 2.0;
+controls.zoomSpeed = 1.2;
+controls.panSpeed = 0.8;
+
+// Store references for reset buttons
+window.currentCamera = camera;
+window.currentControls = controls;
+window.initialCameraPosition = camera.position.clone();
+
+// Lighting - increased ambient for brighter scene
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+scene.add(ambientLight);
+
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+directionalLight.position.set(10, 20, 10);
+scene.add(directionalLight);
+
+const pointLight = new THREE.PointLight(0x4488ff, 0.5, 50);
+pointLight.position.set(-5, 10, 5);
+scene.add(pointLight);
+
+// Colors
+const redColor = 0xff6b6b;
+const greenColor = 0x00d9a0;
+const goldColor = 0xffd700;
+
+// Starting position
+const startPos = new THREE.Vector3(-10, 0, 0);
+const targetPos = new THREE.Vector3(10, 0, 0);
+
+// Start point marker
+const startGeom = new THREE.SphereGeometry(0.3, 16, 16);
+const startMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x444444 });
+const startMarker = new THREE.Mesh(startGeom, startMat);
+startMarker.position.copy(startPos);
+startMarker.name = "Starting Point";
+scene.add(startMarker);
+
+// Target (golden star-like sphere)
+const targetGeom = new THREE.SphereGeometry(0.6, 32, 32);
+const targetMat = new THREE.MeshStandardMaterial({ 
+    color: goldColor, 
+    emissive: 0x996600,
+    metalness: 0.8,
+    roughness: 0.2
+});
+const targetMesh = new THREE.Mesh(targetGeom, targetMat);
+targetMesh.position.copy(targetPos);
+targetMesh.name = "Target Goal";
+scene.add(targetMesh);
+
+// Target glow rings
+for (let i = 0; i < 3; i++) {
+    const ringGeom = new THREE.TorusGeometry(0.9 + i * 0.3, 0.05, 8, 32);
+    const ringMat = new THREE.MeshBasicMaterial({ color: goldColor, transparent: true, opacity: 0.4 - i * 0.1 });
+    const ring = new THREE.Mesh(ringGeom, ringMat);
+    ring.position.copy(targetPos);
+    ring.rotation.x = Math.PI / 2;
+    ring.name = `Target Ring ${i + 1}`;
+    scene.add(ring);
+}
+
+// Robot A (Single-step) - Red
+const robotAGeom = new THREE.SphereGeometry(0.5, 32, 32);
+const robotAMat = new THREE.MeshStandardMaterial({ 
+    color: redColor, 
+    emissive: 0x331111,
+    metalness: 0.3,
+    roughness: 0.7
+});
+const robotA = new THREE.Mesh(robotAGeom, robotAMat);
+robotA.position.copy(startPos);
+robotA.position.z = 3;
+robotA.name = "Robot A - Single Step (k=1)";
+scene.add(robotA);
+
+// Robot B (Chunk) - Green
+const robotBGeom = new THREE.SphereGeometry(0.5, 32, 32);
+const robotBMat = new THREE.MeshStandardMaterial({ 
+    color: greenColor, 
+    emissive: 0x113322,
+    metalness: 0.3,
+    roughness: 0.7
+});
+const robotB = new THREE.Mesh(robotBGeom, robotBMat);
+robotB.position.copy(startPos);
+robotB.position.z = -3;
+robotB.name = "Robot B - Chunk Prediction (k=100)";
+scene.add(robotB);
+
+// Trail systems
+const maxTrailPoints = 500;
+
+// Robot A trail (jagged red)
+const trailAPositions = new Float32Array(maxTrailPoints * 3);
+const trailAGeom = new THREE.BufferGeometry();
+trailAGeom.setAttribute('position', new THREE.BufferAttribute(trailAPositions, 3));
+const trailAMat = new THREE.LineBasicMaterial({ color: redColor, transparent: true, opacity: 0.8 });
+const trailA = new THREE.Line(trailAGeom, trailAMat);
+trailA.name = "Robot A Path Trail";
+scene.add(trailA);
+let trailACount = 0;
+
+// Robot B trail (smooth green)
+const trailBPositions = new Float32Array(maxTrailPoints * 3);
+const trailBGeom = new THREE.BufferGeometry();
+trailBGeom.setAttribute('position', new THREE.BufferAttribute(trailBPositions, 3));
+const trailBMat = new THREE.LineBasicMaterial({ color: greenColor, transparent: true, opacity: 0.8 });
+const trailB = new THREE.Line(trailBGeom, trailBMat);
+trailB.name = "Robot B Path Trail";
+scene.add(trailB);
+let trailBCount = 0;
+
+// Arrow helper function
+function createArrow(color, length = 1) {
+    const group = new THREE.Group();
+    
+    const shaftGeom = new THREE.CylinderGeometry(0.05, 0.05, length * 0.7, 8);
+    const shaftMat = new THREE.MeshStandardMaterial({ color: color, emissive: color, emissiveIntensity: 0.3 });
+    const shaft = new THREE.Mesh(shaftGeom, shaftMat);
+    shaft.position.y = length * 0.35;
+    group.add(shaft);
+    
+    const headGeom = new THREE.ConeGeometry(0.12, length * 0.3, 8);
+    const headMat = new THREE.MeshStandardMaterial({ color: color, emissive: color, emissiveIntensity: 0.3 });
+    const head = new THREE.Mesh(headGeom, headMat);
+    head.position.y = length * 0.85;
+    group.add(head);
+    
+    group.rotation.z = -Math.PI / 2;
+    return group;
+}
+
+// Robot A single arrow
+const arrowA = createArrow(redColor, 1);
+arrowA.name = "Single Step Prediction Arrow";
+scene.add(arrowA);
+
+// Robot B chunk arrows (fan of 10)
+const arrowBGroup = new THREE.Group();
+arrowBGroup.name = "Chunk Prediction Arrows (k=100)";
+const chunkArrows = [];
+for (let i = 0; i < 10; i++) {
+    const arrow = createArrow(greenColor, 1.5 - i * 0.08);
+    arrow.name = `Chunk Arrow ${i + 1}`;
+    chunkArrows.push(arrow);
+    arrowBGroup.add(arrow);
+}
+scene.add(arrowBGroup);
+
+// Error particles for Robot A
+const errorParticles = [];
+function spawnErrorParticle(position) {
+    const geom = new THREE.SphereGeometry(0.08, 8, 8);
+    const mat = new THREE.MeshBasicMaterial({ 
+        color: redColor, 
+        transparent: true, 
+        opacity: 0.6 
+    });
+    const particle = new THREE.Mesh(geom, mat);
+    particle.position.copy(position);
+    particle.position.x += (Math.random() - 0.5) * 0.5;
+    particle.position.y += (Math.random() - 0.5) * 0.5;
+    particle.position.z += (Math.random() - 0.5) * 0.5;
+    particle.userData.life = 1.0;
+    particle.name = "Error Particle";
+    scene.add(particle);
+    errorParticles.push(particle);
+}
+
+// Ground plane with grid
+const groundGeom = new THREE.PlaneGeometry(30, 15);
+const groundMat = new THREE.MeshStandardMaterial({ 
+    color: 0x1a1a2e, 
+    transparent: true, 
+    opacity: 0.5 
+});
+const ground = new THREE.Mesh(groundGeom, groundMat);
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = -2;
+ground.name = "Ground Plane";
+scene.add(ground);
+
+// Grid helper
+const gridHelper = new THREE.GridHelper(30, 30, 0x333355, 0x222244);
+gridHelper.position.y = -1.99;
+scene.add(gridHelper);
+
+// Ideal path visualizer (dashed lines)
+function createIdealPath(startZ, color) {
+    const points = [];
+    for (let i = 0; i <= 20; i++) {
+        const t = i / 20;
+        points.push(new THREE.Vector3(
+            startPos.x + (targetPos.x - startPos.x) * t,
+            0,
+            startZ
+        ));
+    }
+    const geom = new THREE.BufferGeometry().setFromPoints(points);
+    const mat = new THREE.LineDashedMaterial({ 
+        color: color, 
+        transparent: true, 
+        opacity: 0.3,
+        dashSize: 0.3,
+        gapSize: 0.2
+    });
+    const line = new THREE.Line(geom, mat);
+    line.computeLineDistances();
+    return line;
+}
+
+const idealPathA = createIdealPath(3, redColor);
+idealPathA.name = "Robot A Ideal Path";
+scene.add(idealPathA);
+
+const idealPathB = createIdealPath(-3, greenColor);
+idealPathB.name = "Robot B Ideal Path";
+scene.add(idealPathB);
+
+// Tooltip system
+const tooltip = document.createElement('div');
+tooltip.style.cssText = 'position:absolute;padding:6px 10px;background:rgba(0,0,0,0.8);color:white;border-radius:4px;font-size:12px;pointer-events:none;display:none;z-index:1000;';
+container.appendChild(tooltip);
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+renderer.domElement.addEventListener('mousemove', (event) => {
+    const rect = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(scene.children, true);
+    
+    if (intersects.length > 0) {
+        let obj = intersects[0].object;
+        while (obj && !obj.name) obj = obj.parent;
+        if (obj && obj.name) {
+            tooltip.textContent = obj.name;
+            tooltip.style.display = 'block';
+            tooltip.style.left = (event.clientX - rect.left + 15) + 'px';
+            tooltip.style.top = (event.clientY - rect.top + 15) + 'px';
+        }
+    } else {
+        tooltip.style.display = 'none';
+    }
+});
+
+// Animation state
+let animationTime = 0;
+const totalDuration = 22;
+let robotAProgress = 0;
+let robotBProgress = 0;
+let robotADrift = 0;
+let lastStepTime = 0;
+let robotAFinished = false;
+let robotBFinished = false;
+
+// Text overlay container
+const textOverlay = document.createElement('div');
+textOverlay.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;font-family:"Segoe UI",sans-serif;';
+container.appendChild(textOverlay);
+
+function updateTextOverlay(phase) {
+    textOverlay.innerHTML = '';
+    
+    const textShadow = '0 0 20px rgba(0,0,0,0.8), 2px 2px 4px black';
+    
+    if (phase === 1) {
+        textOverlay.innerHTML = `
+            <div style="position:absolute;top:8%;width:100%;text-align:center;">
+                <div style="font-size:28px;font-weight:bold;color:white;text-shadow:${textShadow};">THE RACE</div>
+            </div>
+            <div style="position:absolute;top:20%;left:15%;color:#ff6b6b;font-size:18px;font-weight:bold;text-shadow:${textShadow};">SINGLE-STEP</div>
+            <div style="position:absolute;top:20%;right:15%;color:#00d9a0;font-size:18px;font-weight:bold;text-shadow:${textShadow};">CHUNK (k=100)</div>
+        `;
+    } else if (phase === 2) {
+        textOverlay.innerHTML = `
+            <div style="position:absolute;bottom:25%;left:10%;color:#ff6b6b;font-size:14px;text-shadow:${textShadow};">
+                <div style="font-weight:bold;">k = 1</div>
+                <div style="font-size:11px;">predict → move → predict → move...</div>
+            </div>
+            <div style="position:absolute;bottom:25%;right:10%;color:#00d9a0;font-size:14px;text-shadow:${textShadow};">
+                <div style="font-weight:bold;">k = 100</div>
+                <div style="font-size:11px;">predict chunk → execute smoothly</div>
+            </div>
+        `;
+    } else if (phase === 3) {
+        let htmlContent = '';
+        if (robotBFinished) {
+            htmlContent += `<div style="position:absolute;top:35%;right:20%;color:#00d9a0;font-size:20px;font-weight:bold;text-shadow:${textShadow};">✓ SMOOTH ARRIVAL</div>`;
+        }
+        if (robotAFinished) {
+            htmlContent += `<div style="position:absolute;top:35%;left:15%;color:#ff6b6b;font-size:20px;font-weight:bold;text-shadow:${textShadow};">✗ DRIFT + DELAY</div>`;
+        } else if (robotBFinished) {
+            htmlContent += `<div style="position:absolute;top:35%;left:15%;color:#ff6b6b;font-size:16px;font-weight:bold;text-shadow:${textShadow};">Still struggling...</div>`;
+        }
+        textOverlay.innerHTML = htmlContent;
+    } else if (phase === 4) {
+        textOverlay.innerHTML = `
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
+                <div style="font-size:36px;font-weight:bold;color:#00d9a0;text-shadow:${textShadow};">CHUNK = SMOOTH</div>
+                <div style="font-size:24px;color:#ff6b6b;margin-top:10px;text-shadow:${textShadow};">Single-step = Drift</div>
+            </div>
+        `;
+    }
+}
+
+// Animation loop
+let lastPhase = 0;
+
+function animate() {
+    requestAnimationFrame(animate);
+    
+    animationTime += 0.016;
+    const loopTime = animationTime % totalDuration;
+    
+    // Determine phase
+    let phase;
+    if (loopTime < 4) phase = 1;
+    else if (loopTime < 12) phase = 2;
+    else if (loopTime < 17) phase = 3;
+    else phase = 4;
+    
+    // Reset on loop
+    if (loopTime < 0.1 && lastPhase === 4) {
+        robotAProgress = 0;
+        robotBProgress = 0;
+        robotADrift = 0;
+        robotAFinished = false;
+        robotBFinished = false;
+        trailACount = 0;
+        trailBCount = 0;
+        lastStepTime = 0;
+        
+        // Clear error particles
+        errorParticles.forEach(p => scene.remove(p));
+        errorParticles.length = 0;
+        
+        // Reset positions
+        robotA.position.copy(startPos);
+        robotA.position.z = 3;
+        robotB.position.copy(startPos);
+        robotB.position.z = -3;
+    }
+    
+    if (phase !== lastPhase) {
+        updateTextOverlay(phase);
+        lastPhase = phase;
+    }
+    
+    // Phase 1: Setup - show prediction styles
+    if (phase === 1) {
+        // Position arrows
+        arrowA.position.copy(robotA.position);
+        arrowA.position.x += 0.8;
+        arrowA.visible = true;
+        arrowA.scale.setScalar(0.8 + Math.sin(loopTime * 3) * 0.1);
+        
+        arrowBGroup.position.copy(robotB.position);
+        arrowBGroup.visible = true;
+        
+        // Fan out chunk arrows
+        chunkArrows.forEach((arrow, i) => {
+            const angle = (i - 4.5) * 0.08;
+            arrow.rotation.y = angle;
+            arrow.position.x = 0.8 + i * 0.15;
+            arrow.position.y = Math.sin(angle) * 0.5;
+            const pulse = Math.sin(loopTime * 2 + i * 0.3) * 0.1 + 1;
+            arrow.scale.setScalar(pulse);
+        });
+    }
+    
+    // Phase 2: The Race
+    if (phase === 2) {
+        const raceTime = loopTime - 4;
+        const raceDuration = 8;
+        
+        // Robot B - smooth motion
+        if (!robotBFinished) {
+            robotBProgress = Math.min(raceTime / (raceDuration * 0.85), 1);
+            const smoothT = robotBProgress * robotBProgress * (3 - 2 * robotBProgress); // Smoothstep
+            
+            robotB.position.x = startPos.x + (targetPos.x - startPos.x) * smoothT;
+            robotB.position.y = Math.sin(smoothT * Math.PI) * 1.5; // Smooth arc
+            robotB.position.z = -3;
+            
+            if (robotBProgress >= 1) {
+                robotBFinished = true;
+                robotB.position.copy(targetPos);
+                robotB.position.z = -3;
+            }
+        }
+        
+        // Robot A - jerky step-by-step motion with drift
+        const stepInterval = 0.3;
+        if (raceTime - lastStepTime > stepInterval && !robotAFinished) {
+            lastStepTime = raceTime;
+            robotAProgress = Math.min(robotAProgress + 0.04, 1);
+            
+            // Add drift error
+            robotADrift += (Math.random() - 0.3) * 0.15;
+            robotADrift = Math.max(-0.5, Math.min(2.5, robotADrift));
+            
+            // Spawn error particle
+            spawnErrorParticle(robotA.position);
+        }
+        
+        // Interpolate Robot A position (jerky)
+        const targetX = startPos.x + (targetPos.x - startPos.x) * robotAProgress;
+        robotA.position.x += (targetX - robotA.position.x) * 0.3;
+        robotA.position.y = robotADrift;
+        robotA.position.z = 3;
+        
+        // Update trails
+        if (trailACount < maxTrailPoints) {
+            trailAPositions[trailACount * 3] = robotA.position.x;
+            trailAPositions[trailACount * 3 + 1] = robotA.position.y;
+            trailAPositions[trailACount * 3 + 2] = robotA.position.z;
+            trailACount++;
+            trailAGeom.attributes.position.needsUpdate = true;
+            trailAGeom.setDrawRange(0, trailACount);
+        }
+        
+        if (trailBCount < maxTrailPoints) {
+            trailBPositions[trailBCount * 3] = robotB.position.x;
+            trailBPositions[trailBCount * 3 + 1] = robotB.position.y;
+            trailBPositions[trailBCount * 3 + 2] = robotB.position.z;
+            trailBCount++;
+            trailBGeom.attributes.position.needsUpdate = true;
+            trailBGeom.setDrawRange(0, trailBCount);
+        }
+        
+        // Update arrows during race
+        arrowA.position.copy(robotA.position);
+        arrowA.position.x += 0.6;
+        arrowA.visible = !robotAFinished;
+        
+        arrowBGroup.position.copy(robotB.position);
+        arrowBGroup.visible = !robotBFinished;
+        chunkArrows.forEach((arrow, i) => {
+            const fade = 1 - robotBProgress;
+            arrow.scale.setScalar(fade * 0.8 + 0.2);
+        });
+    }
+    
+    // Phase 3: Results
+    if (phase === 3) {
+        const resultTime = loopTime - 12;
+        
+        // Robot A continues struggling
+        if (!robotAFinished) {
+            const stepInterval = 0.25;
+            if (resultTime - (lastStepTime - 8) > stepInterval) {
+                lastStepTime = resultTime + 8;
+                robotAProgress = Math.min(robotAProgress + 0.05, 1);
+                robotADrift += (Math.random() - 0.4) * 0.1;
+                spawnErrorParticle(robotA.position);
+            }
+            
+            const targetX = startPos.x + (targetPos.x - startPos.x) * robotAProgress;
+            robotA.position.x += (targetX - robotA.position.x) * 0.3;
+            
+            if (robotAProgress >= 1) {
+                robotAFinished = true;
+                updateTextOverlay(phase);
+            }
+        }
+        
+        // Update trail A
+        if (trailACount < maxTrailPoints && !robotAFinished) {
+            trailAPositions[trailACount * 3] = robotA.position.x;
+            trailAPositions[trailACount * 3 + 1] = robotA.position.y;
+            trailAPositions[trailACount * 3 + 2] = robotA.position.z;
+            trailACount++;
+            trailAGeom.attributes.position.needsUpdate = true;
+            trailAGeom.setDrawRange(0, trailACount);
+        }
+        
+        arrowA.visible = false;
+        arrowBGroup.visible = false;
+    }
+    
+    // Phase 4: Comparison
+    if (phase === 4) {
+        arrowA.visible = false;
+        arrowBGroup.visible = false;
+        
+        // Pulse the trails
+        const pulse = Math.sin(loopTime * 2) * 0.2 + 0.8;
+        trailAMat.opacity = pulse;
+        trailBMat.opacity = pulse;
+    }
+    
+    // Update error particles
+    for (let i = errorParticles.length - 1; i >= 0; i--) {
+        const p = errorParticles[i];
+        p.userData.life -= 0.005;
+        p.material.opacity = p.userData.life * 0.6;
+        p.position.y += 0.01;
+        
+        if (p.userData.life <= 0) {
+            scene.remove(p);
+            errorParticles.splice(i, 1);
+        }
+    }
+    
+    // Animate target
+    targetMesh.rotation.y += 0.02;
+    const targetPulse = Math.sin(animationTime * 3) * 0.1 + 1;
+    targetMesh.scale.setScalar(targetPulse);
+    
+    controls.update();
+    renderer.render(scene, camera);
+}
+
+// Initialize
+updateTextOverlay(1);
+animate();
+    </script>
+
+    <!-- Section 3 Code -->
+    <script id="section-3-code" type="text/animation">
+// Scene setup
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a1a);
+
+const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+camera.position.set(0.0, 1.0, 19.6);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(width, height);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+container.appendChild(renderer.domElement);
+
+const controls = new THREE.TrackballControls(camera, renderer.domElement);
+controls.rotateSpeed = 2.0;
+controls.zoomSpeed = 1.2;
+controls.panSpeed = 0.8;
+
+// Store references for reset buttons
+window.currentCamera = camera;
+window.currentControls = controls;
+window.initialCameraPosition = camera.position.clone();
+controls.noZoom = false;
+controls.noPan = false;
+controls.staticMoving = false;
+controls.dynamicDampingFactor = 0.15;
+
+// Lighting
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+scene.add(ambientLight);
+
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+directionalLight.position.set(5, 10, 7);
+scene.add(directionalLight);
+
+const backLight = new THREE.DirectionalLight(0x4488ff, 0.3);
+backLight.position.set(-5, -5, -5);
+scene.add(backLight);
+
+// Tooltip setup
+const tooltip = document.createElement('div');
+tooltip.style.cssText = 'position:absolute;padding:6px 10px;background:rgba(0,0,0,0.8);color:white;border-radius:4px;font-size:12px;pointer-events:none;display:none;z-index:1000;';
+container.appendChild(tooltip);
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+// Materials
+const encoderMaterial = new THREE.MeshPhongMaterial({ color: 0x9b59b6, transparent: true, opacity: 1 });
+const decoderMaterial = new THREE.MeshPhongMaterial({ color: 0x1abc9c });
+const zMaterial = new THREE.MeshPhongMaterial({ color: 0xffd700, emissive: 0xffa500, emissiveIntensity: 0.5 });
+const actionMaterial = new THREE.MeshPhongMaterial({ color: 0xe67e22 });
+const stateMaterial = new THREE.MeshPhongMaterial({ color: 0x3498db });
+const imageMaterial = new THREE.MeshPhongMaterial({ color: 0x2ecc71 });
+const priorMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff, transparent: true, opacity: 0.3 });
+
+// Create encoder box
+const encoderGroup = new THREE.Group();
+const encoderGeom = new THREE.BoxGeometry(2.5, 3, 1.5);
+const encoderMesh = new THREE.Mesh(encoderGeom, encoderMaterial);
+encoderMesh.name = "CVAE Encoder - Compresses actions + state into latent Z";
+encoderGroup.add(encoderMesh);
+encoderGroup.position.set(-5, 0, 0);
+scene.add(encoderGroup);
+
+// Create decoder box
+const decoderGroup = new THREE.Group();
+const decoderGeom = new THREE.BoxGeometry(2.5, 3, 1.5);
+const decoderMesh = new THREE.Mesh(decoderGeom, decoderMaterial);
+decoderMesh.name = "CVAE Decoder - Generates action chunk from Z + observations";
+decoderGroup.add(decoderMesh);
+decoderGroup.position.set(5, 0, 0);
+scene.add(decoderGroup);
+
+// Create Z orb
+const zGroup = new THREE.Group();
+const zGeom = new THREE.SphereGeometry(0.6, 32, 32);
+const zMesh = new THREE.Mesh(zGeom, zMaterial);
+zMesh.name = "Latent Z - Captures demonstration style/behavior";
+zGroup.add(zMesh);
+
+// Z glow
+const zGlowGeom = new THREE.SphereGeometry(0.8, 32, 32);
+const zGlowMaterial = new THREE.MeshPhongMaterial({ 
+    color: 0xffd700, 
+    transparent: true, 
+    opacity: 0.3,
+    emissive: 0xffa500,
+    emissiveIntensity: 0.3
+});
+const zGlow = new THREE.Mesh(zGlowGeom, zGlowMaterial);
+zGlow.name = "Z Aura - Style information encoded here";
+zGroup.add(zGlow);
+
+// Z point light
+const zLight = new THREE.PointLight(0xffd700, 1, 5);
+zGroup.add(zLight);
+zGroup.position.set(0, 0, 0);
+scene.add(zGroup);
+
+// Create Gaussian prior cloud
+const priorGroup = new THREE.Group();
+priorGroup.visible = false;
+
+for (let i = 0; i < 50; i++) {
+    const size = Math.random() * 0.15 + 0.05;
+    const cloudGeom = new THREE.SphereGeometry(size, 8, 8);
+    const cloudMat = new THREE.MeshPhongMaterial({ 
+        color: 0xaabbff, 
+        transparent: true, 
+        opacity: Math.random() * 0.3 + 0.1 
+    });
+    const cloudSphere = new THREE.Mesh(cloudGeom, cloudMat);
+    cloudSphere.position.set(
+        (Math.random() - 0.5) * 2.5,
+        (Math.random() - 0.5) * 2.5,
+        (Math.random() - 0.5) * 2.5
+    );
+    cloudSphere.name = "Gaussian Prior N(0,1) - Random sampling distribution";
+    priorGroup.add(cloudSphere);
+}
+priorGroup.position.set(0, 2.5, 0);
+scene.add(priorGroup);
+
+// Data flow particles
+const flowParticles = [];
+const inputTokens = [];
+const outputTokens = [];
+
+// Create input tokens (action cubes - orange, state cube - blue)
+for (let i = 0; i < 4; i++) {
+    const tokenGeom = new THREE.BoxGeometry(0.25, 0.25, 0.25);
+    const token = new THREE.Mesh(tokenGeom, i < 3 ? actionMaterial : stateMaterial);
+    token.name = i < 3 ? "Action Token - Robot action from demonstration" : "State Token - Current observation";
+    token.visible = false;
+    token.userData = { 
+        startPos: new THREE.Vector3(-8 + i * 0.4, 1 - i * 0.5, 0),
+        endPos: new THREE.Vector3(-5, 0, 0),
+        delay: i * 0.3
+    };
+    inputTokens.push(token);
+    scene.add(token);
+}
+
+// Create image/joint tokens going to decoder
+const decoderInputTokens = [];
+for (let i = 0; i < 3; i++) {
+    const tokenGeom = new THREE.BoxGeometry(0.25, 0.25, 0.25);
+    const mat = i < 2 ? imageMaterial : stateMaterial;
+    const token = new THREE.Mesh(tokenGeom, mat);
+    token.name = i < 2 ? "Image Token - Visual observation" : "Joint Token - Robot proprioception";
+    token.visible = false;
+    token.userData = {
+        startPos: new THREE.Vector3(5, -3 + i * 0.5, 0),
+        endPos: new THREE.Vector3(5, -1.5, 0)
+    };
+    decoderInputTokens.push(token);
+    scene.add(token);
+}
+
+// Create output action chunk
+for (let i = 0; i < 10; i++) {
+    const tokenGeom = new THREE.BoxGeometry(0.2, 0.2, 0.2);
+    const token = new THREE.Mesh(tokenGeom, actionMaterial.clone());
+    token.name = `Action ${i+1} of 10 - Predicted action chunk`;
+    token.visible = false;
+    token.userData = {
+        startPos: new THREE.Vector3(5, 0, 0),
+        endPos: new THREE.Vector3(8, 1.5 - i * 0.35, 0),
+        delay: i * 0.1
+    };
+    outputTokens.push(token);
+    scene.add(token);
+}
+
+// Z flow particle
+const zFlowGeom = new THREE.SphereGeometry(0.3, 16, 16);
+const zFlowMesh = new THREE.Mesh(zFlowGeom, zMaterial.clone());
+zFlowMesh.name = "Z traveling to decoder";
+zFlowMesh.visible = false;
+scene.add(zFlowMesh);
+
+// HTML Overlays
+const overlayContainer = document.createElement('div');
+overlayContainer.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;font-family:Segoe UI,sans-serif;';
+container.appendChild(overlayContainer);
+
+// Mode banner
+const modeBanner = document.createElement('div');
+modeBanner.style.cssText = 'position:absolute;top:20px;left:50%;transform:translateX(-50%);padding:12px 30px;border-radius:25px;font-size:20px;font-weight:bold;color:white;text-shadow:0 2px 4px rgba(0,0,0,0.5);transition:all 0.5s;';
+modeBanner.innerHTML = '🔧 TRAINING MODE';
+modeBanner.style.background = 'linear-gradient(135deg, #9b59b6, #8e44ad)';
+overlayContainer.appendChild(modeBanner);
+
+// Encoder label
+const encoderLabel = document.createElement('div');
+encoderLabel.style.cssText = 'position:absolute;top:60%;left:15%;color:#9b59b6;font-size:14px;font-weight:bold;text-shadow:0 0 10px rgba(155,89,182,0.5);text-align:center;transition:opacity 0.5s;';
+encoderLabel.innerHTML = 'ENCODER<br><span style="font-size:11px;color:#bb8fce;">Actions + State → Z</span>';
+overlayContainer.appendChild(encoderLabel);
+
+// Z label
+const zLabel = document.createElement('div');
+zLabel.style.cssText = 'position:absolute;top:35%;left:50%;transform:translateX(-50%);color:#ffd700;font-size:13px;font-weight:bold;text-shadow:0 0 10px rgba(255,215,0,0.5);text-align:center;';
+zLabel.innerHTML = 'Z = style of demo';
+overlayContainer.appendChild(zLabel);
+
+// Decoder label
+const decoderLabel = document.createElement('div');
+decoderLabel.style.cssText = 'position:absolute;top:60%;right:15%;color:#1abc9c;font-size:14px;font-weight:bold;text-shadow:0 0 10px rgba(26,188,156,0.5);text-align:center;';
+decoderLabel.innerHTML = 'DECODER<br><span style="font-size:11px;color:#76d7c4;">Predict action chunk</span>';
+overlayContainer.appendChild(decoderLabel);
+
+// Prior label (hidden initially)
+const priorLabel = document.createElement('div');
+priorLabel.style.cssText = 'position:absolute;top:22%;left:50%;transform:translateX(-50%);color:#aabbff;font-size:12px;font-weight:bold;text-shadow:0 0 10px rgba(170,187,255,0.5);text-align:center;opacity:0;transition:opacity 0.5s;';
+priorLabel.innerHTML = 'Sample from N(0,1)';
+overlayContainer.appendChild(priorLabel);
+
+// No encoder label (hidden initially)
+const noEncoderLabel = document.createElement('div');
+noEncoderLabel.style.cssText = 'position:absolute;top:45%;left:15%;color:#27ae60;font-size:16px;font-weight:bold;text-shadow:0 0 10px rgba(39,174,96,0.5);text-align:center;opacity:0;transition:opacity 0.5s;';
+noEncoderLabel.innerHTML = '✓ No encoder<br>needed!';
+overlayContainer.appendChild(noEncoderLabel);
+
+// Punchline
+const punchline = document.createElement('div');
+punchline.style.cssText = 'position:absolute;bottom:30px;left:50%;transform:translateX(-50%);color:white;font-size:16px;font-weight:bold;text-shadow:0 2px 4px rgba(0,0,0,0.8);text-align:center;padding:10px 20px;background:rgba(0,0,0,0.5);border-radius:10px;';
+punchline.innerHTML = 'Training: Learn to compress demonstrations into Z';
+overlayContainer.appendChild(punchline);
+
+// Animation state
+let isTrainingMode = true;
+const cycleDuration = 24000; // 24 seconds total
+let startTime = Date.now();
+
+// Easing function
+function easeInOutCubic(t) {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
+
+// Lerp helper
+function lerpVec3(start, end, t) {
+    return new THREE.Vector3(
+        start.x + (end.x - start.x) * t,
+        start.y + (end.y - start.y) * t,
+        start.z + (end.z - start.z) * t
+    );
+}
+
+// Mouse move handler
+renderer.domElement.addEventListener('mousemove', (event) => {
+    const rect = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(scene.children, true);
+    
+    if (intersects.length > 0 && intersects[0].object.name) {
+        tooltip.style.display = 'block';
+        tooltip.style.left = (event.clientX - rect.left + 15) + 'px';
+        tooltip.style.top = (event.clientY - rect.top + 15) + 'px';
+        tooltip.textContent = intersects[0].object.name;
+    } else {
+        tooltip.style.display = 'none';
+    }
+});
+
+// Animation loop
+function animate() {
+    requestAnimationFrame(animate);
+    
+    const elapsed = Date.now() - startTime;
+    const cycleTime = elapsed % cycleDuration;
+    const normalizedTime = cycleTime / cycleDuration;
+    
+    // Determine mode (0-0.5 = training, 0.5-1 = inference)
+    const newTrainingMode = normalizedTime < 0.5;
+    
+    if (newTrainingMode !== isTrainingMode) {
+        isTrainingMode = newTrainingMode;
+        
+        // Update UI for mode change
+        if (isTrainingMode) {
+            modeBanner.innerHTML = '🔧 TRAINING MODE';
+            modeBanner.style.background = 'linear-gradient(135deg, #9b59b6, #8e44ad)';
+            encoderLabel.style.opacity = '1';
+            noEncoderLabel.style.opacity = '0';
+            priorLabel.style.opacity = '0';
+            zLabel.innerHTML = 'Z = style of demo';
+            punchline.innerHTML = 'Training: Learn to compress demonstrations into Z';
+        } else {
+            modeBanner.innerHTML = '🚀 INFERENCE MODE';
+            modeBanner.style.background = 'linear-gradient(135deg, #27ae60, #2ecc71)';
+            encoderLabel.style.opacity = '0';
+            noEncoderLabel.style.opacity = '1';
+            priorLabel.style.opacity = '1';
+            zLabel.innerHTML = 'Z = random style';
+            punchline.innerHTML = 'Inference: Just sample Z and decode actions!';
+        }
+    }
+    
+    // Phase timing within each mode (0-1 within 12s)
+    const phaseTime = isTrainingMode ? normalizedTime * 2 : (normalizedTime - 0.5) * 2;
+    
+    // Z orb pulsing
+    const pulse = 1 + Math.sin(elapsed * 0.003) * 0.1;
+    zGlow.scale.set(pulse, pulse, pulse);
+    zLight.intensity = 0.8 + Math.sin(elapsed * 0.005) * 0.3;
+    
+    // Gaussian cloud animation
+    priorGroup.children.forEach((sphere, i) => {
+        sphere.position.x += Math.sin(elapsed * 0.001 + i) * 0.002;
+        sphere.position.y += Math.cos(elapsed * 0.001 + i * 0.5) * 0.002;
+    });
+    
+    if (isTrainingMode) {
+        // TRAINING MODE ANIMATION
+        encoderMaterial.opacity = 1;
+        priorGroup.visible = false;
+        
+        // Phase 1 (0-0.25): Input tokens flow to encoder
+        if (phaseTime < 0.25) {
+            const t = phaseTime / 0.25;
+            inputTokens.forEach((token, i) => {
+                const tokenT = Math.max(0, Math.min(1, (t - token.userData.delay / 1.2)));
+                token.visible = tokenT > 0;
+                if (token.visible) {
+                    const pos = lerpVec3(token.userData.startPos, token.userData.endPos, easeInOutCubic(tokenT));
+                    token.position.copy(pos);
+                }
+            });
+            zFlowMesh.visible = false;
+        }
+        // Phase 2 (0.25-0.5): Encoder compresses to Z
+        else if (phaseTime < 0.5) {
+            const t = (phaseTime - 0.25) / 0.25;
+            inputTokens.forEach(token => token.visible = false);
+            
+            zFlowMesh.visible = true;
+            const pos = lerpVec3(
+                new THREE.Vector3(-5, 0, 0),
+                new THREE.Vector3(0, 0, 0),
+                easeInOutCubic(t)
+            );
+            zFlowMesh.position.copy(pos);
+            zGroup.position.set(0, 0, 0);
+        }
+        // Phase 3 (0.5-0.75): Z flows to decoder with inputs
+        else if (phaseTime < 0.75) {
+            const t = (phaseTime - 0.5) / 0.25;
+            zFlowMesh.visible = true;
+            const pos = lerpVec3(
+                new THREE.Vector3(0, 0, 0),
+                new THREE.Vector3(5, 0, 0),
+                easeInOutCubic(t)
+            );
+            zFlowMesh.position.copy(pos);
+            
+            // Decoder inputs flow up
+            decoderInputTokens.forEach((token, i) => {
+                token.visible = true;
+                const tokenT = easeInOutCubic(Math.min(1, t * 1.5));
+                const tokenPos = lerpVec3(token.userData.startPos, token.userData.endPos, tokenT);
+                token.position.copy(tokenPos);
+            });
+        }
+        // Phase 4 (0.75-1): Output action chunk
+        else {
+            const t = (phaseTime - 0.75) / 0.25;
+            zFlowMesh.visible = false;
+            decoderInputTokens.forEach(token => token.visible = false);
+            
+            outputTokens.forEach((token, i) => {
+                const tokenT = Math.max(0, Math.min(1, (t - token.userData.delay) * 2));
+                token.visible = tokenT > 0;
+                if (token.visible) {
+                    const pos = lerpVec3(token.userData.startPos, token.userData.endPos, easeInOutCubic(tokenT));
+                    token.position.copy(pos);
+                }
+            });
+        }
+    } else {
+        // INFERENCE MODE ANIMATION
+        
+        // Phase 1 (0-0.25): Encoder fades out
+        if (phaseTime < 0.25) {
+            const t = phaseTime / 0.25;
+            encoderMaterial.opacity = 1 - easeInOutCubic(t);
+            priorGroup.visible = true;
+            priorGroup.children.forEach(s => {
+                if (s.material) s.material.opacity = t * 0.3;
+            });
+            
+            // Hide all tokens
+            inputTokens.forEach(t => t.visible = false);
+            outputTokens.forEach(t => t.visible = false);
+            decoderInputTokens.forEach(t => t.visible = false);
+            zFlowMesh.visible = false;
+        }
+        // Phase 2 (0.25-0.5): Z samples from prior
+        else if (phaseTime < 0.5) {
+            const t = (phaseTime - 0.25) / 0.25;
+            encoderMaterial.opacity = 0;
+            priorGroup.visible = true;
+            
+            // Z emerges from prior cloud
+            zFlowMesh.visible = true;
+            const pos = lerpVec3(
+                new THREE.Vector3(0, 2.5, 0),
+                new THREE.Vector3(0, 0, 0),
+                easeInOutCubic(t)
+            );
+            zFlowMesh.position.copy(pos);
+            zFlowMesh.scale.setScalar(0.5 + t * 0.5);
+        }
+        // Phase 3 (0.5-0.75): Z flows to decoder
+        else if (phaseTime < 0.75) {
+            const t = (phaseTime - 0.5) / 0.25;
+            
+            zFlowMesh.visible = true;
+            zFlowMesh.scale.setScalar(1);
+            const pos = lerpVec3(
+                new THREE.Vector3(0, 0, 0),
+                new THREE.Vector3(5, 0, 0),
+                easeInOutCubic(t)
+            );
+            zFlowMesh.position.copy(pos);
+            
+            // Decoder inputs
+            decoderInputTokens.forEach((token, i) => {
+                token.visible = true;
+                const tokenT = easeInOutCubic(Math.min(1, t * 1.5));
+                const tokenPos = lerpVec3(token.userData.startPos, token.userData.endPos, tokenT);
+                token.position.copy(tokenPos);
+            });
+        }
+        // Phase 4 (0.75-1): Output smooth actions
+        else {
+            const t = (phaseTime - 0.75) / 0.25;
+            zFlowMesh.visible = false;
+            decoderInputTokens.forEach(token => token.visible = false);
+            
+            outputTokens.forEach((token, i) => {
+                const tokenT = Math.max(0, Math.min(1, (t - token.userData.delay) * 2));
+                token.visible = tokenT > 0;
+                if (token.visible) {
+                    const pos = lerpVec3(token.userData.startPos, token.userData.endPos, easeInOutCubic(tokenT));
+                    token.position.copy(pos);
+                    token.material.color.setHex(0x27ae60); // Green for inference
+                }
+            });
+        }
+    }
+    
+    // Reset output token colors for training
+    if (isTrainingMode) {
+        outputTokens.forEach(token => {
+            token.material.color.setHex(0xe67e22);
+        });
+    }
+    
+    controls.update();
+    renderer.render(scene, camera);
+}
+
+animate();
+    </script>
+
+    <!-- Section 4 Code -->
+    <script id="section-4-code" type="text/animation">
+// Scene setup
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a1a);
+
+const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+camera.position.set(0.0, 2.0, 16.8);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(width, height);
+container.appendChild(renderer.domElement);
+
+const controls = new THREE.TrackballControls(camera, renderer.domElement);
+controls.rotateSpeed = 2.0;
+controls.zoomSpeed = 1.2;
+controls.panSpeed = 0.8;
+
+// Store references for reset buttons
+window.currentCamera = camera;
+window.currentControls = controls;
+window.initialCameraPosition = camera.position.clone();
+
+// Lighting - bright for visibility
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+scene.add(ambientLight);
+
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+directionalLight.position.set(5, 10, 5);
+scene.add(directionalLight);
+
+const pointLight = new THREE.PointLight(0x4488ff, 0.5);
+pointLight.position.set(-5, 5, 5);
+scene.add(pointLight);
+
+// Tooltip setup
+const tooltip = document.createElement('div');
+tooltip.style.cssText = 'position:absolute;padding:6px 10px;background:rgba(0,0,0,0.85);color:white;border-radius:4px;font-size:12px;pointer-events:none;display:none;z-index:1000;';
+container.appendChild(tooltip);
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+// HTML Overlay
+const overlay = document.createElement('div');
+overlay.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;font-family:Segoe UI,sans-serif;';
+container.appendChild(overlay);
+
+// Text elements
+const topText = document.createElement('div');
+topText.style.cssText = 'position:absolute;top:20px;width:100%;text-align:center;font-size:28px;font-weight:bold;color:#ffffff;text-shadow:0 0 20px rgba(255,255,255,0.5);';
+overlay.appendChild(topText);
+
+const centerText = document.createElement('div');
+centerText.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;font-size:20px;color:#ffffff;text-shadow:0 0 15px rgba(255,255,255,0.4);';
+overlay.appendChild(centerText);
+
+const bottomText = document.createElement('div');
+bottomText.style.cssText = 'position:absolute;bottom:80px;width:100%;text-align:center;font-size:18px;color:#88ccff;text-shadow:0 0 10px rgba(136,204,255,0.5);';
+overlay.appendChild(bottomText);
+
+const formulaText = document.createElement('div');
+formulaText.style.cssText = 'position:absolute;top:70px;width:100%;text-align:center;font-size:16px;font-family:monospace;color:#00ffff;text-shadow:0 0 10px rgba(0,255,255,0.5);display:none;';
+overlay.appendChild(formulaText);
+
+const chunkLabels = document.createElement('div');
+chunkLabels.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;';
+overlay.appendChild(chunkLabels);
+
+// Create trajectory path
+function createTrajectoryPath(offsetX, offsetY) {
+    const points = [];
+    for (let i = 0; i <= 100; i++) {
+        const t = i / 100;
+        const x = -8 + t * 16 + offsetX;
+        const y = Math.sin(t * Math.PI * 2) * 1.5 + offsetY;
+        const z = Math.cos(t * Math.PI) * 0.5;
+        points.push(new THREE.Vector3(x, y, z));
+    }
+    return new THREE.CatmullRomCurve3(points);
+}
+
+// Main trajectory curve
+const mainCurve = createTrajectoryPath(0, 0);
+
+// Chunk data
+const chunks = [
+    { name: 'Chunk t-2 (Oldest)', color: 0xff6644, start: 0, end: 0.5, age: 2 },
+    { name: 'Chunk t-1 (Middle)', color: 0xffcc00, start: 0.25, end: 0.75, age: 1 },
+    { name: 'Chunk t (Newest)', color: 0x44ff66, start: 0.5, end: 1.0, age: 0 }
+];
+
+const chunkMeshes = [];
+const chunkMaterials = [];
+
+// Create chunk tubes
+chunks.forEach((chunk, index) => {
+    const chunkPoints = [];
+    const steps = 50;
+    for (let i = 0; i <= steps; i++) {
+        const t = chunk.start + (i / steps) * (chunk.end - chunk.start);
+        const point = mainCurve.getPoint(t);
+        point.y += (index - 1) * 0.3; // Slight vertical offset for visibility
+        chunkPoints.push(point);
+    }
+    
+    const chunkCurve = new THREE.CatmullRomCurve3(chunkPoints);
+    const tubeGeo = new THREE.TubeGeometry(chunkCurve, 40, 0.15, 8, false);
+    const material = new THREE.MeshPhongMaterial({
+        color: chunk.color,
+        transparent: true,
+        opacity: 0,
+        emissive: chunk.color,
+        emissiveIntensity: 0.3
+    });
+    
+    const mesh = new THREE.Mesh(tubeGeo, material);
+    mesh.name = chunk.name;
+    scene.add(mesh);
+    chunkMeshes.push(mesh);
+    chunkMaterials.push(material);
+});
+
+// Blended result path (smooth white/cyan)
+const blendedPoints = [];
+for (let i = 0; i <= 100; i++) {
+    const point = mainCurve.getPoint(i / 100);
+    blendedPoints.push(point);
+}
+const blendedCurve = new THREE.CatmullRomCurve3(blendedPoints);
+const blendedTubeGeo = new THREE.TubeGeometry(blendedCurve, 80, 0.12, 8, false);
+const blendedMaterial = new THREE.MeshPhongMaterial({
+    color: 0x00ffff,
+    transparent: true,
+    opacity: 0,
+    emissive: 0x00ffff,
+    emissiveIntensity: 0.5
+});
+const blendedMesh = new THREE.Mesh(blendedTubeGeo, blendedMaterial);
+blendedMesh.name = 'Blended Result - Smooth Motion';
+scene.add(blendedMesh);
+
+// Single chunk for Phase 1 (showing the problem)
+const singleChunkPoints = [];
+for (let i = 0; i <= 60; i++) {
+    const point = mainCurve.getPoint(i / 100);
+    singleChunkPoints.push(point);
+}
+const singleCurve = new THREE.CatmullRomCurve3(singleChunkPoints);
+const singleTubeGeo = new THREE.TubeGeometry(singleCurve, 40, 0.15, 8, false);
+const singleMaterial = new THREE.MeshPhongMaterial({
+    color: 0x4488ff,
+    transparent: true,
+    opacity: 0,
+    emissive: 0x4488ff,
+    emissiveIntensity: 0.3
+});
+const singleMesh = new THREE.Mesh(singleTubeGeo, singleMaterial);
+singleMesh.name = 'Single Chunk - Shows Boundary Problem';
+scene.add(singleMesh);
+
+// Jitter marker (red sphere at boundary)
+const jitterGeo = new THREE.SphereGeometry(0.25, 16, 16);
+const jitterMaterial = new THREE.MeshPhongMaterial({
+    color: 0xff0000,
+    transparent: true,
+    opacity: 0,
+    emissive: 0xff0000,
+    emissiveIntensity: 0.8
+});
+const jitterMarker = new THREE.Mesh(jitterGeo, jitterMaterial);
+jitterMarker.position.copy(mainCurve.getPoint(0.6));
+jitterMarker.name = 'Boundary Discontinuity - Jitter Point';
+scene.add(jitterMarker);
+
+// Timeline bar
+const timelineGeo = new THREE.BoxGeometry(16, 0.1, 0.5);
+const timelineMaterial = new THREE.MeshPhongMaterial({ color: 0x333355 });
+const timeline = new THREE.Mesh(timelineGeo, timelineMaterial);
+timeline.position.set(0, -3, 0);
+timeline.name = 'Timeline';
+scene.add(timeline);
+
+// Timeline markers
+const markerPositions = [-6, -2, 2, 6];
+const markerColors = [0xff6644, 0xffcc00, 0x44ff66, 0x00ffff];
+const timelineMarkers = [];
+
+markerPositions.forEach((pos, i) => {
+    const markerGeo = new THREE.BoxGeometry(0.3, 0.4, 0.6);
+    const markerMat = new THREE.MeshPhongMaterial({ 
+        color: markerColors[i],
+        transparent: true,
+        opacity: 0
+    });
+    const marker = new THREE.Mesh(markerGeo, markerMat);
+    marker.position.set(pos, -3, 0);
+    marker.name = `Timeline Marker ${i + 1}`;
+    scene.add(marker);
+    timelineMarkers.push(marker);
+});
+
+// Weight visualization bars
+const weightBars = [];
+const weightBarPositions = [
+    { x: 6, y: 2.5, chunk: 0 },
+    { x: 7, y: 2.5, chunk: 1 },
+    { x: 8, y: 2.5, chunk: 2 }
+];
+
+weightBarPositions.forEach((pos, i) => {
+    const barGeo = new THREE.BoxGeometry(0.4, 2, 0.2);
+    const barMat = new THREE.MeshPhongMaterial({
+        color: chunks[i].color,
+        transparent: true,
+        opacity: 0
+    });
+    const bar = new THREE.Mesh(barGeo, barMat);
+    bar.position.set(pos.x, pos.y, 0);
+    bar.name = `Weight Bar - ${chunks[i].name}`;
+    scene.add(bar);
+    weightBars.push({ mesh: bar, material: barMat, baseY: pos.y });
+});
+
+// Weight labels container
+const weightLabelsDiv = document.createElement('div');
+weightLabelsDiv.style.cssText = 'position:absolute;right:20px;top:150px;display:none;';
+overlay.appendChild(weightLabelsDiv);
+
+// Animation state
+let startTime = Date.now();
+const totalDuration = 20000;
+let currentPhase = 0;
+
+// Mouse events
+renderer.domElement.addEventListener('mousemove', (event) => {
+    const rect = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(scene.children);
+    
+    if (intersects.length > 0 && intersects[0].object.name) {
+        tooltip.style.display = 'block';
+        tooltip.style.left = (event.clientX - rect.left + 15) + 'px';
+        tooltip.style.top = (event.clientY - rect.top + 15) + 'px';
+        tooltip.textContent = intersects[0].object.name;
+    } else {
+        tooltip.style.display = 'none';
+    }
+});
+
+function updatePhase1(progress) {
+    // Show single chunk with boundary problem
+    topText.innerHTML = '<span style="color:#ff4444;">THE PROBLEM</span>';
+    centerText.innerHTML = 'Chunk boundary = <span style="color:#ff4444;">discontinuity</span>';
+    bottomText.innerHTML = '⚠️ Jitter at seams!';
+    formulaText.style.display = 'none';
+    
+    singleMaterial.opacity = Math.min(progress * 4, 1);
+    
+    // Pulsing jitter marker
+    const pulse = Math.sin(progress * 20) * 0.5 + 0.5;
+    jitterMaterial.opacity = progress > 0.3 ? pulse : 0;
+    jitterMarker.scale.setScalar(1 + pulse * 0.5);
+    
+    // Hide other elements
+    chunkMaterials.forEach(m => m.opacity = 0);
+    blendedMaterial.opacity = 0;
+    weightBars.forEach(w => w.material.opacity = 0);
+    weightLabelsDiv.style.display = 'none';
+}
+
+function updatePhase2(progress) {
+    // Show overlapping chunks
+    topText.innerHTML = '<span style="color:#44ff88;">THE SOLUTION</span>';
+    centerText.innerHTML = '';
+    bottomText.innerHTML = '🔄 Overlap predictions';
+    formulaText.style.display = 'none';
+    
+    // Hide phase 1 elements
+    singleMaterial.opacity = Math.max(0, 1 - progress * 3);
+    jitterMaterial.opacity = Math.max(0, 1 - progress * 3);
+    
+    // Sequentially show chunks
+    const chunkDelay = 0.25;
+    chunkMaterials.forEach((mat, i) => {
+        const chunkProgress = (progress - i * chunkDelay) / (1 - chunks.length * chunkDelay);
+        mat.opacity = Math.max(0, Math.min(chunkProgress * 2, 0.7));
+    });
+    
+    // Show timeline markers
+    timelineMarkers.forEach((marker, i) => {
+        if (i < 3) {
+            marker.material.opacity = Math.min(progress * 2, 0.8);
+        }
+    });
+    
+    // Update chunk labels
+    if (progress > 0.3) {
+        chunkLabels.innerHTML = `
+            <div style="position:absolute;left:15%;top:35%;color:#ff6644;font-size:14px;text-shadow:0 0 10px #ff6644;">Chunk t-2</div>
+            <div style="position:absolute;left:35%;top:30%;color:#ffcc00;font-size:14px;text-shadow:0 0 10px #ffcc00;">Chunk t-1</div>
+            <div style="position:absolute;left:55%;top:35%;color:#44ff66;font-size:14px;text-shadow:0 0 10px #44ff66;">Chunk t</div>
+        `;
+    }
+}
+
+function updatePhase3(progress) {
+    // Exponential weighting
+    topText.innerHTML = '<span style="color:#00ffff;">EXPONENTIAL WEIGHTING</span>';
+    centerText.innerHTML = '';
+    bottomText.innerHTML = '⚖️ Blend by recency';
+    formulaText.style.display = 'block';
+    formulaText.innerHTML = 'w = exp(-m × age)';
+    
+    // Show weight bars
+    weightLabelsDiv.style.display = 'block';
+    
+    const weights = [0.35, 0.6, 1.0]; // Exponential decay weights
+    
+    weightBars.forEach((bar, i) => {
+        bar.material.opacity = Math.min(progress * 2, 0.9);
+        const targetScale = weights[i];
+        bar.mesh.scale.y = targetScale * Math.min(progress * 2, 1);
+        bar.mesh.position.y = bar.baseY - (1 - bar.mesh.scale.y);
+    });
+    
+    // Update chunk opacities based on weights
+    chunkMaterials.forEach((mat, i) => {
+        mat.opacity = weights[i] * 0.8 * Math.min(progress * 2, 1);
+    });
+    
+    // Weight labels
+    weightLabelsDiv.innerHTML = `
+        <div style="color:#ff6644;margin-bottom:50px;font-size:14px;">35%</div>
+        <div style="color:#ffcc00;margin-bottom:30px;font-size:14px;">60%</div>
+        <div style="color:#44ff66;font-size:14px;">100%</div>
+    `;
+    
+    // Start showing blended result
+    if (progress > 0.6) {
+        blendedMaterial.opacity = (progress - 0.6) * 2;
+    }
+    
+    chunkLabels.innerHTML = '';
+}
+
+function updatePhase4(progress) {
+    // Punchline - smooth result
+    topText.innerHTML = '';
+    centerText.innerHTML = `
+        <div style="font-size:36px;font-weight:bold;color:#00ffff;text-shadow:0 0 30px #00ffff,0 0 60px #0088ff;">
+            Temporal Ensembling
+        </div>
+        <div style="font-size:20px;margin-top:20px;color:#88ffcc;">
+            Overlap + Blend = <span style="color:#ffffff;">Smooth</span>
+        </div>
+    `;
+    bottomText.innerHTML = '✨ Buttery-smooth motion';
+    formulaText.style.display = 'none';
+    
+    // Fade out chunks
+    chunkMaterials.forEach(mat => {
+        mat.opacity = Math.max(0, 0.8 - progress * 2);
+    });
+    
+    // Fade out weight bars
+    weightBars.forEach(bar => {
+        bar.material.opacity = Math.max(0, 0.9 - progress * 2);
+    });
+    weightLabelsDiv.style.display = 'none';
+    
+    // Full blended result with glow
+    blendedMaterial.opacity = 1;
+    blendedMaterial.emissiveIntensity = 0.5 + Math.sin(progress * 10) * 0.2;
+    
+    // Final timeline marker
+    timelineMarkers[3].material.opacity = Math.min(progress * 2, 1);
+    
+    chunkLabels.innerHTML = '';
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+    
+    const elapsed = Date.now() - startTime;
+    const totalProgress = (elapsed % totalDuration) / totalDuration;
+    
+    // Determine phase
+    if (totalProgress < 0.25) {
+        currentPhase = 1;
+        updatePhase1(totalProgress / 0.25);
+    } else if (totalProgress < 0.6) {
+        currentPhase = 2;
+        updatePhase2((totalProgress - 0.25) / 0.35);
+    } else if (totalProgress < 0.85) {
+        currentPhase = 3;
+        updatePhase3((totalProgress - 0.6) / 0.25);
+    } else {
+        currentPhase = 4;
+        updatePhase4((totalProgress - 0.85) / 0.15);
+    }
+    
+    // Gentle camera movement
+    const camAngle = totalProgress * Math.PI * 0.1;
+    camera.position.x = Math.sin(camAngle) * 2;
+    camera.lookAt(0, 0, 0);
+    
+    controls.update();
+    renderer.render(scene, camera);
+}
+
+animate();
+    </script>
+
+    <!-- Section 5 Code -->
+    <script id="section-5-code" type="text/animation">
+// Scene setup
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a1a);
+
+const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+camera.position.set(0.0, 2.0, 28.0);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(width, height);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+container.appendChild(renderer.domElement);
+
+const controls = new THREE.TrackballControls(camera, renderer.domElement);
+controls.rotateSpeed = 2.0;
+controls.zoomSpeed = 1.2;
+controls.panSpeed = 0.8;
+
+// Store references for reset buttons
+window.currentCamera = camera;
+window.currentControls = controls;
+window.initialCameraPosition = camera.position.clone();
+controls.dynamicDampingFactor = 0.15;
+
+// Lighting
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+scene.add(ambientLight);
+
+const mainLight = new THREE.DirectionalLight(0xffffff, 0.8);
+mainLight.position.set(10, 20, 15);
+scene.add(mainLight);
+
+const fillLight = new THREE.DirectionalLight(0x4488ff, 0.3);
+fillLight.position.set(-10, 5, -10);
+scene.add(fillLight);
+
+// Tooltip setup
+const tooltip = document.createElement('div');
+tooltip.style.cssText = 'position:absolute;padding:6px 10px;background:rgba(0,0,0,0.8);color:white;border-radius:4px;font-size:12px;pointer-events:none;display:none;z-index:1000;';
+container.appendChild(tooltip);
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+// HTML overlay container
+const overlay = document.createElement('div');
+overlay.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;';
+container.appendChild(overlay);
+
+// Text elements
+const stepLabel = document.createElement('div');
+stepLabel.style.cssText = 'position:absolute;top:20px;left:50%;transform:translateX(-50%);font-family:"Segoe UI",sans-serif;font-size:28px;font-weight:bold;color:white;text-shadow:0 0 20px rgba(255,255,255,0.5);text-align:center;';
+overlay.appendChild(stepLabel);
+
+const bottomLabel = document.createElement('div');
+bottomLabel.style.cssText = 'position:absolute;bottom:60px;left:50%;transform:translateX(-50%);font-family:"Segoe UI",sans-serif;font-size:18px;color:rgba(255,255,255,0.8);text-shadow:0 0 10px rgba(255,255,255,0.3);text-align:center;';
+overlay.appendChild(bottomLabel);
+
+const componentLabel = document.createElement('div');
+componentLabel.style.cssText = 'position:absolute;bottom:20%;left:50%;transform:translateX(-50%);font-family:"Segoe UI",sans-serif;font-size:18px;color:#ffd700;text-shadow:0 0 20px rgba(255,215,0,0.8),0 0 40px rgba(255,215,0,0.4);text-align:center;display:none;';
+overlay.appendChild(componentLabel);
+
+const punchlineText = document.createElement('div');
+punchlineText.style.cssText = 'position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);font-family:"Segoe UI",sans-serif;font-size:32px;font-weight:bold;color:#ffd700;text-shadow:0 0 30px rgba(255,215,0,0.8),0 0 60px rgba(255,215,0,0.4);text-align:center;opacity:0;transition:opacity 0.5s;';
+overlay.appendChild(punchlineText);
+
+const subtitleText = document.createElement('div');
+subtitleText.style.cssText = 'position:absolute;top:52%;left:50%;transform:translate(-50%,-50%);font-family:"Segoe UI",sans-serif;font-size:24px;color:white;text-shadow:0 0 20px rgba(255,255,255,0.5);text-align:center;opacity:0;transition:opacity 0.5s;';
+overlay.appendChild(subtitleText);
+
+// Materials
+const humanMaterial = new THREE.MeshPhongMaterial({ color: 0x3498db, emissive: 0x1a4c6e });
+const encoderMaterial = new THREE.MeshPhongMaterial({ color: 0x9b59b6, emissive: 0x4d2c5b, transparent: true, opacity: 1 });
+const zMaterial = new THREE.MeshPhongMaterial({ color: 0xffd700, emissive: 0x806b00 });
+const cameraMaterial = new THREE.MeshPhongMaterial({ color: 0x2ecc71, emissive: 0x174e38 });
+const decoderMaterial = new THREE.MeshPhongMaterial({ color: 0x1abc9c, emissive: 0x0d5e4e });
+const robotMaterial = new THREE.MeshPhongMaterial({ color: 0x27ae60, emissive: 0x135730 });
+
+// Pipeline positions
+const positions = {
+    human: -12,
+    encoder: -8,
+    z: -4,
+    cameras: 0,
+    decoder: 5,
+    chunk: 9,
+    robot: 13
+};
+
+// Create Human Demonstrator
+const humanGroup = new THREE.Group();
+humanGroup.name = "Human Demonstrator";
+
+// Head
+const headGeom = new THREE.SphereGeometry(0.5, 16, 16);
+const head = new THREE.Mesh(headGeom, humanMaterial);
+head.position.y = 2.5;
+head.name = "Human Head";
+humanGroup.add(head);
+
+// Body
+const bodyGeom = new THREE.CylinderGeometry(0.3, 0.4, 2, 8);
+const body = new THREE.Mesh(bodyGeom, humanMaterial);
+body.position.y = 1;
+body.name = "Human Body";
+humanGroup.add(body);
+
+// Arm (animated)
+const armGeom = new THREE.CylinderGeometry(0.12, 0.12, 1.5, 8);
+const arm = new THREE.Mesh(armGeom, humanMaterial);
+arm.position.set(0.6, 1.8, 0);
+arm.rotation.z = -Math.PI / 4;
+arm.name = "Human Arm (Demonstrating)";
+humanGroup.add(arm);
+
+// Hand
+const handGeom = new THREE.SphereGeometry(0.18, 8, 8);
+const hand = new THREE.Mesh(handGeom, humanMaterial);
+hand.position.set(1.2, 1.2, 0);
+hand.name = "Human Hand";
+humanGroup.add(hand);
+
+humanGroup.position.x = positions.human;
+scene.add(humanGroup);
+
+// Motion trail
+const trailPoints = [];
+const trailGeom = new THREE.BufferGeometry();
+const trailMaterial = new THREE.LineBasicMaterial({ color: 0x3498db, transparent: true, opacity: 0.6 });
+const motionTrail = new THREE.Line(trailGeom, trailMaterial);
+motionTrail.name = "Demonstration Motion Trail";
+scene.add(motionTrail);
+
+// CVAE Encoder Box
+const encoderGeom = new THREE.BoxGeometry(2, 3, 1.5);
+const encoder = new THREE.Mesh(encoderGeom, encoderMaterial);
+encoder.position.set(positions.encoder, 1, 0);
+encoder.name = "CVAE Encoder (Training Only)";
+scene.add(encoder);
+
+// Encoder label
+const encoderLabelGeom = new THREE.PlaneGeometry(2, 0.5);
+const encoderCanvas = document.createElement('canvas');
+encoderCanvas.width = 256;
+encoderCanvas.height = 64;
+const encoderCtx = encoderCanvas.getContext('2d');
+encoderCtx.fillStyle = '#9b59b6';
+encoderCtx.fillRect(0, 0, 256, 64);
+encoderCtx.fillStyle = 'white';
+encoderCtx.font = 'bold 24px Segoe UI';
+encoderCtx.textAlign = 'center';
+encoderCtx.fillText('ENCODER', 128, 42);
+const encoderTexture = new THREE.CanvasTexture(encoderCanvas);
+const encoderLabelMat = new THREE.MeshBasicMaterial({ map: encoderTexture, transparent: true });
+const encoderLabel = new THREE.Mesh(encoderLabelGeom, encoderLabelMat);
+encoderLabel.position.set(positions.encoder, 3, 0.8);
+encoderLabel.name = "Encoder Label";
+scene.add(encoderLabel);
+
+// Z Orb (Style Variable)
+const zGeom = new THREE.SphereGeometry(0.8, 32, 32);
+const zOrb = new THREE.Mesh(zGeom, zMaterial);
+zOrb.position.set(positions.z, 1.5, 0);
+zOrb.name = "Z - Style Variable (Latent Code)";
+scene.add(zOrb);
+
+// Z glow
+const zGlowGeom = new THREE.SphereGeometry(1.2, 32, 32);
+const zGlowMat = new THREE.MeshBasicMaterial({ color: 0xffd700, transparent: true, opacity: 0.2 });
+const zGlow = new THREE.Mesh(zGlowGeom, zGlowMat);
+zGlow.position.copy(zOrb.position);
+zGlow.name = "Z Glow Effect";
+scene.add(zGlow);
+
+// Multi-Camera Fusion
+const cameraGroup = new THREE.Group();
+cameraGroup.name = "Multi-Camera Fusion Zone";
+
+const cameraPositions = [
+    { pos: [0, 2.5, 0], label: "Top" },
+    { pos: [0, 0.5, 1], label: "Front" },
+    { pos: [-1, 1, 0.5], label: "Wrist L" },
+    { pos: [1, 1, 0.5], label: "Wrist R" }
+];
+
+const cameras = [];
+cameraPositions.forEach((cam, i) => {
+    const camGeom = new THREE.BoxGeometry(0.6, 0.4, 0.3);
+    const camMesh = new THREE.Mesh(camGeom, cameraMaterial);
+    camMesh.position.set(...cam.pos);
+    camMesh.name = `Camera: ${cam.label} View`;
+    cameraGroup.add(camMesh);
+    cameras.push(camMesh);
+    
+    // Lens
+    const lensGeom = new THREE.CylinderGeometry(0.1, 0.12, 0.15, 16);
+    const lensMat = new THREE.MeshPhongMaterial({ color: 0x111111 });
+    const lens = new THREE.Mesh(lensGeom, lensMat);
+    lens.rotation.x = Math.PI / 2;
+    lens.position.set(cam.pos[0], cam.pos[1], cam.pos[2] + 0.2);
+    lens.name = `${cam.label} Camera Lens`;
+    cameraGroup.add(lens);
+});
+
+cameraGroup.position.x = positions.cameras;
+scene.add(cameraGroup);
+
+// Fusion zone (central sphere)
+const fusionGeom = new THREE.SphereGeometry(0.5, 16, 16);
+const fusionMat = new THREE.MeshPhongMaterial({ color: 0x3498db, emissive: 0x1a4c6e, transparent: true, opacity: 0.6 });
+const fusionZone = new THREE.Mesh(fusionGeom, fusionMat);
+fusionZone.position.set(positions.cameras, 1.5, 0);
+fusionZone.name = "Token Fusion Zone (1202 tokens)";
+scene.add(fusionZone);
+
+// Transformer Decoder
+const decoderGeom = new THREE.BoxGeometry(2.5, 3.5, 1.5);
+const decoder = new THREE.Mesh(decoderGeom, decoderMaterial);
+decoder.position.set(positions.decoder, 1, 0);
+decoder.name = "Transformer Decoder (Cross-Attention)";
+scene.add(decoder);
+
+// Decoder label
+const decoderLabelCanvas = document.createElement('canvas');
+decoderLabelCanvas.width = 256;
+decoderLabelCanvas.height = 64;
+const decoderCtx = decoderLabelCanvas.getContext('2d');
+decoderCtx.fillStyle = '#1abc9c';
+decoderCtx.fillRect(0, 0, 256, 64);
+decoderCtx.fillStyle = 'white';
+decoderCtx.font = 'bold 22px Segoe UI';
+decoderCtx.textAlign = 'center';
+decoderCtx.fillText('DECODER', 128, 42);
+const decoderTexture = new THREE.CanvasTexture(decoderLabelCanvas);
+const decoderLabelMat = new THREE.MeshBasicMaterial({ map: decoderTexture, transparent: true });
+const decoderLabelMesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 0.5), decoderLabelMat);
+decoderLabelMesh.position.set(positions.decoder, 3.2, 0.8);
+decoderLabelMesh.name = "Decoder Label";
+scene.add(decoderLabelMesh);
+
+// Action Chunk (100 small cubes)
+const chunkGroup = new THREE.Group();
+chunkGroup.name = "Action Chunk (k=100 actions)";
+
+const chunkCubes = [];
+for (let i = 0; i < 20; i++) {
+    const cubeGeom = new THREE.BoxGeometry(0.15, 0.15, 0.15);
+    const t = i / 19;
+    const cubeColor = new THREE.Color().lerpColors(new THREE.Color(0xe67e22), new THREE.Color(0xf1c40f), t);
+    const cubeMat = new THREE.MeshPhongMaterial({ color: cubeColor, emissive: cubeColor.clone().multiplyScalar(0.3) });
+    const cube = new THREE.Mesh(cubeGeom, cubeMat);
+    cube.position.set(i * 0.2, Math.sin(i * 0.3) * 0.3, 0);
+    cube.name = `Action ${i * 5 + 1}-${(i + 1) * 5}`;
+    chunkGroup.add(cube);
+    chunkCubes.push(cube);
+}
+
+chunkGroup.position.set(positions.chunk, 1, 0);
+scene.add(chunkGroup);
+
+// Robot Arm
+const robotGroup = new THREE.Group();
+robotGroup.name = "SO-ARM101 Robot";
+
+// Base
+const baseGeom = new THREE.CylinderGeometry(0.8, 1, 0.4, 16);
+const base = new THREE.Mesh(baseGeom, robotMaterial);
+base.position.y = 0.2;
+base.name = "Robot Base";
+robotGroup.add(base);
+
+// Joints and links
+const jointGeom = new THREE.SphereGeometry(0.25, 16, 16);
+const linkGeom = new THREE.CylinderGeometry(0.12, 0.12, 1.2, 8);
+
+const joint1 = new THREE.Mesh(jointGeom, robotMaterial);
+joint1.position.y = 0.5;
+joint1.name = "Robot Joint 1 (Base)";
+robotGroup.add(joint1);
+
+const link1 = new THREE.Mesh(linkGeom, robotMaterial);
+link1.position.y = 1.1;
+link1.name = "Robot Link 1";
+robotGroup.add(link1);
+
+const joint2 = new THREE.Mesh(jointGeom, robotMaterial);
+joint2.position.y = 1.8;
+joint2.name = "Robot Joint 2 (Shoulder)";
+robotGroup.add(joint2);
+
+const link2 = new THREE.Mesh(linkGeom, robotMaterial);
+link2.position.set(0.4, 2.2, 0);
+link2.rotation.z = Math.PI / 4;
+link2.name = "Robot Link 2";
+robotGroup.add(link2);
+
+const joint3 = new THREE.Mesh(jointGeom, robotMaterial);
+joint3.position.set(0.9, 2.6, 0);
+joint3.name = "Robot Joint 3 (Elbow)";
+robotGroup.add(joint3);
+
+// End effector
+const effectorGeom = new THREE.ConeGeometry(0.2, 0.5, 8);
+const effector = new THREE.Mesh(effectorGeom, robotMaterial);
+effector.position.set(1.2, 2.9, 0);
+effector.rotation.z = -Math.PI / 4;
+effector.name = "Robot End Effector";
+robotGroup.add(effector);
+
+robotGroup.position.x = positions.robot;
+scene.add(robotGroup);
+
+// Success glow for robot
+const successGlowGeom = new THREE.SphereGeometry(2.5, 16, 16);
+const successGlowMat = new THREE.MeshBasicMaterial({ color: 0x27ae60, transparent: true, opacity: 0 });
+const successGlow = new THREE.Mesh(successGlowGeom, successGlowMat);
+successGlow.position.set(positions.robot, 1.5, 0);
+successGlow.name = "Success Indicator";
+scene.add(successGlow);
+
+// Data flow particles
+const particles = [];
+const particleGeom = new THREE.SphereGeometry(0.08, 8, 8);
+
+function createParticle(color, startPos, endPos, duration) {
+    const mat = new THREE.MeshBasicMaterial({ color: color, transparent: true });
+    const particle = new THREE.Mesh(particleGeom, mat);
+    particle.position.copy(startPos);
+    particle.userData = {
+        startPos: startPos.clone(),
+        endPos: endPos.clone(),
+        startTime: Date.now(),
+        duration: duration
+    };
+    scene.add(particle);
+    particles.push(particle);
+    return particle;
+}
+
+// Flow lines (bezier curves)
+function createFlowLine(start, end, color, controlOffset = 2) {
+    const curve = new THREE.QuadraticBezierCurve3(
+        new THREE.Vector3(start.x, start.y, start.z),
+        new THREE.Vector3((start.x + end.x) / 2, start.y + controlOffset, start.z),
+        new THREE.Vector3(end.x, end.y, end.z)
+    );
+    const points = curve.getPoints(50);
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    const material = new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: 0.4 });
+    const line = new THREE.Line(geometry, material);
+    return line;
+}
+
+// Create flow lines
+const flowLines = [];
+const line1 = createFlowLine(
+    { x: positions.human + 2, y: 1.5, z: 0 },
+    { x: positions.encoder - 1, y: 1.5, z: 0 },
+    0x3498db, 1
+);
+line1.name = "Demo to Encoder Flow";
+scene.add(line1);
+flowLines.push(line1);
+
+const line2 = createFlowLine(
+    { x: positions.encoder + 1, y: 1.5, z: 0 },
+    { x: positions.z - 0.8, y: 1.5, z: 0 },
+    0x9b59b6, 1
+);
+line2.name = "Encoder to Z Flow";
+scene.add(line2);
+flowLines.push(line2);
+
+const line3 = createFlowLine(
+    { x: positions.z + 0.8, y: 1.5, z: 0 },
+    { x: positions.cameras - 1, y: 1.5, z: 0 },
+    0xffd700, 0.5
+);
+line3.name = "Z to Fusion Flow";
+scene.add(line3);
+flowLines.push(line3);
+
+const line4 = createFlowLine(
+    { x: positions.cameras + 1, y: 1.5, z: 0 },
+    { x: positions.decoder - 1.25, y: 1.5, z: 0 },
+    0x3498db, 1
+);
+line4.name = "Fusion to Decoder Flow";
+scene.add(line4);
+flowLines.push(line4);
+
+const line5 = createFlowLine(
+    { x: positions.decoder + 1.25, y: 1, z: 0 },
+    { x: positions.chunk - 0.5, y: 1, z: 0 },
+    0x1abc9c, 0.5
+);
+line5.name = "Decoder to Chunk Flow";
+scene.add(line5);
+flowLines.push(line5);
+
+const line6 = createFlowLine(
+    { x: positions.chunk + 2, y: 1, z: 0 },
+    { x: positions.robot - 1, y: 1, z: 0 },
+    0xe67e22, 1
+);
+line6.name = "Chunk to Robot Flow";
+scene.add(line6);
+flowLines.push(line6);
+
+// Pipeline summary line (for finale)
+const summaryLineGeom = new THREE.BufferGeometry();
+const summaryLineMat = new THREE.LineBasicMaterial({ color: 0xffd700, transparent: true, opacity: 0 });
+const summaryLine = new THREE.Line(summaryLineGeom, summaryLineMat);
+scene.add(summaryLine);
+
+// Cross-attention beams
+const attentionBeams = [];
+for (let i = 0; i < 5; i++) {
+    const beamGeom = new THREE.CylinderGeometry(0.02, 0.02, 3, 8);
+    const beamMat = new THREE.MeshBasicMaterial({ color: 0x1abc9c, transparent: true, opacity: 0 });
+    const beam = new THREE.Mesh(beamGeom, beamMat);
+    beam.rotation.z = Math.PI / 2;
+    beam.position.set(positions.decoder - 1.5, 0.5 + i * 0.5, 0);
+    beam.name = `Cross-Attention Beam ${i + 1}`;
+    scene.add(beam);
+    attentionBeams.push(beam);
+}
+
+// Animation state
+const startTime = Date.now();
+const totalDuration = 25000; // 25 seconds
+
+// Component opacity controls
+const componentOpacities = {
+    human: 1,
+    encoder: 1,
+    z: 1,
+    cameras: 1,
+    decoder: 1,
+    chunk: 1,
+    robot: 1
+};
+
+function setComponentOpacity(component, opacity) {
+    componentOpacities[component] = opacity;
+}
+
+// Mouse events
+renderer.domElement.addEventListener('mousemove', (event) => {
+    const rect = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(scene.children, true);
+    
+    if (intersects.length > 0) {
+        const obj = intersects[0].object;
+        if (obj.name) {
+            tooltip.style.display = 'block';
+            tooltip.style.left = (event.clientX - rect.left + 15) + 'px';
+            tooltip.style.top = (event.clientY - rect.top + 15) + 'px';
+            tooltip.textContent = obj.name;
+        }
+    } else {
+        tooltip.style.display = 'none';
+    }
+});
+
+// Animation loop
+function animate() {
+    requestAnimationFrame(animate);
+    
+    const elapsed = Date.now() - startTime;
+    const cycleTime = elapsed % totalDuration;
+    const t = cycleTime / totalDuration;
+    const phase = Math.floor(t * 5); // 0-4 for 5 phases
+    const phaseT = (t * 5) % 1; // 0-1 within each phase
+    
+    // Reset visual state at cycle start (but DON'T reset startTime)
+    if (cycleTime < 50) {
+        // Reset visibility for all objects
+        humanGroup.visible = true;
+        encoder.visible = true;
+        encoderLabel.visible = true;
+        zOrb.visible = true;
+        zGlow.visible = true;
+        cameraGroup.visible = true;
+        fusionZone.visible = true;
+        decoder.visible = true;
+        decoderLabelMesh.visible = true;
+        chunkGroup.visible = true;
+        robotGroup.visible = true;
+        successGlow.visible = true;
+        motionTrail.visible = true;
+        flowLines.forEach(line => line.visible = true);
+        attentionBeams.forEach(beam => beam.visible = true);
+        summaryLine.visible = true;
+        
+        // Reset other state
+        encoderMaterial.opacity = 1;
+        punchlineText.style.opacity = '0';
+        subtitleText.style.opacity = '0';
+        successGlowMat.opacity = 0;
+    }
+    
+    // Phase-based animations
+    const time = Date.now() * 0.001;
+    
+    // Human arm animation
+    arm.rotation.z = -Math.PI / 4 + Math.sin(time * 2) * 0.5;
+    hand.position.x = 0.6 + Math.cos(time * 2) * 0.6;
+    hand.position.y = 1.5 + Math.sin(time * 2) * 0.4;
+    
+    // Z orb pulsing
+    const zPulse = 1 + Math.sin(time * 3) * 0.1;
+    zOrb.scale.setScalar(zPulse);
+    zGlow.scale.setScalar(zPulse * 1.5);
+    zGlowMat.opacity = 0.2 + Math.sin(time * 3) * 0.1;
+    
+    // Chunk cubes wave
+    chunkCubes.forEach((cube, i) => {
+        cube.position.y = Math.sin(time * 2 + i * 0.4) * 0.3;
+        cube.rotation.x = time + i * 0.1;
+        cube.rotation.y = time * 0.5 + i * 0.1;
+    });
+    
+    // Robot arm movement
+    const robotAngle = Math.sin(time * 1.5) * 0.3;
+    link2.rotation.z = Math.PI / 4 + robotAngle;
+    joint3.position.x = 0.9 + Math.sin(robotAngle) * 0.2;
+    joint3.position.y = 2.6 + Math.cos(robotAngle) * 0.1;
+    effector.position.x = 1.2 + Math.sin(robotAngle) * 0.3;
+    effector.position.y = 2.9 + Math.cos(robotAngle) * 0.15;
+    
+    // Phase-specific updates
+    if (phase === 0) {
+        // Phase 1: Demonstration
+        stepLabel.innerHTML = '<span style="color:#3498db">STEP 1:</span> DEMONSTRATION';
+        bottomLabel.textContent = 'Human shows the task';
+        componentLabel.style.display = 'none';
+        
+        // Highlight human
+        humanMaterial.emissive.setHex(0x2980b9);
+        
+        // Dim others
+        encoderMaterial.emissive.setHex(0x2d1f36);
+        zMaterial.emissive.setHex(0x403500);
+        decoderMaterial.emissive.setHex(0x0d3d33);
+        
+        // Camera follows human
+        camera.position.x += (positions.human + 5 - camera.position.x) * 0.02;
+        
+    } else if (phase === 1) {
+        // Phase 2: Style Capture
+        stepLabel.innerHTML = '<span style="color:#9b59b6">STEP 2:</span> STYLE CAPTURE';
+        bottomLabel.textContent = 'CVAE extracts style';
+        componentLabel.style.display = 'block';
+        componentLabel.innerHTML = 'Z = how to do it<br><span style="font-size:12px;opacity:0.8">Not WHAT, but HOW</span>';
+        
+        // Encoder fades out
+        encoderMaterial.opacity = Math.max(0.3, 1 - phaseT * 2);
+        
+        // Z glows bright
+        zMaterial.emissive.setHex(0xc9a600);
+        
+        // Camera moves to Z
+        camera.position.x += (positions.z + 3 - camera.position.x) * 0.02;
+        
+        // Spawn particles from encoder to Z
+        if (Math.random() < 0.1 && phaseT < 0.5) {
+            createParticle(
+                0x9b59b6,
+                new THREE.Vector3(positions.encoder + 1, 1.5 + Math.random() - 0.5, 0),
+                new THREE.Vector3(positions.z, 1.5, 0),
+                1500
+            );
+        }
+        
+    } else if (phase === 2) {
+        // Phase 3: Multi-Modal Fusion
+        stepLabel.innerHTML = '<span style="color:#2ecc71">STEP 3:</span> MULTI-MODAL FUSION';
+        bottomLabel.textContent = 'See everything at once';
+        componentLabel.style.display = 'block';
+        componentLabel.innerHTML = '1200 + 1 + 1 = <span style="font-size:20px;color:#f1c40f">1202 tokens</span>';
+        
+        // Cameras light up
+        cameras.forEach((cam, i) => {
+            cam.material.emissive.setHex(0x27ae60);
+            cam.scale.setScalar(1 + Math.sin(time * 4 + i) * 0.1);
+        });
+        
+        // Fusion zone pulses
+        fusionZone.scale.setScalar(1 + Math.sin(time * 5) * 0.2);
+        
+        // Camera moves to fusion
+        camera.position.x += (positions.cameras + 4 - camera.position.x) * 0.02;
+        
+        // Spawn particles from cameras to fusion
+        if (Math.random() < 0.15) {
+            const camIndex = Math.floor(Math.random() * 4);
+            const camPos = cameraPositions[camIndex].pos;
+            createParticle(
+                0x2ecc71,
+                new THREE.Vector3(positions.cameras + camPos[0], camPos[1], camPos[2]),
+                new THREE.Vector3(positions.cameras, 1.5, 0),
+                800
+            );
+        }
+        
+    } else if (phase === 3) {
+        // Phase 4: Decode to Chunk
+        stepLabel.innerHTML = '<span style="color:#1abc9c">STEP 4:</span> ACTION CHUNKING';
+        bottomLabel.textContent = 'Predict, don\'t react';
+        componentLabel.style.display = 'block';
+        componentLabel.innerHTML = 'k = 100<br><span style="font-size:12px">actions at once</span>';
+        
+        // Decoder glows
+        decoderMaterial.emissive.setHex(0x17a689);
+        
+        // Cross-attention beams animate
+        attentionBeams.forEach((beam, i) => {
+            beam.material.opacity = 0.3 + Math.sin(time * 3 + i) * 0.2;
+            beam.position.x = positions.decoder - 1.5 + Math.sin(time * 2 + i * 0.5) * 0.3;
+        });
+        
+        // Camera moves to decoder/chunk
+        camera.position.x += (positions.decoder + 4 - camera.position.x) * 0.02;
+        
+        // Particles from fusion to decoder
+        if (Math.random() < 0.1) {
+            createParticle(
+                0x3498db,
+                new THREE.Vector3(positions.cameras + 1, 1.5 + (Math.random() - 0.5), 0),
+                new THREE.Vector3(positions.decoder - 1, 1 + (Math.random() - 0.5), 0),
+                1200
+            );
+        }
+        
+    } else if (phase === 4) {
+        // Phase 5: PUNCHLINE - HIDE ALL SCENE OBJECTS
+        humanGroup.visible = false;
+        encoder.visible = false;
+        encoderLabel.visible = false;
+        zOrb.visible = false;
+        zGlow.visible = false;
+        cameraGroup.visible = false;
+        fusionZone.visible = false;
+        decoder.visible = false;
+        decoderLabelMesh.visible = false;
+        chunkGroup.visible = false;
+        robotGroup.visible = false;
+        successGlow.visible = false;
+        motionTrail.visible = false;
+        flowLines.forEach(line => line.visible = false);
+        attentionBeams.forEach(beam => beam.visible = false);
+        summaryLine.visible = false;
+
+        // Clear step labels
+        stepLabel.innerHTML = '';
+        bottomLabel.textContent = '';
+        componentLabel.style.display = 'none';
+        
+        // Show punchline text
+        punchlineText.innerHTML = 'Demo → Style → Fusion → Chunk → Smooth';
+        punchlineText.style.opacity = Math.min(1, phaseT * 3).toString();
+        
+        subtitleText.innerHTML = 'The ACT Breakthrough';
+        subtitleText.style.opacity = Math.min(1, (phaseT - 0.3) * 3).toString();
+        
+        // Pull back camera
+        camera.position.x += (0 - camera.position.x) * 0.02;
+        camera.position.z += (22 - camera.position.z) * 0.02;
+    }
+    
+    // Update particles
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        const pElapsed = Date.now() - p.userData.startTime;
+        const pT = pElapsed / p.userData.duration;
+        
+        if (pT >= 1) {
+            scene.remove(p);
+            particles.splice(i, 1);
+        } else {
+            p.position.lerpVectors(p.userData.startPos, p.userData.endPos, pT);
+            p.material.opacity = 1 - pT;
+        }
+    }
+    
+    // Update motion trail
+    if (phase === 0) {
+        const trailPos = new THREE.Vector3(
+            positions.human + hand.position.x,
+            hand.position.y,
+            0
+        );
+        trailPoints.push(trailPos);
+        if (trailPoints.length > 50) trailPoints.shift();
+        trailGeom.setFromPoints(trailPoints);
+    }
+    
+    controls.update();
+    renderer.render(scene, camera);
+}
+
+animate();
+    </script>
+
+    <script>
+        // Section metadata
+        const sections = [
+            { id: 1, title: "The Imitation Problem", subtitle: "Why averaging destroys good solutions" },
+            { id: 2, title: "Action Chunking", subtitle: "Predict K actions at once for smooth motion" },
+            { id: 3, title: "CVAE Architecture", subtitle: "Capture style, don't average" },
+            { id: 4, title: "Temporal Ensembling", subtitle: "Blend predictions for ultra-smooth motion" },
+            { id: 5, title: "The Breakthrough", subtitle: "The complete ACT pipeline" }
+        ];
+
+        let currentSection = 1;
+        let animationContainer = document.getElementById('animation-container');
+
+        // Load animation for section
+        function loadAnimation(sectionId) {
+            document.getElementById('loading').classList.add('active');
+
+            // Clear existing content
+            while (animationContainer.firstChild) {
+                animationContainer.removeChild(animationContainer.firstChild);
+            }
+
+            const container = animationContainer;
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            try {
+                const codeElement = document.getElementById('section-' + sectionId + '-code');
+                if (codeElement) {
+                    const code = codeElement.textContent;
+                    const animFunc = new Function('container', 'width', 'height', 'THREE', code);
+                    animFunc(container, width, height, THREE);
+                }
+            } catch (e) {
+                console.error('Animation error for section ' + sectionId + ':', e);
+            }
+
+            setTimeout(() => {
+                document.getElementById('loading').classList.remove('active');
+            }, 300);
+        }
+
+        // Navigate to section
+        function navigateToSection(sectionId) {
+            if (sectionId < 1 || sectionId > 5) return;
+
+            currentSection = sectionId;
+            const section = sections[sectionId - 1];
+
+            document.getElementById('section-number').textContent = 'Section ' + sectionId + ' of 5';
+            document.getElementById('section-title').textContent = section.title;
+            document.getElementById('section-subtitle').textContent = section.subtitle;
+
+            document.querySelectorAll('.section-content').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.querySelector('.section-content[data-section="' + sectionId + '"]').classList.add('active');
+
+            document.querySelectorAll('.nav-dot').forEach(dot => {
+                dot.classList.toggle('active', parseInt(dot.dataset.section) === sectionId);
+            });
+
+            document.getElementById('nav-counter').textContent = sectionId + ' / 5';
+            document.getElementById('prev-btn').disabled = sectionId === 1;
+            document.getElementById('next-btn').disabled = sectionId === 5;
+
+            loadAnimation(sectionId);
+        }
+
+        // Event listeners
+        document.getElementById('prev-btn').addEventListener('click', () => {
+            navigateToSection(currentSection - 1);
+        });
+
+        document.getElementById('next-btn').addEventListener('click', () => {
+            navigateToSection(currentSection + 1);
+        });
+
+        document.querySelectorAll('.nav-dot').forEach(dot => {
+            dot.addEventListener('click', () => {
+                navigateToSection(parseInt(dot.dataset.section));
+            });
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                navigateToSection(currentSection + 1);
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                navigateToSection(currentSection - 1);
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            loadAnimation(currentSection);
+        });
+
+        // Reset View button
+        document.getElementById('reset-view-btn').addEventListener('click', () => {
+            if (window.currentCamera && window.initialCameraPosition) {
+                window.currentCamera.position.copy(window.initialCameraPosition);
+                if (window.currentControls) {
+                    window.currentControls.reset();
+                }
+            } else {
+                loadAnimation(currentSection);
+            }
+        });
+
+        // Reset Animation button
+        document.getElementById('reset-animation-btn').addEventListener('click', () => {
+            loadAnimation(currentSection);
+        });
+
+        // Initial load
+        navigateToSection(1);
+    </script>
+</body>
+</html>

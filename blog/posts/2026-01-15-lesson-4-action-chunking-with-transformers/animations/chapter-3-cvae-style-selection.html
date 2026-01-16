@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CVAE Style Selection - Why Z Selects, Not Averages</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <style>
+        :root {
+            --bg-deep: #0a0a1a;
+            --bg-panel: rgba(15, 15, 35, 0.85);
+            --bg-card: rgba(25, 25, 50, 0.6);
+            --cyan: #00D4AA;
+            --cyan-glow: rgba(0, 212, 170, 0.3);
+            --purple: #6C5CE7;
+            --purple-glow: rgba(108, 92, 231, 0.3);
+            --gold: #ffd700;
+            --gold-glow: rgba(255, 215, 0, 0.25);
+            --coral: #e94560;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b8;
+            --text-muted: #606080;
+            --border-subtle: rgba(255, 255, 255, 0.06);
+            --border-glow: rgba(0, 212, 170, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-deep);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Sora', sans-serif;
+            overflow: hidden;
+        }
+
+        /* Main container - constrained to 1200px */
+        .main-container {
+            width: 100%;
+            max-width: 1200px;
+            height: 700px;
+            display: flex;
+            justify-content: space-between;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Left: Canvas Area - 45% */
+        .canvas-area {
+            width: 45%;
+            height: 100%;
+            background: linear-gradient(135deg, #0d0d20 0%, #0a0a1a 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #animation-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        #animation-container canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        /* Reset buttons - hidden by default, show on hover */
+        .canvas-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .canvas-area:hover .canvas-controls {
+            opacity: 1;
+        }
+
+        .reset-btn {
+            padding: 8px 14px;
+            background: rgba(20, 20, 40, 0.85);
+            border: 1px solid rgba(0, 212, 170, 0.3);
+            border-radius: 6px;
+            color: var(--cyan);
+            font-family: 'Sora', sans-serif;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(8px);
+        }
+
+        .reset-btn:hover {
+            background: rgba(0, 212, 170, 0.15);
+            border-color: var(--cyan);
+            transform: translateY(-1px);
+        }
+
+        /* Right: Content Panel - 45% */
+        .content-panel {
+            width: 45%;
+            height: 100%;
+            background: var(--bg-panel);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .content-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -1px;
+            width: 2px;
+            height: 100%;
+            background: linear-gradient(180deg, transparent 0%, var(--cyan) 20%, var(--purple) 50%, var(--cyan) 80%, transparent 100%);
+            opacity: 0.6;
+            animation: borderPulse 4s ease-in-out infinite;
+        }
+
+        @keyframes borderPulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+
+        /* Header */
+        .panel-header {
+            padding: 20px 28px 16px;
+            border-bottom: 1px solid var(--border-subtle);
+            position: relative;
+            z-index: 1;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 4px;
+        }
+
+        .brand-logo {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--cyan), var(--purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            color: white;
+            letter-spacing: -0.5px;
+            box-shadow: 0 4px 20px var(--cyan-glow);
+        }
+
+        .brand-text {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, var(--cyan), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .brand-subtitle {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-left: 44px;
+        }
+
+        /* Section Header */
+        .section-header {
+            padding: 24px 28px 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .section-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: var(--cyan);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-number::before {
+            content: '';
+            width: 16px;
+            height: 1px;
+            background: var(--cyan);
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.03em;
+            line-height: 1.2;
+            margin-bottom: 8px;
+        }
+
+        .section-subtitle {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--gold);
+            letter-spacing: 0.02em;
+        }
+
+        /* Content Area */
+        .content-area {
+            flex: 1;
+            padding: 0 28px 20px;
+            overflow-y: auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .content-area::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .content-area::-webkit-scrollbar-thumb {
+            background: var(--border-glow);
+            border-radius: 2px;
+        }
+
+        /* Section content */
+        .section-content {
+            display: none;
+        }
+
+        .section-content.active {
+            display: block;
+            animation: fadeSlideIn 0.4s ease-out;
+        }
+
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .insight {
+            font-size: 14px;
+            line-height: 1.75;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .insight strong { color: var(--cyan); font-weight: 500; }
+        .insight em { color: var(--purple); font-style: normal; font-weight: 500; }
+        .insight .gold { color: var(--gold); font-weight: 600; }
+        .insight .coral { color: var(--coral); font-weight: 600; }
+
+        .content-area ul {
+            list-style: none;
+            margin: 16px 0;
+        }
+
+        .content-area > .section-content ul li {
+            font-size: 13px;
+            color: var(--text-secondary);
+            padding: 6px 0 6px 20px;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .content-area > .section-content ul li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 12px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--cyan);
+            opacity: 0.6;
+        }
+
+        /* Key Insight Box */
+        .key-insight {
+            background: linear-gradient(135deg, var(--bg-card), rgba(0, 212, 170, 0.05));
+            border: 1px solid var(--border-glow);
+            border-radius: 12px;
+            padding: 16px 18px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .key-insight::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--cyan), var(--purple));
+            border-radius: 3px 0 0 3px;
+        }
+
+        .key-insight.eureka {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.08), rgba(0, 212, 170, 0.05));
+            border-color: rgba(255, 215, 0, 0.3);
+        }
+
+        .key-insight.eureka::before {
+            background: linear-gradient(180deg, var(--gold), var(--cyan));
+        }
+
+        .key-insight.problem {
+            background: linear-gradient(135deg, rgba(233, 69, 96, 0.08), rgba(108, 92, 231, 0.05));
+            border-color: rgba(233, 69, 96, 0.3);
+        }
+
+        .key-insight.problem::before {
+            background: linear-gradient(180deg, var(--coral), var(--purple));
+        }
+
+        .key-insight-label {
+            display: inline-block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            background: var(--cyan);
+            color: var(--bg-deep);
+            margin-bottom: 10px;
+        }
+
+        .key-insight.eureka .key-insight-label { background: var(--gold); }
+        .key-insight.problem .key-insight-label { background: var(--coral); }
+
+        .key-insight p {
+            font-size: 13px;
+            line-height: 1.65;
+            color: var(--text-secondary);
+            margin: 6px 0 0;
+        }
+
+        .key-insight p strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* Punchline styling */
+        .punchline-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--gold);
+            text-align: center;
+            margin: 24px 0 16px;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .punchline-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Navigation */
+        .navigation {
+            padding: 16px 28px;
+            border-top: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(10, 10, 26, 0.8);
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 1;
+        }
+
+        .nav-btn {
+            font-family: 'Sora', sans-serif;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-glow);
+            background: transparent;
+            color: var(--cyan);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: var(--cyan-glow);
+            border-color: var(--cyan);
+            transform: translateY(-1px);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .nav-dots {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-dot:hover {
+            background: var(--text-secondary);
+            transform: scale(1.2);
+        }
+
+        .nav-dot.active {
+            background: var(--cyan);
+            box-shadow: 0 0 12px var(--cyan-glow);
+        }
+
+        .nav-counter {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            min-width: 50px;
+            text-align: center;
+        }
+
+        /* Loading state */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 26, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .loading-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-subtle);
+            border-top-color: var(--cyan);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Canvas overlay labels - HTML text on 3D canvas */
+        .canvas-overlay-labels {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 50;
+            font-family: 'Inter', 'Sora', sans-serif;
+            display: none;
+        }
+
+        .canvas-overlay-labels.active {
+            display: block;
+        }
+
+        .canvas-label {
+            position: absolute;
+            font-weight: 700;
+        }
+
+        /* Section title label - top left */
+        .canvas-label.section-title {
+            top: 20px;
+            left: 20px;
+            font-size: 20px;
+            font-weight: 700;
+            color: #00ffff;
+            text-shadow: 0 2px 10px rgba(0, 255, 255, 0.5);
+        }
+
+        .canvas-label.section-title.disaster {
+            color: #ff6b6b;
+            text-shadow: 0 2px 10px rgba(255, 107, 107, 0.5);
+        }
+
+        .canvas-label.section-title.hope {
+            color: #a855f7;
+            text-shadow: 0 2px 10px rgba(168, 85, 247, 0.5);
+        }
+
+        .canvas-label.section-title.selection {
+            color: #FFD700;
+            text-shadow: 0 2px 10px rgba(255, 215, 0, 0.5);
+        }
+
+        /* Emotion badge - top right */
+        .canvas-label.emotion-badge {
+            top: 20px;
+            right: 20px;
+            padding: 6px 14px;
+            background: rgba(0, 255, 255, 0.15);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 20px;
+            font-size: 14px;
+            color: #00ffff;
+        }
+
+        .canvas-label.emotion-badge.disaster {
+            background: rgba(255, 107, 107, 0.15);
+            border-color: rgba(255, 107, 107, 0.3);
+            color: #ff6b6b;
+        }
+
+        .canvas-label.emotion-badge.hope {
+            background: rgba(168, 85, 247, 0.15);
+            border-color: rgba(168, 85, 247, 0.3);
+            color: #a855f7;
+        }
+
+        .canvas-label.emotion-badge.selection {
+            background: rgba(255, 215, 0, 0.15);
+            border-color: rgba(255, 215, 0, 0.3);
+            color: #FFD700;
+        }
+
+        .canvas-label.emotion-badge.triumph {
+            background: rgba(255, 215, 0, 0.15);
+            border-color: rgba(255, 215, 0, 0.3);
+            color: #FFD700;
+        }
+
+        .canvas-label.punchline-title {
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 22px;
+            font-weight: 800;
+            color: #FFD700;
+            text-shadow: 0 2px 15px rgba(255, 215, 0, 0.6);
+        }
+
+        /* Insight text - below title */
+        .canvas-label.insight-text {
+            top: 50px;
+            left: 20px;
+            font-size: 13px;
+            color: #aaaaaa;
+            max-width: 250px;
+        }
+
+        .canvas-label.insight-text.selection {
+            color: #bda651;
+        }
+
+        .canvas-label.average {
+            top: 55px;
+            left: 30px;
+            font-size: 24px;
+            color: #ff4444;
+            text-shadow: 0 2px 10px rgba(255, 68, 68, 0.5);
+        }
+
+        .canvas-label.average-insight {
+            top: 85px;
+            left: 30px;
+            font-size: 12px;
+            color: #ff6666;
+            max-width: 120px;
+        }
+
+        .canvas-label.select-insight {
+            top: 85px;
+            right: 30px;
+            font-size: 12px;
+            color: #44ff88;
+            max-width: 120px;
+            text-align: right;
+        }
+
+        .canvas-label.bottom-insight {
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            color: #FFD700;
+            text-shadow: 0 2px 10px rgba(255, 215, 0, 0.4);
+            text-align: center;
+            max-width: 350px;
+        }
+
+        .canvas-label.select {
+            top: 55px;
+            right: 30px;
+            font-size: 24px;
+            color: #00ff88;
+            text-shadow: 0 2px 10px rgba(0, 255, 136, 0.5);
+        }
+    </style>
+</head>
+<body>
+<div class="main-container">
+    <!-- Left: Canvas Area -->
+    <div class="canvas-area">
+        <div id="animation-container"></div>
+        <!-- Canvas overlay labels for each section -->
+        <div class="canvas-overlay-labels active" id="section1-labels">
+            <div class="canvas-label section-title">100 Valid Demonstrations</div>
+            <div class="canvas-label emotion-badge">🤔 Curiosity</div>
+        </div>
+        <div class="canvas-overlay-labels" id="section2-labels">
+            <div class="canvas-label section-title disaster">😰 Averaging = Disaster</div>
+            <div class="canvas-label emotion-badge disaster">😰 Frustration</div>
+        </div>
+        <div class="canvas-overlay-labels" id="section3-labels">
+            <div class="canvas-label section-title hope">✨ The Latent Variable Z</div>
+            <div class="canvas-label emotion-badge hope">✨ Hope</div>
+        </div>
+        <div class="canvas-overlay-labels" id="section4-labels">
+            <div class="canvas-label section-title selection">🎯 Z Commits to ONE Style</div>
+            <div class="canvas-label insight-text selection">Selection, not averaging - Z picks ONE valid style to execute</div>
+            <div class="canvas-label emotion-badge selection">🎯 Satisfaction</div>
+        </div>
+        <div class="canvas-overlay-labels" id="section5-labels">
+            <div class="canvas-label punchline-title">🏆 The Punchline</div>
+            <div class="canvas-label average">❌ AVERAGE</div>
+            <div class="canvas-label select">✓ SELECT</div>
+            <div class="canvas-label average-insight">Averaging destroys the trajectory</div>
+            <div class="canvas-label select-insight">Selecting ONE style reaches the goal</div>
+            <div class="canvas-label bottom-insight">💡 CVAE commits to ONE valid style instead of averaging them all</div>
+            <div class="canvas-label emotion-badge triumph">🏆 Triumph</div>
+        </div>
+        <div class="canvas-controls">
+            <button class="reset-btn" id="reset-view-btn">↻ Reset View</button>
+            <button class="reset-btn" id="reset-animation-btn">▶ Reset Animation</button>
+        </div>
+        <div class="loading-overlay" id="loading">
+            <div class="loading-spinner"></div>
+        </div>
+    </div>
+
+    <!-- Right: Content Panel -->
+    <div class="content-panel">
+        <!-- Header -->
+        <div class="panel-header">
+            <div class="brand">
+                <div class="brand-logo">Z</div>
+                <span class="brand-text">CVAE Style Selection</span>
+            </div>
+            <div class="brand-subtitle">Why Z Selects, Not Averages</div>
+        </div>
+
+        <!-- Section Header -->
+        <div class="section-header">
+            <div class="section-number" id="section-number">Section 1 of 5</div>
+            <h1 class="section-title" id="section-title">The Variety</h1>
+            <div class="section-subtitle" id="section-subtitle">100 valid ways to reach the goal</div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- Section 1: The Variety (ill-1768532159344) -->
+            <div class="section-content active" data-section="1" data-illustration="ill-1768532159344">
+                <p class="insight">Imagine <strong>100 humans</strong> demonstrating how to pick up a cup. Every single trajectory is valid - some go from the left, some from the right, some arc high, some stay low.</p>
+
+                <p class="insight">This is the beautiful <em>diversity</em> of human demonstration data. There's no single "correct" way to accomplish the task.</p>
+
+                <div class="key-insight">
+                    <span class="key-insight-label">Key Insight</span>
+                    <p>There's <strong>no single "correct" way</strong> to reach the goal. All 100 trajectories are valid solutions.</p>
+                </div>
+            </div>
+
+            <!-- Section 2: The Disaster (ill-1768532534259) -->
+            <div class="section-content" data-section="2" data-illustration="ill-1768532534259">
+                <p class="insight">What happens if we try to learn from all 100 demonstrations by <strong>averaging</strong> them?</p>
+
+                <p class="insight">The <span class="coral">red trajectory</span> shows the mathematical average of all paths. It goes <strong>straight into the table</strong>, missing the cup entirely!</p>
+
+                <div class="key-insight problem">
+                    <span class="key-insight-label">The Problem</span>
+                    <p><strong>The average of valid solutions can be completely invalid.</strong></p>
+                    <p>This is the multimodal problem that breaks naive supervised learning.</p>
+                </div>
+
+                <ul>
+                    <li>Average of "go left" + "go right" = <span class="coral">crash in middle</span></li>
+                    <li>MSE loss <em>encourages</em> this averaging behavior</li>
+                    <li>The robot learns the <strong>worst</strong> of all worlds</li>
+                </ul>
+            </div>
+
+            <!-- Section 3: Enter Z (ill-1768532704546) -->
+            <div class="section-content" data-section="3" data-illustration="ill-1768532704546">
+                <p class="insight">The latent variable <span class="gold">Z</span> doesn't average styles - it <strong>encodes</strong> them. Each region of Z-space corresponds to a different valid trajectory style.</p>
+
+                <p class="insight">Watch: the <em>purple orb</em> represents Z floating above the scene, with connection beams showing how it relates to different trajectory styles.</p>
+
+                <div class="key-insight">
+                    <span class="key-insight-label">How Z Works</span>
+                    <p><strong>Z encodes "which style"</strong> as a continuous variable.</p>
+                    <p>Different Z values = different valid approaches to the same task.</p>
+                </div>
+
+                <ul>
+                    <li>Z ≈ 0.2 → "arc from left" style</li>
+                    <li>Z ≈ 0.8 → "arc from right" style</li>
+                    <li>Each Z value gives a <strong>coherent</strong> trajectory</li>
+                </ul>
+            </div>
+
+            <!-- Section 4: The Selection (ill-1768532983952) -->
+            <div class="section-content" data-section="4" data-illustration="ill-1768532983952">
+                <p class="insight">When we sample a specific Z value, the decoder <strong>commits to ONE coherent trajectory</strong>. No averaging, no compromise.</p>
+
+                <p class="insight">The <span class="gold">golden trajectory</span> shows the selected path - all other styles fade to gray. Z has made its choice.</p>
+
+                <div class="key-insight eureka">
+                    <span class="key-insight-label">Eureka!</span>
+                    <p><strong>Selection preserves coherence.</strong></p>
+                    <p>Instead of blending all styles into mush, we pick one and execute it cleanly.</p>
+                </div>
+
+                <ul>
+                    <li>At inference: sample Z from prior (standard normal)</li>
+                    <li>Decoder produces <em>one complete trajectory</em></li>
+                    <li>Result: smooth, <span class="gold">valid motion</span></li>
+                </ul>
+            </div>
+
+            <!-- Section 5: The Punchline (ill-1768533231306) -->
+            <div class="section-content" data-section="5" data-illustration="ill-1768533231306">
+                <div class="punchline-text">SELECT, Don't AVERAGE</div>
+                <div class="punchline-subtitle">The key insight that makes CVAE work</div>
+
+                <p class="insight">The final comparison: <strong>AVERAGE vs SELECT</strong>.</p>
+
+                <div class="key-insight eureka">
+                    <span class="key-insight-label">The Punchline</span>
+                    <p><strong>Left side</strong>: averaging crashes (red trajectory into table)</p>
+                    <p><strong>Right side</strong>: selection succeeds (golden trajectory to cup)</p>
+                </div>
+
+                <p class="insight">The ablation study proves it: <strong>removing CVAE drops performance by 33%</strong>. Z is essential.</p>
+
+                <ul>
+                    <li>CVAE doesn't find the "best" trajectory</li>
+                    <li>It <strong>commits to ONE valid style</strong></li>
+                    <li>That's why it works!</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="navigation">
+            <button class="nav-btn" id="prev-btn" disabled>
+                <span>&larr;</span> Previous
+            </button>
+
+            <div class="nav-dots" id="nav-dots">
+                <div class="nav-dot active" data-section="1" title="The Variety"></div>
+                <div class="nav-dot" data-section="2" title="The Disaster"></div>
+                <div class="nav-dot" data-section="3" title="Enter Z"></div>
+                <div class="nav-dot" data-section="4" title="The Selection"></div>
+                <div class="nav-dot" data-section="5" title="The Punchline"></div>
+            </div>
+
+            <div class="nav-counter" id="nav-counter">1 / 5</div>
+
+            <button class="nav-btn" id="next-btn">
+                Next <span>&rarr;</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Section Data
+    const sections = [
+        { id: 1, title: "The Variety", subtitle: "100 valid ways to reach the goal" },
+        { id: 2, title: "The Disaster", subtitle: "What happens when you average" },
+        { id: 3, title: "Enter Z", subtitle: "The latent variable arrives" },
+        { id: 4, title: "The Selection", subtitle: "Z commits to ONE style" },
+        { id: 5, title: "The Punchline", subtitle: "AVERAGE vs SELECT" }
+    ];
+
+    let currentSection = 1;
+    let scene, camera, renderer, controls;
+    let sceneObjects = {};
+    let animationId;
+    let initialCameraPosition = { x: 0, y: 4, z: 10 };
+    let animatedParticles = [];
+    let animationTime = 0;
+
+    // Initialize Three.js
+    function initThree() {
+        const container = document.getElementById('animation-container');
+
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0a0a1a);
+
+        camera = new THREE.PerspectiveCamera(
+            60,
+            container.clientWidth / container.clientHeight,
+            0.1,
+            1000
+        );
+        camera.position.set(initialCameraPosition.x, initialCameraPosition.y, initialCameraPosition.z);
+
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
+
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.minDistance = 3;
+        controls.maxDistance = 20;
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(5, 10, 5);
+        scene.add(directionalLight);
+
+        // Handle resize
+        window.addEventListener('resize', () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+
+        // Store references for reset buttons
+        window.currentCamera = camera;
+        window.currentControls = controls;
+        window.initialCameraPosition = { ...initialCameraPosition };
+
+        animate();
+    }
+
+    function animate() {
+        animationId = requestAnimationFrame(animate);
+        controls.update();
+        animationTime += 0.016; // ~60fps
+
+        // Animate Z orb if present
+        if (sceneObjects.zOrb) {
+            sceneObjects.zOrb.rotation.y += 0.01;
+            const scale = 1 + 0.1 * Math.sin(Date.now() * 0.003);
+            sceneObjects.zOrb.scale.set(scale, scale, scale);
+        }
+
+        // Animate particles along their curves
+        animatedParticles.forEach(particle => {
+            if (particle.curve && particle.mesh) {
+                // Move particle along curve
+                particle.progress += particle.speed;
+                if (particle.progress > 1) {
+                    particle.progress = 0; // Loop
+                }
+
+                const point = particle.curve.getPoint(particle.progress);
+                particle.mesh.position.copy(point);
+
+                // Pulse effect
+                const pulseScale = particle.baseScale * (1 + 0.3 * Math.sin(animationTime * 5 + particle.offset));
+                particle.mesh.scale.setScalar(pulseScale);
+            }
+        });
+
+        // Animate connection beams pulsing
+        if (sceneObjects.beams) {
+            sceneObjects.beams.forEach((beam, i) => {
+                if (beam.material) {
+                    beam.material.opacity = 0.2 + 0.3 * Math.sin(animationTime * 2 + i * 0.5);
+                }
+            });
+        }
+
+        // Animate trajectory tubes pulsing (for variety scene)
+        if (sceneObjects.trajectories) {
+            sceneObjects.trajectories.forEach((traj, i) => {
+                if (traj.material) {
+                    const baseOpacity = traj.userData.baseOpacity || 0.6;
+                    traj.material.opacity = baseOpacity * (0.7 + 0.3 * Math.sin(animationTime * 1.5 + i * 0.2));
+                }
+            });
+        }
+
+        renderer.render(scene, camera);
+    }
+
+    // Create animated particle that follows a curve
+    function createAnimatedParticle(curve, color, speed = 0.005, scale = 1.0) {
+        // Use larger base geometry for visibility
+        const geometry = new THREE.SphereGeometry(0.25, 16, 16);
+        const material = new THREE.MeshStandardMaterial({
+            color: color,
+            emissive: color,
+            emissiveIntensity: 1.0,
+            transparent: true,
+            opacity: 1.0
+        });
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.scale.setScalar(scale);
+
+        const particle = {
+            mesh: mesh,
+            curve: curve,
+            progress: Math.random(), // Random start position
+            speed: speed,
+            baseScale: scale,
+            offset: Math.random() * Math.PI * 2
+        };
+
+        scene.add(mesh);
+        animatedParticles.push(particle);
+        return particle;
+    }
+
+    // Scene builders
+    function createTable() {
+        const tableGeometry = new THREE.BoxGeometry(8, 0.2, 4);
+        const tableMaterial = new THREE.MeshStandardMaterial({
+            color: 0x4a3728,
+            roughness: 0.8
+        });
+        const table = new THREE.Mesh(tableGeometry, tableMaterial);
+        table.position.y = -1;
+        return table;
+    }
+
+    function createCup(position, glowColor = 0x00ffff) {
+        const cupGroup = new THREE.Group();
+        const cupGeometry = new THREE.CylinderGeometry(0.3, 0.25, 0.6, 32);
+        const cupMaterial = new THREE.MeshStandardMaterial({
+            color: glowColor,
+            transparent: true,
+            opacity: 0.7,
+            emissive: glowColor,
+            emissiveIntensity: 0.3
+        });
+        const cup = new THREE.Mesh(cupGeometry, cupMaterial);
+        cupGroup.add(cup);
+        cupGroup.position.copy(position);
+        return cupGroup;
+    }
+
+    function createTrajectory(points, color, opacity = 0.8) {
+        const curve = new THREE.CatmullRomCurve3(points);
+        const tubeGeometry = new THREE.TubeGeometry(curve, 64, 0.03, 8, false);
+        const material = new THREE.MeshStandardMaterial({
+            color: color,
+            transparent: true,
+            opacity: opacity,
+            emissive: color,
+            emissiveIntensity: 0.2
+        });
+        return new THREE.Mesh(tubeGeometry, material);
+    }
+
+    function createZOrb() {
+        const orbGroup = new THREE.Group();
+        const orbGeometry = new THREE.SphereGeometry(0.4, 32, 32);
+        const orbMaterial = new THREE.MeshStandardMaterial({
+            color: 0x6C5CE7,
+            transparent: true,
+            opacity: 0.8,
+            emissive: 0x6C5CE7,
+            emissiveIntensity: 0.5
+        });
+        const orb = new THREE.Mesh(orbGeometry, orbMaterial);
+        orbGroup.add(orb);
+
+        const ringGeometry = new THREE.TorusGeometry(0.6, 0.05, 16, 100);
+        const ringMaterial = new THREE.MeshStandardMaterial({
+            color: 0x00D4AA,
+            transparent: true,
+            opacity: 0.5,
+            emissive: 0x00D4AA,
+            emissiveIntensity: 0.3
+        });
+        const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+        ring.rotation.x = Math.PI / 2;
+        orbGroup.add(ring);
+
+        return orbGroup;
+    }
+
+    function clearScene() {
+        // Clear animated particles
+        animatedParticles.forEach(p => {
+            if (p.mesh) {
+                if (p.mesh.geometry) p.mesh.geometry.dispose();
+                if (p.mesh.material) p.mesh.material.dispose();
+                scene.remove(p.mesh);
+            }
+        });
+        animatedParticles = [];
+
+        const toRemove = [];
+        scene.traverse((obj) => {
+            if (obj.isMesh || obj.isLine || obj.isGroup) {
+                toRemove.push(obj);
+            }
+        });
+        toRemove.forEach(obj => {
+            if (obj.geometry) obj.geometry.dispose();
+            if (obj.material) {
+                if (Array.isArray(obj.material)) {
+                    obj.material.forEach(m => m.dispose());
+                } else {
+                    obj.material.dispose();
+                }
+            }
+            scene.remove(obj);
+        });
+        sceneObjects = {};
+    }
+
+    function buildVarietyScene() {
+        clearScene();
+        const table = createTable();
+        scene.add(table);
+
+        const cup = createCup(new THREE.Vector3(3, -0.5, 0));
+        scene.add(cup);
+
+        sceneObjects.trajectories = [];
+
+        // Rainbow trajectories
+        const colors = [
+            0xff0000, 0xff4400, 0xff8800, 0xffcc00, 0xffff00,
+            0xccff00, 0x88ff00, 0x44ff00, 0x00ff00, 0x00ff44,
+            0x00ff88, 0x00ffcc, 0x00ffff, 0x00ccff, 0x0088ff
+        ];
+
+        for (let i = 0; i < 50; i++) {
+            const colorIndex = Math.floor(i / 3.5);
+            const color = colors[colorIndex % colors.length];
+            const zOffset = (Math.random() - 0.5) * 1.5;
+            const arcHeight = 1 + Math.random() * 1.5;
+
+            const points = [
+                new THREE.Vector3(-3, 0, zOffset),
+                new THREE.Vector3(-1, arcHeight, zOffset * 0.7),
+                new THREE.Vector3(1, arcHeight * 0.8, zOffset * 0.3),
+                new THREE.Vector3(3, -0.5, 0)
+            ];
+
+            const trajectory = createTrajectory(points, color, 0.6);
+            trajectory.userData.baseOpacity = 0.6;
+            scene.add(trajectory);
+            sceneObjects.trajectories.push(trajectory);
+
+            // Add animated particle for every 5th trajectory
+            if (i % 5 === 0) {
+                const curve = new THREE.CatmullRomCurve3(points);
+                createAnimatedParticle(curve, color, 0.004 + Math.random() * 0.002, 1.0);
+            }
+        }
+
+        initialCameraPosition = { x: 0, y: 4, z: 10 };
+    }
+
+    function buildDisasterScene() {
+        clearScene();
+        const table = createTable();
+        scene.add(table);
+
+        const cup = createCup(new THREE.Vector3(3, -0.5, 0), 0x666666);
+        scene.add(cup);
+
+        // Faded gray trajectories
+        for (let i = 0; i < 20; i++) {
+            const zOffset = (Math.random() - 0.5) * 1.5;
+            const arcHeight = 1 + Math.random() * 1.5;
+
+            const points = [
+                new THREE.Vector3(-3, 0, zOffset),
+                new THREE.Vector3(-1, arcHeight, zOffset * 0.7),
+                new THREE.Vector3(1, arcHeight * 0.8, zOffset * 0.3),
+                new THREE.Vector3(3, -0.5, 0)
+            ];
+
+            const trajectory = createTrajectory(points, 0x444444, 0.2);
+            scene.add(trajectory);
+        }
+
+        // Red crashing trajectory
+        const avgPoints = [
+            new THREE.Vector3(-3, 0, 0),
+            new THREE.Vector3(-1, 0.5, 0),
+            new THREE.Vector3(0.5, -0.3, 0),
+            new THREE.Vector3(1, -1, 0)
+        ];
+        const avgTrajectory = createTrajectory(avgPoints, 0xe94560, 1.0);
+        scene.add(avgTrajectory);
+
+        // Animated crash particle - LARGE and visible
+        const crashCurve = new THREE.CatmullRomCurve3(avgPoints);
+        createAnimatedParticle(crashCurve, 0xe94560, 0.008, 1.5);
+
+        // Impact particles (static sparks) - radius >= 0.15 for visibility
+        const impactGeometry = new THREE.SphereGeometry(0.15, 8, 8);
+        const impactMaterial = new THREE.MeshStandardMaterial({
+            color: 0xe94560,
+            emissive: 0xe94560,
+            emissiveIntensity: 0.8
+        });
+        for (let i = 0; i < 8; i++) {
+            const particle = new THREE.Mesh(impactGeometry, impactMaterial);
+            particle.position.set(
+                1 + (Math.random() - 0.5) * 0.5,
+                -0.8 + Math.random() * 0.3,
+                (Math.random() - 0.5) * 0.5
+            );
+            particle.scale.setScalar(0.3 + Math.random() * 0.5);
+            scene.add(particle);
+        }
+
+        initialCameraPosition = { x: 2, y: 3, z: 8 };
+    }
+
+    function buildEnterZScene() {
+        clearScene();
+        const table = createTable();
+        scene.add(table);
+
+        const cup = createCup(new THREE.Vector3(3, -0.5, 0));
+        scene.add(cup);
+
+        sceneObjects.beams = [];
+
+        // Rainbow trajectories with animated particles
+        const colors = [0xff0000, 0xff8800, 0xffff00, 0x00ff00, 0x00ffff, 0x0088ff];
+        for (let i = 0; i < 30; i++) {
+            const color = colors[Math.floor(i / 5) % colors.length];
+            const zOffset = (Math.random() - 0.5) * 1.5;
+            const arcHeight = 1 + Math.random() * 1.5;
+
+            const points = [
+                new THREE.Vector3(-3, 0, zOffset),
+                new THREE.Vector3(-1, arcHeight, zOffset * 0.7),
+                new THREE.Vector3(1, arcHeight * 0.8, zOffset * 0.3),
+                new THREE.Vector3(3, -0.5, 0)
+            ];
+
+            const trajectory = createTrajectory(points, color, 0.5);
+            scene.add(trajectory);
+
+            // Add animated particles for some trajectories - LARGE
+            if (i % 6 === 0) {
+                const curve = new THREE.CatmullRomCurve3(points);
+                createAnimatedParticle(curve, color, 0.005, 1.0);
+            }
+        }
+
+        // Z orb
+        const zOrb = createZOrb();
+        zOrb.position.set(0, 3, 0);
+        scene.add(zOrb);
+        sceneObjects.zOrb = zOrb;
+
+        // Connection beams (will pulse)
+        for (let i = 0; i < 8; i++) {
+            const beamMaterial = new THREE.LineBasicMaterial({
+                color: 0x6C5CE7,
+                transparent: true,
+                opacity: 0.3
+            });
+            const points = [
+                new THREE.Vector3(0, 3, 0),
+                new THREE.Vector3(-2 + i * 0.5, 1.5, (Math.random() - 0.5) * 2)
+            ];
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const beam = new THREE.Line(geometry, beamMaterial);
+            scene.add(beam);
+            sceneObjects.beams.push(beam);
+        }
+
+        initialCameraPosition = { x: 0, y: 4, z: 10 };
+    }
+
+    function buildSelectionScene() {
+        clearScene();
+        const table = createTable();
+        scene.add(table);
+
+        const cup = createCup(new THREE.Vector3(3, -0.5, 0), 0x00ff88);
+        scene.add(cup);
+
+        sceneObjects.beams = [];
+
+        // Faded gray trajectories
+        for (let i = 0; i < 25; i++) {
+            const zOffset = (Math.random() - 0.5) * 1.5;
+            const arcHeight = 1 + Math.random() * 1.5;
+
+            const points = [
+                new THREE.Vector3(-3, 0, zOffset),
+                new THREE.Vector3(-1, arcHeight, zOffset * 0.7),
+                new THREE.Vector3(1, arcHeight * 0.8, zOffset * 0.3),
+                new THREE.Vector3(3, -0.5, 0)
+            ];
+
+            const trajectory = createTrajectory(points, 0x444444, 0.15);
+            scene.add(trajectory);
+        }
+
+        // Golden selected trajectory
+        const selectedPoints = [
+            new THREE.Vector3(-3, 0, 0),
+            new THREE.Vector3(-1, 2, 0),
+            new THREE.Vector3(1, 1.8, 0),
+            new THREE.Vector3(3, -0.5, 0)
+        ];
+        const selectedTrajectory = createTrajectory(selectedPoints, 0xffd700, 1.0);
+        scene.add(selectedTrajectory);
+
+        // Animated golden particle on selected trajectory - LARGE for visibility
+        const selectedCurve = new THREE.CatmullRomCurve3(selectedPoints);
+        createAnimatedParticle(selectedCurve, 0xffd700, 0.006, 1.2);
+
+        // Z orb
+        const zOrb = createZOrb();
+        zOrb.position.set(-1, 3.5, 0);
+        scene.add(zOrb);
+        sceneObjects.zOrb = zOrb;
+
+        // Selection beam (will pulse)
+        const beamMaterial = new THREE.LineBasicMaterial({
+            color: 0xffd700,
+            transparent: true,
+            opacity: 0.8
+        });
+        const beamPoints = [
+            new THREE.Vector3(-1, 3.5, 0),
+            new THREE.Vector3(-1, 2, 0)
+        ];
+        const beamGeometry = new THREE.BufferGeometry().setFromPoints(beamPoints);
+        const beam = new THREE.Line(beamGeometry, beamMaterial);
+        scene.add(beam);
+        sceneObjects.beams.push(beam);
+
+        initialCameraPosition = { x: 2, y: 4, z: 10 };
+    }
+
+    function buildPunchlineScene() {
+        clearScene();
+
+        // LEFT: Disaster
+        const leftTable = createTable();
+        leftTable.position.x = -4;
+        leftTable.scale.set(0.5, 1, 1);
+        scene.add(leftTable);
+
+        const leftCup = createCup(new THREE.Vector3(-2, -0.5, 0), 0x666666);
+        leftCup.scale.setScalar(0.8);
+        scene.add(leftCup);
+
+        const leftPoints = [
+            new THREE.Vector3(-6, 0, 0),
+            new THREE.Vector3(-5, 0.3, 0),
+            new THREE.Vector3(-4, -0.5, 0),
+            new THREE.Vector3(-3.5, -1, 0)
+        ];
+        const leftTrajectory = createTrajectory(leftPoints, 0xe94560, 1.0);
+        scene.add(leftTrajectory);
+
+        // Animated crash particle (left) - LARGE for visibility
+        const leftCurve = new THREE.CatmullRomCurve3(leftPoints);
+        createAnimatedParticle(leftCurve, 0xe94560, 0.007, 1.2);
+
+        // RIGHT: Success
+        const rightTable = createTable();
+        rightTable.position.x = 4;
+        rightTable.scale.set(0.5, 1, 1);
+        scene.add(rightTable);
+
+        const rightCup = createCup(new THREE.Vector3(6, -0.5, 0), 0x00ff88);
+        rightCup.scale.setScalar(0.8);
+        scene.add(rightCup);
+
+        const rightPoints = [
+            new THREE.Vector3(2, 0, 0),
+            new THREE.Vector3(3, 1.5, 0),
+            new THREE.Vector3(5, 1.2, 0),
+            new THREE.Vector3(6, -0.5, 0)
+        ];
+        const rightTrajectory = createTrajectory(rightPoints, 0xffd700, 1.0);
+        scene.add(rightTrajectory);
+
+        // Animated success particle (right) - LARGE for visibility
+        const rightCurve = new THREE.CatmullRomCurve3(rightPoints);
+        createAnimatedParticle(rightCurve, 0xffd700, 0.006, 1.2);
+
+        // Divider
+        const dividerGeometry = new THREE.BoxGeometry(0.02, 5, 0.02);
+        const dividerMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.3 });
+        const divider = new THREE.Mesh(dividerGeometry, dividerMaterial);
+        divider.position.set(0, 0.5, 0);
+        scene.add(divider);
+
+        initialCameraPosition = { x: 0, y: 2.5, z: 18 };
+    }
+
+    function updateScene(sectionId) {
+        switch (sectionId) {
+            case 1: buildVarietyScene(); break;
+            case 2: buildDisasterScene(); break;
+            case 3: buildEnterZScene(); break;
+            case 4: buildSelectionScene(); break;
+            case 5: buildPunchlineScene(); break;
+        }
+        camera.position.set(initialCameraPosition.x, initialCameraPosition.y, initialCameraPosition.z);
+        controls.update();
+        // Update window reference for reset button
+        window.initialCameraPosition = { ...initialCameraPosition };
+    }
+
+    function updateUI(sectionId) {
+        const section = sections[sectionId - 1];
+
+        // Update header
+        document.getElementById('section-number').textContent = `Section ${sectionId} of 5`;
+        document.getElementById('section-title').textContent = section.title;
+        document.getElementById('section-subtitle').textContent = section.subtitle;
+
+        // Update content
+        document.querySelectorAll('.section-content').forEach(el => el.classList.remove('active'));
+        document.querySelector(`.section-content[data-section="${sectionId}"]`).classList.add('active');
+
+        // Update nav dots
+        document.querySelectorAll('.nav-dot').forEach(dot => {
+            dot.classList.toggle('active', parseInt(dot.dataset.section) === sectionId);
+        });
+
+        // Update nav counter
+        document.getElementById('nav-counter').textContent = `${sectionId} / 5`;
+
+        // Update buttons
+        document.getElementById('prev-btn').disabled = sectionId === 1;
+        document.getElementById('next-btn').disabled = sectionId === 5;
+
+        // Show/hide canvas overlay labels dynamically for each section
+        document.querySelectorAll('.canvas-overlay-labels').forEach(labels => {
+            // Extract section number from ID (e.g., "section5-labels" -> 5)
+            const match = labels.id.match(/section(\d+)-labels/);
+            if (match) {
+                const labelSectionId = parseInt(match[1]);
+                labels.classList.toggle('active', labelSectionId === sectionId);
+            }
+        });
+    }
+
+    function goToSection(sectionId) {
+        if (sectionId < 1 || sectionId > 5) return;
+        currentSection = sectionId;
+        updateScene(sectionId);
+        updateUI(sectionId);
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+        initThree();
+        goToSection(1);
+
+        // Navigation buttons
+        document.getElementById('prev-btn').addEventListener('click', () => goToSection(currentSection - 1));
+        document.getElementById('next-btn').addEventListener('click', () => goToSection(currentSection + 1));
+
+        // Nav dots
+        document.querySelectorAll('.nav-dot').forEach(dot => {
+            dot.addEventListener('click', () => goToSection(parseInt(dot.dataset.section)));
+        });
+
+        // Reset View button - reset to current section's camera position
+        document.getElementById('reset-view-btn').addEventListener('click', () => {
+            camera.position.set(initialCameraPosition.x, initialCameraPosition.y, initialCameraPosition.z);
+            camera.lookAt(0, 0, 0);
+            controls.target.set(0, 0, 0);
+            controls.update();
+        });
+
+        // Reset Animation button
+        document.getElementById('reset-animation-btn').addEventListener('click', () => {
+            updateScene(currentSection);
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') goToSection(currentSection + 1);
+            if (e.key === 'ArrowLeft') goToSection(currentSection - 1);
+        });
+    });
+</script>
+</body>
+</html>
