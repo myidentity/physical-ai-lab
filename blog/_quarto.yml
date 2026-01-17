@@ -35,6 +35,8 @@ website:
             href: posts/2026-01-04-lesson-2-understanding-policy-learning/index.qmd
           - text: "Lesson 3: The Transformer Revolution"
             href: posts/2026-01-11-lesson-3-the-transformer-revolution/index.qmd
+          - text: "Lesson 4: Action Chunking with Transformers"
+            href: posts/2026-01-15-lesson-4-action-chunking-with-transformers/index.qmd
       - section: "NVIDIA Isaac Lab Workshop"
         contents:
           - text: "Part 1: Isaac Sim vs Isaac Lab"
