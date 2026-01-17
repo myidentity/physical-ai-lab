@@ -1,0 +1,522 @@
+[
+  {
+    "index": 0,
+    "speaker": "PROFESSOR",
+    "text": "Chapter 1. .",
+    "line_type": "transition",
+    "chapter": 1,
+    "start_ms": 0,
+    "duration_ms": 2584,
+    "end_ms": 2584
+  },
+  {
+    "index": 1,
+    "speaker": "RAJESH",
+    "text": "Dr. Nova, I\u2019ve been thinking about something. In Lesson 2, we learned about VAEs - how they compress data into latent variables. In Lesson 3, we mastered transformers - attention, encoders, decoders. But you kept promising we\u2019d see how these pieces fit together in a real robot policy. I\u2019m ready!",
+    "line_type": "dialogue",
+    "chapter": 1,
+    "start_ms": 2584,
+    "duration_ms": 20340,
+    "end_ms": 22924
+  },
+  {
+    "index": 2,
+    "speaker": "PROFESSOR",
+    "text": "Perfect timing. Today we\u2019re going to decode one of the most influential papers in modern robot learning - ACT: Action Chunking with Transformers. This paper came out in 2023 and it fundamentally changed what people thought was possible with imitation learning.",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 22924,
+    "duration_ms": 16284,
+    "end_ms": 39208
+  },
+  {
+    "index": 3,
+    "speaker": "STUDENT_1",
+    "text": "What is ACT (Action Chunking with Transformers) and why was it a breakthrough in robot learning?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 39208,
+    "duration_ms": 7244,
+    "end_ms": 46452
+  },
+  {
+    "index": 4,
+    "speaker": "PROFESSOR",
+    "text": "ACT is a robot learning method from 2023 that teaches robots to perform precise manipulation tasks by watching human demonstrations. Think of it like teaching someone to cook by showing them a recipe video - the robot watches you do a task a few times, then learns to replicate the exact movements. What made ACT special is that it could learn complex tasks like opening ziplocks or inserting batteries with just 50 demonstrations, whereas previous methods needed thousands.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 46452,
+    "duration_ms": 27636,
+    "end_ms": 74088
+  },
+  {
+    "index": 5,
+    "speaker": "PROFESSOR",
+    "text": "For your SO-ARM101 bimanual setup, ACT means you can teleoperate the Leader arms to show a task (like picking up a cup with both hands), record about 50 demonstrations, and train a policy that the Follower arms can execute autonomously. The breakthrough is that 50 demos might be just an afternoon of data collection, not weeks of work.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 74088,
+    "duration_ms": 21944,
+    "end_ms": 96032
+  },
+  {
+    "index": 6,
+    "speaker": "STUDENT_3",
+    "text": "So ACT learns complex tasks from just 50 demonstrations because it combines the pattern recognition of transformers with VAE's ability to model multiple valid solutions.",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 96032,
+    "duration_ms": 12616,
+    "end_ms": 108648
+  },
+  {
+    "index": 7,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. The efficiency comes from learning the underlying structure, not memorizing specific movements.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 108648,
+    "duration_ms": 7932,
+    "end_ms": 116580
+  },
+  {
+    "index": 8,
+    "speaker": "PROFESSOR",
+    "text": "This is why Figure AI licensed ACT technology - their humanoid robots need to learn manipulation tasks quickly from human demos, not from millions of simulation runs.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 116580,
+    "duration_ms": 12272,
+    "end_ms": 128852
+  },
+  {
+    "index": 9,
+    "speaker": "PROFESSOR",
+    "text": "But before I show you the architecture, let me ask you something. How much do you think a capable research robot setup costs?",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 128852,
+    "duration_ms": 8292,
+    "end_ms": 137144
+  },
+  {
+    "index": 10,
+    "speaker": "RAJESH",
+    "text": "Based on what I\u2019ve heard... probably hundreds of thousands of dollars? Industrial robot arms, specialized sensors, custom grippers...",
+    "line_type": "dialogue",
+    "chapter": 1,
+    "start_ms": 137144,
+    "duration_ms": 9708,
+    "end_ms": 146852
+  },
+  {
+    "index": 11,
+    "speaker": "PROFESSOR",
+    "text": "That\u2019s exactly what everyone assumed! Before 2023, if you wanted to do serious manipulation research - the kind where robots learn complex tasks - you needed budgets in the hundreds of thousands of dollars. Labs at Stanford, Berkeley, Google... they had the resources. Small research groups? Students who wanted to experiment? Locked out.",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 146852,
+    "duration_ms": 21204,
+    "end_ms": 168056
+  },
+  {
+    "index": 12,
+    "speaker": "STUDENT_2",
+    "text": "What is ALOHA and why is the '$20K budget' significant for robotics research?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 168056,
+    "duration_ms": 6380,
+    "end_ms": 174436
+  },
+  {
+    "index": 13,
+    "speaker": "PROFESSOR",
+    "text": "ALOHA stands for 'A Low-cost Open-source HArdware' - a bimanual robot system designed for teleoperation and imitation learning. Imagine that previously, doing serious robot manipulation research required a $100K+ industrial robot that only big labs could afford. ALOHA democratized this by creating a capable system for $20K using off-the-shelf parts. It's like how 3D printing went from million-dollar industrial machines to affordable desktop printers that anyone can use.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 174436,
+    "duration_ms": 30396,
+    "end_ms": 204832
+  },
+  {
+    "index": 14,
+    "speaker": "PROFESSOR",
+    "text": "Your SO-ARM101 bimanual setup follows the same philosophy as ALOHA - making capable robot arms accessible to learners and researchers. With 2 Leader arms (that you move by hand) and 2 Follower arms (that copy the movements or run policies), you have the same teleoperation capability that ALOHA introduced, letting you collect demonstration data for training ACT policies.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 204832,
+    "duration_ms": 24440,
+    "end_ms": 229272
+  },
+  {
+    "index": 15,
+    "speaker": "STUDENT_4",
+    "text": "So ALOHA made serious manipulation research accessible by dropping the cost from $100K+ to $20K - democratizing robotics like how 3D printers went from industrial to desktop.",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 229272,
+    "duration_ms": 13312,
+    "end_ms": 242584
+  },
+  {
+    "index": 16,
+    "speaker": "PROFESSOR",
+    "text": "Precisely. Cost barriers had locked out entire generations of researchers. ALOHA changed that overnight.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 242584,
+    "duration_ms": 7956,
+    "end_ms": 250540
+  },
+  {
+    "index": 17,
+    "speaker": "PROFESSOR",
+    "text": "Google acquired the ALOHA team because they understood this - innovation comes from accessibility. Now their DeepMind robots build on ALOHA's open-source foundation.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 250540,
+    "duration_ms": 11792,
+    "end_ms": 262332
+  },
+  {
+    "index": 18,
+    "speaker": "STUDENT_3",
+    "text": "Why does ACT need to predict a distribution P(actions | state) rather than just predicting a single best action?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 262332,
+    "duration_ms": 8468,
+    "end_ms": 270800
+  },
+  {
+    "index": 19,
+    "speaker": "PROFESSOR",
+    "text": "When humans demonstrate a task, there's natural variation - you might approach a cup from the left sometimes and the right other times, both being valid solutions. If we try to predict a single 'average' action, we get nonsense (like reaching for the middle of empty space). Instead, we need to model the full distribution of possible actions, then sample one valid approach. It's like asking 'what's the average route to work?' - averaging GPS paths would send you through buildings, but picking one valid route makes sense.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 270800,
+    "duration_ms": 29532,
+    "end_ms": 300332
+  },
+  {
+    "index": 20,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: When you teleoperate your SO-ARM101 Leader arms to demonstrate picking up an object, you might naturally vary your approach angle or which arm reaches first. If the policy just averages these demonstrations, the Follower arms would make awkward in-between movements. By predicting a distribution, the policy can commit to one coherent approach - maybe 'left arm reaches first' for this execution - giving you clean, purposeful bimanual coordination.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 300332,
+    "duration_ms": 29336,
+    "end_ms": 329668
+  },
+  {
+    "index": 21,
+    "speaker": "STUDENT_1",
+    "text": "So averaging multiple valid approaches gives nonsense, but predicting the full distribution lets us sample one coherent strategy - like picking a real GPS route instead of averaging through buildings.",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 329668,
+    "duration_ms": 13216,
+    "end_ms": 342884
+  },
+  {
+    "index": 22,
+    "speaker": "PROFESSOR",
+    "text": "That's right. The multimodal nature of human demonstrations demands probabilistic thinking.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 342884,
+    "duration_ms": 6828,
+    "end_ms": 349712
+  },
+  {
+    "index": 23,
+    "speaker": "PROFESSOR",
+    "text": "Tesla's Optimus robot faces this exact challenge - when folding clothes, there are many valid approaches, and averaging them would create jerky, incoherent movements.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 349712,
+    "duration_ms": 11456,
+    "end_ms": 361168
+  },
+  {
+    "index": 24,
+    "speaker": "PROFESSOR",
+    "text": "That\u2019s the total budget for the entire ALOHA system - four robot arms, multiple cameras, the whole setup. And it wasn\u2019t some toy demo. It achieved tasks that $100,000+ systems couldn\u2019t reliably do.",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 361168,
+    "duration_ms": 14244,
+    "end_ms": 375412
+  },
+  {
+    "index": 25,
+    "speaker": "STUDENT_4",
+    "text": "What is 'action chunking' and why does predicting K actions at once solve the sequence problem?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 375412,
+    "duration_ms": 6068,
+    "end_ms": 381480
+  },
+  {
+    "index": 26,
+    "speaker": "PROFESSOR",
+    "text": "Action chunking means predicting a 'chunk' of K future actions all at once (like K=100 timesteps) instead of predicting one action at a time. Since all K actions come from a single prediction, they're guaranteed to be coherent with each other - they form a smooth trajectory. It's like asking someone to draw a complete curve versus asking them to draw 100 dots one at a time without seeing the previous dots. The curve is naturally smooth; the dots would be jagged.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 381480,
+    "duration_ms": 27636,
+    "end_ms": 409116
+  },
+  {
+    "index": 27,
+    "speaker": "PROFESSOR",
+    "text": "With action chunking on your SO-ARM101, one forward pass of the ACT policy outputs the next 100 joint angle targets for all 4 arms simultaneously. That's potentially 24 joints \u00d7 100 timesteps = 2,400 values from one prediction. The bimanual coordination is baked in - the left and right Follower arm trajectories are planned together, ensuring they work as a team to complete the task.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 409116,
+    "duration_ms": 26264,
+    "end_ms": 435380
+  },
+  {
+    "index": 28,
+    "speaker": "STUDENT_2",
+    "text": "So predicting K actions at once - like chunks of 100 timesteps - ensures the policy commits to a coherent plan rather than making disjointed frame-by-frame decisions.",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 435380,
+    "duration_ms": 11224,
+    "end_ms": 446604
+  },
+  {
+    "index": 29,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. Temporal coherence emerges from chunk-level prediction, not step-by-step myopia.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 446604,
+    "duration_ms": 7692,
+    "end_ms": 454296
+  },
+  {
+    "index": 30,
+    "speaker": "PROFESSOR",
+    "text": "Boston Dynamics uses similar temporal reasoning in Atlas - each parkour move is planned as a coordinated sequence, not independent joint commands. That's what makes the backflips look so fluid.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 454296,
+    "duration_ms": 12728,
+    "end_ms": 467024
+  },
+  {
+    "index": 31,
+    "speaker": "PROFESSOR",
+    "text": "It\u2019s an acronym: A Low-cost Open-source Hardware system for bimanual teleoperation . The name is playful, but the impact was serious. Let me show you the setup.",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 467024,
+    "duration_ms": 10932,
+    "end_ms": 477956
+  },
+  {
+    "index": 32,
+    "speaker": "PROFESSOR",
+    "text": "See how there are four arms? That\u2019s the key to bimanual manipulation - tasks that require two hands working together.",
+    "line_type": "lecture",
+    "chapter": 1,
+    "start_ms": 477956,
+    "duration_ms": 8412,
+    "end_ms": 486368
+  },
+  {
+    "index": 33,
+    "speaker": "RAJESH",
+    "text": "Like our SO-ARM101 setup! We have two Leader arms and two Follower arms too.",
+    "line_type": "dialogue",
+    "chapter": 1,
+    "start_ms": 486368,
+    "duration_ms": 7284,
+    "end_ms": 493652
+  },
+  {
+    "index": 34,
+    "speaker": "STUDENT_1",
+    "text": "How does self-attention in the VAE encoder help understand the relationship between robot states and actions?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 493652,
+    "duration_ms": 7172,
+    "end_ms": 500824
+  },
+  {
+    "index": 35,
+    "speaker": "PROFESSOR",
+    "text": "Self-attention lets every token 'look at' every other token and decide what's relevant. State tokens can attend to action tokens to understand 'given I was here, I moved there.' Action tokens can attend to other actions to understand 'this motion was followed by that motion.' This creates a rich web of relationships that captures the full context of a demonstration.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 500824,
+    "duration_ms": 22596,
+    "end_ms": 523420
+  },
+  {
+    "index": 36,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: In your SO-ARM101 bimanual setup, self-attention connects the dots: 'left arm was holding the object (state) while right arm rotated (action), then left arm adjusted (later action).' The attention mechanism discovers that the left gripper force relates to the right arm's motion 3 steps later - dependencies a simple network would completely miss.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 523420,
+    "duration_ms": 25496,
+    "end_ms": 548916
+  },
+  {
+    "index": 37,
+    "speaker": "STUDENT_3",
+    "text": "So self-attention lets the VAE encoder discover which parts of the robot state relate to which parts of the action sequence - like finding that wrist orientation strongly correlates with gripper timing.",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 548916,
+    "duration_ms": 13192,
+    "end_ms": 562108
+  },
+  {
+    "index": 38,
+    "speaker": "PROFESSOR",
+    "text": "Precisely. The relationships are learned, not hand-coded. That's the power of attention.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 562108,
+    "duration_ms": 6948,
+    "end_ms": 569056
+  },
+  {
+    "index": 39,
+    "speaker": "PROFESSOR",
+    "text": "Amazon's warehouse robots use similar attention mechanisms to correlate sensor readings with pick-and-place strategies across their million-package-per-day operations.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 569056,
+    "duration_ms": 10856,
+    "end_ms": 579912
+  },
+  {
+    "index": 40,
+    "speaker": "STUDENT_2",
+    "text": "Why is fusing information from multiple cameras (wrist, overhead, front) essential for robot manipulation?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 579912,
+    "duration_ms": 7652,
+    "end_ms": 587564
+  },
+  {
+    "index": 41,
+    "speaker": "PROFESSOR",
+    "text": "Each camera sees different things: a wrist camera sees fine gripper details but not the big picture, an overhead camera sees the workspace layout but not depth, a front camera captures approach angles. Fusing them gives the robot complete spatial understanding. It's like how surgeons use multiple monitors showing different angles - no single view is sufficient for precise work.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 587564,
+    "duration_ms": 22188,
+    "end_ms": 609752
+  },
+  {
+    "index": 42,
+    "speaker": "PROFESSOR",
+    "text": "For your SO-ARM101 bimanual setup: wrist cameras on each follower arm see exactly how fingers approach objects (critical for grasping). An overhead camera sees how both arms relate to each other and the workspace (essential for coordination). A front camera might catch occlusions the others miss. Fusing all views lets the robot understand the full 3D scene for complex bimanual tasks.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 609752,
+    "duration_ms": 24248,
+    "end_ms": 634000
+  },
+  {
+    "index": 43,
+    "speaker": "STUDENT_4",
+    "text": "So fusing multiple camera views - wrist, overhead, front - gives the robot a complete 3D understanding that no single camera could provide alone.",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 634000,
+    "duration_ms": 10144,
+    "end_ms": 644144
+  },
+  {
+    "index": 44,
+    "speaker": "PROFESSOR",
+    "text": "That's the key insight. Binocular vision in humans exists for the same reason - multiple viewpoints create depth and completeness.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 644144,
+    "duration_ms": 9180,
+    "end_ms": 653324
+  },
+  {
+    "index": 45,
+    "speaker": "PROFESSOR",
+    "text": "Waymo's self-driving cars fuse data from cameras, lidar, and radar for exactly this reason - no single sensor captures complete road awareness.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 653324,
+    "duration_ms": 10712,
+    "end_ms": 664036
+  },
+  {
+    "index": 46,
+    "speaker": "STUDENT_3",
+    "text": "Professor, where can you find the actual act implementation, and how does lerobot make it accessible?",
+    "line_type": "question",
+    "chapter": 1,
+    "start_ms": 664036,
+    "duration_ms": 7076,
+    "end_ms": 671112
+  },
+  {
+    "index": 47,
+    "speaker": "PROFESSOR",
+    "text": "LeRobot is Hugging Face's open-source robotics library, and the ACT architecture lives in a file called `modeling_act.py` in their GitHub repository. It's not some mysterious research code - it's clean, documented Python that implements exactly what we've learned: the VAE encoder, transformer encoder, transformer decoder, and the training losses. You can read it, modify it, and train your own robot with it. It's the 'Hugging Face moment' for robotics.",
+    "line_type": "answer",
+    "chapter": 1,
+    "start_ms": 671112,
+    "duration_ms": 29532,
+    "end_ms": 700644
+  },
+  {
+    "index": 48,
+    "speaker": "PROFESSOR",
+    "text": "To train your SO-ARM101, you'd: 1) Record demonstrations using the Leader arms, 2) Use LeRobot's data format to store them, 3) Configure ACT in a YAML file (chunk size, latent dim, etc.), 4) Run `python lerobot/scripts/train.py` which uses `modeling_act.py`, 5) Deploy the trained model on your Follower arms. The implementation handles all the complexity - positional embeddings, cross-attention, KL loss - so you focus on collecting good demos and tuning hyperparameters.",
+    "line_type": "example",
+    "chapter": 1,
+    "start_ms": 700644,
+    "duration_ms": 38696,
+    "end_ms": 739340
+  },
+  {
+    "index": 49,
+    "speaker": "STUDENT_1",
+    "text": "So LeRobot on Hugging Face makes ACT accessible to anyone with a laptop - you can actually run the same code the researchers used, not just read about it.",
+    "line_type": "echo",
+    "chapter": 1,
+    "start_ms": 739340,
+    "duration_ms": 10912,
+    "end_ms": 750252
+  },
+  {
+    "index": 50,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. Open-source implementations are how science becomes engineering practice.",
+    "line_type": "acknowledgment",
+    "chapter": 1,
+    "start_ms": 750252,
+    "duration_ms": 6468,
+    "end_ms": 756720
+  },
+  {
+    "index": 51,
+    "speaker": "PROFESSOR",
+    "text": "This is why NVIDIA invested heavily in Isaac Lab - making simulation and learning code accessible accelerates the entire robotics field, not just their customers.",
+    "line_type": "consequence",
+    "chapter": 1,
+    "start_ms": 756720,
+    "duration_ms": 11384,
+    "end_ms": 768104
+  }
+]

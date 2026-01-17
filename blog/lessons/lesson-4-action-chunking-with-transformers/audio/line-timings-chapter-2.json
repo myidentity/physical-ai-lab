@@ -1,0 +1,462 @@
+[
+  {
+    "index": 0,
+    "speaker": "PROFESSOR",
+    "text": "Chapter 2. .",
+    "line_type": "transition",
+    "chapter": 2,
+    "start_ms": 0,
+    "duration_ms": 2584,
+    "end_ms": 2584
+  },
+  {
+    "index": 1,
+    "speaker": "RAJESH",
+    "text": "Okay, I\u2019m excited about the hardware being accessible. But you mentioned three software innovations - CVAE, Transformer Decoder, and Action Chunking. Can we dig into what makes this combination special?",
+    "line_type": "dialogue",
+    "chapter": 2,
+    "start_ms": 2584,
+    "duration_ms": 13764,
+    "end_ms": 16348
+  },
+  {
+    "index": 2,
+    "speaker": "PROFESSOR",
+    "text": "Absolutely. And here\u2019s what I love about ACT - it\u2019s not magic. It\u2019s built on concepts you already understand from our previous lessons. Let me show you how.",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 16348,
+    "duration_ms": 10908,
+    "end_ms": 27256
+  },
+  {
+    "index": 3,
+    "speaker": "PROFESSOR",
+    "text": "Navigate through the 5 sections to explore each innovation. Drag to rotate 3D scenes, scroll to zoom.",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 27256,
+    "duration_ms": 7836,
+    "end_ms": 35092
+  },
+  {
+    "index": 4,
+    "speaker": "STUDENT_4",
+    "text": "How does a Conditional VAE (CVAE) help predict robot actions, and what is 'Architecture V1'?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 35092,
+    "duration_ms": 7868,
+    "end_ms": 42960
+  },
+  {
+    "index": 5,
+    "speaker": "PROFESSOR",
+    "text": "A regular VAE learns to compress data and recreate it, but for robots we need actions that match our current situation. A Conditional VAE adds the current observation as context, so it generates actions appropriate for what the robot sees right now. Architecture V1 is the simplest version: feed in robot joint positions (proprioception), encode the style of action, and decode an appropriate action. It's like a music AI that doesn't just generate random songs, but generates music that fits the mood you specify.",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 42960,
+    "duration_ms": 30180,
+    "end_ms": 73140
+  },
+  {
+    "index": 6,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: In Architecture V1 for your SO-ARM101, the CVAE receives the current joint angles of all 4 arms (let's say 6 joints \u00d7 4 arms = 24 values). The encoder captures 'how did the human tend to do this?' and the decoder outputs the next joint angle targets. But V1 only uses proprioception - it doesn't know what objects are on the table yet. That's why we need V2.",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 73140,
+    "duration_ms": 27944,
+    "end_ms": 101084
+  },
+  {
+    "index": 7,
+    "speaker": "STUDENT_2",
+    "text": "So the CVAE adds conditioning on the current state - it doesn't just model actions in general, but models valid actions given where the robot is right now.",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 101084,
+    "duration_ms": 10024,
+    "end_ms": 111108
+  },
+  {
+    "index": 8,
+    "speaker": "PROFESSOR",
+    "text": "Precisely. The conditioning is what makes the distribution useful for control, not just generation.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 111108,
+    "duration_ms": 7620,
+    "end_ms": 118728
+  },
+  {
+    "index": 9,
+    "speaker": "PROFESSOR",
+    "text": "DeepMind's robotics team uses conditional models throughout their work - Gato, RT-1, RT-2 all condition on current observations to produce contextually appropriate actions.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 118728,
+    "duration_ms": 12584,
+    "end_ms": 131312
+  },
+  {
+    "index": 10,
+    "speaker": "RAJESH",
+    "text": "So the CVAE handles... the variety in demonstrations? Like different styles?",
+    "line_type": "dialogue",
+    "chapter": 2,
+    "start_ms": 131312,
+    "duration_ms": 6708,
+    "end_ms": 138020
+  },
+  {
+    "index": 11,
+    "speaker": "STUDENT_1",
+    "text": "What are the two main benefits of action chunking: smoother motion and reduced compounding errors?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 138020,
+    "duration_ms": 6524,
+    "end_ms": 144544
+  },
+  {
+    "index": 12,
+    "speaker": "PROFESSOR",
+    "text": "First, smoother motion: since all K actions in a chunk are predicted together, they naturally form a fluid trajectory rather than jerky frame-by-frame decisions. Second, reduced compounding errors: we only make one prediction per chunk instead of K separate predictions, so errors have fewer chances to accumulate. It's like autocorrect that fixes a whole sentence at once (smooth, fewer errors) versus autocorrecting letter by letter (jerky, errors compound).",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 144544,
+    "duration_ms": 27972,
+    "end_ms": 172516
+  },
+  {
+    "index": 13,
+    "speaker": "PROFESSOR",
+    "text": "On your SO-ARM101, action chunking means the Follower arms execute smooth, graceful motions rather than stuttery movements. When both arms coordinate to lift an object, the chunked prediction ensures they accelerate and decelerate together naturally. And since you're only running the neural network once per chunk (maybe every 1 second) instead of every timestep (every 10ms), you have 100x fewer opportunities for prediction errors to throw off your bimanual coordination.",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 172516,
+    "duration_ms": 29648,
+    "end_ms": 202164
+  },
+  {
+    "index": 14,
+    "speaker": "STUDENT_3",
+    "text": "So action chunking gives us smoother motion because consecutive actions are predicted together, and reduced compounding errors because we don't need perfect prediction at every single timestep.",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 202164,
+    "duration_ms": 12160,
+    "end_ms": 214324
+  },
+  {
+    "index": 15,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. It's an elegant solution that solves two problems at once.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 214324,
+    "duration_ms": 5700,
+    "end_ms": 220024
+  },
+  {
+    "index": 16,
+    "speaker": "PROFESSOR",
+    "text": "This is why Tesla's FSD predicts trajectory curves rather than individual steering angles - smoother planning with fewer error accumulation opportunities.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 220024,
+    "duration_ms": 10448,
+    "end_ms": 230472
+  },
+  {
+    "index": 17,
+    "speaker": "PROFESSOR",
+    "text": "Exactly right! Let\u2019s break down what each innovation does:",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 230472,
+    "duration_ms": 5148,
+    "end_ms": 235620
+  },
+  {
+    "index": 18,
+    "speaker": "STUDENT_2",
+    "text": "What does it mean that the VAE encoder's latent variable captures the 'style' of performing a task?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 235620,
+    "duration_ms": 6644,
+    "end_ms": 242264
+  },
+  {
+    "index": 19,
+    "speaker": "PROFESSOR",
+    "text": "The same task (like picking up a cup) can be done many ways - fast or slow, from the left or right, with a power grip or pinch grip. The latent variable encodes WHICH way this particular demonstration did it. It's like how sheet music tells you what notes to play, but the latent variable captures whether this performance was 'jazz style' or 'classical style.'",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 242264,
+    "duration_ms": 21348,
+    "end_ms": 263612
+  },
+  {
+    "index": 20,
+    "speaker": "PROFESSOR",
+    "text": "Your SO-ARM101 might learn cup-stacking from 50 demonstrations. Some approached from above, others from the side. Some used both arms symmetrically, others had one arm stabilize while the other stacked. The latent variable captures these 'styles' - at inference, sampling different latent codes could produce different valid approaches to the same stacking task.",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 263612,
+    "duration_ms": 22640,
+    "end_ms": 286252
+  },
+  {
+    "index": 21,
+    "speaker": "STUDENT_4",
+    "text": "So the latent z variable captures the high-level strategy - like whether to approach from the left or right - while the decoder fills in the low-level details of how to execute that style.",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 286252,
+    "duration_ms": 10744,
+    "end_ms": 296996
+  },
+  {
+    "index": 22,
+    "speaker": "PROFESSOR",
+    "text": "That's right. The style abstraction is what enables coherent multi-step behavior.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 296996,
+    "duration_ms": 6540,
+    "end_ms": 303536
+  },
+  {
+    "index": 23,
+    "speaker": "PROFESSOR",
+    "text": "Figure 01's humanoid uses similar style-level reasoning - deciding to pick up a box with both hands versus one hand before planning the actual joint trajectories.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 303536,
+    "duration_ms": 11432,
+    "end_ms": 314968
+  },
+  {
+    "index": 24,
+    "speaker": "PROFESSOR",
+    "text": "Remember in Lesson 2 when we talked about the multimodal problem? You can\u2019t just average different expert demonstrations because you get something that\u2019s worse than any of them.",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 314968,
+    "duration_ms": 10284,
+    "end_ms": 325252
+  },
+  {
+    "index": 25,
+    "speaker": "PROFESSOR",
+    "text": "The CVAE captures the style of a demonstration. When ten people show you how to pick up a cup, they all do it slightly differently - some go from the left, some from the right, some lift higher. The CVAE learns to encode these different styles into a latent variable Z.",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 325252,
+    "duration_ms": 16908,
+    "end_ms": 342160
+  },
+  {
+    "index": 26,
+    "speaker": "RAJESH",
+    "text": "So Z is like... a \u201cstyle selector\u201d? It doesn\u2019t average the styles, it picks one?",
+    "line_type": "dialogue",
+    "chapter": 2,
+    "start_ms": 342160,
+    "duration_ms": 6732,
+    "end_ms": 348892
+  },
+  {
+    "index": 27,
+    "speaker": "STUDENT_3",
+    "text": "Why does ACT's decoder contain its own Transformer encoder, and what does it fuse together?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 348892,
+    "duration_ms": 6308,
+    "end_ms": 355200
+  },
+  {
+    "index": 28,
+    "speaker": "PROFESSOR",
+    "text": "The decoder needs to combine very different types of information: visual features from cameras, numerical joint positions, and the abstract latent style code. A Transformer encoder uses attention to let these different modalities 'talk to each other' and create a unified representation. It's like a translator at a UN meeting helping delegates who speak different languages reach a shared understanding.",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 355200,
+    "duration_ms": 22908,
+    "end_ms": 378108
+  },
+  {
+    "index": 29,
+    "speaker": "PROFESSOR",
+    "text": "Your SO-ARM101's decoder Transformer fuses: image tokens from multiple cameras (visual understanding), joint state tokens (proprioceptive awareness), and the latent token (task style). Through attention, the visual features learn 'the gripper is near this object' while joint features learn 'I'm extended to the left.' The fused representation understands 'I'm reaching left toward the red cube in a careful manner.'",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 378108,
+    "duration_ms": 26696,
+    "end_ms": 404804
+  },
+  {
+    "index": 30,
+    "speaker": "STUDENT_1",
+    "text": "So ACT's decoder has its own internal Transformer encoder that fuses images, proprioception, and positional queries before the cross-attention layers predict actions.",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 404804,
+    "duration_ms": 11848,
+    "end_ms": 416652
+  },
+  {
+    "index": 31,
+    "speaker": "PROFESSOR",
+    "text": "Precisely. The fusion happens inside the decoder, creating a unified representation from diverse inputs.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 416652,
+    "duration_ms": 8340,
+    "end_ms": 424992
+  },
+  {
+    "index": 32,
+    "speaker": "PROFESSOR",
+    "text": "Meta's FAIR lab uses similar fusion architectures in their manipulation research - combining vision and touch sensors in a unified transformer framework.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 424992,
+    "duration_ms": 10544,
+    "end_ms": 435536
+  },
+  {
+    "index": 33,
+    "speaker": "PROFESSOR",
+    "text": "You\u2019re already seeing it! That\u2019s the key insight we\u2019ll explore deeply in Chapter 3. For now, just know that Z lets the model commit to ONE coherent trajectory instead of some blurry average.",
+    "line_type": "lecture",
+    "chapter": 2,
+    "start_ms": 435536,
+    "duration_ms": 12204,
+    "end_ms": 447740
+  },
+  {
+    "index": 34,
+    "speaker": "STUDENT_4",
+    "text": "What are fixed positional queries (inspired by DETR) and why do they enable parallel action prediction?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 447740,
+    "duration_ms": 6812,
+    "end_ms": 454552
+  },
+  {
+    "index": 35,
+    "speaker": "PROFESSOR",
+    "text": "Think of it like having 100 dedicated parking spots at a mall, each permanently numbered. DETR invented 'object queries' - fixed slots that each learn to detect one object. ACT borrows this idea: instead of generating actions one-by-one, it has fixed 'action slots' (say, 100 of them). Each slot is responsible for predicting one action in the sequence, and they all work simultaneously - like 100 workers each doing their assigned task at once.",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 454552,
+    "duration_ms": 27924,
+    "end_ms": 482476
+  },
+  {
+    "index": 36,
+    "speaker": "PROFESSOR",
+    "text": "For example, with your SO-ARM101: If your SO-ARM101 needs to predict a chunk of 100 actions for folding, ACT doesn't predict action 1, then 2, then 3 sequentially. Instead, it has 100 learnable query vectors - Query #1 always predicts action 1, Query #47 always predicts action 47. During inference, ALL 100 queries attend to the encoder simultaneously and output all 100 actions in one forward pass. This is why ACT is fast enough for real-time robot control.",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 482476,
+    "duration_ms": 33992,
+    "end_ms": 516468
+  },
+  {
+    "index": 37,
+    "speaker": "STUDENT_2",
+    "text": "So the fixed positional queries learned during training act like asking 'what's action 1, what's action 2' in parallel - enabling the transformer to predict all K actions at once instead of autoregressively.",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 516468,
+    "duration_ms": 13072,
+    "end_ms": 529540
+  },
+  {
+    "index": 38,
+    "speaker": "PROFESSOR",
+    "text": "Exactly. Parallel prediction is transformative for real-time robot control where latency matters.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 529540,
+    "duration_ms": 7452,
+    "end_ms": 536992
+  },
+  {
+    "index": 39,
+    "speaker": "PROFESSOR",
+    "text": "NVIDIA's Isaac robots benefit from this parallelism - predicting entire manipulation sequences in one forward pass keeps control loops running at 200Hz.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 536992,
+    "duration_ms": 12128,
+    "end_ms": 549120
+  },
+  {
+    "index": 40,
+    "speaker": "STUDENT_1",
+    "text": "Why couldn't classical robotics handle multiple sensor modalities, and how do transformers solve this?",
+    "line_type": "question",
+    "chapter": 2,
+    "start_ms": 549120,
+    "duration_ms": 7124,
+    "end_ms": 556244
+  },
+  {
+    "index": 41,
+    "speaker": "PROFESSOR",
+    "text": "Classical robotics is like a chef who can only follow recipes with ingredient WEIGHTS - if you give them a picture of a dish or describe the taste, they're lost. Everything had to be in the same 'format.' Transformers are like a chef who learned to understand photos, written recipes, taste descriptions, AND weights - all at once. They can fuse ANY modality by converting everything to the same embedding space and letting attention find connections.",
+    "line_type": "answer",
+    "chapter": 2,
+    "start_ms": 556244,
+    "duration_ms": 24852,
+    "end_ms": 581096
+  },
+  {
+    "index": 42,
+    "speaker": "PROFESSOR",
+    "text": "Your SO-ARM101 has cameras (images), joint encoders (angles), and possibly force sensors (touch). Classical approaches would struggle to combine these - different dimensions, different meanings, different timescales. ACT's transformer takes image patches from both cameras, joint angles from all 4 arms, and the style latent, embeds them ALL into 512-dimensional vectors, and attention figures out 'this image region relates to this joint position.' Seamless multimodal reasoning!",
+    "line_type": "example",
+    "chapter": 2,
+    "start_ms": 581096,
+    "duration_ms": 30416,
+    "end_ms": 611512
+  },
+  {
+    "index": 43,
+    "speaker": "STUDENT_3",
+    "text": "So classical robotics struggled with multiple sensors because engineers had to manually design how to combine each pair of modalities, but transformers learn these relationships automatically through attention.",
+    "line_type": "echo",
+    "chapter": 2,
+    "start_ms": 611512,
+    "duration_ms": 13528,
+    "end_ms": 625040
+  },
+  {
+    "index": 44,
+    "speaker": "PROFESSOR",
+    "text": "That's the paradigm shift. From hand-crafted sensor fusion to learned representations.",
+    "line_type": "acknowledgment",
+    "chapter": 2,
+    "start_ms": 625040,
+    "duration_ms": 6516,
+    "end_ms": 631556
+  },
+  {
+    "index": 45,
+    "speaker": "PROFESSOR",
+    "text": "Waymo's sixth-generation Driver uses transformer-based sensor fusion - their engineers no longer write explicit camera-lidar fusion rules; the model learns optimal combinations.",
+    "line_type": "consequence",
+    "chapter": 2,
+    "start_ms": 631556,
+    "duration_ms": 12584,
+    "end_ms": 644140
+  }
+]
