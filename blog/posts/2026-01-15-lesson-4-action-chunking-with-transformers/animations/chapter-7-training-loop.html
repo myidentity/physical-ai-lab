@@ -1,0 +1,2593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter 7: ACT Training Loop - Canvas Navigator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #0a0a1a;
+            --bg-scene: #1a1a2e;
+            --cyan: #00D4AA;
+            --coral: #e94560;
+            --gold: #ffd700;
+            --purple: #9B59B6;
+            --blue: #00BFFF;
+            --green: #2ECC71;
+            --text-light: #e4e4e7;
+            --text-muted: #9ca3af;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg-deep);
+            font-family: 'Sora', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+            color: var(--text-light);
+        }
+        .guided-widget {
+            width: 1200px;
+            height: 700px;
+            max-width: 1200px;
+            max-height: 100vh;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            background: var(--bg-deep);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+        .canvas-area {
+            width: 45%;
+            flex: 0 0 45%;
+            position: relative;
+            min-width: 0;
+            background: var(--bg-deep);
+        }
+        .content-panel {
+            width: 55%;
+            flex: 0 0 55%;
+            background: rgba(20, 20, 40, 0.95);
+            border-left: 1px solid rgba(155, 89, 182, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .canvas-controls {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            display: flex;
+            gap: 8px;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .canvas-area:hover .canvas-controls { opacity: 1; }
+        .canvas-controls button {
+            background: rgba(155, 89, 182, 0.2);
+            border: 1px solid rgba(155, 89, 182, 0.4);
+            color: var(--text-light);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            transition: all 0.2s;
+        }
+        .canvas-controls button:hover { background: rgba(155, 89, 182, 0.4); }
+        .narrative-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(155, 89, 182, 0.2);
+        }
+        .narrative-header h2 {
+            font-size: 18px;
+            color: var(--purple);
+            margin-bottom: 8px;
+        }
+        .section-title {
+            font-size: 14px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .narrative-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .narrative-content h3 {
+            font-size: 16px;
+            color: var(--gold);
+            margin-bottom: 12px;
+        }
+        .narrative-content p {
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-light);
+            margin-bottom: 12px;
+        }
+        .narrative-content em { color: var(--cyan); font-style: italic; }
+        .narrative-content .key-point {
+            background: rgba(155, 89, 182, 0.15);
+            border-left: 3px solid var(--purple);
+            padding: 12px 16px;
+            margin: 12px 0;
+            border-radius: 0 8px 8px 0;
+            font-size: 13px;
+        }
+        .narrative-content .key-point strong { color: var(--cyan); }
+        .narrative-content .punchline {
+            background: linear-gradient(135deg, rgba(155, 89, 182, 0.2), rgba(46, 204, 113, 0.2));
+            border: 2px solid var(--green);
+            padding: 16px;
+            margin: 16px 0;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 14px;
+        }
+        .narrative-content .hint {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-style: italic;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 4px;
+        }
+        .section-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px;
+            border-top: 1px solid rgba(155, 89, 182, 0.2);
+        }
+        .section-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .section-dot:hover { background: rgba(255, 255, 255, 0.4); }
+        .section-dot.active {
+            background: var(--purple);
+            border-color: var(--purple);
+            box-shadow: 0 0 10px var(--purple);
+        }
+        .nav-controls {
+            display: flex;
+            gap: 12px;
+            padding: 12px 20px;
+            border-top: 1px solid rgba(155, 89, 182, 0.2);
+        }
+        .nav-btn {
+            flex: 1;
+            background: rgba(155, 89, 182, 0.2);
+            border: 1px solid rgba(155, 89, 182, 0.4);
+            color: var(--text-light);
+            padding: 10px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .nav-btn:hover:not(:disabled) {
+            background: rgba(155, 89, 182, 0.4);
+            border-color: rgba(155, 89, 182, 0.6);
+        }
+        .nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .loading {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-deep);
+            z-index: 1000;
+        }
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(155, 89, 182, 0.3);
+            border-top-color: var(--purple);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .emotion-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            margin-bottom: 12px;
+        }
+        .emotion-curiosity { background: rgba(155, 89, 182, 0.2); color: var(--purple); }
+        .emotion-clarity { background: rgba(255, 215, 0, 0.2); color: var(--gold); }
+        .emotion-concern { background: rgba(255, 107, 107, 0.2); color: #FF6B6B; }
+        .emotion-relief { background: rgba(46, 204, 113, 0.2); color: var(--green); }
+        .emotion-triumph { background: rgba(46, 204, 113, 0.25); color: var(--green); }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading">
+        <div class="loading-spinner"></div>
+        <div>Loading ACT Training Loop...</div>
+    </div>
+
+    <div class="guided-widget main-container">
+        <div id="canvas-container" class="canvas-area">
+            <div class="canvas-controls">
+                <button id="reset-view-btn">Reset View</button>
+            </div>
+        </div>
+
+        <div class="narrative-panel content-panel">
+            <div class="narrative-header">
+                <h2>Chapter 7: ACT Training Loop</h2>
+                <div class="section-title" id="section-title">Section 1 of 5</div>
+            </div>
+            <div class="narrative-content" id="narrative-content"></div>
+            <div class="section-indicator">
+                <div class="section-dot active" data-section="1" title="Training Cycle"></div>
+                <div class="section-dot" data-section="2" title="Reconstruction"></div>
+                <div class="section-dot" data-section="3" title="Inference Gap"></div>
+                <div class="section-dot" data-section="4" title="KL Rescue"></div>
+                <div class="section-dot" data-section="5" title="Two Losses"></div>
+            </div>
+            <div class="nav-controls">
+                <button class="nav-btn" id="prev-btn" disabled>← Previous</button>
+                <button class="nav-btn" id="next-btn">Next →</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TrackballControls.js"></script>
+
+    <script>
+        const CONFIG = { title: 'ACT Training Loop', sectionCount: 5 };
+
+        const narrativeContent = {
+            1: {
+                title: "The Training Cycle",
+                subtitle: "How ACT Learns from Demonstrations",
+                emotion: "curiosity",
+                emotionLabel: "🤔 Mystery → Curiosity",
+                content: `<p><em>"How does ACT learn from human demonstrations?"</em></p>
+                    <div class="key-point"><strong>The Flow:</strong> Demo → Encode → Decode → Compare → Learn</div>
+                    <p>A circular flow dominates the scene. Watch the SO-ARM101 robot arm at the center as data flows clockwise through the training cycle.</p>
+                    <p><strong>Demo Recording:</strong> Human demonstrations are captured as trajectory trails.</p>
+                    <p><strong>Encoder:</strong> The neural network compresses the full demo into a compact style vector Z.</p>
+                    <p><strong>Decoder:</strong> Z is expanded back into predicted action sequences.</p>
+                    <p><strong>Loss Computation:</strong> Measures how close the prediction is to the original demo.</p>
+                    <p><strong>Gradient Flow:</strong> Purple particles flow backward, "teaching" the networks to improve.</p>
+                    <p class="hint">💡 Hover over any element to see details. Drag to rotate the view.</p>`
+            },
+            2: {
+                title: "Reconstruction Loss",
+                subtitle: "The Main Teacher",
+                emotion: "clarity",
+                emotionLabel: "💡 Focus → Clarity",
+                content: `<p><em>"Match the demonstration as closely as possible"</em></p>
+                    <div class="key-point"><strong>The Formula:</strong> L<sub>recon</sub> = ||a<sub>pred</sub> - a<sub>demo</sub>||²</div>
+                    <p>Two SO-ARM101 trajectories appear: <span style="color:#FFD700">gold for ground truth</span> and <span style="color:#00BFFF">blue for predicted</span>.</p>
+                    <p>When overlaid, <strong>error bars</strong> connect corresponding timesteps. Longer bars = bigger errors!</p>
+                    <div class="key-point" style="background: rgba(255, 215, 0, 0.15); border-left-color: #FFD700;"><strong>The Scale:</strong> 100 timesteps × 12 joints = <strong>1,200 squared errors</strong></div>
+                    <p>This is <strong>THE MAIN TEACHER</strong> - it teaches WHAT to do by penalizing any deviation from the demonstration.</p>
+                    <p class="hint">💡 Hover on error bars to see exact values.</p>`
+            },
+            3: {
+                title: "The Inference Gap",
+                subtitle: "Houston, We Have a Problem",
+                emotion: "concern",
+                emotionLabel: "😰 Worry → Problem Recognized",
+                content: `<p>Here's the critical problem that reconstruction loss alone cannot solve...</p>
+                    <div class="key-point" style="background: rgba(255, 107, 107, 0.2); border-left-color: #FF6B6B;"><strong>The Problem:</strong> Where does Z come from when we don't have a demo?</div>
+                    <p><strong style="color:#2ECC71">🟢 TRAINING (Left):</strong> We have the demo! Obs → Demo → Encoder → Z ✓</p>
+                    <p><strong style="color:#FF6B6B">🔴 INFERENCE (Right):</strong> Demo is <span style="color:#FF6B6B;font-weight:bold">MISSING!</span> Obs → ??? → Encoder → Z = ????</p>
+                    <div class="key-point"><strong>THE INFERENCE GAP:</strong> The encoder can't run without a demo, yet we need Z to decode actions!</div>
+                    <p class="hint">💡 Hover on either side to explore the gap. This tension sets up the solution...</p>`
+            },
+            4: {
+                title: "KL Divergence to the Rescue",
+                subtitle: "The Second Teacher",
+                emotion: "relief",
+                emotionLabel: "✨ Relief → Solution Found",
+                content: `<p><em>"Stay close to normal - so inference can sample from N(0,1)!"</em></p>
+                    <div class="key-point" style="background: rgba(46, 204, 113, 0.2); border-left-color: #2ECC71;"><strong>The Insight:</strong> What if Z was always near a <em>known</em> distribution?</div>
+                    <p><strong>BEFORE KL (Left):</strong> Encoder outputs are scattered chaotically.</p>
+                    <p><strong>AFTER KL (Right):</strong> Points cluster near the origin, constrained to N(0,1).</p>
+                    <p><strong>The Solution:</strong> During inference, simply sample Z ~ N(0,1) - no demo needed!</p>
+                    <div class="key-point"><strong>The Formula:</strong> L<sub>KL</sub> = 0.5 × Σ(μ² + σ² - log(σ²) - 1)</div>
+                    <p>This is <strong>✨ THE SECOND TEACHER</strong> - it teaches HOW to organize the latent space.</p>`
+            },
+            5: {
+                title: "Two Losses, One Goal",
+                subtitle: "The Complete Picture",
+                emotion: "triumph",
+                emotionLabel: "🎯 Eureka → Understanding",
+                content: `<p>Both losses merge into a beautiful balance - two complementary forces.</p>
+                    <div class="key-point" style="background: rgba(155, 89, 182, 0.2); border-left-color: #9B59B6;"><strong>Combined Loss:</strong> L<sub>total</sub> = L<sub>recon</sub> + <span style="color:#FF6B6B;font-weight:bold">10</span> × L<sub>KL</sub></div>
+                    <p><span style="color:#FFD700">🤖 Reconstruction (Gold)</span> - Weight: 1× - Teaches: <strong>WHAT</strong></p>
+                    <p><span style="color:#9B59B6">🔮 KL Divergence (Purple)</span> - Weight: <strong style="color:#FF6B6B">10×</strong> - Teaches: <strong>HOW</strong></p>
+                    <div class="key-point" style="background: rgba(46, 204, 113, 0.25); border-left-color: #2ECC71;"><strong>β = 10:</strong> KL weighted 10× higher for well-organized latent space!</div>
+                    <div class="punchline"><strong>THE PUNCHLINE:</strong><br>"<span style="color:#FFD700">Reconstruction</span> teaches <strong>WHAT</strong> to do.<br><span style="color:#9B59B6">KL</span> teaches <strong>HOW</strong> to vary it."</div>
+                    <p style="text-align:center;color:#2ECC71;font-weight:bold;">🎯 Understanding Achieved!</p>`
+            }
+        };
+
+        const state = {
+            currentSection: 1,
+            animationId: null
+        };
+
+        const container = document.getElementById('canvas-container');
+        const loadingEl = document.getElementById('loading');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const resetViewBtn = document.getElementById('reset-view-btn');
+        const sectionDots = document.querySelectorAll('.section-dot');
+        const narrativeEl = document.getElementById('narrative-content');
+        const sectionTitleEl = document.getElementById('section-title');
+
+        function clearScene() {
+            if (state.animationId) {
+                cancelAnimationFrame(state.animationId);
+                state.animationId = null;
+            }
+            const canvas = container.querySelector('canvas');
+            if (canvas) canvas.remove();
+            const overlays = container.querySelectorAll('div:not(.canvas-controls)');
+            overlays.forEach(el => { if (!el.classList.contains('canvas-controls')) el.remove(); });
+        }
+
+        function loadSection1() {
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            // Scene setup
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0a0a1a);
+            
+            const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+            camera.position.set(0, 0, 12);
+            
+            const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+            
+            // Controls
+            const controls = new THREE.TrackballControls(camera, renderer.domElement);
+            controls.rotateSpeed = 2.0;
+            controls.zoomSpeed = 1.2;
+            controls.panSpeed = 0.8;
+            controls.dynamicDampingFactor = 0.15;
+            
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            scene.add(ambientLight);
+            
+            const mainLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            mainLight.position.set(5, 5, 10);
+            scene.add(mainLight);
+            
+            const backLight = new THREE.DirectionalLight(0x9B59B6, 0.3);
+            backLight.position.set(-5, -5, -10);
+            scene.add(backLight);
+            
+            // Star field
+            const starGeometry = new THREE.BufferGeometry();
+            const starCount = 500;
+            const starPositions = new Float32Array(starCount * 3);
+            for (let i = 0; i < starCount * 3; i += 3) {
+                starPositions[i] = (Math.random() - 0.5) * 100;
+                starPositions[i + 1] = (Math.random() - 0.5) * 100;
+                starPositions[i + 2] = (Math.random() - 0.5) * 50 - 20;
+            }
+            starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+            const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.1, transparent: true, opacity: 0.6 });
+            const stars = new THREE.Points(starGeometry, starMaterial);
+            scene.add(stars);
+            
+            // Colors
+            const colors = {
+                demo: 0xFFD700,
+                encode: 0x9B59B6,
+                decode: 0x00BFFF,
+                loss: 0xFF6B6B,
+                update: 0x2ECC71
+            };
+            
+            // Robot arm creation
+            function createRobotArm() {
+                const armGroup = new THREE.Group();
+                armGroup.name = "SO-ARM101 Robot Arm";
+                
+                // Base
+                const baseGeo = new THREE.CylinderGeometry(0.4, 0.5, 0.3, 32);
+                const baseMat = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.7, roughness: 0.3 });
+                const base = new THREE.Mesh(baseGeo, baseMat);
+                base.name = "Robot Base";
+                armGroup.add(base);
+                
+                // Joint materials
+                const jointMat = new THREE.MeshStandardMaterial({ color: 0xFFD700, metalness: 0.8, roughness: 0.2 });
+                const segmentMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, metalness: 0.7, roughness: 0.3 });
+                
+                // Segments
+                const segments = [];
+                const joints = [];
+                
+                // Segment 1
+                const joint1 = new THREE.Mesh(new THREE.SphereGeometry(0.15, 16, 16), jointMat);
+                joint1.position.y = 0.2;
+                joint1.name = "Joint 1 - Base Rotation";
+                armGroup.add(joint1);
+                joints.push(joint1);
+                
+                const seg1 = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 0.6, 16), segmentMat);
+                seg1.position.y = 0.5;
+                seg1.name = "Arm Segment 1";
+                armGroup.add(seg1);
+                segments.push(seg1);
+                
+                // Segment 2
+                const joint2 = new THREE.Mesh(new THREE.SphereGeometry(0.15, 16, 16), jointMat);
+                joint2.position.y = 0.85;
+                joint2.name = "Joint 2 - Shoulder";
+                armGroup.add(joint2);
+                joints.push(joint2);
+                
+                const seg2Group = new THREE.Group();
+                seg2Group.position.y = 0.85;
+                const seg2 = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.5, 16), segmentMat);
+                seg2.position.y = 0.25;
+                seg2.name = "Arm Segment 2";
+                seg2Group.add(seg2);
+                armGroup.add(seg2Group);
+                segments.push(seg2Group);
+                
+                // Segment 3 with gripper
+                const joint3 = new THREE.Mesh(new THREE.SphereGeometry(0.15, 16, 16), jointMat);
+                joint3.position.y = 0.5;
+                joint3.name = "Joint 3 - Elbow";
+                seg2Group.add(joint3);
+                joints.push(joint3);
+                
+                const seg3Group = new THREE.Group();
+                seg3Group.position.y = 0.5;
+                const seg3 = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.06, 0.4, 16), segmentMat);
+                seg3.position.y = 0.2;
+                seg3.name = "Arm Segment 3";
+                seg3Group.add(seg3);
+                seg2Group.add(seg3Group);
+                segments.push(seg3Group);
+                
+                // Gripper
+                const gripperBase = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.08, 0.1), segmentMat);
+                gripperBase.position.y = 0.45;
+                gripperBase.name = "Gripper Base";
+                seg3Group.add(gripperBase);
+                
+                const finger1 = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.15, 0.08), jointMat);
+                finger1.position.set(-0.05, 0.52, 0);
+                finger1.name = "Gripper Finger 1";
+                seg3Group.add(finger1);
+                
+                const finger2 = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.15, 0.08), jointMat);
+                finger2.position.set(0.05, 0.52, 0);
+                finger2.name = "Gripper Finger 2";
+                seg3Group.add(finger2);
+                
+                armGroup.userData = { segments, joints, seg2Group, seg3Group, finger1, finger2 };
+                armGroup.scale.set(0.8, 0.8, 0.8);
+                armGroup.position.y = -0.3;
+                
+                return armGroup;
+            }
+            
+            const robotArm = createRobotArm();
+            scene.add(robotArm);
+            
+            // Create cycle boxes
+            const cycleRadius = 4;
+            const boxData = [
+                { name: 'DEMO', tooltip: 'Record human demonstrations', color: colors.demo, angle: -135 },
+                { name: 'ENCODE', tooltip: 'Compress to latent style Z', color: colors.encode, angle: -90 },
+                { name: 'DECODE', tooltip: 'Generate action predictions', color: colors.decode, angle: -45 },
+                { name: 'LOSS', tooltip: 'Compare prediction to truth', color: colors.loss, angle: 45 },
+                { name: 'UPDATE', tooltip: 'Update network weights', color: colors.update, angle: 135 }
+            ];
+            
+            const boxes = [];
+            
+            function createBox(data) {
+                const group = new THREE.Group();
+                group.name = data.name + " - " + data.tooltip;
+                
+                const angle = (data.angle * Math.PI) / 180;
+                const x = Math.cos(angle) * cycleRadius;
+                const y = Math.sin(angle) * cycleRadius;
+                const z = Math.sin(angle * 2) * 0.3;
+                
+                // Box frame
+                const boxGeo = new THREE.BoxGeometry(1.2, 0.8, 0.3);
+                const edges = new THREE.EdgesGeometry(boxGeo);
+                const lineMat = new THREE.LineBasicMaterial({ color: data.color, linewidth: 2 });
+                const wireframe = new THREE.LineSegments(edges, lineMat);
+                group.add(wireframe);
+                
+                // Filled box
+                const fillMat = new THREE.MeshStandardMaterial({
+                    color: 0x1a1a2e, emissive: 0x1a1a2e, emissiveIntensity: 0.3,
+                    transparent: true,
+                    opacity: 0.8,
+                    emissive: data.color,
+                    emissiveIntensity: 0.1
+                });
+                const fillBox = new THREE.Mesh(boxGeo, fillMat);
+                fillBox.name = data.name + " Box - " + data.tooltip;
+                group.add(fillBox);
+                
+                // Icon based on type
+                const iconGroup = new THREE.Group();
+                const iconMat = new THREE.MeshBasicMaterial({ color: data.color });
+                
+                if (data.name === 'DEMO') {
+                    // Camera icon
+                    const camBody = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.2, 0.1), iconMat);
+                    const camLens = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.1, 16), iconMat);
+                    camLens.rotation.z = Math.PI / 2;
+                    camLens.position.x = 0.17;
+                    iconGroup.add(camBody);
+                    iconGroup.add(camLens);
+                } else if (data.name === 'ENCODE') {
+                    // Funnel icon
+                    const funnel = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.25, 4), iconMat);
+                    funnel.rotation.z = Math.PI;
+                    iconGroup.add(funnel);
+                } else if (data.name === 'DECODE') {
+                    // Expansion icon
+                    const expand = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.25, 4), iconMat);
+                    iconGroup.add(expand);
+                } else if (data.name === 'LOSS') {
+                    // Comparison icon
+                    const bar1 = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.2, 0.05), iconMat);
+                    bar1.position.x = -0.1;
+                    const bar2 = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.15, 0.05), iconMat);
+                    bar2.position.x = 0.1;
+                    iconGroup.add(bar1);
+                    iconGroup.add(bar2);
+                } else if (data.name === 'UPDATE') {
+                    // Refresh arrow
+                    const curve = new THREE.EllipseCurve(0, 0, 0.12, 0.12, 0, Math.PI * 1.5, false, 0);
+                    const points = curve.getPoints(20);
+                    const arrowGeo = new THREE.BufferGeometry().setFromPoints(points.map(p => new THREE.Vector3(p.x, p.y, 0)));
+                    const arrowLine = new THREE.Line(arrowGeo, new THREE.LineBasicMaterial({ color: data.color }));
+                    iconGroup.add(arrowLine);
+                    const arrowHead = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.1, 3), iconMat);
+                    arrowHead.position.set(0.12, 0, 0);
+                    arrowHead.rotation.z = -Math.PI / 2;
+                    iconGroup.add(arrowHead);
+                }
+                
+                iconGroup.position.z = 0.16;
+                group.add(iconGroup);
+                
+                group.position.set(x, y, z);
+                group.userData = { ...data, fillBox, baseEmissive: 0.1 };
+                
+                return group;
+            }
+            
+            boxData.forEach((data, i) => {
+                const box = createBox(data);
+                boxes.push(box);
+                scene.add(box);
+            });
+            
+            // Create curved arrows between boxes
+            function createCurvedArrow(startBox, endBox, color1, color2) {
+                const start = startBox.position.clone();
+                const end = endBox.position.clone();
+                
+                const mid = start.clone().add(end).multiplyScalar(0.5);
+                const toCenter = mid.clone().normalize().multiplyScalar(-0.8);
+                mid.add(toCenter);
+                
+                const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
+                const points = curve.getPoints(30);
+                
+                const tubeGeo = new THREE.TubeGeometry(curve, 30, 0.04, 8, false);
+                const tubeMat = new THREE.MeshStandardMaterial({
+                    color: color1,
+                    emissive: color1,
+                    emissiveIntensity: 0.3
+                });
+                const tube = new THREE.Mesh(tubeGeo, tubeMat);
+                tube.name = "Connection Arrow";
+                scene.add(tube);
+                
+                // Arrow head
+                const arrowGeo = new THREE.ConeGeometry(0.1, 0.2, 8);
+                const arrowMat = new THREE.MeshStandardMaterial({ color: color2, emissive: color2, emissiveIntensity: 0.3 });
+                const arrow = new THREE.Mesh(arrowGeo, arrowMat);
+                arrow.name = "Arrow Head";
+                
+                const dir = new THREE.Vector3().subVectors(end, points[points.length - 3]).normalize();
+                arrow.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+                arrow.position.copy(end).sub(dir.multiplyScalar(0.6));
+                scene.add(arrow);
+                
+                return { curve, tube };
+            }
+            
+            const arrows = [];
+            for (let i = 0; i < boxes.length; i++) {
+                const next = (i + 1) % boxes.length;
+                const arrow = createCurvedArrow(boxes[i], boxes[next], boxData[i].color, boxData[next].color);
+                arrows.push(arrow);
+            }
+            
+            // Information particles
+            const infoParticles = [];
+            const particleCount = 35;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const geo = new THREE.SphereGeometry(0.15, 8, 8);
+                const mat = new THREE.MeshBasicMaterial({ color: 0xFFD700 });
+                const particle = new THREE.Mesh(geo, mat);
+                particle.name = "Data Particle - Information flowing through training";
+                
+                particle.userData = {
+                    segmentIndex: Math.floor(Math.random() * arrows.length),
+                    t: Math.random(),
+                    speed: 0.002 + Math.random() * 0.003
+                };
+                
+                infoParticles.push(particle);
+                scene.add(particle);
+                
+                // Glow sprite
+                const spriteMat = new THREE.SpriteMaterial({
+                    color: 0xFFD700,
+                    transparent: true,
+                    opacity: 0.4
+                });
+                const sprite = new THREE.Sprite(spriteMat);
+                sprite.scale.set(0.3, 0.3, 1);
+                particle.add(sprite);
+            }
+            
+            // Gradient particles (backpropagation)
+            const gradientParticles = [];
+            const gradientCount = 18;
+            
+            for (let i = 0; i < gradientCount; i++) {
+                const geo = new THREE.SphereGeometry(0.15, 8, 8);
+                const mat = new THREE.MeshBasicMaterial({ color: 0xFF69B4 });
+                const particle = new THREE.Mesh(geo, mat);
+                particle.name = "Gradient Particle - Backpropagation signal";
+                
+                particle.userData = {
+                    segmentIndex: Math.floor(Math.random() * arrows.length),
+                    t: Math.random(),
+                    speed: 0.0015 + Math.random() * 0.002
+                };
+                
+                gradientParticles.push(particle);
+                scene.add(particle);
+                
+                const spriteMat = new THREE.SpriteMaterial({
+                    color: 0x9B59B6,
+                    transparent: true,
+                    opacity: 0.3
+                });
+                const sprite = new THREE.Sprite(spriteMat);
+                sprite.scale.set(0.25, 0.25, 1);
+                particle.add(sprite);
+            }
+            
+            // HTML Labels
+            const labelContainer = document.createElement('div');
+            labelContainer.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;font-family:Sora,sans-serif;';
+            container.appendChild(labelContainer);
+            
+            // Title
+            const title = document.createElement('div');
+            title.style.cssText = 'position:absolute;top:5%;left:50%;transform:translateX(-50%);font-size:28px;font-weight:bold;color:#E8E8E8;text-shadow:0 2px 8px rgba(0,0,0,0.8);';
+            title.textContent = 'THE TRAINING LOOP';
+            labelContainer.appendChild(title);
+            
+            // Subtitle
+            const subtitle = document.createElement('div');
+            subtitle.style.cssText = 'position:absolute;top:11%;left:50%;transform:translateX(-50%);font-size:16px;color:#6B7280;text-shadow:0 2px 8px rgba(0,0,0,0.8);';
+            subtitle.textContent = 'Demo → Encode → Decode → Compare → Learn';
+            labelContainer.appendChild(subtitle);
+            
+            // Question
+            const question = document.createElement('div');
+            question.style.cssText = 'position:absolute;bottom:8%;left:50%;transform:translateX(-50%);font-size:14px;font-style:italic;color:#9B59B6;text-shadow:0 2px 8px rgba(0,0,0,0.8);';
+            question.textContent = 'How does ACT learn from human demonstrations?';
+            labelContainer.appendChild(question);
+            
+            // Tooltip
+            const tooltip = document.createElement('div');
+            tooltip.style.cssText = 'position:absolute;padding:6px 10px;background:rgba(0,0,0,0.8);color:white;border-radius:4px;font-size:12px;pointer-events:none;display:none;z-index:100;';
+            container.appendChild(tooltip);
+            
+            // Raycaster for hover
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+            
+            function onMouseMove(event) {
+                const rect = renderer.domElement.getBoundingClientRect();
+                mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+                mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+                
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObjects(scene.children, true);
+                
+                if (intersects.length > 0) {
+                    let obj = intersects[0].object;
+                    while (obj && !obj.name) obj = obj.parent;
+                    if (obj && obj.name) {
+                        tooltip.textContent = obj.name;
+                        tooltip.style.display = 'block';
+                        tooltip.style.left = (event.clientX - rect.left + 15) + 'px';
+                        tooltip.style.top = (event.clientY - rect.top + 15) + 'px';
+                    } else {
+                        tooltip.style.display = 'none';
+                    }
+                } else {
+                    tooltip.style.display = 'none';
+                }
+            }
+            
+            renderer.domElement.addEventListener('mousemove', onMouseMove);
+            
+            // Animation
+            let time = 0;
+            
+            function animate() {
+                requestAnimationFrame(animate);
+                time += 0.016;
+                
+                controls.update();
+                
+                // Animate robot arm
+                const { seg2Group, seg3Group, finger1, finger2 } = robotArm.userData;
+                robotArm.rotation.y = Math.sin(time * 0.5) * 0.3;
+                seg2Group.rotation.z = Math.sin(time * 0.7) * 0.2 - 0.3;
+                seg3Group.rotation.z = Math.sin(time * 0.9 + 1) * 0.3;
+                finger1.position.x = -0.05 - Math.sin(time * 2) * 0.02;
+                finger2.position.x = 0.05 + Math.sin(time * 2) * 0.02;
+                
+                // Pulse active stage
+                const activeIndex = Math.floor(time * 0.5) % boxes.length;
+                boxes.forEach((box, i) => {
+                    const intensity = i === activeIndex ? 0.3 + Math.sin(time * 4) * 0.2 : 0.1;
+                    box.userData.fillBox.material.emissiveIntensity = intensity;
+                });
+                
+                // Animate info particles
+                infoParticles.forEach((particle, i) => {
+                    particle.userData.t += particle.userData.speed;
+                    if (particle.userData.t >= 1) {
+                        particle.userData.t = 0;
+                        particle.userData.segmentIndex = (particle.userData.segmentIndex + 1) % arrows.length;
+                    }
+                    
+                    const curve = arrows[particle.userData.segmentIndex].curve;
+                    const pos = curve.getPoint(particle.userData.t);
+                    particle.position.copy(pos);
+                    
+                    // Update color based on segment
+                    const colorIndex = particle.userData.segmentIndex;
+                    particle.material.color.setHex(boxData[colorIndex].color);
+                    particle.children[0].material.color.setHex(boxData[colorIndex].color);
+                });
+                
+                // Animate gradient particles (reverse direction)
+                gradientParticles.forEach((particle) => {
+                    particle.userData.t -= particle.userData.speed;
+                    if (particle.userData.t <= 0) {
+                        particle.userData.t = 1;
+                        particle.userData.segmentIndex = (particle.userData.segmentIndex - 1 + arrows.length) % arrows.length;
+                    }
+                    
+                    const curve = arrows[particle.userData.segmentIndex].curve;
+                    const pos = curve.getPoint(particle.userData.t);
+                    particle.position.copy(pos);
+                    
+                    // Purple-pink gradient
+                    const mixColor = new THREE.Color(0x9B59B6).lerp(new THREE.Color(0xFF69B4), particle.userData.t);
+                    particle.material.color.copy(mixColor);
+                });
+                
+                renderer.render(scene, camera);
+            }
+            
+            // Reset view function
+            container.resetView = function() {
+                camera.position.set(0, 0, 12);
+                camera.lookAt(0, 0, 0);
+                controls.target.set(0, 0, 0);
+            };
+            
+            animate();
+            
+        }
+
+        function loadSection2() {
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            // Scene setup
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0a0a1a);
+            
+            const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+            camera.position.set(0, 0, 14);
+            
+            const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+            
+            // Controls
+            const controls = new THREE.TrackballControls(camera, renderer.domElement);
+            controls.rotateSpeed = 2.0;
+            controls.zoomSpeed = 1.2;
+            controls.panSpeed = 0.8;
+            controls.dynamicDampingFactor = 0.15;
+            
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            scene.add(ambientLight);
+            
+            const pointLight1 = new THREE.PointLight(0xffffff, 1, 100);
+            pointLight1.position.set(10, 10, 10);
+            scene.add(pointLight1);
+            
+            const pointLight2 = new THREE.PointLight(0x00BFFF, 0.5, 100);
+            pointLight2.position.set(-10, -5, 5);
+            scene.add(pointLight2);
+            
+            // Tooltip setup
+            const tooltip = document.createElement('div');
+            tooltip.style.cssText = 'position:absolute;padding:6px 10px;background:rgba(0,0,0,0.8);color:white;border-radius:4px;font-size:12px;pointer-events:none;display:none;z-index:1000;';
+            container.appendChild(tooltip);
+            
+            // Raycaster for hover
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+            
+            // Generate curved arm motion path
+            function generateTrajectoryPoints(offset = 0, jitter = false) {
+                const points = [];
+                const numPoints = 7;
+                for (let i = 0; i < numPoints; i++) {
+                    const t = i / (numPoints - 1);
+                    const x = -2 + t * 4 + offset;
+                    const y = Math.sin(t * Math.PI) * 1.5 + (jitter ? (Math.random() - 0.5) * 0.3 : 0);
+                    const z = Math.cos(t * Math.PI * 0.5) * 0.8 + (jitter ? (Math.random() - 0.5) * 0.2 : 0);
+                    points.push(new THREE.Vector3(x, y, z));
+                }
+                return points;
+            }
+            
+            // Create trajectory group
+            function createTrajectory(points, color, name) {
+                const group = new THREE.Group();
+                group.name = name;
+                
+                // Spheres at waypoints
+                const sphereGeom = new THREE.SphereGeometry(0.15, 16, 16);
+                const sphereMat = new THREE.MeshStandardMaterial({
+                    color: color,
+                    emissive: color,
+                    emissiveIntensity: 0.3,
+                    metalness: 0.3,
+                    roughness: 0.4
+                });
+                
+                points.forEach((point, i) => {
+                    const sphere = new THREE.Mesh(sphereGeom, sphereMat.clone());
+                    sphere.position.copy(point);
+                    sphere.name = `${name} - Waypoint ${i + 1}`;
+                    group.add(sphere);
+                });
+                
+                // Tube connecting waypoints
+                const curve = new THREE.CatmullRomCurve3(points);
+                const tubeGeom = new THREE.TubeGeometry(curve, 64, 0.06, 8, false);
+                const tubeMat = new THREE.MeshStandardMaterial({
+                    color: color,
+                    emissive: color,
+                    emissiveIntensity: 0.2,
+                    metalness: 0.3,
+                    roughness: 0.4
+                });
+                const tube = new THREE.Mesh(tubeGeom, tubeMat);
+                tube.name = `${name} - Path`;
+                group.add(tube);
+                
+                return group;
+            }
+            
+            // Ground truth trajectory (gold)
+            const groundTruthPoints = generateTrajectoryPoints(0, false);
+            const groundTruthGroup = createTrajectory(groundTruthPoints, 0xFFD700, "Ground Truth");
+            groundTruthGroup.position.set(-3, 1, 0);
+            scene.add(groundTruthGroup);
+            
+            // Predicted trajectory (blue) with slight jitter
+            const predictedPoints = generateTrajectoryPoints(0, true);
+            const predictedGroup = createTrajectory(predictedPoints, 0x00BFFF, "Predicted");
+            predictedGroup.position.set(3, 1, 0);
+            scene.add(predictedGroup);
+            
+            // Error bars (will connect when merged)
+            const errorBars = [];
+            const errorBarGroup = new THREE.Group();
+            errorBarGroup.name = "Error Bars";
+            errorBarGroup.visible = false;
+            scene.add(errorBarGroup);
+            
+            // Create error bars
+            for (let i = 0; i < groundTruthPoints.length; i++) {
+                const gt = groundTruthPoints[i];
+                const pred = predictedPoints[i];
+                const distance = gt.distanceTo(pred);
+                
+                // Color based on error magnitude
+                let barColor;
+                if (distance < 0.2) barColor = 0x2ECC71;
+                else if (distance < 0.4) barColor = 0xF1C40F;
+                else barColor = 0xFF6B6B;
+                
+                const direction = new THREE.Vector3().subVectors(pred, gt);
+                const length = direction.length();
+                
+                const geometry = new THREE.CylinderGeometry(0.03, 0.03, length, 8);
+                const material = new THREE.MeshStandardMaterial({
+                    color: barColor,
+                    emissive: barColor,
+                    emissiveIntensity: 0.3
+                });
+                
+                const bar = new THREE.Mesh(geometry, material);
+                bar.name = `Error Bar - Waypoint ${i + 1}`;
+                bar.userData = { errorValue: distance, joint: i + 1 };
+                bar.errorMagnitude = distance;
+                
+                // Position and orient bar
+                const midpoint = new THREE.Vector3().addVectors(gt, pred).multiplyScalar(0.5);
+                bar.position.copy(midpoint);
+                bar.position.y += 1;
+                
+                if (length > 0.01) {
+                    bar.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize());
+                }
+                
+                errorBarGroup.add(bar);
+                errorBars.push(bar);
+            }
+            
+            // Error magnitude grid
+            const gridCells = [];
+            const gridGroup = new THREE.Group();
+            gridGroup.name = "Error Magnitude Grid";
+            gridGroup.position.set(0, -3, 0);
+            scene.add(gridGroup);
+            
+            const gridCols = 10; // timesteps
+            const gridRows = 12; // joints
+            const cellSize = 0.18;
+            const cellGap = 0.02;
+            
+            for (let row = 0; row < gridRows; row++) {
+                for (let col = 0; col < gridCols; col++) {
+                    const error = Math.random(); // Random error for demo
+                    let cellColor;
+                    if (error < 0.33) cellColor = 0x2ECC71;
+                    else if (error < 0.66) cellColor = 0xF1C40F;
+                    else cellColor = 0xFF6B6B;
+                    
+                    const geometry = new THREE.BoxGeometry(cellSize, cellSize, 0.05);
+                    const material = new THREE.MeshStandardMaterial({
+                        color: cellColor,
+                        emissive: cellColor,
+                        emissiveIntensity: 0.2,
+                        transparent: true,
+                        opacity: 0.8
+                    });
+                    
+                    const cell = new THREE.Mesh(geometry, material);
+                    cell.name = `Grid Cell - Joint ${row + 1}, Step ${col + 1}`;
+                    cell.userData = { joint: row + 1, timestep: col + 1, error: error.toFixed(3) };
+                    
+                    const x = (col - gridCols / 2 + 0.5) * (cellSize + cellGap);
+                    const y = (row - gridRows / 2 + 0.5) * (cellSize + cellGap);
+                    cell.position.set(x, y, 0);
+                    
+                    gridGroup.add(cell);
+                    gridCells.push(cell);
+                }
+            }
+            
+            // HTML Labels overlay
+            const labelsContainer = document.createElement('div');
+            labelsContainer.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;font-family:Sora,sans-serif;';
+            container.appendChild(labelsContainer);
+            
+            // Title
+            const title = document.createElement('div');
+            title.style.cssText = 'position:absolute;top:5%;left:50%;transform:translateX(-50%);font-size:28px;font-weight:700;color:#FFD700;text-shadow:0 2px 8px rgba(0,0,0,0.8);';
+            title.textContent = 'RECONSTRUCTION LOSS';
+            labelsContainer.appendChild(title);
+            
+            // Quote
+            const quote = document.createElement('div');
+            quote.style.cssText = 'position:absolute;top:11%;left:50%;transform:translateX(-50%);font-size:16px;font-style:italic;color:#E8E8E8;text-shadow:0 2px 8px rgba(0,0,0,0.8);';
+            quote.textContent = '"Match the demonstration as closely as possible"';
+            labelsContainer.appendChild(quote);
+            
+            // Formula
+            const formula = document.createElement('div');
+            formula.style.cssText = 'position:absolute;top:18%;right:8%;font-family:JetBrains Mono,monospace;font-size:18px;color:#FFD700;text-shadow:0 2px 8px rgba(0,0,0,0.8);';
+            formula.innerHTML = 'L<sub>recon</sub> = ||a<sub>pred</sub> - a<sub>demo</sub>||<sup>2</sup>';
+            labelsContainer.appendChild(formula);
+            
+            // Badge
+            const badge = document.createElement('div');
+            badge.style.cssText = 'position:absolute;top:25%;right:8%;background:rgba(255,215,0,0.2);border:2px solid #FFD700;padding:8px 16px;border-radius:4px;font-size:12px;font-weight:700;color:#FFD700;text-shadow:0 2px 8px rgba(0,0,0,0.8);';
+            badge.textContent = 'THE MAIN TEACHER';
+            labelsContainer.appendChild(badge);
+            
+            // Detail
+            const detail = document.createElement('div');
+            detail.style.cssText = 'position:absolute;bottom:8%;left:50%;transform:translateX(-50%);font-size:14px;color:#6B7280;text-shadow:0 2px 8px rgba(0,0,0,0.8);';
+            detail.textContent = '100 timesteps × 12 joints = 1200 squared errors';
+            labelsContainer.appendChild(detail);
+            
+            // Trajectory labels
+            const gtLabel = document.createElement('div');
+            gtLabel.style.cssText = 'position:absolute;top:35%;left:15%;font-size:14px;font-weight:600;color:#FFD700;text-shadow:0 2px 8px rgba(0,0,0,0.8);text-align:center;';
+            gtLabel.innerHTML = 'GROUND TRUTH<br><span style="font-size:11px;font-weight:400;color:#E8E8E8;">What the human did</span>';
+            labelsContainer.appendChild(gtLabel);
+            
+            const predLabel = document.createElement('div');
+            predLabel.style.cssText = 'position:absolute;top:35%;right:15%;font-size:14px;font-weight:600;color:#00BFFF;text-shadow:0 2px 8px rgba(0,0,0,0.8);text-align:center;';
+            predLabel.innerHTML = 'PREDICTED<br><span style="font-size:11px;font-weight:400;color:#E8E8E8;">What ACT predicted</span>';
+            labelsContainer.appendChild(predLabel);
+            
+            // Animation state
+            let animationPhase = 0;
+            let mergeProgress = 0;
+            const startTime = Date.now();
+            
+            // Collect all hoverable objects
+            const hoverableObjects = [...errorBars, ...gridCells];
+            groundTruthGroup.children.forEach(c => hoverableObjects.push(c));
+            predictedGroup.children.forEach(c => hoverableObjects.push(c));
+            
+            // Mouse move handler
+            container.addEventListener('mousemove', (event) => {
+                const rect = container.getBoundingClientRect();
+                mouse.x = ((event.clientX - rect.left) / width) * 2 - 1;
+                mouse.y = -((event.clientY - rect.top) / height) * 2 + 1;
+                
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObjects(hoverableObjects, true);
+                
+                if (intersects.length > 0) {
+                    const obj = intersects[0].object;
+                    let tooltipText = obj.name;
+                    if (obj.userData.error !== undefined) {
+                        tooltipText += ` | Error: ${obj.userData.error}`;
+                    } else if (obj.userData.errorValue !== undefined) {
+                        tooltipText += ` | Error: ${obj.userData.errorValue.toFixed(3)}`;
+                    }
+                    tooltip.textContent = tooltipText;
+                    tooltip.style.display = 'block';
+                    tooltip.style.left = (event.clientX - rect.left + 15) + 'px';
+                    tooltip.style.top = (event.clientY - rect.top + 15) + 'px';
+                } else {
+                    tooltip.style.display = 'none';
+                }
+            });
+            
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+                controls.update();
+                
+                const time = Date.now() * 0.001;
+                const elapsed = (Date.now() - startTime) / 1000;
+                
+                // Phase 0: Trajectories separated (0-2s)
+                // Phase 1: Merge animation (2-4s)
+                // Phase 2: Merged with error bars (4s+)
+                
+                if (elapsed < 2) {
+                    animationPhase = 0;
+                    mergeProgress = 0;
+                } else if (elapsed < 4) {
+                    animationPhase = 1;
+                    mergeProgress = (elapsed - 2) / 2;
+                } else {
+                    animationPhase = 2;
+                    mergeProgress = 1;
+                }
+                
+                // Animate trajectory positions
+                const startGT = -3;
+                const startPred = 3;
+                const endPos = 0;
+                
+                const eased = 1 - Math.pow(1 - mergeProgress, 3);
+                groundTruthGroup.position.x = startGT + (endPos - startGT) * eased;
+                predictedGroup.position.x = startPred + (endPos - startPred) * eased;
+                
+                // Show error bars when merged
+                errorBarGroup.visible = mergeProgress > 0.8;
+                
+                // Update label positions
+                if (mergeProgress > 0.5) {
+                    gtLabel.style.left = '35%';
+                    predLabel.style.right = '35%';
+                }
+                
+                // Pulse error bars
+                errorBars.forEach(bar => {
+                    const pulseIntensity = 0.1 + bar.errorMagnitude * 0.5;
+                    bar.material.emissiveIntensity = 0.2 + Math.sin(time * 2) * pulseIntensity;
+                });
+                
+                // Subtle float animation
+                groundTruthGroup.position.y = 1 + Math.sin(time * 0.5) * 0.05;
+                predictedGroup.position.y = 1 + Math.sin(time * 0.5 + 0.5) * 0.05;
+                
+                // Grid shimmer
+                gridCells.forEach((cell, i) => {
+                    cell.material.opacity = 0.7 + Math.sin(time * 3 + i * 0.1) * 0.1;
+                });
+                
+                renderer.render(scene, camera);
+            }
+            
+            // Store references
+            container.scene = scene;
+            container.camera = camera;
+            container.renderer = renderer;
+            
+            window.resetView = function() {
+                camera.position.set(0, 0, 14);
+                camera.lookAt(0, 0, 0);
+            };
+            
+            animate();
+        }
+
+        function loadSection3() {
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            // Scene setup
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0a0a1a);
+            
+            const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+            camera.position.set(0, 0, 16);
+            
+            const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+            renderer.setSize(width, height);
+            container.appendChild(renderer.domElement);
+            
+            const controls = new THREE.TrackballControls(camera, renderer.domElement);
+            controls.rotateSpeed = 2.0;
+            controls.zoomSpeed = 1.2;
+            controls.panSpeed = 0.8;
+            
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            scene.add(ambientLight);
+            
+            const pointLight1 = new THREE.PointLight(0x2ECC71, 0.8, 50);
+            pointLight1.position.set(-8, 5, 10);
+            scene.add(pointLight1);
+            
+            const pointLight2 = new THREE.PointLight(0xFF6B6B, 0.8, 50);
+            pointLight2.position.set(8, 5, 10);
+            scene.add(pointLight2);
+            
+            // Tooltip setup
+            const tooltip = document.createElement('div');
+            tooltip.style.cssText = 'position:absolute;padding:6px 10px;background:rgba(0,0,0,0.8);color:white;border-radius:4px;font-size:12px;pointer-events:none;display:none;z-index:1000;';
+            container.appendChild(tooltip);
+            
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+            
+            // Groups for organization
+            const leftSideObjects = [];
+            const rightSideObjects = [];
+            
+            // Helper function to create rounded box
+            function createBox(w, h, d, color, emissive = false) {
+                const geometry = new THREE.BoxGeometry(w, h, d, 4, 4, 4);
+                const material = new THREE.MeshPhongMaterial({
+                    color: color,
+                    emissive: emissive ? color : 0x000000,
+                    emissiveIntensity: emissive ? 0.3 : 0,
+                    transparent: true,
+                    opacity: 0.9
+                });
+                return new THREE.Mesh(geometry, material);
+            }
+            
+            // Helper for outlined box
+            function createOutlinedBox(w, h, color, filled = false) {
+                const group = new THREE.Group();
+                
+                // Border
+                const borderGeom = new THREE.BoxGeometry(w + 0.08, h + 0.08, 0.05);
+                const borderMat = new THREE.MeshPhongMaterial({
+                    color: color,
+                    emissive: color,
+                    emissiveIntensity: 0.4
+                });
+                const border = new THREE.Mesh(borderGeom, borderMat);
+                group.add(border);
+                
+                // Inner fill
+                const fillGeom = new THREE.BoxGeometry(w, h, 0.04);
+                const fillMat = new THREE.MeshPhongMaterial({
+                    color: filled ? 0x1a1a2e : 0x0a0a1a,
+                    transparent: true,
+                    opacity: 0.8
+                });
+                const fill = new THREE.Mesh(fillGeom, fillMat);
+                fill.position.z = 0.01;
+                group.add(fill);
+                
+                return { group, border, fill };
+            }
+            
+            // Central Divider with gradient effect
+            const dividerGeom = new THREE.PlaneGeometry(0.05, 8);
+            const dividerMat = new THREE.ShaderMaterial({
+                uniforms: {
+                    time: { value: 0 }
+                },
+                vertexShader: `
+                    varying vec2 vUv;
+                    void main() {
+                        vUv = uv;
+                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                    }
+                `,
+                fragmentShader: `
+                    uniform float time;
+                    varying vec2 vUv;
+                    void main() {
+                        vec3 green = vec3(0.18, 0.8, 0.44);
+                        vec3 coral = vec3(1.0, 0.42, 0.42);
+                        vec3 color = mix(green, coral, vUv.x + 0.5);
+                        float flicker = 0.8 + 0.2 * sin(time * 5.0 + vUv.y * 10.0);
+                        gl_FragColor = vec4(color * flicker, 1.0);
+                    }
+                `
+            });
+            const divider = new THREE.Mesh(dividerGeom, dividerMat);
+            divider.name = "Training/Inference Boundary";
+            scene.add(divider);
+            
+            // Sparks along divider
+            const sparks = [];
+            for (let i = 0; i < 25; i++) {
+                const sparkGeom = new THREE.SphereGeometry(0.15, 8, 8);
+                const sparkMat = new THREE.MeshBasicMaterial({
+                    color: 0xFFFFFF,
+                    transparent: true,
+                    opacity: 0.8
+                });
+                const spark = new THREE.Mesh(sparkGeom, sparkMat);
+                spark.position.set(
+                    (Math.random() - 0.5) * 0.2,
+                    (Math.random() - 0.5) * 8,
+                    0.1
+                );
+                spark.baseY = spark.position.y;
+                spark.name = "Spark - Gap between training and inference";
+                sparks.push(spark);
+                scene.add(spark);
+            }
+            
+            // ============ LEFT SIDE: TRAINING ============
+            const leftGroup = new THREE.Group();
+            leftGroup.position.x = -4;
+            
+            // Observation Box (Training)
+            const obsLeft = createOutlinedBox(2.2, 0.9, 0x00BFFF, true);
+            obsLeft.group.position.y = 2.5;
+            obsLeft.group.name = "Observation - Visual input from environment";
+            leftGroup.add(obsLeft.group);
+            leftSideObjects.push(obsLeft.group);
+            
+            // Eye icon for observation
+            const eyeGeom = new THREE.SphereGeometry(0.15, 16, 16);
+            const eyeMat = new THREE.MeshPhongMaterial({ color: 0x00BFFF, emissive: 0x00BFFF, emissiveIntensity: 0.5 });
+            const eye = new THREE.Mesh(eyeGeom, eyeMat);
+            eye.position.set(-0.3, 2.5, 0.1);
+            eye.name = "Camera/Eye - Captures visual observation";
+            leftGroup.add(eye);
+            
+            // Demo Box (Training) - PRESENT
+            const demoLeft = createOutlinedBox(2.2, 0.9, 0xFFD700, true);
+            demoLeft.group.position.y = 1.0;
+            demoLeft.group.name = "Demo Actions - Human demonstration (AVAILABLE)";
+            demoLeft.fill.material.color.setHex(0x1a1a2e);
+            leftGroup.add(demoLeft.group);
+            leftSideObjects.push(demoLeft.group);
+            
+            // Trajectory line in demo box
+            const trajPoints = [];
+            for (let i = 0; i < 10; i++) {
+                trajPoints.push(new THREE.Vector3(-0.6 + i * 0.12, 1.0 + Math.sin(i * 0.5) * 0.15, 0.1));
+            }
+            const trajCurve = new THREE.CatmullRomCurve3(trajPoints);
+            const trajGeom = new THREE.TubeGeometry(trajCurve, 20, 0.03, 8, false);
+            const trajMat = new THREE.MeshPhongMaterial({ color: 0xFFD700, emissive: 0xFFD700, emissiveIntensity: 0.5 });
+            const trajectory = new THREE.Mesh(trajGeom, trajMat);
+            trajectory.name = "Action Trajectory - Recorded human actions";
+            leftGroup.add(trajectory);
+            
+            // Encoder Box (Training)
+            const encLeft = createOutlinedBox(2.2, 0.9, 0x9B59B6, true);
+            encLeft.group.position.y = -0.5;
+            encLeft.group.name = "Encoder - Processes observation + demo";
+            leftGroup.add(encLeft.group);
+            leftSideObjects.push(encLeft.group);
+            
+            // Funnel icon for encoder
+            const funnelGeom = new THREE.ConeGeometry(0.25, 0.4, 8);
+            const funnelMat = new THREE.MeshPhongMaterial({ color: 0x9B59B6, emissive: 0x9B59B6, emissiveIntensity: 0.3 });
+            const funnel = new THREE.Mesh(funnelGeom, funnelMat);
+            funnel.position.set(0, -0.5, 0.1);
+            funnel.rotation.x = Math.PI;
+            funnel.name = "Neural Network Encoder";
+            leftGroup.add(funnel);
+            
+            // Z Output (Training) - Clean distribution
+            const zLeftGroup = new THREE.Group();
+            zLeftGroup.position.y = -2.0;
+            
+            // Bell curve visualization
+            const bellPoints = [];
+            for (let i = 0; i <= 30; i++) {
+                const x = (i - 15) * 0.05;
+                const y = Math.exp(-x * x * 8) * 0.5;
+                bellPoints.push(new THREE.Vector3(x, y - 0.3, 0));
+            }
+            const bellCurve = new THREE.CatmullRomCurve3(bellPoints);
+            const bellGeom = new THREE.TubeGeometry(bellCurve, 30, 0.02, 8, false);
+            const bellMat = new THREE.MeshPhongMaterial({ color: 0x9B59B6, emissive: 0x9B59B6, emissiveIntensity: 0.5 });
+            const bellMesh = new THREE.Mesh(bellGeom, bellMat);
+            bellMesh.name = "Z Distribution - Well-defined latent variable";
+            zLeftGroup.add(bellMesh);
+            
+            // Z orb
+            const zOrbGeom = new THREE.SphereGeometry(0.2, 16, 16);
+            const zOrbMat = new THREE.MeshPhongMaterial({ color: 0x9B59B6, emissive: 0x9B59B6, emissiveIntensity: 0.6 });
+            const zOrb = new THREE.Mesh(zOrbGeom, zOrbMat);
+            zOrb.position.y = 0.2;
+            zOrb.name = "Z (Style) - Extracted behavioral style";
+            zLeftGroup.add(zOrb);
+            
+            // Checkmark
+            const checkGeom = new THREE.TorusGeometry(0.15, 0.03, 8, 16, Math.PI * 1.5);
+            const checkMat = new THREE.MeshPhongMaterial({ color: 0x2ECC71, emissive: 0x2ECC71, emissiveIntensity: 0.5 });
+            const check = new THREE.Mesh(checkGeom, checkMat);
+            check.position.set(0.5, -0.5, 0);
+            check.rotation.z = Math.PI * 0.25;
+            check.name = "Success - Z is known during training";
+            zLeftGroup.add(check);
+            
+            leftGroup.add(zLeftGroup);
+            leftSideObjects.push(zLeftGroup);
+            
+            // Arrows for left side
+            function createArrow(startY, endY, color) {
+                const arrowGroup = new THREE.Group();
+                const lineGeom = new THREE.CylinderGeometry(0.03, 0.03, Math.abs(endY - startY) - 0.6, 8);
+                const lineMat = new THREE.MeshPhongMaterial({ color: color, emissive: color, emissiveIntensity: 0.3 });
+                const line = new THREE.Mesh(lineGeom, lineMat);
+                line.position.y = (startY + endY) / 2;
+                arrowGroup.add(line);
+                
+                const headGeom = new THREE.ConeGeometry(0.08, 0.15, 8);
+                const head = new THREE.Mesh(headGeom, lineMat);
+                head.position.y = endY + 0.35;
+                head.rotation.x = Math.PI;
+                arrowGroup.add(head);
+                
+                return arrowGroup;
+            }
+            
+            leftGroup.add(createArrow(2.1, 1.4, 0x00BFFF));
+            leftGroup.add(createArrow(0.6, -0.1, 0xFFD700));
+            leftGroup.add(createArrow(-0.9, -1.5, 0x9B59B6));
+            
+            // Flow particles for left side
+            const leftParticles = [];
+            for (let i = 0; i < 20; i++) {
+                const pGeom = new THREE.SphereGeometry(0.15, 8, 8);
+                const pMat = new THREE.MeshBasicMaterial({ color: 0x2ECC71, transparent: true, opacity: 0.7 });
+                const particle = new THREE.Mesh(pGeom, pMat);
+                particle.position.set(
+                    (Math.random() - 0.5) * 0.3,
+                    Math.random() * 5 - 2,
+                    0.2
+                );
+                particle.name = "Data Flow - Information flowing through network";
+                leftParticles.push(particle);
+                leftGroup.add(particle);
+            }
+            
+            scene.add(leftGroup);
+            
+            // ============ RIGHT SIDE: INFERENCE ============
+            const rightGroup = new THREE.Group();
+            rightGroup.position.x = 4;
+            
+            // Observation Box (Inference)
+            const obsRight = createOutlinedBox(2.2, 0.9, 0x00BFFF, true);
+            obsRight.group.position.y = 2.5;
+            obsRight.group.name = "Observation - Visual input (same as training)";
+            rightGroup.add(obsRight.group);
+            rightSideObjects.push(obsRight.group);
+            
+            // Eye icon for observation (right)
+            const eyeRight = new THREE.Mesh(eyeGeom.clone(), eyeMat.clone());
+            eyeRight.position.set(-0.3, 2.5, 0.1);
+            eyeRight.name = "Camera/Eye - Visual observation available";
+            rightGroup.add(eyeRight);
+            
+            // Missing Demo Box (Inference) - WARNING
+            const missingDemo = createOutlinedBox(2.2, 0.9, 0xFF6B6B, false);
+            missingDemo.group.position.y = 1.0;
+            missingDemo.group.name = "MISSING DEMO - No human demonstration at inference!";
+            missingDemo.border.material.emissive.setHex(0xFF6B6B);
+            missingDemo.border.material.emissiveIntensity = 0.5;
+            rightGroup.add(missingDemo.group);
+            rightSideObjects.push(missingDemo.group);
+            
+            const missingDemoBox = missingDemo.border;
+            
+            // Dashed border effect (stripes)
+            for (let i = 0; i < 8; i++) {
+                const stripeGeom = new THREE.BoxGeometry(0.15, 0.05, 0.06);
+                const stripeMat = new THREE.MeshBasicMaterial({ color: 0xFF6B6B });
+                const stripe = new THREE.Mesh(stripeGeom, stripeMat);
+                const angle = (i / 8) * Math.PI * 2;
+                stripe.position.set(Math.cos(angle) * 0.8, 1.0 + Math.sin(angle) * 0.3, 0.1);
+                stripe.rotation.z = angle;
+                stripe.name = "Warning Stripe - Demo is missing!";
+                rightGroup.add(stripe);
+            }
+            
+            // Question marks
+            const questionMarks = [];
+            const qPositions = [[-0.3, 1.0], [0, 1.15], [0.3, 0.95]];
+            qPositions.forEach((pos, i) => {
+                const qGroup = new THREE.Group();
+                
+                // Question mark body (arc)
+                const arcGeom = new THREE.TorusGeometry(0.12, 0.03, 8, 16, Math.PI * 1.2);
+                const arcMat = new THREE.MeshPhongMaterial({ color: 0xFF6B6B, emissive: 0xFF6B6B, emissiveIntensity: 0.5 });
+                const arc = new THREE.Mesh(arcGeom, arcMat);
+                arc.rotation.z = Math.PI * 0.3;
+                qGroup.add(arc);
+                
+                // Dot
+                const dotGeom = new THREE.SphereGeometry(0.15, 8, 8);
+                const dot = new THREE.Mesh(dotGeom, arcMat);
+                dot.position.y = -0.2;
+                qGroup.add(dot);
+                
+                qGroup.position.set(pos[0], pos[1], 0.15);
+                qGroup.baseY = pos[1];
+                qGroup.name = "??? - Where is the demonstration?";
+                questionMarks.push(qGroup);
+                rightGroup.add(qGroup);
+            });
+            
+            // Encoder Box (Inference) - Dimmed
+            const encRight = createOutlinedBox(2.2, 0.9, 0x9B59B6, true);
+            encRight.group.position.y = -0.5;
+            encRight.group.name = "Encoder - Cannot function without demo input!";
+            encRight.border.material.opacity = 0.5;
+            encRight.fill.material.opacity = 0.4;
+            rightGroup.add(encRight.group);
+            rightSideObjects.push(encRight.group);
+            
+            // Dimmed funnel with question mark
+            const funnelRight = funnel.clone();
+            funnelRight.position.set(0, -0.5, 0.1);
+            funnelRight.material = funnelMat.clone();
+            funnelRight.material.opacity = 0.4;
+            funnelRight.material.transparent = true;
+            funnelRight.name = "Encoder - Incomplete input";
+            rightGroup.add(funnelRight);
+            
+            // Z Output (Inference) - Chaotic
+            const zRightGroup = new THREE.Group();
+            zRightGroup.position.y = -2.0;
+            
+            // Chaotic scattered points
+            const rightZPoints = [];
+            for (let i = 0; i < 40; i++) {
+                const dotGeom = new THREE.SphereGeometry(0.15, 8, 8);
+                const dotMat = new THREE.MeshPhongMaterial({ 
+                    color: 0xFF6B6B, 
+                    emissive: 0xFF6B6B, 
+                    emissiveIntensity: 0.4,
+                    transparent: true,
+                    opacity: 0.7
+                });
+                const dot = new THREE.Mesh(dotGeom, dotMat);
+                dot.position.set(
+                    (Math.random() - 0.5) * 1.5,
+                    (Math.random() - 0.5) * 0.8,
+                    Math.random() * 0.2
+                );
+                dot.baseX = dot.position.x;
+                dot.baseY = dot.position.y;
+                dot.name = "Chaotic Z - Unknown distribution";
+                rightZPoints.push(dot);
+                zRightGroup.add(dot);
+            }
+            
+            // X mark
+            const xMat = new THREE.MeshPhongMaterial({ color: 0xFF6B6B, emissive: 0xFF6B6B, emissiveIntensity: 0.5 });
+            const xGeom1 = new THREE.BoxGeometry(0.3, 0.05, 0.05);
+            const xPart1 = new THREE.Mesh(xGeom1, xMat);
+            xPart1.rotation.z = Math.PI / 4;
+            xPart1.position.set(0.6, -0.5, 0);
+            xPart1.name = "Failure - Z is unknown at inference";
+            zRightGroup.add(xPart1);
+            
+            const xPart2 = new THREE.Mesh(xGeom1.clone(), xMat);
+            xPart2.rotation.z = -Math.PI / 4;
+            xPart2.position.set(0.6, -0.5, 0);
+            xPart2.name = "Failure - Z is unknown at inference";
+            zRightGroup.add(xPart2);
+            
+            rightGroup.add(zRightGroup);
+            rightSideObjects.push(zRightGroup);
+            
+            // Arrows for right side
+            rightGroup.add(createArrow(2.1, 1.4, 0x00BFFF));
+            
+            // Broken arrow from missing demo
+            const brokenArrow = new THREE.Group();
+            const brokenLine = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.03, 0.03, 0.3, 8),
+                new THREE.MeshPhongMaterial({ color: 0xFF6B6B, emissive: 0xFF6B6B, emissiveIntensity: 0.3 })
+            );
+            brokenLine.position.y = 0.4;
+            brokenArrow.add(brokenLine);
+            
+            // Scattered broken pieces
+            for (let i = 0; i < 5; i++) {
+                const piece = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.05, 0.08, 0.03),
+                    new THREE.MeshPhongMaterial({ color: 0xFF6B6B })
+                );
+                piece.position.set(
+                    (Math.random() - 0.5) * 0.4,
+                    0.1 + Math.random() * 0.3,
+                    Math.random() * 0.1
+                );
+                piece.rotation.z = Math.random() * Math.PI;
+                piece.name = "Broken Connection - Data flow interrupted";
+                brokenArrow.add(piece);
+            }
+            rightGroup.add(brokenArrow);
+            
+            // Dimmed arrow to Z
+            const dimArrow = createArrow(-0.9, -1.5, 0x9B59B6);
+            dimArrow.children.forEach(c => {
+                c.material.opacity = 0.3;
+                c.material.transparent = true;
+            });
+            rightGroup.add(dimArrow);
+            
+            // Warning glow around missing demo
+            const glowGeom = new THREE.RingGeometry(1.3, 1.5, 32);
+            const glowMat = new THREE.MeshBasicMaterial({ 
+                color: 0xFF6B6B, 
+                transparent: true, 
+                opacity: 0.2,
+                side: THREE.DoubleSide
+            });
+            const glow = new THREE.Mesh(glowGeom, glowMat);
+            glow.position.set(0, 1.0, -0.1);
+            glow.name = "Warning Glow - Critical issue";
+            rightGroup.add(glow);
+            
+            scene.add(rightGroup);
+            
+            // HTML Labels
+            const labelContainer = document.createElement('div');
+            labelContainer.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;font-family:Sora,sans-serif;';
+            container.appendChild(labelContainer);
+            
+            const labels = [
+                { text: 'THE INFERENCE GAP', top: '3%', left: '50%', transform: 'translateX(-50%)', size: '28px', weight: '700', color: '#FF6B6B' },
+                { text: 'TRAINING', top: '10%', left: '25%', transform: 'translateX(-50%)', size: '20px', weight: '700', color: '#2ECC71' },
+                { text: 'INFERENCE', top: '10%', left: '75%', transform: 'translateX(-50%)', size: '20px', weight: '700', color: '#FF6B6B' },
+                { text: 'Demo ✓', top: '42%', left: '25%', transform: 'translateX(-50%)', size: '14px', weight: '600', color: '#FFD700' },
+                { text: 'Z: Known!', top: '72%', left: '25%', transform: 'translateX(-50%)', size: '14px', weight: '600', color: '#2ECC71' },
+                { text: 'Z: Unknown!', top: '72%', left: '75%', transform: 'translateX(-50%)', size: '14px', weight: '600', color: '#FF6B6B' },
+            ];
+            
+            labels.forEach(l => {
+                const label = document.createElement('div');
+                label.textContent = l.text;
+                label.style.cssText = `position:absolute;top:${l.top};left:${l.left};transform:${l.transform};font-size:${l.size};font-weight:${l.weight};color:${l.color};text-shadow:0 2px 8px rgba(0,0,0,0.8);`;
+                labelContainer.appendChild(label);
+            });
+            
+            // Pulsing "???" label
+            const missingLabel = document.createElement('div');
+            missingLabel.textContent = '???';
+            missingLabel.style.cssText = 'position:absolute;top:42%;left:75%;transform:translateX(-50%);font-size:32px;font-weight:700;color:#FF6B6B;text-shadow:0 2px 8px rgba(0,0,0,0.8);animation:pulse 1s ease-in-out infinite;';
+            labelContainer.appendChild(missingLabel);
+            
+            // Bottom question
+            const question = document.createElement('div');
+            question.textContent = 'Where does Z come from when we don\'t have a demo?';
+            question.style.cssText = 'position:absolute;bottom:6%;left:50%;transform:translateX(-50%);font-size:18px;font-weight:600;color:#E8E8E8;background:rgba(255,107,107,0.2);padding:12px 24px;border-radius:8px;text-shadow:0 2px 8px rgba(0,0,0,0.8);';
+            labelContainer.appendChild(question);
+            
+            // CSS animation
+            const style = document.createElement('style');
+            style.textContent = '@keyframes pulse{0%,100%{transform:translateX(-50%) scale(1);}50%{transform:translateX(-50%) scale(1.2);}}';
+            document.head.appendChild(style);
+            
+            // Mouse handling
+            container.addEventListener('mousemove', (event) => {
+                const rect = container.getBoundingClientRect();
+                mouse.x = ((event.clientX - rect.left) / width) * 2 - 1;
+                mouse.y = -((event.clientY - rect.top) / height) * 2 + 1;
+                
+                raycaster.setFromCamera(mouse, camera);
+                const allObjects = [...leftSideObjects, ...rightSideObjects, ...sparks, ...questionMarks, divider, glow];
+                const intersects = raycaster.intersectObjects(allObjects, true);
+                
+                if (intersects.length > 0) {
+                    let obj = intersects[0].object;
+                    while (obj && !obj.name) obj = obj.parent;
+                    if (obj && obj.name) {
+                        tooltip.style.display = 'block';
+                        tooltip.style.left = (event.clientX - rect.left + 15) + 'px';
+                        tooltip.style.top = (event.clientY - rect.top + 15) + 'px';
+                        tooltip.textContent = obj.name;
+                    }
+                } else {
+                    tooltip.style.display = 'none';
+                }
+            });
+            
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+                controls.update();
+                
+                const time = Date.now() * 0.001;
+                
+                // Update divider shader
+                dividerMat.uniforms.time.value = time;
+                
+                // Pulse missing demo box
+                missingDemoBox.material.emissiveIntensity = 0.3 + Math.sin(time * 3) * 0.2;
+                
+                // Pulse warning glow
+                glow.material.opacity = 0.15 + Math.sin(time * 2) * 0.1;
+                
+                // Float question marks
+                questionMarks.forEach((qm, i) => {
+                    qm.position.y = qm.baseY + Math.sin(time * 2 + i) * 0.08;
+                    qm.rotation.z = Math.sin(time * 1.5 + i) * 0.1;
+                });
+                
+                // Left side particles flow down
+                leftParticles.forEach(p => {
+                    p.position.y -= 0.015;
+                    if (p.position.y < -2.5) p.position.y = 3;
+                });
+                
+                // Chaotic right side Z points
+                rightZPoints.forEach(p => {
+                    p.position.x = p.baseX + (Math.sin(time * 2 + p.baseX * 10) * 0.1);
+                    p.position.y = p.baseY + (Math.cos(time * 3 + p.baseY * 10) * 0.08);
+                });
+                
+                // Divider sparks
+                sparks.forEach(spark => {
+                    spark.position.y += (Math.random() - 0.5) * 0.05;
+                    spark.position.x = (Math.random() - 0.5) * 0.15;
+                    if (spark.position.y > 4) spark.position.y = -4;
+                    if (spark.position.y < -4) spark.position.y = 4;
+                    spark.material.opacity = 0.4 + Math.random() * 0.6;
+                });
+                
+                // Pulse left side Z orb
+                zOrb.scale.setScalar(1 + Math.sin(time * 2) * 0.05);
+                
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+            
+            // Store references
+            container.scene = scene;
+            container.camera = camera;
+            container.renderer = renderer;
+            
+            window.resetView = function() {
+                camera.position.set(0, 0, 16);
+                camera.lookAt(0, 0, 0);
+                controls.target.set(0, 0, 0);
+            };
+            
+        }
+
+        function loadSection4() {
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            // Scene setup
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0a0a1a);
+            
+            const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+            camera.position.set(0, 3, 15);
+            camera.lookAt(0, 0, 0);
+            
+            const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+            renderer.setSize(width, height);
+            container.appendChild(renderer.domElement);
+            
+            // Controls
+            const controls = new THREE.TrackballControls(camera, renderer.domElement);
+            controls.rotateSpeed = 2.0;
+            controls.zoomSpeed = 1.2;
+            controls.panSpeed = 0.8;
+            controls.dynamicDampingFactor = 0.15;
+            
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            scene.add(ambientLight);
+            
+            const pointLight = new THREE.PointLight(0x9B59B6, 1, 50);
+            pointLight.position.set(0, 10, 10);
+            scene.add(pointLight);
+            
+            const greenLight = new THREE.PointLight(0x2ECC71, 0.8, 30);
+            greenLight.position.set(0, 0, 5);
+            scene.add(greenLight);
+            
+            // Tooltip
+            const tooltip = document.createElement('div');
+            tooltip.style.cssText = 'position:absolute;padding:6px 10px;background:rgba(0,0,0,0.8);color:white;border-radius:4px;font-size:12px;pointer-events:none;display:none;z-index:1000;font-family:sans-serif;';
+            container.appendChild(tooltip);
+            
+            // Latent space plane
+            const planeGeometry = new THREE.PlaneGeometry(16, 10);
+            const planeMaterial = new THREE.MeshBasicMaterial({
+                color: 0x9B59B6,
+                transparent: true,
+                opacity: 0.05,
+                side: THREE.DoubleSide
+            });
+            const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+            plane.rotation.x = -Math.PI * 0.1;
+            plane.name = "Latent Space Plane";
+            scene.add(plane);
+            
+            // Grid lines
+            const gridHelper = new THREE.GridHelper(16, 20, 0x9B59B6, 0x9B59B6);
+            gridHelper.material.transparent = true;
+            gridHelper.material.opacity = 0.1;
+            gridHelper.rotation.x = Math.PI / 2;
+            gridHelper.rotation.z = -Math.PI * 0.1;
+            scene.add(gridHelper);
+            
+            // Concentric rings for N(0,1)
+            const concentricRings = [];
+            const sigmaData = [
+                { sigma: 1, probability: 68, radius: 1 },
+                { sigma: 2, probability: 95, radius: 2 },
+                { sigma: 3, probability: 99.7, radius: 3 },
+                { sigma: 4, probability: 99.99, radius: 4 }
+            ];
+            
+            sigmaData.forEach((data, i) => {
+                const ringGeometry = new THREE.RingGeometry(data.radius - 0.05, data.radius + 0.05, 64);
+                const ringMaterial = new THREE.MeshBasicMaterial({
+                    color: 0x2ECC71,
+                    transparent: true,
+                    opacity: 0.3 - i * 0.05,
+                    side: THREE.DoubleSide
+                });
+                const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+                ring.position.set(3, 0, 0.1);
+                ring.name = `${data.sigma}-sigma ring`;
+                ring.userData = { sigma: data.sigma, probability: data.probability };
+                concentricRings.push(ring);
+                scene.add(ring);
+            });
+            
+            // Center glow for N(0,1)
+            const glowGeometry = new THREE.CircleGeometry(1.5, 32);
+            const glowMaterial = new THREE.MeshBasicMaterial({
+                color: 0x2ECC71,
+                transparent: true,
+                opacity: 0.15
+            });
+            const centerGlow = new THREE.Mesh(glowGeometry, glowMaterial);
+            centerGlow.position.set(3, 0, 0.05);
+            centerGlow.name = "N(0,1) Center";
+            scene.add(centerGlow);
+            
+            // Demo colors
+            const demoTypes = [
+                { name: 'Folding', color: 0xFFD700 },
+                { name: 'Picking', color: 0x00BFFF },
+                { name: 'Placing', color: 0x9B59B6 },
+                { name: 'Rotating', color: 0xFF6B6B }
+            ];
+            
+            // Create scattered points (before KL) - left side
+            const scatteredPoints = [];
+            const numPoints = 25;
+            
+            for (let i = 0; i < numPoints; i++) {
+                const demoType = demoTypes[Math.floor(Math.random() * demoTypes.length)];
+                const geometry = new THREE.SphereGeometry(0.15, 16, 16);
+                const material = new THREE.MeshPhongMaterial({
+                    color: demoType.color,
+                    emissive: demoType.color,
+                    emissiveIntensity: 0.3,
+                    transparent: true,
+                    opacity: 0.9
+                });
+                const sphere = new THREE.Mesh(geometry, material);
+                
+                // Scattered positions on left side
+                sphere.position.x = -4 + (Math.random() - 0.5) * 4;
+                sphere.position.y = (Math.random() - 0.5) * 5;
+                sphere.position.z = 0.2;
+                
+                sphere.userData = {
+                    demoType: demoType.name,
+                    originalX: sphere.position.x,
+                    originalY: sphere.position.y,
+                    driftX: (Math.random() - 0.5) * 0.02,
+                    driftY: (Math.random() - 0.5) * 0.02
+                };
+                sphere.name = `${demoType.name} Demo (Scattered)`;
+                
+                scatteredPoints.push(sphere);
+                scene.add(sphere);
+            }
+            
+            // Create organized points (after KL) - right side near origin
+            const organizedPoints = [];
+            
+            for (let i = 0; i < numPoints; i++) {
+                const demoType = demoTypes[Math.floor(Math.random() * demoTypes.length)];
+                const geometry = new THREE.SphereGeometry(0.15, 16, 16);
+                const material = new THREE.MeshPhongMaterial({
+                    color: demoType.color,
+                    emissive: demoType.color,
+                    emissiveIntensity: 0.5,
+                    transparent: true,
+                    opacity: 0.9
+                });
+                const sphere = new THREE.Mesh(geometry, material);
+                
+                // Organized positions clustered near center (right side)
+                const angle = (i / numPoints) * Math.PI * 2;
+                const radius = 0.3 + Math.random() * 1.5;
+                sphere.position.x = 3 + Math.cos(angle) * radius;
+                sphere.position.y = Math.sin(angle) * radius;
+                sphere.position.z = 0.2;
+                
+                sphere.userData = {
+                    demoType: demoType.name,
+                    centerX: 3,
+                    centerY: 0,
+                    targetRadius: radius,
+                    angle: angle
+                };
+                sphere.name = `${demoType.name} Demo (Organized)`;
+                
+                organizedPoints.push(sphere);
+                scene.add(sphere);
+            }
+            
+            // Force lines (gravitational attraction)
+            const forceLines = [];
+            const numForceLines = 8;
+            
+            for (let i = 0; i < numForceLines; i++) {
+                const angle = (i / numForceLines) * Math.PI * 2;
+                const points = [];
+                for (let j = 0; j <= 20; j++) {
+                    const t = j / 20;
+                    const r = 4 - t * 3.5;
+                    points.push(new THREE.Vector3(
+                        3 + Math.cos(angle) * r,
+                        Math.sin(angle) * r,
+                        0.05
+                    ));
+                }
+                
+                const curve = new THREE.CatmullRomCurve3(points);
+                const lineGeometry = new THREE.BufferGeometry().setFromPoints(curve.getPoints(50));
+                const lineMaterial = new THREE.LineDashedMaterial({
+                    color: 0x2ECC71,
+                    dashSize: 0.2,
+                    gapSize: 0.1,
+                    transparent: true,
+                    opacity: 0.4
+                });
+                
+                const line = new THREE.Line(lineGeometry, lineMaterial);
+                line.computeLineDistances();
+                line.name = "Attraction Force Line";
+                forceLines.push(line);
+                scene.add(line);
+            }
+            
+            // Transformation arrow (curved path from left to right)
+            const arrowCurve = new THREE.QuadraticBezierCurve3(
+                new THREE.Vector3(-4, -3.5, 0.1),
+                new THREE.Vector3(0, -4.5, 0.1),
+                new THREE.Vector3(3, -3.5, 0.1)
+            );
+            
+            const arrowPoints = arrowCurve.getPoints(50);
+            const arrowGeometry = new THREE.BufferGeometry().setFromPoints(arrowPoints);
+            const arrowMaterial = new THREE.LineBasicMaterial({
+                color: 0x9B59B6,
+                linewidth: 2
+            });
+            const transformArrow = new THREE.Line(arrowGeometry, arrowMaterial);
+            transformArrow.name = "KL Transformation Arrow";
+            scene.add(transformArrow);
+            
+            // Arrow head
+            const arrowHeadGeometry = new THREE.ConeGeometry(0.2, 0.5, 8);
+            const arrowHeadMaterial = new THREE.MeshBasicMaterial({ color: 0x2ECC71 });
+            const arrowHead = new THREE.Mesh(arrowHeadGeometry, arrowHeadMaterial);
+            arrowHead.position.set(3, -3.5, 0.1);
+            arrowHead.rotation.z = -Math.PI / 2;
+            arrowHead.name = "KL Arrow Head";
+            scene.add(arrowHead);
+            
+            // Particles flowing along arrow
+            const flowParticles = [];
+            for (let i = 0; i < 10; i++) {
+                const particleGeometry = new THREE.SphereGeometry(0.15, 8, 8);
+                const particleMaterial = new THREE.MeshBasicMaterial({
+                    color: 0xE8E8E8,
+                    transparent: true,
+                    opacity: 0.8
+                });
+                const particle = new THREE.Mesh(particleGeometry, particleMaterial);
+                particle.userData.t = i / 10;
+                particle.name = "Flow Particle";
+                flowParticles.push(particle);
+                scene.add(particle);
+            }
+            
+            // HTML Labels
+            const labels = document.createElement('div');
+            labels.innerHTML = `
+                <div style="position:absolute;top:5%;left:50%;transform:translateX(-50%);font-family:'Sora',sans-serif;font-size:28px;font-weight:700;color:#9B59B6;text-shadow:0 2px 8px rgba(0,0,0,0.8);">KL DIVERGENCE</div>
+                <div style="position:absolute;top:11%;left:50%;transform:translateX(-50%);font-family:'Sora',sans-serif;font-size:16px;font-style:italic;color:#2ECC71;text-shadow:0 2px 8px rgba(0,0,0,0.8);">"Stay close to normal - so inference can sample from N(0,1)!"</div>
+                <div style="position:absolute;top:25%;left:15%;font-family:'Sora',sans-serif;font-size:16px;font-weight:700;color:#FF6B6B;text-shadow:0 2px 8px rgba(0,0,0,0.8);">BEFORE KL<br><span style="font-size:11px;font-weight:400;opacity:0.8;">Encoder outputs scattered</span></div>
+                <div style="position:absolute;top:25%;right:15%;font-family:'Sora',sans-serif;font-size:16px;font-weight:700;color:#2ECC71;text-shadow:0 2px 8px rgba(0,0,0,0.8);text-align:right;">AFTER KL<br><span style="font-size:11px;font-weight:400;opacity:0.8;">Constrained near N(0,1)</span></div>
+                <div style="position:absolute;bottom:15%;left:50%;transform:translateX(-50%);font-family:'JetBrains Mono',monospace;font-size:14px;color:#9B59B6;text-shadow:0 2px 8px rgba(0,0,0,0.8);background:rgba(155,89,182,0.1);padding:8px 16px;border-radius:4px;">L<sub>KL</sub> = 0.5 × Σ(μ² + σ² - log(σ²) - 1)</div>
+                <div style="position:absolute;bottom:6%;left:50%;transform:translateX(-50%);font-family:'Sora',sans-serif;font-size:12px;font-weight:700;color:#9B59B6;text-shadow:0 2px 8px rgba(0,0,0,0.8);background:rgba(155,89,182,0.2);border:2px solid #9B59B6;padding:8px 16px;border-radius:4px;">✨ THE SECOND TEACHER</div>
+                <div style="position:absolute;top:48%;left:48%;transform:translate(-50%,-50%);font-family:'JetBrains Mono',monospace;font-size:12px;color:#E8E8E8;text-shadow:0 2px 8px rgba(0,0,0,0.8);background:rgba(0,0,0,0.5);padding:4px 8px;border-radius:3px;">KL Loss</div>
+            `;
+            labels.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;';
+            container.appendChild(labels);
+            
+            // Raycaster for tooltips
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+            const allObjects = [...scatteredPoints, ...organizedPoints, ...concentricRings, centerGlow, plane];
+            
+            renderer.domElement.addEventListener('mousemove', (event) => {
+                const rect = renderer.domElement.getBoundingClientRect();
+                mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+                mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+                
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObjects(allObjects);
+                
+                // Reset emissive
+                [...scatteredPoints, ...organizedPoints].forEach(p => {
+                    p.material.emissiveIntensity = 0.3;
+                });
+                
+                if (intersects.length > 0) {
+                    const obj = intersects[0].object;
+                    tooltip.style.display = 'block';
+                    tooltip.style.left = (event.clientX - rect.left + 10) + 'px';
+                    tooltip.style.top = (event.clientY - rect.top + 10) + 'px';
+                    
+                    if (obj.userData.sigma) {
+                        tooltip.textContent = `${obj.userData.sigma}σ: ${obj.userData.probability}% of samples`;
+                    } else if (obj.userData.demoType) {
+                        tooltip.textContent = `Demo: ${obj.userData.demoType}`;
+                        obj.material.emissiveIntensity = 0.8;
+                    } else {
+                        tooltip.textContent = obj.name;
+                    }
+                } else {
+                    tooltip.style.display = 'none';
+                }
+            });
+            
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                const time = Date.now() * 0.001;
+                
+                // Scattered points drift chaotically
+                scatteredPoints.forEach((p, i) => {
+                    p.position.x += p.userData.driftX;
+                    p.position.y += p.userData.driftY;
+                    
+                    // Bounce back if too far
+                    if (Math.abs(p.position.x - p.userData.originalX) > 1) p.userData.driftX *= -1;
+                    if (Math.abs(p.position.y - p.userData.originalY) > 1) p.userData.driftY *= -1;
+                });
+                
+                // Organized points orbit gently
+                organizedPoints.forEach((p, i) => {
+                    const angle = time * 0.3 + p.userData.angle;
+                    const radius = p.userData.targetRadius;
+                    p.position.x = p.userData.centerX + Math.cos(angle) * radius * 0.15;
+                    p.position.y = p.userData.centerY + Math.sin(angle) * radius;
+                });
+                
+                // Concentric rings pulse
+                concentricRings.forEach((ring, i) => {
+                    ring.material.opacity = 0.25 - i * 0.04 + Math.sin(time * 2 - i * 0.5) * 0.08;
+                });
+                
+                // Center glow pulse
+                centerGlow.material.opacity = 0.15 + Math.sin(time * 1.5) * 0.05;
+                centerGlow.scale.setScalar(1 + Math.sin(time * 1.5) * 0.1);
+                
+                // Flow particles along arrow
+                flowParticles.forEach(particle => {
+                    particle.userData.t += 0.005;
+                    if (particle.userData.t > 1) particle.userData.t = 0;
+                    const pos = arrowCurve.getPoint(particle.userData.t);
+                    particle.position.copy(pos);
+                    particle.material.opacity = 0.8 * Math.sin(particle.userData.t * Math.PI);
+                });
+                
+                // Force lines dash animation
+                forceLines.forEach((line, i) => {
+                    line.material.dashSize = 0.2 + Math.sin(time * 2 + i) * 0.05;
+                });
+                
+                controls.update();
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+            
+            // Store references
+            container.scene = scene;
+            container.camera = camera;
+            container.renderer = renderer;
+            
+            window.resetView = function() {
+                camera.position.set(0, 3, 15);
+                camera.lookAt(0, 0, 0);
+            };
+            
+        }
+
+        function loadSection5() {
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            // Scene setup
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0a0a1a);
+            
+            const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+            camera.position.set(0, 0, 15);
+            
+            const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+            
+            // Controls
+            const controls = new THREE.TrackballControls(camera, renderer.domElement);
+            controls.rotateSpeed = 2.0;
+            controls.zoomSpeed = 1.2;
+            controls.panSpeed = 0.8;
+            controls.noZoom = false;
+            controls.noPan = false;
+            controls.staticMoving = false;
+            controls.dynamicDampingFactor = 0.15;
+            
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            scene.add(ambientLight);
+            
+            const mainLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            mainLight.position.set(5, 10, 10);
+            scene.add(mainLight);
+            
+            const goldLight = new THREE.PointLight(0xFFD700, 0.5, 20);
+            goldLight.position.set(-5, 0, 5);
+            scene.add(goldLight);
+            
+            const purpleLight = new THREE.PointLight(0x9B59B6, 0.5, 20);
+            purpleLight.position.set(5, 0, 5);
+            scene.add(purpleLight);
+            
+            // Tooltip setup
+            const tooltip = document.createElement('div');
+            tooltip.style.cssText = 'position:absolute;padding:6px 10px;background:rgba(0,0,0,0.8);color:white;border-radius:4px;font-size:12px;pointer-events:none;display:none;z-index:1000;font-family:sans-serif;';
+            container.appendChild(tooltip);
+            
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+            
+            function showTooltip(text, x, y) {
+                tooltip.textContent = text;
+                tooltip.style.display = 'block';
+                tooltip.style.left = (x + 15) + 'px';
+                tooltip.style.top = (y + 15) + 'px';
+            }
+            
+            function hideTooltip() {
+                tooltip.style.display = 'none';
+            }
+            
+            // Create Yin-Yang symbol
+            const yinYangGroup = new THREE.Group();
+            yinYangGroup.position.set(0, 0.8, 0);
+            yinYangGroup.name = "Yin-Yang Balance: Two teachers working in harmony";
+            
+            // Main circle background
+            const mainCircleGeo = new THREE.CircleGeometry(2, 64);
+            
+            // Create yin-yang with custom shader material
+            const yinYangCanvas = document.createElement('canvas');
+            yinYangCanvas.width = 512;
+            yinYangCanvas.height = 512;
+            const ctx = yinYangCanvas.getContext('2d');
+            
+            // Draw yin-yang
+            const cx = 256, cy = 256, r = 240;
+            
+            // Gold half (left/top)
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, Math.PI * 0.5, Math.PI * 1.5);
+            ctx.fillStyle = '#FFD700';
+            ctx.fill();
+            
+            // Purple half (right/bottom)
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, Math.PI * 1.5, Math.PI * 0.5);
+            ctx.fillStyle = '#9B59B6';
+            ctx.fill();
+            
+            // Gold curve
+            ctx.beginPath();
+            ctx.arc(cx, cy - r/2, r/2, Math.PI * 0.5, Math.PI * 1.5);
+            ctx.fillStyle = '#FFD700';
+            ctx.fill();
+            
+            // Purple curve
+            ctx.beginPath();
+            ctx.arc(cx, cy + r/2, r/2, Math.PI * 1.5, Math.PI * 0.5);
+            ctx.fillStyle = '#9B59B6';
+            ctx.fill();
+            
+            // Small circles (dots)
+            ctx.beginPath();
+            ctx.arc(cx, cy - r/2, r/6, 0, Math.PI * 2);
+            ctx.fillStyle = '#9B59B6';
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.arc(cx, cy + r/2, r/6, 0, Math.PI * 2);
+            ctx.fillStyle = '#FFD700';
+            ctx.fill();
+            
+            // Border
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+            
+            const yinYangTexture = new THREE.CanvasTexture(yinYangCanvas);
+            const yinYangMaterial = new THREE.MeshBasicMaterial({ 
+                map: yinYangTexture, 
+                transparent: true,
+                side: THREE.DoubleSide
+            });
+            const yinYangMesh = new THREE.Mesh(mainCircleGeo, yinYangMaterial);
+            yinYangMesh.name = "Yin-Yang Balance: Two teachers working in harmony";
+            yinYangGroup.add(yinYangMesh);
+            
+            // Glow ring
+            const glowGeo = new THREE.RingGeometry(2.1, 2.4, 64);
+            const glowMat = new THREE.MeshBasicMaterial({ 
+                color: 0xffffff, 
+                transparent: true, 
+                opacity: 0.3,
+                side: THREE.DoubleSide
+            });
+            const glowRing = new THREE.Mesh(glowGeo, glowMat);
+            glowRing.position.z = -0.1;
+            yinYangGroup.add(glowRing);
+            
+            scene.add(yinYangGroup);
+            
+            // Create card function
+            function createCard(x, y, color, title) {
+                const group = new THREE.Group();
+                group.position.set(x, y, 0);
+                group.baseY = y;
+                
+                // Card background
+                const cardGeo = new THREE.PlaneGeometry(2.8, 3.2);
+                const cardMat = new THREE.MeshStandardMaterial({
+                    color: 0x1a1a2e, emissive: 0x1a1a2e, emissiveIntensity: 0.3,
+                    emissive: new THREE.Color(color),
+                    emissiveIntensity: 0.1,
+                    side: THREE.DoubleSide
+                });
+                const card = new THREE.Mesh(cardGeo, cardMat);
+                card.name = title;
+                group.add(card);
+                
+                // Card border
+                const borderGeo = new THREE.EdgesGeometry(cardGeo);
+                const borderMat = new THREE.LineBasicMaterial({ color: color, linewidth: 2 });
+                const border = new THREE.LineSegments(borderGeo, borderMat);
+                group.add(border);
+                
+                // Accent line at top
+                const accentGeo = new THREE.PlaneGeometry(2.8, 0.15);
+                const accentMat = new THREE.MeshBasicMaterial({ color: color });
+                const accent = new THREE.Mesh(accentGeo, accentMat);
+                accent.position.y = 1.5;
+                accent.position.z = 0.01;
+                group.add(accent);
+                
+                group.card = card;
+                return group;
+            }
+            
+            // Reconstruction card
+            const reconCard = createCard(-4, -2, 0xFFD700, "Reconstruction Loss: Makes predictions match demonstrations");
+            scene.add(reconCard);
+            
+            // KL card
+            const klCard = createCard(4, -2, 0x9B59B6, "KL Divergence Loss: Constrains latent space for inference");
+            scene.add(klCard);
+            
+            // Weight comparison bars
+            const barsGroup = new THREE.Group();
+            barsGroup.position.set(0, -3.5, 0);
+            
+            // Recon bar (1x)
+            const reconBarGeo = new THREE.BoxGeometry(0.4, 0.5, 0.2);
+            const reconBarMat = new THREE.MeshStandardMaterial({ 
+                color: 0xFFD700, 
+                emissive: 0xFFD700, 
+                emissiveIntensity: 0.3 
+            });
+            const reconBar = new THREE.Mesh(reconBarGeo, reconBarMat);
+            reconBar.position.set(-0.5, 0.25, 0);
+            reconBar.name = "Weight: 1x";
+            barsGroup.add(reconBar);
+            
+            // KL bar (10x) - visually 2x height with label
+            const klBarGeo = new THREE.BoxGeometry(0.4, 1.5, 0.2);
+            const klBarMat = new THREE.MeshStandardMaterial({ 
+                color: 0x9B59B6, 
+                emissive: 0x9B59B6, 
+                emissiveIntensity: 0.3 
+            });
+            const klBar = new THREE.Mesh(klBarGeo, klBarMat);
+            klBar.position.set(0.5, 0.75, 0);
+            klBar.name = "Weight: 10x (Beta)";
+            barsGroup.add(klBar);
+            
+            // Base line
+            const baseGeo = new THREE.BoxGeometry(2, 0.05, 0.1);
+            const baseMat = new THREE.MeshBasicMaterial({ color: 0x606060 });
+            const baseLine = new THREE.Mesh(baseGeo, baseMat);
+            barsGroup.add(baseLine);
+            
+            scene.add(barsGroup);
+            
+            // Celebration particles
+            const celebrationParticles = [];
+            const particleColors = [0xFFD700, 0x9B59B6, 0xFFD700, 0x9B59B6];
+            
+            for (let i = 0; i < 40; i++) {
+                const size = Math.random() * 0.08 + 0.03;
+                const geo = Math.random() > 0.5 
+                    ? new THREE.BoxGeometry(size, size, size)
+                    : new THREE.OctahedronGeometry(size);
+                const mat = new THREE.MeshBasicMaterial({ 
+                    color: particleColors[i % 4],
+                    transparent: true,
+                    opacity: 0.7
+                });
+                const particle = new THREE.Mesh(geo, mat);
+                particle.position.set(
+                    (Math.random() - 0.5) * 16,
+                    (Math.random() - 0.5) * 10,
+                    (Math.random() - 0.5) * 4 - 2
+                );
+                particle.rotation.set(
+                    Math.random() * Math.PI,
+                    Math.random() * Math.PI,
+                    Math.random() * Math.PI
+                );
+                particle.velocity = Math.random() * 0.02 + 0.005;
+                particle.rotSpeed = (Math.random() - 0.5) * 0.05;
+                celebrationParticles.push(particle);
+                scene.add(particle);
+            }
+            
+            // Background stars
+            const starsGeo = new THREE.BufferGeometry();
+            const starsPositions = [];
+            for (let i = 0; i < 200; i++) {
+                starsPositions.push(
+                    (Math.random() - 0.5) * 50,
+                    (Math.random() - 0.5) * 50,
+                    -20 - Math.random() * 20
+                );
+            }
+            starsGeo.setAttribute('position', new THREE.Float32BufferAttribute(starsPositions, 3));
+            const starsMat = new THREE.PointsMaterial({ color: 0x444466, size: 0.1 });
+            const stars = new THREE.Points(starsGeo, starsMat);
+            scene.add(stars);
+            
+            // HTML Labels
+            const labelsContainer = document.createElement('div');
+            labelsContainer.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;font-family:Arial,sans-serif;';
+            container.appendChild(labelsContainer);
+            
+            // Title
+            const title = document.createElement('div');
+            title.innerHTML = '🎯 TWO LOSSES, ONE GOAL';
+            title.style.cssText = 'position:absolute;top:3%;left:50%;transform:translateX(-50%);font-size:26px;font-weight:700;color:#E8E8E8;text-shadow:0 2px 8px rgba(0,0,0,0.8);';
+            labelsContainer.appendChild(title);
+            
+            // Formula
+            const formula = document.createElement('div');
+            formula.innerHTML = '<span style="color:#E8E8E8">L</span><sub>total</sub><span style="color:#E8E8E8"> = </span><span style="color:#FFD700">L<sub>recon</sub></span><span style="color:#E8E8E8"> + </span><span style="color:#FF6B6B;font-size:22px;font-weight:700" id="betaNum">10</span><span style="color:#E8E8E8"> × </span><span style="color:#9B59B6">L<sub>KL</sub></span>';
+            formula.style.cssText = 'position:absolute;top:10%;left:50%;transform:translateX(-50%);font-size:18px;font-family:monospace;text-shadow:0 2px 8px rgba(0,0,0,0.8);';
+            labelsContainer.appendChild(formula);
+            
+            // Beta callout
+            const betaCallout = document.createElement('div');
+            betaCallout.textContent = 'β = 10';
+            betaCallout.style.cssText = 'position:absolute;top:9%;right:18%;background:rgba(255,107,107,0.3);border:2px solid #FF6B6B;padding:6px 12px;border-radius:20px;font-size:14px;font-weight:700;color:#FF6B6B;';
+            labelsContainer.appendChild(betaCallout);
+            
+            // Recon card labels
+            const reconLabels = document.createElement('div');
+            reconLabels.innerHTML = '<div style="color:#FFD700;font-size:14px;font-weight:700">RECONSTRUCTION</div><div style="color:#E8E8E8;font-size:12px;margin-top:4px">Teaches: <b>WHAT</b></div><div style="color:#6B7280;font-size:11px;font-style:italic;margin-top:2px">"Copy the demo"</div><div style="color:#FFD700;font-size:11px;margin-top:6px">Weight: 1×</div>';
+            reconLabels.style.cssText = 'position:absolute;top:52%;left:12%;text-align:center;text-shadow:0 2px 4px rgba(0,0,0,0.8);';
+            labelsContainer.appendChild(reconLabels);
+            
+            // KL card labels
+            const klLabels = document.createElement('div');
+            klLabels.innerHTML = '<div style="color:#9B59B6;font-size:14px;font-weight:700">KL DIVERGENCE</div><div style="color:#E8E8E8;font-size:12px;margin-top:4px">Teaches: <b>HOW</b> to vary</div><div style="color:#6B7280;font-size:11px;font-style:italic;margin-top:2px">"Stay organized"</div><div style="color:#9B59B6;font-size:13px;font-weight:700;margin-top:6px">Weight: 10×</div>';
+            klLabels.style.cssText = 'position:absolute;top:52%;right:12%;text-align:center;text-shadow:0 2px 4px rgba(0,0,0,0.8);';
+            labelsContainer.appendChild(klLabels);
+            
+            // Punchline
+            const punchline = document.createElement('div');
+            punchline.innerHTML = 'Reconstruction teaches <span style="color:#FFD700;font-weight:700">WHAT</span> to do.<br>KL teaches <span style="color:#9B59B6;font-weight:700">HOW</span> to vary it.';
+            punchline.style.cssText = 'position:absolute;bottom:6%;left:50%;transform:translateX(-50%);font-size:18px;line-height:1.6;text-align:center;color:#E8E8E8;background:rgba(0,0,0,0.5);padding:14px 28px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);text-shadow:0 2px 4px rgba(0,0,0,0.8);';
+            labelsContainer.appendChild(punchline);
+            
+            // Success badge
+            const successBadge = document.createElement('div');
+            successBadge.innerHTML = '✓ Understanding Achieved!';
+            successBadge.style.cssText = 'position:absolute;top:3%;right:3%;background:rgba(46,204,113,0.2);border:2px solid #2ECC71;padding:8px 14px;border-radius:20px;font-size:12px;font-weight:700;color:#2ECC71;';
+            labelsContainer.appendChild(successBadge);
+            
+            // Weight labels
+            const weightLabels = document.createElement('div');
+            weightLabels.innerHTML = '<span style="color:#FFD700">1×</span>&nbsp;&nbsp;&nbsp;<span style="color:#9B59B6">10×</span>';
+            weightLabels.style.cssText = 'position:absolute;bottom:22%;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;';
+            labelsContainer.appendChild(weightLabels);
+            
+            // Interactivity
+            const interactiveObjects = [yinYangMesh, reconCard.card, klCard.card, reconBar, klBar];
+            
+            container.addEventListener('mousemove', (event) => {
+                const rect = container.getBoundingClientRect();
+                mouse.x = ((event.clientX - rect.left) / width) * 2 - 1;
+                mouse.y = -((event.clientY - rect.top) / height) * 2 + 1;
+                
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObjects(interactiveObjects);
+                
+                if (intersects.length > 0) {
+                    const obj = intersects[0].object;
+                    showTooltip(obj.name, event.clientX - rect.left, event.clientY - rect.top);
+                    container.style.cursor = 'pointer';
+                    
+                    if (obj.material && obj.material.emissiveIntensity !== undefined) {
+                        obj.material.emissiveIntensity = 0.5;
+                    }
+                } else {
+                    hideTooltip();
+                    container.style.cursor = 'grab';
+                    interactiveObjects.forEach(obj => {
+                        if (obj.material && obj.material.emissiveIntensity !== undefined) {
+                            obj.material.emissiveIntensity = 0.1;
+                        }
+                    });
+                }
+            });
+            
+            // Animation
+            let yinYangSpeed = 0.05;
+            
+            function animate() {
+                requestAnimationFrame(animate);
+                controls.update();
+                
+                const time = Date.now() * 0.001;
+                
+                // Rotate yin-yang
+                yinYangGroup.rotation.z = time * yinYangSpeed;
+                
+                // Glow ring pulse
+                glowRing.material.opacity = 0.2 + Math.sin(time * 2) * 0.1;
+                
+                // Float cards
+                reconCard.position.y = reconCard.baseY + Math.sin(time * 0.8) * 0.08;
+                klCard.position.y = klCard.baseY + Math.sin(time * 0.8 + 1) * 0.08;
+                
+                // Pulse beta number
+                const betaNum = document.getElementById('betaNum');
+                if (betaNum) {
+                    const scale = 1 + Math.sin(time * 2) * 0.05;
+                    betaNum.style.transform = `scale(${scale})`;
+                }
+                
+                // Celebration particles
+                celebrationParticles.forEach((p) => {
+                    p.position.y += p.velocity;
+                    p.rotation.x += p.rotSpeed;
+                    p.rotation.z += p.rotSpeed * 0.5;
+                    
+                    if (p.position.y > 6) {
+                        p.position.y = -5;
+                        p.position.x = (Math.random() - 0.5) * 16;
+                    }
+                });
+                
+                // Bars subtle pulse
+                reconBar.material.emissiveIntensity = 0.3 + Math.sin(time) * 0.1;
+                klBar.material.emissiveIntensity = 0.3 + Math.sin(time + 1) * 0.1;
+                
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+            
+            // Store references
+            container.scene = scene;
+            container.camera = camera;
+            container.renderer = renderer;
+            
+            window.resetView = function() {
+                camera.position.set(0, 0, 15);
+                camera.lookAt(0, 0, 0);
+                controls.target.set(0, 0, 0);
+            };
+            
+        }
+
+        function loadSection(sectionNumber) {
+            clearScene();
+            switch (sectionNumber) {
+                case 1: loadSection1(); break;
+                case 2: loadSection2(); break;
+                case 3: loadSection3(); break;
+                case 4: loadSection4(); break;
+                case 5: loadSection5(); break;
+                default: loadSection1();
+            }
+            state.currentSection = sectionNumber;
+            updateNarrative(sectionNumber);
+            updateNavigationUI();
+        }
+
+        function updateNarrative(sectionNumber) {
+            const content = narrativeContent[sectionNumber];
+            if (!content) return;
+            narrativeEl.innerHTML = `
+                <span class="emotion-badge emotion-${content.emotion}">${content.emotionLabel}</span>
+                <h3>${content.title}</h3>
+                ${content.content}
+            `;
+            sectionTitleEl.textContent = `Section ${sectionNumber} of ${CONFIG.sectionCount}`;
+        }
+
+        function updateNavigationUI() {
+            prevBtn.disabled = state.currentSection <= 1;
+            nextBtn.disabled = state.currentSection >= CONFIG.sectionCount;
+            sectionDots.forEach((dot, i) => {
+                dot.classList.toggle('active', i + 1 === state.currentSection);
+            });
+        }
+
+        function nextSection() { if (state.currentSection < CONFIG.sectionCount) loadSection(state.currentSection + 1); }
+        function prevSection() { if (state.currentSection > 1) loadSection(state.currentSection - 1); }
+        function goToSection(n) { if (n >= 1 && n <= CONFIG.sectionCount) loadSection(n); }
+
+        prevBtn.addEventListener('click', prevSection);
+        nextBtn.addEventListener('click', nextSection);
+        resetViewBtn.addEventListener('click', () => { if (window.resetView) window.resetView(); });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') prevSection();
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextSection();
+            if (e.key === 'r' || e.key === 'R') { if (window.resetView) window.resetView(); }
+        });
+
+        sectionDots.forEach((dot, i) => {
+            dot.addEventListener('click', () => goToSection(i + 1));
+        });
+
+        function init() {
+            loadSection(1);
+            loadingEl.style.display = 'none';
+        }
+
+        init();
+    </script>
+</body>
+</html>

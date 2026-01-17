@@ -1447,3 +1447,697 @@ CHAPTER 6 VERIFICATION:
 - [x] Illustration #6 present (chapter-6-cross-attention-bridge.html)
 - [ ] User verified and approved
 -->
+
+# Chapter 7: Training ACT {#chapter-7}
+
+## Interactive Animation: Two Losses, One Goal
+
+Explore how ACT learns from demonstrations using **two complementary losses**: reconstruction loss teaches WHAT to predict, while KL divergence teaches HOW to vary.
+
+<iframe
+    src="animations/chapter-7-training-loop.html"
+    width="100%"
+    height="720px"
+    style="border: none; border-radius: 12px; background: #0a0a1a;"
+    title="ACT Training Loop Animation">
+</iframe>
+
+*Navigate through the sections to see how reconstruction and KL losses work together. The final section reveals the punchline.*
+
+::: {.callout-tip}
+## Rajesh
+*looking at the complete architecture diagram*
+
+We've built the entire ACT architecture—CVAE encoder for style, action chunking for smooth trajectories, token fusion for multi-camera understanding, cross-attention for action generation. But I still don't know how it *learns*. How does training actually work?
+:::
+
+::: {.callout-note}
+## Dr. Nova Brooks
+*draws a circular arrow on the whiteboard*
+
+Great question! You've seen the architecture, now let's see it in motion. Training ACT is like having two teachers who work together:
+
+| Teacher | What They Teach | How They Teach |
+|---------|-----------------|----------------|
+| **Reconstruction Loss** | "Match the demonstration!" | Penalize wrong predictions |
+| **KL Divergence** | "Stay organized!" | Keep latent space well-behaved |
+
+Both losses are essential. Let me show you why each one matters.
+:::
+
+::: {.callout-tip}
+## Rajesh
+Two teachers? That reminds me of Lesson 2 when we learned about the VAE loss—reconstruction plus KL. Is this the same idea?
+:::
+
+::: {.callout-note}
+## Dr. Nova Brooks
+*snaps fingers*
+
+Exactly the same mathematical foundation! ACT uses the VAE loss structure, but applied to robot actions instead of images. Let's start with the first teacher.
+
+**Reconstruction Loss: "Did you predict the right actions?"**
+
+This is conceptually simple. During training, we have:
+
+- **Ground truth**: The actual demonstration actions the human performed
+- **Prediction**: The actions ACT predicts given the observation + sampled Z
+
+The reconstruction loss measures how far off we are:
+
+$$\mathcal{L}_{\text{recon}} = \| a_{\text{pred}} - a_{\text{demo}} \|^2$$
+
+This is just L2 loss—sum of squared differences between predicted and demonstrated actions.
+:::
+
+::: {.callout-tip}
+## Rajesh
+That makes sense. If the prediction matches the demonstration exactly, the loss is zero. If they're different, we get a positive penalty that pushes the network to do better.
+:::
+
+::: {.callout-note}
+## Dr. Nova Brooks
+*nods*
+
+Let me make this concrete with your SO-ARM101. Each action has 12 values: 6 joint angles per arm × 2 arms. And we're predicting a chunk of 100 timesteps.
+
+```
+RECONSTRUCTION LOSS FOR SO-ARM101:
+
+Predicted chunk:  [100 timesteps] × [12 joint angles] = 1,200 numbers
+Demo chunk:       [100 timesteps] × [12 joint angles] = 1,200 numbers
+
+L_recon = Σ (pred_i - demo_i)²  for i = 1 to 1,200
+
+Each of those 1,200 squared differences contributes to the loss!
+```
+:::
+
+::: {.callout-tip}
+## Rajesh
+So the network learns to predict ALL 1,200 joint angles correctly—not just the first timestep, but the entire smooth trajectory.
+:::
+
+::: {.callout-note}
+## Dr. Nova Brooks
+Exactly! And here's the key insight: because we predict the whole chunk together, the model learns *coordinated* motion. Joint 1 at timestep 50 knows about Joint 6 at timestep 51. The reconstruction loss trains them as a unit.
+
+*pauses*
+
+But reconstruction loss alone isn't enough. Here's where things get tricky—and where the second teacher becomes essential.
+:::
+
+::: {.callout-tip}
+## Rajesh
+*tilts head*
+
+Why wouldn't reconstruction be enough? If we can perfectly match demonstrations, isn't that all we need?
+:::
+
+::: {.callout-note}
+## Dr. Nova Brooks
+*draws two boxes: "Training" and "Inference"*
+
+Here's the problem: **training and inference are fundamentally different**.
+
+| Phase | What We Have | Where Z Comes From |
+|-------|--------------|-------------------|
+| **Training** | Observation + Demo actions | Encoder: `Z = encode(joints, actions)` |
+| **Inference** | Observation only (no demo!) | Prior: `Z ~ N(0, 1)` |
+
+During training, the encoder sees the demonstration and extracts its style into Z. But at inference time, we don't HAVE a demonstration—that's the whole point! We need to predict actions we've never seen.
+:::
+
+::: {.callout-tip}
+## Rajesh
+*eyes widening*
+
+Oh no. If the encoder learns to put Z anywhere in latent space during training, but we sample from N(0,1) during inference...
+:::
+
+::: {.callout-note}
+## Dr. Nova Brooks
+*nods gravely*
+
+...we might sample from regions the decoder has never seen! The encoder could learn to encode "fast style" at Z=47 and "slow style" at Z=-23. But during inference, we sample near 0. The decoder would receive Z values it never encountered during training.
+
+![[7] The Training-Inference Gap: During training, the encoder produces Z from demonstrations. During inference, we must sample Z from N(0,1). Without KL, these distributions might not overlap!](images/chapter-7-training-inference-gap.jpg)
+
+This is called the **inference gap**—and it's why reconstruction loss alone fails.
+:::
+
+::: {.callout-tip}
+## Rajesh
+So we need some way to ensure the encoder's Z distribution overlaps with the prior N(0,1) that we'll sample from during inference!
+:::
+
+::: {.callout-note}
+## Dr. Nova Brooks
+*beaming*
+
+You've discovered the purpose of the second teacher! Enter **KL Divergence**:
+
+$$\mathcal{L}_{\text{KL}} = D_{\text{KL}}\big(Q(z|x) \,\|\, \mathcal{N}(0,1)\big)$$
+
+This loss measures how different the encoder's output distribution is from the standard normal. It penalizes the encoder for straying too far from N(0,1).
+
+Let me expand this mathematically:
+:::
+
+::: {.callout-important}
+## KL Divergence: The "Stay Normal" Penalty
+
+For a Gaussian encoder that outputs mean μ and variance σ²:
+
+$$\mathcal{L}_{\text{KL}} = \frac{1}{2} \sum_{j=1}^{d} \left( \mu_j^2 + \sigma_j^2 - \log(\sigma_j^2) - 1 \right)$$
+
+Where:
+
+- **μ² term**: Penalizes the mean for drifting away from 0
+- **σ² term**: Penalizes variance for being too large
+- **-log(σ²) term**: Penalizes variance for being too small
+- **-1 term**: Makes the loss zero when μ=0 and σ²=1 (perfect match!)
+
+The encoder is gently pushed to keep Z near the origin with unit variance.
+:::
+
+::: {.callout-tip}
+## Rajesh
+*working through it*
+
+So if the encoder tries to push Z to μ=47, the μ² term explodes. And if it tries to make σ² tiny (to be very precise), the -log(σ²) term explodes. It has to stay near N(0,1)!
+:::
+
+::: {.callout-note}
+## Dr. Nova Brooks
+Exactly! Think of it like this: the KL loss creates a "meeting point" where training and inference overlap.
+
+| Without KL | With KL |
+|------------|---------|
+| Encoder puts Z anywhere | Encoder stays near N(0,1) |
+| Inference samples miss trained regions | Inference samples hit trained regions |
+| Decoder sees unfamiliar Z → garbage output | Decoder sees familiar Z → valid actions |
+
+The KL loss ensures that when we sample Z ~ N(0,1) during inference, we're sampling from a region the decoder actually learned during training.
+:::
+
+::: {.callout-tip}
+## Rajesh
+*connecting to Lesson 2*
+
+This is why you called VAEs "regularized autoencoders"! The KL term isn't just a mathematical trick—it's what makes the latent space usable at inference time.
+:::
+
+::: {.callout-note}
+## Dr. Nova Brooks
+*nods enthusiastically*
+
+Now let's put both teachers together. The total loss is:
+
+$$\mathcal{L}_{\text{total}} = \mathcal{L}_{\text{recon}} + \beta \cdot \mathcal{L}_{\text{KL}}$$
+
+Where β is a weighting factor. In the ACT paper, **β = 10**, which means KL is weighted 10× higher than reconstruction!
+:::
+
+::: {.callout-tip}
+## Rajesh
+*surprised*
+
+Wait, KL is weighted MORE than reconstruction? I would have thought matching the demonstration would be the priority!
+:::
+
+::: {.callout-note}
+## Dr. Nova Brooks
+*smiles knowingly*
+
+Counter-intuitive, right? But remember—without KL, the reconstruction might be perfect during training but completely useless during inference. β=10 ensures the latent space stays well-organized.
+
+The ACT paper found this through experimentation:
+
+| β Value | Training Accuracy | Inference Performance |
+|---------|------------------|----------------------|
+| β = 0 | Excellent | Poor (inference gap!) |
+| β = 1 | Good | Moderate |
+| **β = 10** | Good | **Best** |
+| β = 100 | Poor | Poor (too constrained) |
+
+β=10 hits the sweet spot—enough regularization to close the inference gap, but not so much that the model can't learn diverse styles.
+:::
+
+::: {.callout-tip}
+## Rajesh
+So the two losses have different roles:
+
+- **Reconstruction**: "Learn to predict the right actions"
+- **KL**: "Keep the latent space organized so inference works"
+
+They're not competing—they're complementary!
+:::
+
+::: {.callout-note}
+## Dr. Nova Brooks
+*writes on the whiteboard*
+
+Beautifully put. Let me give you the punchline that captures everything we've learned:
+:::
+
+::: {.callout-important}
+## The Training Punchline
+
+**Reconstruction teaches WHAT.**
+
+Match the demonstrated actions. Get the joint angles right. Produce valid trajectories.
+
+**KL teaches HOW to vary.**
+
+Keep the style space organized. Ensure different demonstrations map to nearby regions. Make inference work.
+
+*Two losses, one goal: learn from demonstrations in a way that generalizes.*
+:::
+
+::: {.callout-tip}
+## Rajesh
+*sitting back*
+
+This is the ELBO from Lesson 2! Evidence Lower Bound—maximize the probability of the data while keeping the latent distribution close to the prior.
+:::
+
+::: {.callout-note}
+## Dr. Nova Brooks
+*grins*
+
+You've come full circle. Everything from Lesson 2 applies here—just with robot actions instead of images.
+
+Let me show you the complete training loop:
+
+```
+ACT TRAINING LOOP:
+
+for each batch of demonstrations:
+    1. Extract observation (images, joints) and actions
+    2. ENCODE: Z = encoder(joints, actions) → μ, σ
+    3. SAMPLE: z = μ + σ × ε  (reparameterization trick)
+    4. DECODE: a_pred = decoder(observation, z)
+    5. COMPUTE LOSSES:
+       - L_recon = ||a_pred - a_demo||²
+       - L_KL = 0.5 × Σ(μ² + σ² - log(σ²) - 1)
+       - L_total = L_recon + 10 × L_KL
+    6. BACKPROPAGATE and update weights
+```
+
+Each batch teaches both lessons: "predict correctly" AND "stay organized."
+:::
+
+::: {.callout-tip}
+## Rajesh
+*eager*
+
+I understand the theory now. But where's the actual code? How do I train this on my SO-ARM101?
+:::
+
+::: {.callout-note}
+## Dr. Nova Brooks
+*pulls up a new window*
+
+That's exactly where we're headed! The ACT paper released their code, but there's an even better resource: **LeRobot** from Hugging Face.
+
+LeRobot is a production-ready implementation of ACT (and other imitation learning algorithms) with:
+
+- Clean, well-documented code
+- Easy configuration for different robot setups
+- Pre-trained models you can fine-tune
+- Active community and support
+
+In Chapter 8, we'll dive into LeRobot's implementation and see how everything we've learned translates to actual Python code.
+:::
+
+::: {.callout-tip}
+## Rajesh
+So we've completed the conceptual journey—from architecture to training. Now it's time to see it in action!
+:::
+
+::: {.callout-note}
+## Dr. Nova Brooks
+*closes the whiteboard*
+
+Exactly. You now understand:
+
+1. **WHY** ACT works (CVAE + transformers + chunking)
+2. **WHAT** the architecture looks like (encoder, decoder, cross-attention)
+3. **HOW** training works (reconstruction + KL with β=10)
+
+The only thing left is **WHERE**—and that's LeRobot. Ready to get your hands dirty with real code?
+:::
+
+::: {.callout-tip}
+## Rajesh
+*grinning*
+
+Let's do it!
+:::
+
+<!--
+CHAPTER 7 VERIFICATION:
+- [x] Topics: ACT Training Loop, Reconstruction Loss, KL Divergence (3)
+- [x] L2 loss formula with SO-ARM101 example (1200 squared errors)
+- [x] KL divergence formula fully expanded
+- [x] Training vs inference gap clearly explained
+- [x] β=10 weighting explained with ablation table
+- [x] Punchline: "Reconstruction teaches WHAT. KL teaches HOW to vary."
+- [x] Reader state: Abstract → Concrete
+- [x] Animation: chapter-7-training-loop.html present
+- [x] Transition to Chapter 8 (LeRobot) established
+- [ ] User verified and approved
+-->
+
+# Chapter 8: From Theory to Implementation {#chapter-8}
+
+## Interactive Animation: The Complete ACT Pipeline
+
+Watch the **complete journey** from human demonstration to robot execution. This is everything we've learned—CVAE, Token Fusion, Cross-Attention, Action Chunking—working together as one elegant system.
+
+<iframe
+    src="animations/chapter-8-complete-architecture.html"
+    width="100%"
+    height="720px"
+    style="border: none; border-radius: 12px; background: #0a0a1a;"
+    title="Complete ACT Architecture Animation">
+</iframe>
+
+*Navigate through 6 sections to see the full pipeline: Demo → Z → Fusion → Chunk → Action. The final section holds for contemplation.*
+
+::: {.callout-tip}
+## Rajesh
+*looking at the complete animation*
+
+This is... everything. I can see the whole journey now—human demonstration flowing through CVAE, the style captured in Z, all those 1202 tokens fusing together, the cross-attention queries extracting knowledge, and finally the robot executing smooth, chunked actions.
+:::
+
+::: {.callout-note}
+## Dr. Nova Brooks
+*smiles with satisfaction*
+
+You've built up the complete picture, piece by piece. Let me make sure it's all connected in your mind. Walk me through the pipeline—what happens when you demonstrate a task on your SO-ARM101?
+:::
+
+::: {.callout-tip}
+## Rajesh
+*takes a deep breath*
+
+Okay. Here goes:
+
+**Step 1: Human Demonstration**
+I move the two Leader arms to show the task—let's say folding a shirt. Both arms work together: left holds the fabric, right folds it over. The cameras record everything: FrontTop sees the workspace, Left and Right wrist cameras see the grippers, and joint encoders track all 24 joint angles across all 4 arms.
+
+**Step 2: CVAE Captures Style**
+During training, the CVAE encoder watches my demonstration—specifically the joint angles and actions—and compresses my *style* into a 32-dimensional Z. Maybe I fold slowly and carefully. Someone else folds quickly. The encoder learns to distinguish these styles.
+
+**Step 3: Token Fusion (1202 Tokens)**
+The 4 cameras produce 300 tokens each = 1200 visual tokens. Add 1 token for joint positions, 1 token for Z. That's 1202 tokens going through self-attention, fusing into a unified scene understanding.
+
+**Step 4: Cross-Attention Decoding**
+The decoder's learnable queries—one per output action—reach across to the 1202 fused tokens. "What should joint 3 do at timestep 50?" Each query extracts relevant information and produces an action.
+
+**Step 5: Action Chunk Execution**
+Instead of predicting one action at a time, we get K=100 actions as a smooth chunk. The Follower arms execute the chunk, then get a fresh prediction. No jitter, no drift.
+
+And that's... that's ACT!
+:::
+
+::: {.callout-note}
+## Dr. Nova Brooks
+*applauds*
+
+Beautifully stated! You just described a state-of-the-art imitation learning architecture. And here's the magical thing—you didn't just memorize it. You *understand* why each piece exists:
+
+| Component | Why It Exists |
+|-----------|---------------|
+| **CVAE** | Avoids averaging multiple valid styles |
+| **Token Fusion** | Multiple cameras see different parts of the scene |
+| **Cross-Attention** | Queries extract relevant info from fused context |
+| **Action Chunking** | Prevents compounding errors, ensures smooth motion |
+
+Remove any one piece and performance drops dramatically. Together, they achieve 84-96% success on tasks where other methods score 0-12%.
+:::
+
+::: {.callout-important}
+## The Complete Pipeline Punchline
+
+**Demo → Z → Fusion → Chunk → Action**
+
+That's the entire ACT architecture in five words:
+
+1. **Demo**: Human shows the task with Leader arms
+2. **Z**: CVAE compresses style into latent variable
+3. **Fusion**: 1202 tokens merge multi-camera perception
+4. **Chunk**: Decoder predicts K actions at once
+5. **Action**: Follower arms execute smooth trajectory
+
+*From human intent to robot execution—one elegant pipeline.*
+:::
+
+::: {.callout-tip}
+## Rajesh
+*excited*
+
+I understand the theory completely now. But you mentioned LeRobot earlier—the Hugging Face implementation. How do I actually *run* this on my SO-ARM101?
+:::
+
+::: {.callout-note}
+## Dr. Nova Brooks
+*opens a code editor*
+
+This is where theory becomes practice! LeRobot is an open-source library from Hugging Face that implements ACT (and other policies) with clean, production-ready code.
+
+Here's the beautiful thing: everything we discussed maps directly to LeRobot's codebase.
+
+```python
+# LeRobot ACT Policy Structure
+
+from lerobot.common.policies.act.modeling_act import ACTPolicy
+
+# The key configuration parameters
+config = ACTConfig(
+    # CVAE Settings
+    latent_dim=32,           # Our Z is 32-dimensional
+
+    # Token Fusion Settings
+    num_cameras=4,           # FrontTop, Right, LeftWrist, RightWrist
+    image_encoder="resnet18", # Produces 300 tokens per camera
+
+    # Action Chunking
+    chunk_size=100,          # K=100 actions per chunk
+
+    # Transformer Settings
+    hidden_dim=512,          # d_model for attention
+    num_encoder_layers=4,    # Encoder inside decoder
+    num_decoder_layers=7,    # Cross-attention layers
+
+    # Training
+    kl_weight=10.0,          # β=10 for KL loss
+)
+```
+:::
+
+::: {.callout-tip}
+## Rajesh
+*leaning forward*
+
+I can see our 32-dimensional Z, the 4 cameras, K=100 chunking, and even β=10 for KL weight! It's all there!
+:::
+
+::: {.callout-note}
+## Dr. Nova Brooks
+*nods enthusiastically*
+
+And here's how the training loop we discussed in Chapter 7 looks in actual code:
+
+```python
+# Simplified LeRobot Training Loop
+
+for batch in dataloader:
+    # batch contains: observations (images, joints) + demonstrated actions
+
+    # 1. Forward pass through ACT policy
+    loss_dict = policy.forward(batch)
+
+    # 2. The loss_dict contains both losses we learned about:
+    #    - loss_dict["reconstruction_loss"]  # L2 on predicted actions
+    #    - loss_dict["kl_loss"]              # KL divergence penalty
+    #    - loss_dict["total_loss"]           # Combined with β=10
+
+    # 3. Backpropagate and update
+    optimizer.zero_grad()
+    loss_dict["total_loss"].backward()
+    optimizer.step()
+```
+
+The entire architecture we spent 7 chapters understanding... is about 2000 lines of well-documented Python.
+:::
+
+::: {.callout-tip}
+## Rajesh
+*mind slightly blown*
+
+Only 2000 lines for something this powerful?
+:::
+
+::: {.callout-note}
+## Dr. Nova Brooks
+*grins*
+
+That's the beauty of building on top of PyTorch and transformers. The heavy lifting—attention mechanisms, backpropagation, GPU acceleration—is already done. You just need to wire the pieces together the right way.
+
+Let me show you the key files in LeRobot's ACT implementation:
+
+```
+lerobot/common/policies/act/
+├── configuration_act.py   # Config class (what we saw above)
+├── modeling_act.py        # The actual ACT policy
+│   ├── ACTEncoder         # CVAE encoder (Chapter 3)
+│   ├── ACTDecoder         # Cross-attention decoder (Chapter 6)
+│   └── ACTPolicy          # Complete policy wrapper
+└── utils.py               # Helper functions
+```
+
+Each file maps to concepts we covered:
+
+| LeRobot Component | What We Learned |
+|-------------------|-----------------|
+| `ACTEncoder` | CVAE with transformer, produces μ and σ for Z |
+| `ACTDecoder.encode_inputs()` | Token fusion of 1202 inputs |
+| `ACTDecoder.decode()` | Cross-attention with learnable queries |
+| `chunk_size` parameter | Action chunking, K=100 |
+| `kl_weight` parameter | β=10 for training stability |
+:::
+
+::: {.callout-tip}
+## Rajesh
+*connecting everything*
+
+So if I want to train ACT on my SO-ARM101 for clothes folding, I would:
+
+1. Record demonstrations with the Leader arms
+2. Configure LeRobot with my camera setup (4 cameras, 24 joints)
+3. Run training with the two-loss system
+4. Deploy the trained policy to the Follower arms
+
+Is that... is that really it?
+:::
+
+::: {.callout-note}
+## Dr. Nova Brooks
+*leans back with a satisfied smile*
+
+That's really it. Here's a concrete example of what your training command might look like:
+
+```bash
+# Train ACT on your SO-ARM101 demonstrations
+python lerobot/scripts/train.py \
+    policy=act \
+    env=so_arm101_bimanual \
+    dataset=your_folding_demos \
+    training.num_epochs=2000 \
+    policy.chunk_size=100 \
+    policy.kl_weight=10.0
+```
+
+LeRobot handles:
+
+- Loading your demonstration dataset
+- Setting up the CVAE encoder and decoder
+- Computing both loss terms with β=10 weighting
+- Checkpointing and logging progress
+- Evaluating on validation episodes
+
+After training, you get a policy checkpoint that you can deploy to your Follower arms.
+:::
+
+::: {.callout-tip}
+## Rajesh
+*sitting back, a huge grin spreading*
+
+I... I can actually build this. Everything we learned—VAEs from Lesson 2, transformers from Lesson 3, the complete ACT architecture from this lesson—it all comes together in a library I can install with `pip install lerobot`.
+
+This isn't just theory anymore. I can fold clothes with my SO-ARM101.
+:::
+
+::: {.callout-note}
+## Dr. Nova Brooks
+*warmly*
+
+And THAT, Rajesh, is the whole point. Robotics used to be the domain of labs with million-dollar budgets. Now? A $500 arm kit, an RTX laptop, and the knowledge you've built over these lessons.
+
+You understand:
+
+- **Why** robot learning is hard (multimodal problem, compounding errors)
+- **How** VAEs capture style without averaging (Z as style selector)
+- **How** transformers fuse multi-modal perception (1202 tokens)
+- **How** cross-attention bridges perception to action (Q asks, K answers, V delivers)
+- **How** action chunking ensures smooth execution (K=100)
+- **How** the two losses train everything together (reconstruction + KL)
+
+You're not just running code. You're *understanding* what the code does and why it works.
+:::
+
+::: {.callout-important}
+## The Final Eureka
+
+You started this lesson asking: "How do VAEs and Transformers combine to make robots move smoothly?"
+
+Now you can answer:
+
+**VAEs** capture the *style* of human demonstrations, committing to one valid approach instead of averaging.
+
+**Transformers** *fuse* multiple camera views into unified understanding, then *query* that understanding to produce actions.
+
+**Action Chunking** ensures *smooth* execution by predicting trajectories, not single steps.
+
+Together: **ACT - Action Chunking with Transformers.**
+
+*Demo → Z → Fusion → Chunk → Action.*
+
+Now go build something amazing with your SO-ARM101.
+:::
+
+::: {.callout-tip}
+## Rajesh
+*standing up with determination*
+
+Thank you, Dr. Nova. I'm going to start recording folding demonstrations this weekend. Two Leader arms, four cameras, 24 joints... and one policy that actually understands what I'm showing it.
+:::
+
+::: {.callout-note}
+## Dr. Nova Brooks
+*grinning*
+
+I can't wait to see your results. And remember—the LeRobot community is active and helpful. When you run into issues (and you will!), the Discord and GitHub are great resources.
+
+One last thing: the ACT paper authors released pre-trained weights. You can fine-tune on your specific task instead of training from scratch. That's the power of open-source robotics.
+
+Now go make your robot fold clothes!
+:::
+
+::: {.callout-tip}
+## Rajesh
+*heading for the door, then turning back*
+
+You know what's funny? At the start of this lesson, I thought $20,000 for ALOHA was expensive. Now I realize... I have something even more valuable. Understanding.
+
+I'll see you in the next lesson!
+:::
+
+<!--
+CHAPTER 8 VERIFICATION:
+- [x] Topics covered: Complete ACT Architecture, LeRobot ACT Implementation (2 topics)
+- [x] Complete pipeline walkthrough: Demo → Z → Fusion → Chunk → Action
+- [x] LeRobot code references included (ACTConfig, training loop, file structure)
+- [x] SO-ARM101 connection maintained throughout
+- [x] Empowerment moment: "I can actually build this"
+- [x] Punchline delivered: "Demo → Z → Fusion → Chunk → Action"
+- [x] Reader state: Empowered → Ready to build
+- [x] Animation: chapter-8-complete-architecture.html present
+- [x] Callback to Lessons 2 and 3 (VAE, transformers)
+- [x] Final eureka: understanding > expensive equipment
+- [ ] User verified and approved
+-->

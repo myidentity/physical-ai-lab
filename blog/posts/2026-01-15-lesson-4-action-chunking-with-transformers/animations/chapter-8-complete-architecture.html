@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter 8: Complete ACT Architecture - Canvas Navigator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #0a0a1a;
+            --bg-scene: #1a1a2e;
+            --cyan: #00D4AA;
+            --coral: #e94560;
+            --gold: #ffd700;
+            --purple: #6C5CE7;
+            --blue: #00BFFF;
+            --green: #2ECC71;
+            --text-light: #e4e4e7;
+            --text-muted: #9ca3af;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg-deep);
+            font-family: 'Sora', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+            color: var(--text-light);
+        }
+        .guided-widget {
+            width: 1200px;
+            height: 700px;
+            max-width: 1200px;
+            max-height: 100vh;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            background: var(--bg-deep);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+        .canvas-area {
+            width: 45%;
+            flex: 0 0 45%;
+            position: relative;
+            min-width: 0;
+            background: var(--bg-deep);
+        }
+        .content-panel {
+            width: 55%;
+            flex: 0 0 55%;
+            background: rgba(20, 20, 40, 0.95);
+            border-left: 1px solid rgba(108, 92, 231, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .canvas-controls {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            display: flex;
+            gap: 8px;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .canvas-area:hover .canvas-controls { opacity: 1; }
+        .canvas-controls button {
+            background: rgba(108, 92, 231, 0.2);
+            border: 1px solid rgba(108, 92, 231, 0.4);
+            color: var(--text-light);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            transition: all 0.2s;
+        }
+        .canvas-controls button:hover { background: rgba(108, 92, 231, 0.4); }
+        .narrative-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(108, 92, 231, 0.2);
+        }
+        .narrative-header h2 {
+            font-size: 18px;
+            color: var(--purple);
+            margin-bottom: 8px;
+        }
+        .section-title {
+            font-size: 14px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .narrative-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .narrative-content h3 {
+            font-size: 16px;
+            color: var(--gold);
+            margin-bottom: 12px;
+        }
+        .narrative-content p {
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-light);
+            margin-bottom: 12px;
+        }
+        .narrative-content em { color: var(--cyan); font-style: italic; }
+        .narrative-content .key-point {
+            background: rgba(108, 92, 231, 0.15);
+            border-left: 3px solid var(--purple);
+            padding: 12px 16px;
+            margin: 12px 0;
+            border-radius: 0 8px 8px 0;
+            font-size: 13px;
+        }
+        .narrative-content .key-point strong { color: var(--cyan); }
+        .narrative-content .punchline {
+            background: linear-gradient(135deg, rgba(108, 92, 231, 0.2), rgba(46, 204, 113, 0.2));
+            border: 2px solid var(--green);
+            padding: 16px;
+            margin: 16px 0;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 14px;
+        }
+        .narrative-content .hint {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-style: italic;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 4px;
+        }
+        .section-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px;
+            border-top: 1px solid rgba(108, 92, 231, 0.2);
+        }
+        .section-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .section-dot:hover { background: rgba(255, 255, 255, 0.4); }
+        .section-dot.active {
+            background: var(--purple);
+            border-color: var(--purple);
+            box-shadow: 0 0 10px var(--purple);
+        }
+        .nav-controls {
+            display: flex;
+            gap: 12px;
+            padding: 12px 20px;
+            border-top: 1px solid rgba(108, 92, 231, 0.2);
+        }
+        .nav-btn {
+            flex: 1;
+            background: rgba(108, 92, 231, 0.2);
+            border: 1px solid rgba(108, 92, 231, 0.4);
+            color: var(--text-light);
+            padding: 10px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .nav-btn:hover:not(:disabled) {
+            background: rgba(108, 92, 231, 0.4);
+            border-color: rgba(108, 92, 231, 0.6);
+        }
+        .nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .loading {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-deep);
+            z-index: 1000;
+        }
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(108, 92, 231, 0.3);
+            border-top-color: var(--purple);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .emotion-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            margin-bottom: 12px;
+        }
+        .emotion-observation { background: rgba(0, 212, 170, 0.2); color: var(--cyan); }
+        .emotion-compression { background: rgba(255, 215, 0, 0.2); color: var(--gold); }
+        .emotion-unity { background: rgba(108, 92, 231, 0.2); color: var(--purple); }
+        .emotion-understanding { background: rgba(0, 191, 255, 0.2); color: var(--blue); }
+        .emotion-achievement { background: rgba(46, 204, 113, 0.2); color: var(--green); }
+        .emotion-empowerment { background: rgba(233, 69, 96, 0.2); color: var(--coral); }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading">
+        <div class="loading-spinner"></div>
+        <div>Loading Complete ACT Architecture...</div>
+    </div>
+
+    <div class="guided-widget main-container">
+        <div id="canvas-container" class="canvas-area">
+            <div class="canvas-controls">
+                <button id="reset-view-btn">Reset View</button>
+                <button id="reset-animation-btn">Reset Animation</button>
+            </div>
+        </div>
+
+        <div class="narrative-panel content-panel">
+            <div class="narrative-header">
+                <h2>Chapter 8: Complete ACT Architecture</h2>
+                <div class="section-title" id="section-title">Section 1 of 6</div>
+            </div>
+            <div class="narrative-content" id="narrative-content"></div>
+            <div class="section-indicator">
+                <div class="section-dot active" data-section="1" title="Human Demo"></div>
+                <div class="section-dot" data-section="2" title="CVAE → Z"></div>
+                <div class="section-dot" data-section="3" title="Token Fusion"></div>
+                <div class="section-dot" data-section="4" title="Cross-Attention"></div>
+                <div class="section-dot" data-section="5" title="Execution"></div>
+                <div class="section-dot" data-section="6" title="Complete Pipeline"></div>
+            </div>
+            <div class="nav-controls">
+                <button class="nav-btn" id="prev-btn" disabled>← Previous</button>
+                <button class="nav-btn" id="next-btn">Next →</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TrackballControls.js"></script>
+
+    <script>
+        const CONFIG = { title: 'Complete ACT Architecture', sectionCount: 6 };
+
+        const narrativeContent = {
+            1: {
+                title: "Learning from the Expert",
+                subtitle: "Human Demonstration",
+                emotion: "observation",
+                emotionLabel: "👀 Observation & Trust",
+                content: `<p><em>"A human operator moves the two Leader arms in perfect coordination. Every subtle adjustment, every careful grip — this is the knowledge we want to transfer to the robot."</em></p>
+                    <div class="key-point"><strong>Key Insight:</strong> Human demonstration captures INTENT, not just positions</div>
+                    <p><strong>The SO-ARM101 Setup:</strong></p>
+                    <ul style="margin-left: 20px; font-size: 13px; line-height: 1.8;">
+                        <li><span style="color:#ffd700">Gold Leader Arms</span> — Human moves these</li>
+                        <li><span style="color:#00D4AA">Cyan Follower Arms</span> — Robot will replicate</li>
+                        <li>4 Cameras recording: FrontTop, Right, LeftWrist, RightWrist</li>
+                    </ul>
+                    <p>The trajectory traces behind like a dancer's ribbon — this is what the robot will learn.</p>
+                    <p class="hint">💡 Drag to rotate the view. Hover over elements to see labels.</p>`
+            },
+            2: {
+                title: "Capturing Style in Z",
+                subtitle: "CVAE Compression",
+                emotion: "compression",
+                emotionLabel: "✨ Compression & Essence",
+                content: `<p><em>"The CVAE encoder watches the entire demonstration and asks: 'What makes THIS way of doing the task unique?'"</em></p>
+                    <div class="key-point"><strong>Key Insight:</strong> Z = The 'personality' of how to perform the task</div>
+                    <p>All that trajectory data compresses into a single style variable <strong style="color:#ffd700">Z</strong> — a 32-dimensional summary of human intent.</p>
+                    <p><strong>What flows into the encoder:</strong></p>
+                    <ul style="margin-left: 20px; font-size: 13px; line-height: 1.8;">
+                        <li><span style="color:#ffd700">Trajectory particles</span> — The full demo path</li>
+                        <li><span style="color:#00D4AA">Joint cubes (24)</span> — All arm positions over time</li>
+                    </ul>
+                    <p>The <span style="color:#e94560">magenta compression layers</span> squeeze this data down, and out comes the <span style="color:#ffd700">golden Z orb</span> — ready to guide the decoder.</p>`
+            },
+            3: {
+                title: "Four Eyes Become One",
+                subtitle: "Token Fusion",
+                emotion: "unity",
+                emotionLabel: "🔮 Unity & Clarity",
+                content: `<p><em>"Each camera contributes 300 tokens of visual understanding. The robot's joint positions add 1 token. The style variable Z adds 1 more."</em></p>
+                    <div class="key-point"><strong>Key Insight:</strong> 1202 = (4 × 300) + 1 + 1 — All perception unified</div>
+                    <p><strong>Token sources spiraling inward:</strong></p>
+                    <ul style="margin-left: 20px; font-size: 13px; line-height: 1.8;">
+                        <li><span style="color:#4ECDC4">FrontTop</span> — 300 tokens</li>
+                        <li><span style="color:#FF6B6B">Right</span> — 300 tokens</li>
+                        <li><span style="color:#C44569">LeftWrist</span> — 300 tokens</li>
+                        <li><span style="color:#F8B500">RightWrist</span> — 300 tokens</li>
+                        <li><span style="color:#ffd700">Z token</span> — 1 (style)</li>
+                        <li><span style="color:#00D4AA">Joint token</span> — 1 (proprioception)</li>
+                    </ul>
+                    <p>Together: <strong>1202 tokens</strong> spiral into the <span style="color:#6C5CE7">fusion sphere</span> — a complete representation of 'what I see' and 'how I should move'.</p>`
+            },
+            4: {
+                title: "Questions Become Actions",
+                subtitle: "Decoder & Cross-Attention",
+                emotion: "understanding",
+                emotionLabel: "🎯 Understanding",
+                content: `<p><em>"Six query orbs emerge from the decoder — each one asking 'What should joint N do?'"</em></p>
+                    <div class="key-point"><strong>Key Insight:</strong> Cross-attention = Smart information retrieval, not copying</div>
+                    <p>The <span style="color:#6C5CE7">Transformer Decoder</span> produces queries. Cross-attention beams connect each query to the fusion sphere, extracting relevant information.</p>
+                    <p><strong>The answer:</strong> An <span style="color:#ffd700">Action Chunk</span> of <strong>K=100</strong> coordinated movements.</p>
+                    <p>Watch the golden particles flow along the attention beams — this is information being retrieved, not copied. Each query gets exactly what it needs.</p>
+                    <p>The tick marks show the 100 timesteps predicted in one forward pass.</p>`
+            },
+            5: {
+                title: "Demo → Execution!",
+                subtitle: "Robot Executes",
+                emotion: "achievement",
+                emotionLabel: "🚀 Achievement",
+                content: `<p><em>"The Follower robot arms now move — tracing the exact trajectory the human demonstrated, but smoothed by the Action Chunk."</em></p>
+                    <div class="key-point"><strong>Key Insight:</strong> Smooth execution from chunked prediction — no feedback jitter</div>
+                    <p><strong>What you see:</strong></p>
+                    <ul style="margin-left: 20px; font-size: 13px; line-height: 1.8;">
+                        <li><span style="color:#00D4AA">Active Follower Arms</span> — Now brightly lit and moving</li>
+                        <li><span style="color:#ffd700">Executed Trajectory</span> — Solid gold trail behind</li>
+                        <li>Fading Human — The robot takes over</li>
+                        <li>Progress Bar — K=0 → K=100</li>
+                    </ul>
+                    <p>No jitter, no hesitation. The human silhouette fades completely as the robot completes the task independently.</p>
+                    <p>✓ Success indicator appears when the action chunk completes!</p>`
+            },
+            6: {
+                title: "The Complete ACT Pipeline",
+                subtitle: "PUNCHLINE",
+                emotion: "empowerment",
+                emotionLabel: "💡 Empowerment",
+                content: `<p>You've seen the complete journey:</p>
+                    <div class="punchline"><strong style="font-size: 16px;">Demo → Z → Fusion → Chunk → Action</strong></div>
+                    <p><strong>The Five Stages:</strong></p>
+                    <ol style="margin-left: 20px; font-size: 13px; line-height: 2;">
+                        <li><span style="color:#00D4AA">Demo</span> — Human demonstrates the task</li>
+                        <li><span style="color:#ffd700">Z</span> — CVAE captures style in 32 dimensions</li>
+                        <li><span style="color:#6C5CE7">Fusion</span> — 1202 tokens unify perception</li>
+                        <li><span style="color:#00D4AA">Chunk</span> — Decoder outputs K=100 actions</li>
+                        <li><span style="color:#00D4AA">Action</span> — Robot executes smoothly</li>
+                    </ol>
+                    <div class="key-point" style="background: rgba(46, 204, 113, 0.2); border-left-color: #2ECC71;"><strong>This is ACT: Action Chunking with Transformers.</strong><br>Now you can build it yourself with LeRobot!</div>
+                    <p style="text-align:center;color:#e94560;font-weight:bold;font-size:15px;margin-top:16px;">🎉 Now build it yourself! 🎉</p>`
+            }
+        };
+
+        const state = {
+            currentSection: 1,
+            animationId: null
+        };
+
+        const container = document.getElementById('canvas-container');
+        const loadingEl = document.getElementById('loading');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const resetViewBtn = document.getElementById('reset-view-btn');
+        const resetAnimBtn = document.getElementById('reset-animation-btn');
+        const sectionDots = document.querySelectorAll('.section-dot');
+        const narrativeEl = document.getElementById('narrative-content');
+        const sectionTitleEl = document.getElementById('section-title');
+
+        // Update narrative panel
+        function updateNarrative(sectionNum) {
+            const content = narrativeContent[sectionNum];
+            narrativeEl.innerHTML = `
+                <div class="emotion-badge emotion-${content.emotion}">${content.emotionLabel}</div>
+                <h3>${content.title}</h3>
+                <p class="subtitle" style="color: var(--text-muted); font-size: 12px; margin-bottom: 16px;">${content.subtitle}</p>
+                ${content.content}
+            `;
+            sectionTitleEl.textContent = `Section ${sectionNum} of ${CONFIG.sectionCount}`;
+
+            // Update dots
+            sectionDots.forEach((dot, i) => {
+                dot.classList.toggle('active', i + 1 === sectionNum);
+            });
+
+            // Update buttons
+            prevBtn.disabled = sectionNum === 1;
+            nextBtn.disabled = sectionNum === CONFIG.sectionCount;
+        }
+
+        // Navigation handlers
+        prevBtn.addEventListener('click', () => {
+            if (state.currentSection > 1) {
+                switchSection(state.currentSection - 1);
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (state.currentSection < CONFIG.sectionCount) {
+                switchSection(state.currentSection + 1);
+            }
+        });
+
+        sectionDots.forEach((dot, i) => {
+            dot.addEventListener('click', () => switchSection(i + 1));
+        });
+
+        function switchSection(sectionNum) {
+            if (sectionNum < 1 || sectionNum > CONFIG.sectionCount) return;
+
+            // Hide previous section
+            if (sectionGroups[state.currentSection - 1]) {
+                sectionGroups[state.currentSection - 1].visible = false;
+                sectionGroups[state.currentSection - 1].userData.labels?.forEach(l => l.style.display = 'none');
+            }
+
+            state.currentSection = sectionNum;
+
+            // Show new section
+            if (sectionGroups[sectionNum - 1]) {
+                sectionGroups[sectionNum - 1].visible = true;
+                sectionGroups[sectionNum - 1].userData.labels?.forEach(l => l.style.display = '');
+            }
+
+            updateNarrative(sectionNum);
+        }
+
+        // ============ THREE.JS SCENE SETUP ============
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0a0a1a);
+
+        const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+        const initialCameraPosition = new THREE.Vector3(0, 0, 16);
+        camera.position.copy(initialCameraPosition);
+        window.currentCamera = camera;
+        window.initialCameraPosition = initialCameraPosition;
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+        renderer.setSize(width, height);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
+
+        const controls = new THREE.TrackballControls(camera, renderer.domElement);
+        controls.rotateSpeed = 2.0;
+        controls.zoomSpeed = 1.2;
+        controls.panSpeed = 0.8;
+        controls.dynamicDampingFactor = 0.15;
+        window.currentControls = controls;
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+        scene.add(ambientLight);
+
+        const pointLight1 = new THREE.PointLight(0x00D4AA, 1, 50);
+        pointLight1.position.set(10, 10, 10);
+        scene.add(pointLight1);
+
+        const pointLight2 = new THREE.PointLight(0xffd700, 0.8, 50);
+        pointLight2.position.set(-10, -5, 10);
+        scene.add(pointLight2);
+
+        // Colors
+        const CYAN = 0x00D4AA;
+        const GOLD = 0xffd700;
+        const PURPLE = 0x6C5CE7;
+        const MAGENTA = 0xe94560;
+        const FRONT_CAM = 0x4ECDC4;
+        const RIGHT_CAM = 0xFF6B6B;
+        const LEFT_WRIST = 0xC44569;
+        const RIGHT_WRIST = 0xF8B500;
+
+        // HTML Overlay Container
+        const overlayContainer = document.createElement('div');
+        overlayContainer.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:hidden;';
+        container.appendChild(overlayContainer);
+
+        // Tooltip
+        const tooltip = document.createElement('div');
+        tooltip.style.cssText = 'position:absolute;padding:6px 10px;background:rgba(0,0,0,0.8);color:white;border-radius:4px;font-size:12px;pointer-events:none;display:none;z-index:1000;text-shadow:0 0 10px rgba(0,0,0,0.8);';
+        container.appendChild(tooltip);
+
+        // Raycaster for tooltips
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        // Section groups array
+        const sectionGroups = [];
+
+        // Create HTML label helper (labels start hidden, shown when section becomes active)
+        function createLabel(text, x, y, fontSize = '14px', color = 'white') {
+            const label = document.createElement('div');
+            label.textContent = text;
+            label.style.cssText = `position:absolute;display:none;color:${color};font-size:${fontSize};font-family:'JetBrains Mono',monospace;text-shadow:0 0 10px rgba(0,0,0,0.8);white-space:nowrap;transform:translate(-50%,-50%);`;
+            label.dataset.x = x;
+            label.dataset.y = y;
+            label.dataset.z = 0;
+            overlayContainer.appendChild(label);
+            return label;
+        }
+
+        function updateLabelPosition(label) {
+            const pos = new THREE.Vector3(
+                parseFloat(label.dataset.x),
+                parseFloat(label.dataset.y),
+                parseFloat(label.dataset.z || 0)
+            );
+            pos.project(camera);
+            const x = (pos.x * 0.5 + 0.5) * width;
+            const y = (-pos.y * 0.5 + 0.5) * height;
+            label.style.left = x + 'px';
+            label.style.top = y + 'px';
+            label.style.display = pos.z < 1 ? 'block' : 'none';
+        }
+
+        // Create robot arm
+        function createArm(color, opacity = 1) {
+            const group = new THREE.Group();
+            const jointGeo = new THREE.SphereGeometry(0.15, 16, 16);
+            const linkGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.5, 8);
+            const mat = new THREE.MeshPhongMaterial({
+                color: color,
+                transparent: opacity < 1,
+                opacity: opacity,
+                emissive: color,
+                emissiveIntensity: 0.3
+            });
+
+            let currentPos = new THREE.Vector3(0, 0, 0);
+            for (let i = 0; i < 6; i++) {
+                const joint = new THREE.Mesh(jointGeo, mat);
+                joint.position.copy(currentPos);
+                joint.name = `Joint ${i + 1}`;
+                group.add(joint);
+
+                if (i < 5) {
+                    const link = new THREE.Mesh(linkGeo, mat);
+                    link.position.set(currentPos.x, currentPos.y + 0.25, currentPos.z);
+                    link.name = `Link ${i + 1}`;
+                    group.add(link);
+                    currentPos.y += 0.5;
+                }
+            }
+            return group;
+        }
+
+        // Create human silhouette
+        function createHumanSilhouette() {
+            const group = new THREE.Group();
+            const mat = new THREE.MeshPhongMaterial({
+                color: CYAN,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.8,
+                emissive: CYAN,
+                emissiveIntensity: 0.5
+            });
+
+            const head = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 16), mat);
+            head.position.y = 2;
+            head.name = 'Human Head';
+            group.add(head);
+
+            const body = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.4, 1.5, 16), mat);
+            body.position.y = 0.8;
+            body.name = 'Human Body';
+            group.add(body);
+
+            const armGeo = new THREE.CylinderGeometry(0.1, 0.1, 1, 8);
+            const leftArm = new THREE.Mesh(armGeo, mat);
+            leftArm.position.set(-0.6, 1.2, 0);
+            leftArm.rotation.z = Math.PI / 4;
+            leftArm.name = 'Left Arm';
+            group.add(leftArm);
+
+            const rightArm = new THREE.Mesh(armGeo, mat);
+            rightArm.position.set(0.6, 1.2, 0);
+            rightArm.rotation.z = -Math.PI / 4;
+            rightArm.name = 'Right Arm';
+            group.add(rightArm);
+
+            return group;
+        }
+
+        // Create camera indicator
+        function createCameraIndicator(color, label) {
+            const group = new THREE.Group();
+            const bodyMat = new THREE.MeshPhongMaterial({ color: color, emissive: color, emissiveIntensity: 0.4 });
+
+            const body = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.2, 0.2), bodyMat);
+            body.name = label;
+            group.add(body);
+
+            const cone = new THREE.Mesh(
+                new THREE.ConeGeometry(0.3, 0.5, 8),
+                new THREE.MeshPhongMaterial({ color: color, transparent: true, opacity: 0.3 })
+            );
+            cone.rotation.x = Math.PI / 2;
+            cone.position.z = 0.35;
+            group.add(cone);
+
+            return group;
+        }
+
+        // Particle system helper
+        function createParticles(count, color, size = 0.05) {
+            const geo = new THREE.BufferGeometry();
+            const positions = new Float32Array(count * 3);
+            const velocities = [];
+
+            for (let i = 0; i < count; i++) {
+                positions[i * 3] = (Math.random() - 0.5) * 0.5;
+                positions[i * 3 + 1] = (Math.random() - 0.5) * 0.5;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 0.5;
+                velocities.push(new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.02,
+                    (Math.random() - 0.5) * 0.02,
+                    (Math.random() - 0.5) * 0.02
+                ));
+            }
+
+            geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+            const mat = new THREE.PointsMaterial({
+                color: color,
+                size: size,
+                transparent: true,
+                opacity: 0.8,
+                blending: THREE.AdditiveBlending
+            });
+
+            const points = new THREE.Points(geo, mat);
+            points.userData.velocities = velocities;
+
+            return points;
+        }
+
+        // ============ SECTION 1: Human Demonstration ============
+        function createSection1() {
+            const group = new THREE.Group();
+            group.visible = false;
+
+            const human = createHumanSilhouette();
+            human.position.set(-3.5, 0, 0);
+            human.name = 'Human Operator';
+            group.add(human);
+            group.userData.human = human;
+
+            const leaderArm1 = createArm(GOLD);
+            leaderArm1.position.set(-1.5, -1.5, 0.8);
+            leaderArm1.name = 'Leader Arm 1';
+            group.add(leaderArm1);
+
+            const leaderArm2 = createArm(GOLD);
+            leaderArm2.position.set(-1.5, -1.5, -0.8);
+            leaderArm2.name = 'Leader Arm 2';
+            group.add(leaderArm2);
+
+            group.userData.leaderArms = [leaderArm1, leaderArm2];
+
+            const followerArm1 = createArm(CYAN, 0.3);
+            followerArm1.position.set(2.5, -1.5, 0.8);
+            followerArm1.name = 'Follower Arm 1 (Waiting)';
+            group.add(followerArm1);
+
+            const followerArm2 = createArm(CYAN, 0.3);
+            followerArm2.position.set(2.5, -1.5, -0.8);
+            followerArm2.name = 'Follower Arm 2 (Waiting)';
+            group.add(followerArm2);
+
+            const cameras = [
+                { pos: [0, 2.5, 2], color: FRONT_CAM, name: 'FrontTop Camera' },
+                { pos: [3, 1, 0], color: RIGHT_CAM, name: 'Right Camera' },
+                { pos: [-0.8, 0, 1.5], color: LEFT_WRIST, name: 'LeftWrist Camera' },
+                { pos: [0.8, 0, 1.5], color: RIGHT_WRIST, name: 'RightWrist Camera' }
+            ];
+
+            group.userData.cameras = [];
+            cameras.forEach(c => {
+                const cam = createCameraIndicator(c.color, c.name);
+                cam.position.set(...c.pos);
+                cam.lookAt(0, 0, 0);
+                group.add(cam);
+                group.userData.cameras.push(cam);
+            });
+
+            const trajectoryParticles = createParticles(200, GOLD, 0.06);
+            trajectoryParticles.name = 'Trajectory Path';
+            group.add(trajectoryParticles);
+            group.userData.trajectoryParticles = trajectoryParticles;
+
+            group.userData.labels = [
+                createLabel('HUMAN DEMONSTRATION', 0, 3.5, '16px', '#00D4AA'),
+                createLabel('Leader Arms', -1.5, 1.5, '11px', '#ffd700'),
+                createLabel('Follower (Waiting)', 2.5, 1.5, '11px', '#00D4AA')
+            ];
+
+            return group;
+        }
+
+        // ============ SECTION 2: CVAE Compression ============
+        function createSection2() {
+            const group = new THREE.Group();
+            group.visible = false;
+
+            const encoderMat = new THREE.MeshPhongMaterial({
+                color: MAGENTA,
+                transparent: true,
+                opacity: 0.4,
+                emissive: MAGENTA,
+                emissiveIntensity: 0.2
+            });
+            const encoder = new THREE.Mesh(new THREE.BoxGeometry(2, 1.5, 1.5), encoderMat);
+            encoder.position.set(-1, 0, 0);
+            encoder.name = 'CVAE Encoder';
+            group.add(encoder);
+            group.userData.encoder = encoder;
+
+            group.userData.compLayers = [];
+            for (let i = 0; i < 3; i++) {
+                const layer = new THREE.Mesh(
+                    new THREE.PlaneGeometry(1.8, 1.3 - i * 0.3),
+                    new THREE.MeshBasicMaterial({ color: MAGENTA, transparent: true, opacity: 0.3, side: THREE.DoubleSide })
+                );
+                layer.position.set(-1, 0, -0.5 + i * 0.5);
+                layer.name = `Compression Layer ${i + 1}`;
+                group.add(layer);
+                group.userData.compLayers.push(layer);
+            }
+
+            const zOrbMat = new THREE.MeshPhongMaterial({
+                color: GOLD,
+                emissive: GOLD,
+                emissiveIntensity: 0.6,
+                transparent: true,
+                opacity: 0.9
+            });
+            const zOrb = new THREE.Mesh(new THREE.SphereGeometry(0.4, 32, 32), zOrbMat);
+            zOrb.position.set(2.5, 0, 0);
+            zOrb.name = 'Z Latent Variable (32D)';
+            group.add(zOrb);
+            group.userData.zOrb = zOrb;
+
+            const halo = new THREE.Mesh(
+                new THREE.TorusGeometry(0.6, 0.05, 16, 32),
+                new THREE.MeshBasicMaterial({ color: GOLD, transparent: true, opacity: 0.6 })
+            );
+            halo.position.copy(zOrb.position);
+            group.add(halo);
+            group.userData.halo = halo;
+
+            const inputParticles = createParticles(150, GOLD, 0.05);
+            inputParticles.position.set(-3.5, 0, 0);
+            group.add(inputParticles);
+            group.userData.inputParticles = inputParticles;
+
+            group.userData.jointCubes = [];
+            for (let i = 0; i < 12; i++) {
+                const cube = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.1, 0.1, 0.1),
+                    new THREE.MeshPhongMaterial({ color: CYAN, emissive: CYAN, emissiveIntensity: 0.5 })
+                );
+                cube.position.set(-3.5, -1.5 + i * 0.25, 0.8);
+                cube.name = `Joint Data ${i + 1}`;
+                group.add(cube);
+                group.userData.jointCubes.push(cube);
+            }
+
+            group.userData.labels = [
+                createLabel('CVAE ENCODER', -1, 2, '14px', '#e94560'),
+                createLabel('Z', 2.5, 0.8, '18px', '#ffd700'),
+                createLabel('32 dimensions', 2.5, -0.7, '11px', '#ffd700')
+            ];
+
+            return group;
+        }
+
+        // ============ SECTION 3: Token Fusion ============
+        function createSection3() {
+            const group = new THREE.Group();
+            group.visible = false;
+
+            const cameraData = [
+                { pos: [-2.5, 1.8, 0], color: FRONT_CAM, name: 'FrontTop (300 tokens)' },
+                { pos: [2.5, 1.8, 0], color: RIGHT_CAM, name: 'Right (300 tokens)' },
+                { pos: [-2.5, -1.8, 0], color: LEFT_WRIST, name: 'LeftWrist (300 tokens)' },
+                { pos: [2.5, -1.8, 0], color: RIGHT_WRIST, name: 'RightWrist (300 tokens)' }
+            ];
+
+            group.userData.cameraBoxes = [];
+            cameraData.forEach(c => {
+                const box = new THREE.Mesh(
+                    new THREE.BoxGeometry(1, 0.7, 0.3),
+                    new THREE.MeshPhongMaterial({ color: c.color, emissive: c.color, emissiveIntensity: 0.4 })
+                );
+                box.position.set(...c.pos);
+                box.name = c.name;
+                group.add(box);
+                group.userData.cameraBoxes.push(box);
+            });
+
+            const zOrb = new THREE.Mesh(
+                new THREE.SphereGeometry(0.22, 24, 24),
+                new THREE.MeshPhongMaterial({ color: GOLD, emissive: GOLD, emissiveIntensity: 0.6 })
+            );
+            zOrb.position.set(0, 3, 0);
+            zOrb.name = 'Z Token (1)';
+            group.add(zOrb);
+            group.userData.zToken = zOrb;
+
+            const jointToken = new THREE.Mesh(
+                new THREE.BoxGeometry(0.25, 0.25, 0.25),
+                new THREE.MeshPhongMaterial({ color: CYAN, emissive: CYAN, emissiveIntensity: 0.5 })
+            );
+            jointToken.position.set(0, -3, 0);
+            jointToken.name = 'Joint Token (1)';
+            group.add(jointToken);
+            group.userData.jointToken = jointToken;
+
+            const fusionMat = new THREE.MeshPhongMaterial({
+                color: PURPLE,
+                emissive: PURPLE,
+                emissiveIntensity: 0.4,
+                transparent: true,
+                opacity: 0.7
+            });
+            const fusionSphere = new THREE.Mesh(new THREE.SphereGeometry(1.2, 32, 32), fusionMat);
+            fusionSphere.position.set(0, 0, 0);
+            fusionSphere.name = 'Fusion Sphere (1202 tokens)';
+            group.add(fusionSphere);
+            group.userData.fusionSphere = fusionSphere;
+
+            const innerRing = new THREE.Mesh(
+                new THREE.TorusGeometry(0.7, 0.06, 16, 32),
+                new THREE.MeshBasicMaterial({ color: CYAN, transparent: true, opacity: 0.8 })
+            );
+            innerRing.rotation.x = Math.PI / 2;
+            group.add(innerRing);
+            group.userData.innerRing = innerRing;
+
+            group.userData.tokenStreams = [];
+            const sources = [...cameraData.map(c => c.pos), [0, 3, 0], [0, -3, 0]];
+            const colors = [FRONT_CAM, RIGHT_CAM, LEFT_WRIST, RIGHT_WRIST, GOLD, CYAN];
+
+            sources.forEach((src, i) => {
+                const particles = createParticles(40, colors[i], 0.04);
+                particles.position.set(src[0], src[1], src[2]);
+                particles.userData.source = new THREE.Vector3(src[0], src[1], src[2]);
+                group.add(particles);
+                group.userData.tokenStreams.push(particles);
+            });
+
+            group.userData.labels = [
+                createLabel('TOKEN FUSION', 0, 4.2, '16px', '#6C5CE7'),
+                createLabel('1202 = (4×300) + 1 + 1', 0, -0.5, '11px', 'white')
+            ];
+
+            return group;
+        }
+
+        // ============ SECTION 4: Decoder & Cross-Attention ============
+        function createSection4() {
+            const group = new THREE.Group();
+            group.visible = false;
+
+            const decoder = new THREE.Mesh(
+                new THREE.BoxGeometry(1.3, 2.2, 0.8),
+                new THREE.MeshPhongMaterial({ color: PURPLE, emissive: PURPLE, emissiveIntensity: 0.3, transparent: true, opacity: 0.6 })
+            );
+            decoder.position.set(-3, 0, 0);
+            decoder.name = 'Transformer Decoder';
+            group.add(decoder);
+            group.userData.decoder = decoder;
+
+            group.userData.queryOrbs = [];
+            for (let i = 0; i < 6; i++) {
+                const query = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.15, 16, 16),
+                    new THREE.MeshPhongMaterial({ color: CYAN, emissive: CYAN, emissiveIntensity: 0.6 })
+                );
+                query.position.set(-2, 0.8 - i * 0.32, 0);
+                query.name = `Query Orb ${i + 1}`;
+                group.add(query);
+                group.userData.queryOrbs.push(query);
+            }
+
+            const fusion = new THREE.Mesh(
+                new THREE.SphereGeometry(1, 32, 32),
+                new THREE.MeshPhongMaterial({ color: PURPLE, emissive: PURPLE, emissiveIntensity: 0.3, transparent: true, opacity: 0.5 })
+            );
+            fusion.position.set(0, 0, 0);
+            fusion.name = 'Fused Representation';
+            group.add(fusion);
+            group.userData.fusion = fusion;
+
+            group.userData.beams = [];
+            group.userData.queryOrbs.forEach((query, i) => {
+                const start = query.position.clone();
+                const end = fusion.position.clone();
+                const mid = start.clone().lerp(end, 0.5);
+
+                const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
+                const tubeGeo = new THREE.TubeGeometry(curve, 20, 0.025, 8, false);
+                const beam = new THREE.Mesh(
+                    tubeGeo,
+                    new THREE.MeshBasicMaterial({ color: GOLD, transparent: true, opacity: 0.6 })
+                );
+                beam.name = `Attention Beam ${i + 1}`;
+                group.add(beam);
+                group.userData.beams.push(beam);
+            });
+
+            const actionCurve = new THREE.CatmullRomCurve3([
+                new THREE.Vector3(2.2, 1, 0),
+                new THREE.Vector3(2.6, 0.3, 0.3),
+                new THREE.Vector3(3, -0.3, 0),
+                new THREE.Vector3(3.4, -0.8, -0.2)
+            ]);
+
+            const actionTube = new THREE.Mesh(
+                new THREE.TubeGeometry(actionCurve, 50, 0.06, 8, false),
+                new THREE.MeshPhongMaterial({
+                    color: GOLD,
+                    emissive: CYAN,
+                    emissiveIntensity: 0.3,
+                    transparent: true,
+                    opacity: 0.8
+                })
+            );
+            actionTube.name = 'Action Chunk (K=100)';
+            group.add(actionTube);
+            group.userData.actionChunk = actionTube;
+
+            for (let i = 0; i <= 10; i++) {
+                const t = i / 10;
+                const point = actionCurve.getPoint(t);
+                const tick = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.15, 8, 8),
+                    new THREE.MeshBasicMaterial({ color: 0xffffff })
+                );
+                tick.position.copy(point);
+                group.add(tick);
+            }
+
+            group.userData.labels = [
+                createLabel('CROSS-ATTENTION', 0, 3, '14px', '#6C5CE7'),
+                createLabel('Queries', -2, 1.4, '10px', '#00D4AA'),
+                createLabel('K = 100', 3, 1.5, '11px', '#ffd700')
+            ];
+
+            return group;
+        }
+
+        // ============ SECTION 5: Robot Executes ============
+        function createSection5() {
+            const group = new THREE.Group();
+            group.visible = false;
+
+            const arm1 = createArm(CYAN, 1);
+            arm1.position.set(-0.8, -1.5, 1);
+            arm1.name = 'Follower Arm 1 (Active)';
+            group.add(arm1);
+
+            const arm2 = createArm(CYAN, 1);
+            arm2.position.set(-0.8, -1.5, -1);
+            arm2.name = 'Follower Arm 2 (Active)';
+            group.add(arm2);
+
+            group.userData.followerArms = [arm1, arm2];
+
+            const fadingHuman = createHumanSilhouette();
+            fadingHuman.position.set(-4, 0, 0);
+            fadingHuman.traverse(child => {
+                if (child.material) {
+                    child.material.opacity = 0.2;
+                }
+            });
+            fadingHuman.name = 'Human (Fading)';
+            group.add(fadingHuman);
+            group.userData.fadingHuman = fadingHuman;
+
+            const predCurve = new THREE.CatmullRomCurve3([
+                new THREE.Vector3(0, 0.8, 0.8),
+                new THREE.Vector3(0.8, 0.4, 0.4),
+                new THREE.Vector3(1.5, 0, 0),
+                new THREE.Vector3(2, -0.4, -0.3)
+            ]);
+
+            const predPath = new THREE.Mesh(
+                new THREE.TubeGeometry(predCurve, 30, 0.03, 8, false),
+                new THREE.MeshBasicMaterial({ color: CYAN, transparent: true, opacity: 0.4 })
+            );
+            predPath.name = 'Predicted Path';
+            group.add(predPath);
+
+            const execCurve = new THREE.CatmullRomCurve3([
+                new THREE.Vector3(0, 0.8, -0.8),
+                new THREE.Vector3(0.6, 0.2, -0.2),
+                new THREE.Vector3(1.2, -0.15, 0)
+            ]);
+
+            const execPath = new THREE.Mesh(
+                new THREE.TubeGeometry(execCurve, 30, 0.05, 8, false),
+                new THREE.MeshPhongMaterial({ color: GOLD, emissive: GOLD, emissiveIntensity: 0.4 })
+            );
+            execPath.name = 'Executed Path';
+            group.add(execPath);
+            group.userData.execPath = execPath;
+
+            const target = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.25, 0.25, 0.4, 16),
+                new THREE.MeshPhongMaterial({ color: GOLD, emissive: GOLD, emissiveIntensity: 0.3 })
+            );
+            target.position.set(1.8, -0.8, 0);
+            target.name = 'Target Object';
+            group.add(target);
+
+            const checkGroup = new THREE.Group();
+            const checkMat = new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0 });
+            const check1 = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.4, 0.08), checkMat);
+            check1.position.set(-0.12, -0.08, 0);
+            check1.rotation.z = Math.PI / 6;
+            checkGroup.add(check1);
+            const check2 = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.6, 0.08), checkMat);
+            check2.position.set(0.15, 0.08, 0);
+            check2.rotation.z = -Math.PI / 4;
+            checkGroup.add(check2);
+            checkGroup.position.set(0, 2.5, 0);
+            checkGroup.name = 'Success!';
+            group.add(checkGroup);
+            group.userData.checkmark = checkGroup;
+
+            const progressBg = new THREE.Mesh(
+                new THREE.BoxGeometry(3.2, 0.15, 0.08),
+                new THREE.MeshBasicMaterial({ color: 0x505050 })
+            );
+            progressBg.position.set(0, -2.5, 0);
+            group.add(progressBg);
+
+            const progressFill = new THREE.Mesh(
+                new THREE.BoxGeometry(0.08, 0.14, 0.1),
+                new THREE.MeshBasicMaterial({ color: CYAN })
+            );
+            progressFill.position.set(-1.6, -2.5, 0.03);
+            group.add(progressFill);
+            group.userData.progressFill = progressFill;
+
+            const trailParticles = createParticles(80, GOLD, 0.04);
+            group.add(trailParticles);
+            group.userData.trailParticles = trailParticles;
+
+            group.userData.labels = [
+                createLabel('ROBOT EXECUTES', 0, 3.3, '16px', '#00D4AA'),
+                createLabel('K: 0 / 100', 0, -2.9, '11px', 'white')
+            ];
+            group.userData.progressLabel = group.userData.labels[1];
+
+            return group;
+        }
+
+        // ============ SECTION 6: Complete Pipeline ============
+        function createSection6() {
+            const group = new THREE.Group();
+            group.visible = false;
+
+            const iconData = [
+                { pos: [-4, 0, 0], type: 'human', color: CYAN, label: 'Demo' },
+                { pos: [-2, 0, 0], type: 'z', color: GOLD, label: 'Z' },
+                { pos: [0, 0, 0], type: 'fusion', color: PURPLE, label: 'Fusion (1202)' },
+                { pos: [2, 0, 0], type: 'chunk', color: CYAN, label: 'Chunk (K=100)' },
+                { pos: [4, 0, 0], type: 'action', color: CYAN, label: 'Action' }
+            ];
+
+            group.userData.icons = [];
+            iconData.forEach((icon, i) => {
+                let mesh;
+                switch (icon.type) {
+                    case 'human':
+                        mesh = new THREE.Mesh(
+                            new THREE.CylinderGeometry(0.25, 0.35, 0.85, 16),
+                            new THREE.MeshPhongMaterial({ color: icon.color, emissive: icon.color, emissiveIntensity: 0.4 })
+                        );
+                        const head = new THREE.Mesh(
+                            new THREE.SphereGeometry(0.2, 16, 16),
+                            new THREE.MeshPhongMaterial({ color: icon.color, emissive: icon.color, emissiveIntensity: 0.4 })
+                        );
+                        head.position.y = 0.6;
+                        mesh.add(head);
+                        break;
+                    case 'z':
+                        mesh = new THREE.Mesh(
+                            new THREE.SphereGeometry(0.4, 32, 32),
+                            new THREE.MeshPhongMaterial({ color: icon.color, emissive: icon.color, emissiveIntensity: 0.6 })
+                        );
+                        break;
+                    case 'fusion':
+                        mesh = new THREE.Mesh(
+                            new THREE.IcosahedronGeometry(0.5, 1),
+                            new THREE.MeshPhongMaterial({ color: icon.color, emissive: icon.color, emissiveIntensity: 0.4, transparent: true, opacity: 0.8 })
+                        );
+                        break;
+                    case 'chunk':
+                        const curve = new THREE.CatmullRomCurve3([
+                            new THREE.Vector3(-0.3, 0.25, 0),
+                            new THREE.Vector3(0, 0, 0.15),
+                            new THREE.Vector3(0.3, -0.25, 0)
+                        ]);
+                        mesh = new THREE.Mesh(
+                            new THREE.TubeGeometry(curve, 20, 0.08, 8, false),
+                            new THREE.MeshPhongMaterial({ color: icon.color, emissive: GOLD, emissiveIntensity: 0.3 })
+                        );
+                        break;
+                    case 'action':
+                        mesh = createArm(icon.color);
+                        mesh.scale.set(0.5, 0.5, 0.5);
+                        break;
+                }
+                mesh.position.set(...icon.pos);
+                mesh.name = icon.label;
+                group.add(mesh);
+                group.userData.icons.push(mesh);
+            });
+
+            group.userData.flowParticles = [];
+            for (let i = 0; i < 4; i++) {
+                const particles = createParticles(25, [CYAN, GOLD, PURPLE, CYAN][i], 0.05);
+                particles.position.set(-4 + i * 2 + 1, 0, 0);
+                particles.userData.flowIndex = i;
+                group.add(particles);
+                group.userData.flowParticles.push(particles);
+            }
+
+            const confettiColors = [CYAN, GOLD, PURPLE, MAGENTA, 0x00ff00];
+            group.userData.confetti = [];
+            for (let i = 0; i < 80; i++) {
+                const confetti = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.06, 0.06, 0.015),
+                    new THREE.MeshBasicMaterial({ color: confettiColors[i % confettiColors.length] })
+                );
+                confetti.position.set(
+                    (Math.random() - 0.5) * 10,
+                    -4 + Math.random() * 1.5,
+                    (Math.random() - 0.5) * 3
+                );
+                confetti.userData.speed = 0.015 + Math.random() * 0.025;
+                confetti.userData.rotSpeed = (Math.random() - 0.5) * 0.08;
+                group.add(confetti);
+                group.userData.confetti.push(confetti);
+            }
+
+            group.userData.labels = [
+                createLabel('ACT: Action Chunking with Transformers', 0, 3, '18px', '#ffd700'),
+                createLabel('Complete Pipeline • LeRobot Framework', 0, 2.3, '12px', '#00D4AA'),
+                createLabel('Now build it yourself!', 0, -2.5, '14px', '#e94560'),
+                createLabel('Demo', -4, -1, '10px', '#00D4AA'),
+                createLabel('Z', -2, -1, '10px', '#ffd700'),
+                createLabel('Fusion', 0, -1, '10px', '#6C5CE7'),
+                createLabel('Chunk', 2, -1, '10px', '#00D4AA'),
+                createLabel('Action', 4, -1, '10px', '#00D4AA')
+            ];
+
+            return group;
+        }
+
+        // Create all sections
+        sectionGroups.push(createSection1());
+        sectionGroups.push(createSection2());
+        sectionGroups.push(createSection3());
+        sectionGroups.push(createSection4());
+        sectionGroups.push(createSection5());
+        sectionGroups.push(createSection6());
+
+        sectionGroups.forEach(g => scene.add(g));
+
+        // Initialize first section
+        switchSection(1);
+
+        // Mouse events for tooltip
+        container.addEventListener('mousemove', (event) => {
+            const rect = container.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / height) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(scene.children, true);
+
+            if (intersects.length > 0 && intersects[0].object.name) {
+                tooltip.textContent = intersects[0].object.name;
+                tooltip.style.display = 'block';
+                tooltip.style.left = (event.clientX - rect.left + 15) + 'px';
+                tooltip.style.top = (event.clientY - rect.top + 15) + 'px';
+            } else {
+                tooltip.style.display = 'none';
+            }
+        });
+
+        // Animation
+        let time = 0;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            time += 0.016;
+            controls.update();
+
+            const group = sectionGroups[state.currentSection - 1];
+            if (!group) return;
+
+            // Update label positions
+            group.userData.labels?.forEach(updateLabelPosition);
+
+            // Section-specific animations
+            switch (state.currentSection) {
+                case 1: // Human Demonstration
+                    if (group.userData.human) {
+                        group.userData.human.traverse(child => {
+                            if (child.material) {
+                                child.material.emissiveIntensity = 0.3 + Math.sin(time * 2) * 0.2;
+                            }
+                        });
+                    }
+                    group.userData.leaderArms?.forEach((arm, i) => {
+                        arm.rotation.z = Math.sin(time + i) * 0.2;
+                        arm.position.y = -1.5 + Math.sin(time * 1.5 + i) * 0.25;
+                    });
+                    group.userData.cameras?.forEach((cam, i) => {
+                        const scale = 1 + Math.sin(time * 3 + i) * 0.1;
+                        cam.scale.setScalar(scale);
+                    });
+                    if (group.userData.trajectoryParticles) {
+                        const pos = group.userData.trajectoryParticles.geometry.attributes.position;
+                        for (let i = 0; i < pos.count; i++) {
+                            pos.array[i * 3] = -1.5 + Math.sin(time + i * 0.1) * 1.8;
+                            pos.array[i * 3 + 1] = Math.cos(time * 0.5 + i * 0.2) * 1.5;
+                            pos.array[i * 3 + 2] = Math.sin(time + i * 0.15) * 0.8;
+                        }
+                        pos.needsUpdate = true;
+                    }
+                    break;
+
+                case 2: // CVAE Compression
+                    if (group.userData.encoder) {
+                        group.userData.encoder.material.opacity = 0.3 + Math.sin(time * 2) * 0.1;
+                    }
+                    group.userData.compLayers?.forEach((layer, i) => {
+                        layer.scale.y = 0.8 + Math.sin(time * 3 + i * 0.5) * 0.2;
+                    });
+                    if (group.userData.zOrb) {
+                        const scale = 0.9 + Math.sin(time * 2) * 0.1;
+                        group.userData.zOrb.scale.setScalar(scale);
+                        group.userData.zOrb.material.emissiveIntensity = 0.5 + Math.sin(time * 2) * 0.3;
+                    }
+                    if (group.userData.halo) {
+                        group.userData.halo.rotation.y = time;
+                        group.userData.halo.rotation.x = Math.sin(time * 0.5) * 0.3;
+                    }
+                    if (group.userData.inputParticles) {
+                        const pos = group.userData.inputParticles.geometry.attributes.position;
+                        for (let i = 0; i < pos.count; i++) {
+                            pos.array[i * 3] += 0.025;
+                            if (pos.array[i * 3] > -0.5) pos.array[i * 3] = -2.5;
+                        }
+                        pos.needsUpdate = true;
+                    }
+                    group.userData.jointCubes?.forEach((cube, i) => {
+                        cube.position.x += 0.018;
+                        if (cube.position.x > -1.5) cube.position.x = -3.5;
+                        cube.rotation.x = time + i;
+                    });
+                    break;
+
+                case 3: // Token Fusion
+                    group.userData.cameraBoxes?.forEach((box, i) => {
+                        box.material.emissiveIntensity = 0.3 + Math.sin(time * 2 + i) * 0.2;
+                    });
+                    if (group.userData.fusionSphere) {
+                        group.userData.fusionSphere.rotation.y = time * 0.3;
+                    }
+                    if (group.userData.innerRing) {
+                        group.userData.innerRing.rotation.z = time * 2;
+                    }
+                    group.userData.tokenStreams?.forEach((stream, streamIdx) => {
+                        const pos = stream.geometry.attributes.position;
+                        const source = stream.userData.source;
+                        for (let i = 0; i < pos.count; i++) {
+                            const t = (time + i * 0.1) % 2;
+                            const progress = t / 2;
+                            const angle = progress * Math.PI * 4 + streamIdx;
+                            const radius = (1 - progress) * source.length();
+                            pos.array[i * 3] = source.x * (1 - progress) + Math.cos(angle) * radius * 0.08;
+                            pos.array[i * 3 + 1] = source.y * (1 - progress) + Math.sin(angle) * radius * 0.08;
+                            pos.array[i * 3 + 2] = source.z * (1 - progress);
+                        }
+                        pos.needsUpdate = true;
+                        stream.position.set(0, 0, 0);
+                    });
+                    break;
+
+                case 4: // Decoder & Cross-Attention
+                    group.userData.queryOrbs?.forEach((orb, i) => {
+                        const phase = (time + i * 0.3) % 3;
+                        orb.scale.setScalar(0.8 + Math.sin(phase * 2) * 0.2);
+                        orb.material.emissiveIntensity = 0.4 + Math.sin(time * 3 + i) * 0.3;
+                    });
+                    group.userData.beams?.forEach((beam, i) => {
+                        beam.material.opacity = 0.4 + Math.sin(time * 4 + i * 0.5) * 0.3;
+                    });
+                    if (group.userData.fusion) {
+                        group.userData.fusion.scale.setScalar(1 + Math.sin(time * 3) * 0.05);
+                    }
+                    if (group.userData.actionChunk) {
+                        group.userData.actionChunk.material.emissiveIntensity = 0.2 + Math.sin(time * 2) * 0.2;
+                    }
+                    break;
+
+                case 5: // Robot Executes
+                    const progress = (time * 0.5) % 1;
+                    group.userData.followerArms?.forEach((arm, i) => {
+                        arm.rotation.z = Math.sin(time * 2 + i) * 0.25;
+                        arm.position.y = -1.5 + progress * 0.4;
+                        arm.traverse(child => {
+                            if (child.material) {
+                                child.material.emissiveIntensity = 0.4 + Math.sin(time * 4) * 0.2;
+                            }
+                        });
+                    });
+                    if (group.userData.fadingHuman) {
+                        group.userData.fadingHuman.traverse(child => {
+                            if (child.material) {
+                                child.material.opacity = 0.15 + Math.sin(time) * 0.05;
+                            }
+                        });
+                    }
+                    if (group.userData.progressFill) {
+                        const k = Math.floor(progress * 100);
+                        group.userData.progressFill.scale.x = Math.max(0.1, progress * 40);
+                        group.userData.progressFill.position.x = -1.6 + progress * 1.6;
+                        if (group.userData.progressLabel) {
+                            group.userData.progressLabel.textContent = `K: ${k} / 100`;
+                        }
+                    }
+                    if (group.userData.checkmark && progress > 0.9) {
+                        group.userData.checkmark.traverse(child => {
+                            if (child.material) {
+                                child.material.opacity = (progress - 0.9) * 10;
+                            }
+                        });
+                    }
+                    if (group.userData.trailParticles) {
+                        const pos = group.userData.trailParticles.geometry.attributes.position;
+                        for (let i = 0; i < pos.count; i++) {
+                            pos.array[i * 3] = Math.sin(time + i * 0.1) * 1.5;
+                            pos.array[i * 3 + 1] = -0.8 + Math.cos(time * 0.5 + i * 0.2) * 0.8;
+                            pos.array[i * 3 + 2] = Math.sin(i * 0.3) - 0.3;
+                        }
+                        pos.needsUpdate = true;
+                    }
+                    break;
+
+                case 6: // Complete Pipeline
+                    group.userData.icons?.forEach((icon, i) => {
+                        const scale = 0.95 + Math.sin(time * 2 + i * 0.5) * 0.05;
+                        icon.scale.setScalar(icon.name.includes('Action') ? scale * 0.5 : scale);
+                        if (icon.name === 'Z' || icon.name === 'Fusion (1202)') {
+                            icon.rotation.y = time * 0.5;
+                        }
+                    });
+                    group.userData.flowParticles?.forEach((particles, idx) => {
+                        const pos = particles.geometry.attributes.position;
+                        for (let i = 0; i < pos.count; i++) {
+                            pos.array[i * 3] = (time * 2 + i * 0.1) % 2 - 1;
+                            pos.array[i * 3 + 1] = Math.sin(time * 3 + i) * 0.25;
+                            pos.array[i * 3 + 2] = Math.cos(time * 2 + i) * 0.15;
+                        }
+                        pos.needsUpdate = true;
+                    });
+                    group.userData.confetti?.forEach(c => {
+                        c.position.y += c.userData.speed;
+                        c.rotation.x += c.userData.rotSpeed;
+                        c.rotation.z += c.userData.rotSpeed * 0.7;
+                        if (c.position.y > 4) {
+                            c.position.y = -4;
+                            c.position.x = (Math.random() - 0.5) * 10;
+                        }
+                    });
+                    if (group.userData.labels && group.userData.labels[0]) {
+                        const glow = 0.6 + Math.sin(time) * 0.4;
+                        group.userData.labels[0].style.textShadow = `0 0 ${10 + glow * 10}px #ffd700`;
+                    }
+                    if (group.userData.labels && group.userData.labels[2]) {
+                        group.userData.labels[2].style.opacity = 0.7 + Math.sin(time * 2) * 0.3;
+                    }
+                    break;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Reset view functionality
+        window.resetACTView = function() {
+            camera.position.copy(initialCameraPosition);
+            camera.lookAt(0, 0, 0);
+            controls.target.set(0, 0, 0);
+            controls.update();
+        };
+
+        // Hide loading screen
+        document.getElementById('loading').style.display = 'none';
+
+        // Button handlers
+        resetViewBtn.addEventListener('click', () => {
+            window.resetACTView();
+        });
+
+        resetAnimBtn.addEventListener('click', () => {
+            time = 0;
+            switchSection(1);
+        });
+
+        // Handle resize
+        window.addEventListener('resize', () => {
+            const newWidth = container.clientWidth;
+            const newHeight = container.clientHeight;
+            camera.aspect = newWidth / newHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(newWidth, newHeight);
+        });
+    </script>
+</body>
+</html>
