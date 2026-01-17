@@ -939,6 +939,20 @@ CHAPTER 4 VERIFICATION:
 
 # Chapter 5: The Multi-Modal Decoder {#chapter-5}
 
+## Interactive Animation: 1202 Token Fusion
+
+Explore how **1202 tokens** from multiple cameras and sensors get fused into a single unified understanding - the heart of the multi-modal decoder.
+
+<iframe
+    src="animations/chapter-5-token-fusion.html"
+    width="100%"
+    height="720px"
+    style="border: none; border-radius: 12px; background: #0a0a1a;"
+    title="1202 Token Fusion Animation">
+</iframe>
+
+*Navigate through 8 sections using the Next/Previous buttons. Drag to rotate the 3D view, scroll to zoom. Hover over objects for tooltips.*
+
 ::: {.callout-note}
 ## Dr. Nova Brooks
 *pulls up the ACT architecture diagram*
@@ -1221,6 +1235,215 @@ CHAPTER 5 VERIFICATION:
 - [x] Ziplock bag example connecting to earlier chapters
 - [x] Reader state: Complexity → Elegance
 - [x] Set up for Chapter 6: DETR-inspired cross-attention
-- [ ] Illustration #5 placeholder needed
+- [x] Illustration #5 present (chapter-5-token-fusion.html)
+- [ ] User verified and approved
+-->
+
+# Chapter 6: The Cross-Attention Bridge {#chapter-6}
+
+## Interactive Animation: Cross-Attention Bridge
+
+Watch how **6 learnable queries** from the decoder reach across to ask questions of **1202 fused tokens** in the encoder. This is where perception becomes action.
+
+<iframe
+    src="animations/chapter-6-cross-attention-bridge.html"
+    width="100%"
+    height="720px"
+    style="border: none; border-radius: 12px; background: #0a0a1a;"
+    title="Cross-Attention Bridge Animation">
+</iframe>
+
+*Navigate through 5 sections using the Next/Previous buttons. The final section holds for contemplation: "Q asks. K answers. V delivers."*
+
+::: {.callout-note}
+## Dr. Nova Brooks
+*draws a bridge between two boxes labeled "Encoder" and "Decoder"*
+
+Remember what you said about DETR? You were onto something big. The ACT decoder borrows a brilliant trick from object detection.
+
+Let me ask you: after token fusion, we have 1202 context vectors that understand the scene. But how does the decoder—which needs to produce 6 actions—know what to ask?
+:::
+
+::: {.callout-tip}
+## Rajesh
+*thinks*
+
+In a translation transformer, the decoder generates words one at a time, each time attending to the encoder's output. But ACT needs to produce 6 actions in parallel, not sequentially...
+:::
+
+::: {.callout-note}
+## Dr. Nova Brooks
+Exactly! And that's where DETR's insight becomes crucial. Let me show you the key innovation:
+
+```
+DETR (Object Detection):
+  - 100 learnable "object queries"
+  - Each query learns to detect a specific type of object
+  - All queries run in PARALLEL, not sequentially
+
+ACT (Action Prediction):
+  - 6 learnable "action queries"
+  - Each query learns to predict action for one timestep
+  - All queries run in PARALLEL
+```
+
+See the pattern?
+:::
+
+::: {.callout-tip}
+## Rajesh
+Oh! So instead of generating actions one-by-one, ACT has 6 pre-trained queries that all fire simultaneously. Each one specializes in asking "What should the robot do at timestep t?"
+:::
+
+::: {.callout-note}
+## Dr. Nova Brooks
+*beaming*
+
+You've got it! These are **learnable queries**—they start as random vectors but during training, they learn exactly what questions to ask. Let me break down the cross-attention mechanism:
+
+```
+CROSS-ATTENTION MECHANICS:
+
+Query (Q): 6 learnable vectors from decoder
+           Shape: [6, d_model]
+
+Key (K):   1202 projected vectors from encoder
+           Shape: [1202, d_model]
+
+Value (V): 1202 projected vectors from encoder
+           Shape: [1202, d_model]
+
+Step 1: Compute attention scores
+        scores = Q × K^T / √d_model
+        Shape: [6, 1202]
+
+Step 2: Apply softmax (per query)
+        attention = softmax(scores, dim=-1)
+        Shape: [6, 1202]
+
+Step 3: Weighted sum of values
+        output = attention × V
+        Shape: [6, d_model]
+```
+:::
+
+::: {.callout-tip}
+## Rajesh
+So each query produces a [6, 1202] attention matrix, and then we get a weighted sum of the 1202 values? That means each query's output is a blend of all the encoder's knowledge, weighted by relevance!
+:::
+
+::: {.callout-note}
+## Dr. Nova Brooks
+Precisely! Let me make this concrete with our SO-ARM101 example.
+
+| Query | Specialization (learned) | Attends heavily to... |
+|-------|--------------------------|----------------------|
+| Q1 | Timestep 1 action | Gripper position tokens, nearby objects |
+| Q2 | Timestep 2 action | Trajectory tokens, obstacle positions |
+| Q3 | Timestep 3 action | Target approach vectors |
+| Q4 | Timestep 4 action | Contact point estimation |
+| Q5 | Timestep 5 action | Grasp stability tokens |
+| Q6 | Timestep 6 action | Lift trajectory tokens |
+
+Each query learns to focus on different aspects of the 1202 fused tokens!
+:::
+
+::: {.callout-tip}
+## Rajesh
+This is elegant. The queries don't see the raw images—they only see the fused understanding. And through attention, they selectively extract exactly what they need for each timestep.
+:::
+
+::: {.callout-note}
+## Dr. Nova Brooks
+*nods approvingly*
+
+And here's the beautiful part about DETR-style queries: they're **position-independent**. Unlike autoregressive decoders that generate tokens one-by-one, these queries run in parallel. That's why ACT can predict all 6 actions of a chunk simultaneously.
+
+The final step is the **projection head**—transforming the abstract output vectors into actual joint angles:
+
+```
+PROJECTION TO ACTIONS:
+
+Query outputs: [6, d_model]    (abstract vectors)
+          │
+          ▼
+    Linear Layer
+    (d_model → action_dim)
+          │
+          ▼
+Action chunk: [6, action_dim]  (joint angles!)
+
+For SO-ARM101:
+  action_dim = 6 joints × 2 arms = 12
+  Final output: [6, 12] = 72 numbers
+```
+:::
+
+::: {.callout-tip}
+## Rajesh
+*putting it all together*
+
+So the complete flow is:
+
+1. **Token Fusion** (Chapter 5): 1202 tokens understand the scene
+2. **Cross-Attention** (Chapter 6): 6 queries extract relevant knowledge
+3. **Projection**: Transform to 72 joint angles (6 timesteps × 12 joints)
+
+The decoder never saw the cameras. It just asked the right questions!
+:::
+
+::: {.callout-note}
+## Dr. Nova Brooks
+*smiles*
+
+And that, Rajesh, is the cross-attention bridge in a nutshell:
+
+::: {.callout-important}
+## The Cross-Attention Punchline
+
+**Q asks.** The decoder's learnable queries broadcast questions to the encoder.
+
+**K answers.** The encoder's keys vote on relevance—which tokens matter for this question?
+
+**V delivers.** The encoder's values flow back, weighted by those votes, forming the answer.
+
+*Six queries × 1202 keys = understanding that becomes action.*
+:::
+
+The decoder doesn't reinvent perception. It *queries* the encoder's wisdom.
+:::
+
+::: {.callout-tip}
+## Rajesh
+"Four eyes see different parts of the elephant. The transformer asks the right questions to see the whole."
+
+I finally understand why cross-attention is the bridge between perception and action!
+:::
+
+::: {.callout-note}
+## Dr. Nova Brooks
+*closes the diagram*
+
+And now you have the complete picture of ACT's architecture:
+
+1. **CVAE Encoder** captures style from demonstrations (Chapter 3)
+2. **Action Chunking** predicts sequences, not single steps (Chapter 4)
+3. **Token Fusion** merges 1202 multi-modal inputs (Chapter 5)
+4. **Cross-Attention Bridge** connects perception to action (Chapter 6)
+
+Ready to see how this all comes together in training?
+:::
+
+<!--
+CHAPTER 6 VERIFICATION:
+- [x] Topics covered: Cross-Attention in Decoder, DETR-Inspired Queries, Projecting to Actions (3 topics)
+- [x] Q/K/V mechanics clearly explained with shapes
+- [x] DETR parallel query insight emphasized
+- [x] Projection head: d_model → action_dim
+- [x] SO-ARM101 connection: 12 joints, 72 total numbers
+- [x] Punchline: "Q asks. K answers. V delivers."
+- [x] Philosophy quote callback: blind men and elephant
+- [x] Reader state: Mystery → Understanding
+- [x] Illustration #6 present (chapter-6-cross-attention-bridge.html)
 - [ ] User verified and approved
 -->

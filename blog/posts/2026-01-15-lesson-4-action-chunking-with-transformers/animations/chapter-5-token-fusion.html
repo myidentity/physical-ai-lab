@@ -1,0 +1,1932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1202 Token Fusion - Canvas Navigator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #0a0a1a;
+            --cyan: #00D4AA;
+            --coral: #e94560;
+            --gold: #ffd700;
+            --purple: #6C5CE7;
+            --text-light: #e4e4e7;
+            --text-muted: #9ca3af;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg-deep);
+            font-family: 'Sora', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+            color: var(--text-light);
+        }
+
+        .guided-widget {
+            width: 1200px;
+            height: 700px;
+            max-width: 1200px;
+            max-height: 100vh;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            background: var(--bg-deep);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .canvas-area {
+            width: 45%;
+            flex: 0 0 45%;
+            position: relative;
+            min-width: 0;
+            background: var(--bg-deep);
+        }
+
+        .content-panel {
+            width: 45%;
+            flex: 0 0 45%;
+            background: rgba(20, 20, 40, 0.95);
+            border-left: 1px solid rgba(99, 102, 241, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .nav-strip {
+            flex: 0 0 10%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(15, 15, 35, 0.95);
+            border-left: 1px solid rgba(99, 102, 241, 0.2);
+            padding: 10px;
+        }
+
+        .canvas-controls {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            display: flex;
+            gap: 8px;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .canvas-area:hover .canvas-controls { opacity: 1; }
+
+        .object-tooltip {
+            position: absolute;
+            background: rgba(20, 20, 40, 0.95);
+            border: 1px solid var(--cyan);
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--cyan);
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0, 212, 170, 0.2);
+        }
+
+        .canvas-controls button {
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            color: var(--text-light);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            transition: all 0.2s;
+        }
+
+        .canvas-controls button:hover {
+            background: rgba(99, 102, 241, 0.4);
+        }
+
+        .narrative-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .narrative-header h2 {
+            font-size: 18px;
+            color: var(--cyan);
+            margin-bottom: 8px;
+        }
+
+        .section-title { font-size: 14px; color: var(--text-muted); }
+
+        .narrative-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .narrative-content h3 {
+            font-size: 16px;
+            color: var(--gold);
+            margin-bottom: 12px;
+        }
+
+        .narrative-content p {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-light);
+            margin-bottom: 16px;
+        }
+
+        .narrative-content .key-point {
+            background: rgba(99, 102, 241, 0.15);
+            border-left: 3px solid var(--purple);
+            padding: 12px 16px;
+            margin: 16px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .narrative-content .key-point strong { color: var(--cyan); }
+
+        .section-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            padding: 16px;
+            border-top: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .section-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .section-dot:hover { background: rgba(255, 255, 255, 0.4); }
+
+        .section-dot.active {
+            background: var(--cyan);
+            border-color: var(--cyan);
+            box-shadow: 0 0 10px var(--cyan);
+        }
+
+        .section-dot[data-section="1"],
+        .section-dot[data-section="2"] { --dot-color: var(--coral); }
+        .section-dot[data-section="3"],
+        .section-dot[data-section="4"],
+        .section-dot[data-section="5"] { --dot-color: var(--cyan); }
+        .section-dot[data-section="6"],
+        .section-dot[data-section="7"] { --dot-color: var(--purple); }
+        .section-dot[data-section="8"] { --dot-color: var(--gold); }
+
+        .section-dot[data-section].active {
+            background: var(--dot-color);
+            border-color: var(--dot-color);
+            box-shadow: 0 0 10px var(--dot-color);
+        }
+
+        .nav-controls {
+            display: flex;
+            gap: 12px;
+            padding: 16px 20px;
+            border-top: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .nav-btn {
+            flex: 1;
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            color: var(--text-light);
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: rgba(99, 102, 241, 0.4);
+            border-color: rgba(99, 102, 241, 0.6);
+        }
+
+        .nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .loading {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-deep);
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            width: 40px; height: 40px;
+            border: 3px solid rgba(0, 212, 170, 0.3);
+            border-top-color: var(--cyan);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .emotion-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+
+        .emotion-concern { background: rgba(233, 69, 96, 0.2); color: var(--coral); }
+        .emotion-alarm { background: rgba(255, 68, 68, 0.2); color: #ff6b6b; }
+        .emotion-eureka { background: rgba(0, 212, 170, 0.2); color: var(--cyan); }
+        .emotion-satisfaction { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+        .emotion-triumph { background: rgba(255, 215, 0, 0.2); color: var(--gold); }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading">
+        <div class="loading-spinner"></div>
+        <div>Loading 1202 Token Fusion Animation...</div>
+    </div>
+
+    <div class="guided-widget main-container">
+        <div id="canvas-container" class="canvas-area">
+            <div class="canvas-controls">
+                <button id="reset-view-btn">Reset View</button>
+                <button id="reset-animation-btn">Reset Animation</button>
+            </div>
+            <div id="object-tooltip" class="object-tooltip"></div>
+        </div>
+
+        <div class="narrative-panel content-panel">
+            <div class="narrative-header">
+                <h2>1202 Token Fusion</h2>
+                <div class="section-title" id="section-title">Section 1 of 8</div>
+            </div>
+
+            <div class="narrative-content" id="narrative-content"></div>
+
+            <div class="section-indicator">
+                <div class="section-dot active" data-section="1" title="Opening Hook"></div>
+                <div class="section-dot" data-section="2" title="The Problem Space"></div>
+                <div class="section-dot" data-section="3" title="Enter Token Fusion"></div>
+                <div class="section-dot" data-section="4" title="Attention Deep Dive"></div>
+                <div class="section-dot" data-section="5" title="Temporal Fusion"></div>
+                <div class="section-dot" data-section="6" title="Unified Representation"></div>
+                <div class="section-dot" data-section="7" title="Real-World Application"></div>
+                <div class="section-dot" data-section="8" title="1202 Tokens"></div>
+            </div>
+
+            <div class="nav-controls">
+                <button class="nav-btn" id="prev-btn" disabled>← Previous</button>
+                <button class="nav-btn" id="next-btn">Next →</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TrackballControls.js"></script>
+
+    <script>
+        // ========================================
+        // NARRATIVE CONTENT FOR EACH SECTION
+        // ========================================
+        const narrativeContent = {
+            1: {
+                title: "Opening Hook",
+                emotion: "concern",
+                emotionLabel: "😟 Concern",
+                content: `
+                    <p>In autonomous robotics, your robot doesn't see the world—<strong>it drowns in fragments</strong>.</p>
+                    <div class="key-point">
+                        <strong>1202 tokens.</strong> Each one a piece of truth. None of them... the whole picture.
+                    </div>
+                    <p>Watch the scattered tokens float chaotically. Each small cube represents sensor data:</p>
+                    <p>• <span style="color:#00D4AA">LiDAR points</span> • <span style="color:#22c55e">RGB patches</span> • <span style="color:#ffd700">IMU vectors</span> • <span style="color:#6C5CE7">Joint states</span></p>
+                    <p><em>How can a robot understand anything from this chaos?</em></p>
+                `
+            },
+            2: {
+                title: "The Problem Space",
+                emotion: "alarm",
+                emotionLabel: "😰 Alarm",
+                content: `
+                    <p>Your <strong>Hesai XT-16</strong> fires 16 beams. Your <strong>RealSense D435i</strong> captures 640×480 depth. Your <strong>IMU</strong> samples at 200Hz.</p>
+                    <div class="key-point">
+                        <strong>The Crisis:</strong> These modalities speak different languages!
+                    </div>
+                    <p>Left side: Raw sensor streams flowing from the Go2-W robot.</p>
+                    <p>Right side: Token clusters organized by type—but notice the <span style="color:var(--coral)">gaps</span> between them.</p>
+                    <p>Blue = LiDAR, Green = RGB, Yellow = IMU, Purple = Proprioception</p>
+                    <p>Each cluster is isolated. <strong>No cross-modal understanding.</strong></p>
+                `
+            },
+            3: {
+                title: "Enter Token Fusion",
+                emotion: "eureka",
+                emotionLabel: "💡 Eureka",
+                content: `
+                    <p>Watch as scattered tokens gravitate toward the <strong>Fusion Core</strong>—a glowing geometric structure at the center.</p>
+                    <div class="key-point">
+                        <strong>Token Fusion doesn't concatenate. It doesn't average.</strong>
+                    </div>
+                    <p>It learns which fragments belong together—across space, time, and modality.</p>
+                    <p>Watch the attention patterns form as tokens stream in:</p>
+                    <p>• Curved trajectories show learned attention paths<br>
+                    • Cross-attention beams connect different modalities<br>
+                    • Fused tokens emerge—larger, multi-colored</p>
+                `
+            },
+            4: {
+                title: "The Attention Mechanism",
+                emotion: "eureka",
+                emotionLabel: "💡 Eureka",
+                content: `
+                    <p>Zoom inside the Fusion Core. The interior reveals the <strong>QKV mechanism</strong>—three chambers working together.</p>
+                    <div class="key-point">
+                        <strong>Q</strong> = Query (cyan) | <strong>K</strong> = Key (magenta) | <strong>V</strong> = Value (gold)
+                    </div>
+                    <p>Every token asks: <em>"Who in this room has information I need?"</em></p>
+                    <p>The Keys answer. The Values deliver.</p>
+                    <p>This is <strong>cross-modal attention</strong>—LiDAR asking RGB: "What color is that obstacle?"</p>
+                    <p>Watch the attention scores form as connections strengthen between related tokens.</p>
+                `
+            },
+            5: {
+                title: "Temporal Fusion",
+                emotion: "eureka",
+                emotionLabel: "💡 Eureka",
+                content: `
+                    <p>Single-frame fusion is just the beginning. Token Fusion learns across <strong>TIME</strong>.</p>
+                    <div class="key-point">
+                        <strong>That pedestrian token from 200ms ago?</strong> It's still informing your current trajectory prediction.
+                    </div>
+                    <p>The timeline shows multiple fusion instances: t-3, t-2, t-1, t, t+1 (prediction).</p>
+                    <p>• Blue side = past<br>
+                    • White = present<br>
+                    • Orange cone = predicted future</p>
+                    <p>Temporal attention bridges connect tokens across time steps.</p>
+                `
+            },
+            6: {
+                title: "The Unified Representation",
+                emotion: "satisfaction",
+                emotionLabel: "😊 Satisfaction",
+                content: `
+                    <p>What emerges isn't just data—<strong>it's understanding</strong>.</p>
+                    <div class="key-point">
+                        Each fused token now carries:<br>
+                        • LiDAR's geometry<br>
+                        • RGB's semantics<br>
+                        • IMU's dynamics
+                    </div>
+                    <p>The 3D voxel grid shows the unified scene representation.</p>
+                    <p>• Each voxel contains multi-modal information<br>
+                    • Semantic labels emerge: "obstacle", "traversable", "dynamic"<br>
+                    • Uncertainty halos show confidence levels</p>
+                    <p><strong>Your robot finally sees.</strong></p>
+                `
+            },
+            7: {
+                title: "Real-World Application",
+                emotion: "satisfaction",
+                emotionLabel: "😊 Satisfaction",
+                content: `
+                    <p>On your <strong>Go2-W security patrol</strong>, Token Fusion is why the robot:</p>
+                    <div class="key-point">
+                        • Knows that glass door isn't empty space<br>
+                        • Predicts your cat's trajectory<br>
+                        • Doesn't let sensor noise become navigation errors
+                    </div>
+                    <p>Watch the robot navigate the complex environment with the fusion overlay showing real-time processing.</p>
+                    <p>Decision points highlight where fusion resolves ambiguity—glass, mirrors, moving objects, lighting changes.</p>
+                `
+            },
+            8: {
+                title: "1202 Tokens. One Understanding.",
+                emotion: "triumph",
+                emotionLabel: "🎯 Triumph",
+                content: `
+                    <div class="key-point" style="text-align:center;font-size:32px;padding:24px;">
+                        <strong style="color:var(--gold)">1202</strong>
+                    </div>
+                    <p style="text-align:center;font-size:18px;color:var(--cyan)">tokens. One understanding.</p>
+                    <p style="text-align:center;margin-top:24px;font-style:italic;color:var(--text-muted)">
+                        "Four eyes see different parts of the elephant.<br>
+                        The transformer sees the whole."
+                    </p>
+                    <div class="key-point" style="margin-top:24px;">
+                        <strong>Token Count Breakdown:</strong><br>
+                        768 LiDAR + 196 RGB + 200 IMU + 38 Proprioception = <strong>1202</strong>
+                    </div>
+                `
+            }
+        };
+
+        // ========================================
+        // STATE
+        // ========================================
+        const state = {
+            currentSection: 1,
+            totalSections: 8,
+            scene: null,
+            camera: null,
+            renderer: null,
+            controls: null,
+            animationId: null,
+            currentObjects: [],
+            currentOverlays: []
+        };
+
+        // ========================================
+        // DOM REFERENCES
+        // ========================================
+        const container = document.getElementById('canvas-container');
+        const loadingEl = document.getElementById('loading');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const resetViewBtn = document.getElementById('reset-view-btn');
+        const resetAnimationBtn = document.getElementById('reset-animation-btn');
+        const sectionDots = document.querySelectorAll('.section-dot');
+        const narrativeEl = document.getElementById('narrative-content');
+        const sectionTitleEl = document.getElementById('section-title');
+        const tooltipEl = document.getElementById('object-tooltip');
+
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        // ========================================
+        // THREE.JS SETUP
+        // ========================================
+        function initThreeJS() {
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            state.scene = new THREE.Scene();
+            state.scene.background = new THREE.Color(0x0a0a1a);
+
+            state.camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+            state.camera.position.set(0, 2, 14);
+            window.currentCamera = state.camera;
+            window.initialCameraPosition = state.camera.position.clone();
+
+            state.renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+            state.renderer.setSize(width, height);
+            state.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(state.renderer.domElement);
+
+            state.controls = new THREE.TrackballControls(state.camera, state.renderer.domElement);
+            state.controls.rotateSpeed = 2.0;
+            state.controls.zoomSpeed = 1.2;
+            state.controls.panSpeed = 0.8;
+            state.controls.dynamicDampingFactor = 0.15;
+            window.currentControls = state.controls;
+
+            window.addEventListener('resize', onResize);
+
+            container.addEventListener('mousemove', (e) => {
+                const rect = container.getBoundingClientRect();
+                mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+                raycaster.setFromCamera(mouse, state.camera);
+                const intersects = raycaster.intersectObjects(state.scene.children, true);
+
+                if (intersects.length > 0 && intersects[0].object.name) {
+                    tooltipEl.textContent = intersects[0].object.name;
+                    tooltipEl.style.left = (e.clientX - rect.left + 12) + 'px';
+                    tooltipEl.style.top = (e.clientY - rect.top - 28) + 'px';
+                    tooltipEl.style.display = 'block';
+                } else {
+                    tooltipEl.style.display = 'none';
+                }
+            });
+
+            container.addEventListener('mouseleave', () => {
+                tooltipEl.style.display = 'none';
+            });
+        }
+
+        function onResize() {
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            state.camera.aspect = width / height;
+            state.camera.updateProjectionMatrix();
+            state.renderer.setSize(width, height);
+        }
+
+        // ========================================
+        // SCENE CLEANUP
+        // ========================================
+        function clearScene() {
+            if (state.animationId) {
+                cancelAnimationFrame(state.animationId);
+                state.animationId = null;
+            }
+
+            while (state.scene.children.length > 0) {
+                const obj = state.scene.children[0];
+                state.scene.remove(obj);
+                if (obj.geometry) obj.geometry.dispose();
+                if (obj.material) {
+                    if (Array.isArray(obj.material)) {
+                        obj.material.forEach(m => m.dispose());
+                    } else {
+                        obj.material.dispose();
+                    }
+                }
+            }
+
+            state.currentOverlays.forEach(el => el.remove());
+            state.currentOverlays = [];
+        }
+
+        // ========================================
+        // HELPER: Create Token Cube
+        // ========================================
+        function createToken(color, position, scale = 0.15, name = '') {
+            const geom = new THREE.BoxGeometry(1, 1, 1);
+            const mat = new THREE.MeshStandardMaterial({
+                color: color,
+                emissive: color,
+                emissiveIntensity: 0.4,
+                roughness: 0.3,
+                metalness: 0.6
+            });
+            const mesh = new THREE.Mesh(geom, mat);
+            mesh.position.copy(position);
+            mesh.scale.setScalar(scale);
+            if (name) mesh.name = name;
+            return mesh;
+        }
+
+        // ========================================
+        // SECTION 1: Opening Hook - Chaotic Tokens
+        // ========================================
+        function loadSection1() {
+            const scene = state.scene;
+            const camera = state.camera;
+
+            camera.position.set(0, 2, 14);
+            window.initialCameraPosition = camera.position.clone();
+
+            // Lighting
+            const ambient = new THREE.AmbientLight(0x404080, 0.8);
+            scene.add(ambient);
+            const point1 = new THREE.PointLight(0xff8844, 0.6, 30);
+            point1.position.set(5, 5, 5);
+            scene.add(point1);
+            const point2 = new THREE.PointLight(0x00D4AA, 0.4, 30);
+            point2.position.set(-5, -3, 5);
+            scene.add(point2);
+
+            // Create 1202 tokens (simplified to ~100 for performance)
+            const tokens = [];
+            const colors = [0x00D4AA, 0x22c55e, 0xffd700, 0x6C5CE7]; // LiDAR, RGB, IMU, Proprio
+            const colorNames = ['LiDAR Token', 'RGB Token', 'IMU Token', 'Joint Token'];
+
+            for (let i = 0; i < 100; i++) {
+                const colorIdx = Math.floor(Math.random() * 4);
+                const pos = new THREE.Vector3(
+                    (Math.random() - 0.5) * 12,
+                    (Math.random() - 0.5) * 8,
+                    (Math.random() - 0.5) * 6
+                );
+                const token = createToken(colors[colorIdx], pos, 0.12 + Math.random() * 0.08, colorNames[colorIdx]);
+                token.userData.velocity = new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.02,
+                    (Math.random() - 0.5) * 0.02,
+                    (Math.random() - 0.5) * 0.02
+                );
+                token.userData.originalPos = pos.clone();
+                scene.add(token);
+                tokens.push(token);
+            }
+
+            // Background grid
+            const gridHelper = new THREE.GridHelper(20, 20, 0x1a1a3a, 0x1a1a3a);
+            gridHelper.position.y = -5;
+            gridHelper.material.opacity = 0.3;
+            gridHelper.material.transparent = true;
+            scene.add(gridHelper);
+
+            // HTML Overlay
+            const overlayContainer = document.createElement('div');
+            overlayContainer.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;';
+            container.appendChild(overlayContainer);
+            state.currentOverlays.push(overlayContainer);
+
+            const title = document.createElement('div');
+            title.innerHTML = '😟 FRAGMENTED PERCEPTION';
+            title.style.cssText = 'position:absolute;top:5%;left:10%;font-size:16px;font-weight:bold;color:#e94560;font-family:JetBrains Mono,monospace;text-shadow:0 0 10px rgba(233,69,96,0.5);';
+            overlayContainer.appendChild(title);
+
+            const counter = document.createElement('div');
+            counter.innerHTML = '1202 tokens';
+            counter.style.cssText = 'position:absolute;top:5%;right:10%;font-size:20px;color:#ffd700;font-family:JetBrains Mono,monospace;text-shadow:0 0 10px rgba(255,215,0,0.5);';
+            overlayContainer.appendChild(counter);
+
+            const question = document.createElement('div');
+            question.innerHTML = '?';
+            question.style.cssText = 'position:absolute;top:45%;left:48%;font-size:48px;color:#e94560;font-family:serif;opacity:0.8;animation:pulse 2s infinite;';
+            overlayContainer.appendChild(question);
+
+            const style = document.createElement('style');
+            style.textContent = '@keyframes pulse{0%,100%{opacity:0.5;transform:scale(1)}50%{opacity:1;transform:scale(1.1)}}';
+            overlayContainer.appendChild(style);
+
+            // Animation
+            let time = 0;
+            function animate() {
+                state.animationId = requestAnimationFrame(animate);
+                time += 0.016;
+
+                tokens.forEach((token, i) => {
+                    // Brownian motion
+                    token.position.add(token.userData.velocity);
+
+                    // Boundary bounce
+                    ['x', 'y', 'z'].forEach(axis => {
+                        const limit = axis === 'y' ? 4 : 6;
+                        if (Math.abs(token.position[axis]) > limit) {
+                            token.userData.velocity[axis] *= -1;
+                        }
+                    });
+
+                    // Rotation
+                    token.rotation.x += 0.01;
+                    token.rotation.y += 0.015;
+
+                    // Pulse
+                    const pulse = 1 + 0.1 * Math.sin(time * 2 + i * 0.1);
+                    token.scale.setScalar((0.12 + (i % 5) * 0.02) * pulse);
+                });
+
+                state.controls.update();
+                state.renderer.render(scene, camera);
+            }
+            animate();
+        }
+
+        // ========================================
+        // SECTION 2: The Problem Space
+        // ========================================
+        function loadSection2() {
+            const scene = state.scene;
+            const camera = state.camera;
+
+            camera.position.set(0, 2, 18);
+            window.initialCameraPosition = camera.position.clone();
+
+            const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambient);
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            dirLight.position.set(5, 10, 5);
+            scene.add(dirLight);
+
+            // Divider
+            const dividerGeom = new THREE.PlaneGeometry(0.05, 10);
+            const dividerMat = new THREE.MeshBasicMaterial({ color: 0x3a3a5a, transparent: true, opacity: 0.5, side: THREE.DoubleSide });
+            const divider = new THREE.Mesh(dividerGeom, dividerMat);
+            divider.name = 'Panel Divider';
+            scene.add(divider);
+
+            // LEFT: Robot with sensor streams
+            const leftGroup = new THREE.Group();
+            leftGroup.position.x = -4;
+            scene.add(leftGroup);
+
+            // Simplified robot body
+            const robotBody = new THREE.Mesh(
+                new THREE.BoxGeometry(1.5, 0.6, 2),
+                new THREE.MeshStandardMaterial({ color: 0x4a4a6a, emissive: 0x2a2a4a, emissiveIntensity: 0.3 })
+            );
+            robotBody.name = 'Go2-W Robot Body';
+            leftGroup.add(robotBody);
+
+            // Sensor indicators
+            const sensorColors = [0x00D4AA, 0x22c55e, 0xffd700];
+            const sensorNames = ['Hesai XT-16 LiDAR', 'RealSense D435i', 'IMU Sensor'];
+            const sensorPositions = [[0, 0.5, 0], [0.5, 0.2, 1], [-0.5, 0.2, 1]];
+
+            sensorPositions.forEach((pos, i) => {
+                const sensor = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.15, 16, 16),
+                    new THREE.MeshStandardMaterial({ color: sensorColors[i], emissive: sensorColors[i], emissiveIntensity: 0.6 })
+                );
+                sensor.position.set(...pos);
+                sensor.name = sensorNames[i];
+                leftGroup.add(sensor);
+            });
+
+            // RIGHT: Token clusters
+            const rightGroup = new THREE.Group();
+            rightGroup.position.x = 4;
+            scene.add(rightGroup);
+
+            const clusterColors = [0x00D4AA, 0x22c55e, 0xffd700, 0x6C5CE7];
+            const clusterNames = ['LiDAR Tokens (768)', 'RGB Tokens (196)', 'IMU Tokens (200)', 'Proprio Tokens (38)'];
+            const clusterPositions = [[-1.5, 1.5, 0], [1.5, 1.5, 0], [-1.5, -1.5, 0], [1.5, -1.5, 0]];
+
+            const clusters = [];
+            clusterPositions.forEach((pos, i) => {
+                const cluster = new THREE.Group();
+                cluster.position.set(...pos);
+
+                // Create cluster of small tokens
+                for (let j = 0; j < 15; j++) {
+                    const token = createToken(
+                        clusterColors[i],
+                        new THREE.Vector3((Math.random() - 0.5) * 1.2, (Math.random() - 0.5) * 1.2, (Math.random() - 0.5) * 0.5),
+                        0.1,
+                        clusterNames[i]
+                    );
+                    cluster.add(token);
+                }
+                rightGroup.add(cluster);
+                clusters.push(cluster);
+            });
+
+            // Gap indicators (question marks as small spheres)
+            const gapMat = new THREE.MeshBasicMaterial({ color: 0xe94560, transparent: true, opacity: 0.6 });
+            const gaps = [];
+            [[0, 0, 0], [0, 1.5, 0], [0, -1.5, 0]].forEach(pos => {
+                const gap = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), gapMat.clone());
+                gap.position.set(...pos);
+                gap.name = 'Missing Connection';
+                rightGroup.add(gap);
+                gaps.push(gap);
+            });
+
+            // Data stream ribbons (simplified as lines)
+            const streamMat = new THREE.LineBasicMaterial({ color: 0x00D4AA, transparent: true, opacity: 0.5 });
+            const streams = [];
+            for (let i = 0; i < 5; i++) {
+                const points = [];
+                for (let j = 0; j < 20; j++) {
+                    points.push(new THREE.Vector3(
+                        -4 + j * 0.4,
+                        Math.sin(j * 0.3 + i) * 0.5,
+                        (i - 2) * 0.3
+                    ));
+                }
+                const geom = new THREE.BufferGeometry().setFromPoints(points);
+                const line = new THREE.Line(geom, streamMat.clone());
+                line.name = 'Data Stream';
+                scene.add(line);
+                streams.push({ line, offset: i });
+            }
+
+            // HTML Overlay
+            const overlayContainer = document.createElement('div');
+            overlayContainer.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;';
+            container.appendChild(overlayContainer);
+            state.currentOverlays.push(overlayContainer);
+
+            const leftLabel = document.createElement('div');
+            leftLabel.innerHTML = 'SENSOR STREAMS';
+            leftLabel.style.cssText = 'position:absolute;top:8%;left:5%;font-size:14px;color:#00D4AA;font-family:JetBrains Mono,monospace;';
+            overlayContainer.appendChild(leftLabel);
+
+            const rightLabel = document.createElement('div');
+            rightLabel.innerHTML = 'TOKEN CLUSTERS';
+            rightLabel.style.cssText = 'position:absolute;top:8%;right:15%;font-size:14px;color:#6C5CE7;font-family:JetBrains Mono,monospace;';
+            overlayContainer.appendChild(rightLabel);
+
+            // Animation
+            let time = 0;
+            function animate() {
+                state.animationId = requestAnimationFrame(animate);
+                time += 0.016;
+
+                // Pulse clusters
+                clusters.forEach((cluster, i) => {
+                    cluster.children.forEach((token, j) => {
+                        const pulse = 1 + 0.15 * Math.sin(time * 3 + i + j * 0.2);
+                        token.scale.setScalar(0.1 * pulse);
+                    });
+                });
+
+                // Flicker gaps
+                gaps.forEach((gap, i) => {
+                    gap.material.opacity = 0.3 + 0.4 * Math.abs(Math.sin(time * 4 + i));
+                });
+
+                // Animate streams
+                streams.forEach(({ line, offset }) => {
+                    const positions = line.geometry.attributes.position.array;
+                    for (let j = 0; j < 20; j++) {
+                        positions[j * 3 + 1] = Math.sin((j + time * 5) * 0.3 + offset) * 0.5;
+                    }
+                    line.geometry.attributes.position.needsUpdate = true;
+                });
+
+                state.controls.update();
+                state.renderer.render(scene, camera);
+            }
+            animate();
+        }
+
+        // ========================================
+        // SECTION 3: Enter Token Fusion
+        // ========================================
+        function loadSection3() {
+            const scene = state.scene;
+            const camera = state.camera;
+
+            camera.position.set(0, 3, 12);
+            window.initialCameraPosition = camera.position.clone();
+
+            const ambient = new THREE.AmbientLight(0x404080, 0.5);
+            scene.add(ambient);
+            const coreLight = new THREE.PointLight(0xffd700, 1.5, 20);
+            coreLight.position.set(0, 0, 0);
+            scene.add(coreLight);
+
+            // Fusion Core (icosahedron)
+            const coreGeom = new THREE.IcosahedronGeometry(1.2, 1);
+            const coreMat = new THREE.MeshStandardMaterial({
+                color: 0xffd700,
+                emissive: 0xffd700,
+                emissiveIntensity: 0.6,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.8
+            });
+            const fusionCore = new THREE.Mesh(coreGeom, coreMat);
+            fusionCore.name = 'Fusion Core';
+            scene.add(fusionCore);
+
+            // Inner core (solid)
+            const innerCore = new THREE.Mesh(
+                new THREE.SphereGeometry(0.6, 32, 32),
+                new THREE.MeshStandardMaterial({
+                    color: 0xffffff,
+                    emissive: 0xffd700,
+                    emissiveIntensity: 0.8
+                })
+            );
+            innerCore.name = 'Fusion Core Center';
+            scene.add(innerCore);
+
+            // Source tokens at edges
+            const sourcePositions = [
+                new THREE.Vector3(-5, 2, 0),
+                new THREE.Vector3(5, 2, 0),
+                new THREE.Vector3(-5, -2, 0),
+                new THREE.Vector3(5, -2, 0)
+            ];
+            const sourceColors = [0x00D4AA, 0x22c55e, 0xffd700, 0x6C5CE7];
+            const sourceNames = ['LiDAR Source', 'RGB Source', 'IMU Source', 'Proprio Source'];
+
+            const sources = [];
+            sourcePositions.forEach((pos, i) => {
+                const source = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.4, 16, 16),
+                    new THREE.MeshStandardMaterial({
+                        color: sourceColors[i],
+                        emissive: sourceColors[i],
+                        emissiveIntensity: 0.5
+                    })
+                );
+                source.position.copy(pos);
+                source.name = sourceNames[i];
+                scene.add(source);
+                sources.push(source);
+            });
+
+            // Streaming particles
+            const particles = [];
+            for (let i = 0; i < 60; i++) {
+                const sourceIdx = i % 4;
+                const particle = createToken(
+                    sourceColors[sourceIdx],
+                    sourcePositions[sourceIdx].clone(),
+                    0.12,
+                    'Streaming Token'
+                );
+                particle.userData.sourceIdx = sourceIdx;
+                particle.userData.progress = Math.random();
+                scene.add(particle);
+                particles.push(particle);
+            }
+
+            // Cross-attention beams
+            const beamMat = new THREE.LineBasicMaterial({ color: 0x00D4AA, transparent: true, opacity: 0.3 });
+            const beams = [];
+            for (let i = 0; i < 6; i++) {
+                const points = [
+                    sourcePositions[i % 4].clone().multiplyScalar(0.8),
+                    new THREE.Vector3(0, 0, 0)
+                ];
+                const geom = new THREE.BufferGeometry().setFromPoints(points);
+                const beam = new THREE.Line(geom, beamMat.clone());
+                beam.name = 'Attention Beam';
+                scene.add(beam);
+                beams.push(beam);
+            }
+
+            // Fused tokens (emerging from core)
+            const fusedTokens = [];
+            for (let i = 0; i < 8; i++) {
+                const angle = (i / 8) * Math.PI * 2;
+                const token = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.25, 0.25, 0.25),
+                    new THREE.MeshStandardMaterial({
+                        color: 0xffffff,
+                        emissive: 0x00D4AA,
+                        emissiveIntensity: 0.5
+                    })
+                );
+                token.position.set(Math.cos(angle) * 2, Math.sin(angle) * 2, 0);
+                token.name = 'Fused Token';
+                scene.add(token);
+                fusedTokens.push({ mesh: token, angle });
+            }
+
+            // HTML Overlay
+            const overlayContainer = document.createElement('div');
+            overlayContainer.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;';
+            container.appendChild(overlayContainer);
+            state.currentOverlays.push(overlayContainer);
+
+            const title = document.createElement('div');
+            title.innerHTML = '💡 TOKEN FUSION';
+            title.style.cssText = 'position:absolute;top:5%;left:50%;transform:translateX(-50%);font-size:18px;color:#ffd700;font-family:JetBrains Mono,monospace;text-shadow:0 0 15px rgba(255,215,0,0.5);';
+            overlayContainer.appendChild(title);
+
+            const counter = document.createElement('div');
+            counter.id = 'fusion-counter';
+            counter.innerHTML = 'Fusing: 0';
+            counter.style.cssText = 'position:absolute;bottom:10%;left:50%;transform:translateX(-50%);font-size:24px;color:#00D4AA;font-family:JetBrains Mono,monospace;';
+            overlayContainer.appendChild(counter);
+
+            // Animation
+            let time = 0;
+            let fusionCount = 0;
+            function animate() {
+                state.animationId = requestAnimationFrame(animate);
+                time += 0.016;
+
+                // Rotate fusion core
+                fusionCore.rotation.x += 0.005;
+                fusionCore.rotation.y += 0.008;
+                innerCore.rotation.y -= 0.01;
+
+                // Pulse core
+                const corePulse = 1 + 0.1 * Math.sin(time * 3);
+                fusionCore.scale.setScalar(corePulse);
+                innerCore.scale.setScalar(0.6 * (1 + 0.15 * Math.sin(time * 4)));
+
+                // Stream particles toward center
+                particles.forEach(particle => {
+                    particle.userData.progress += 0.008;
+                    if (particle.userData.progress > 1) {
+                        particle.userData.progress = 0;
+                        fusionCount = (fusionCount + 1) % 1203;
+                        counter.innerHTML = `Fusing: ${fusionCount}`;
+                    }
+
+                    const source = sourcePositions[particle.userData.sourceIdx];
+                    const t = particle.userData.progress;
+                    // Curved path using quadratic bezier
+                    const mid = new THREE.Vector3(
+                        source.x * 0.5,
+                        source.y * 0.5 + Math.sin(t * Math.PI) * 2,
+                        Math.sin(t * Math.PI) * 2
+                    );
+                    particle.position.lerpVectors(source, mid, t * 2);
+                    if (t > 0.5) {
+                        particle.position.lerpVectors(mid, new THREE.Vector3(0, 0, 0), (t - 0.5) * 2);
+                    }
+                    particle.scale.setScalar(0.12 * (1 - t * 0.5));
+                });
+
+                // Pulse beams
+                beams.forEach((beam, i) => {
+                    beam.material.opacity = 0.2 + 0.3 * Math.abs(Math.sin(time * 2 + i));
+                });
+
+                // Orbit fused tokens
+                fusedTokens.forEach(({ mesh, angle }, i) => {
+                    const newAngle = angle + time * 0.5;
+                    mesh.position.x = Math.cos(newAngle) * (2 + 0.3 * Math.sin(time * 2 + i));
+                    mesh.position.y = Math.sin(newAngle) * (2 + 0.3 * Math.sin(time * 2 + i));
+                    mesh.rotation.x += 0.02;
+                    mesh.rotation.y += 0.03;
+                });
+
+                // Pulse sources
+                sources.forEach((source, i) => {
+                    const pulse = 1 + 0.2 * Math.sin(time * 3 + i);
+                    source.scale.setScalar(pulse);
+                });
+
+                state.controls.update();
+                state.renderer.render(scene, camera);
+            }
+            animate();
+        }
+
+        // ========================================
+        // SECTION 4: The Attention Mechanism
+        // ========================================
+        function loadSection4() {
+            const scene = state.scene;
+            const camera = state.camera;
+
+            camera.position.set(0, 0, 10);
+            window.initialCameraPosition = camera.position.clone();
+
+            const ambient = new THREE.AmbientLight(0x404080, 0.4);
+            scene.add(ambient);
+
+            // Three QKV chambers
+            const chamberColors = [0x00D4AA, 0xff00ff, 0xffd700]; // Q=cyan, K=magenta, V=gold
+            const chamberNames = ['Query Chamber (Q)', 'Key Chamber (K)', 'Value Chamber (V)'];
+            const chamberPositions = [[-3, 0, 0], [0, 0, 0], [3, 0, 0]];
+
+            const chambers = [];
+            chamberPositions.forEach((pos, i) => {
+                // Chamber container
+                const chamber = new THREE.Mesh(
+                    new THREE.BoxGeometry(2, 3, 2),
+                    new THREE.MeshStandardMaterial({
+                        color: chamberColors[i],
+                        emissive: chamberColors[i],
+                        emissiveIntensity: 0.2,
+                        transparent: true,
+                        opacity: 0.3,
+                        wireframe: true
+                    })
+                );
+                chamber.position.set(...pos);
+                chamber.name = chamberNames[i];
+                scene.add(chamber);
+
+                // Chamber light
+                const light = new THREE.PointLight(chamberColors[i], 0.8, 10);
+                light.position.set(pos[0], pos[1] + 2, pos[2]);
+                scene.add(light);
+
+                // Inner elements
+                const innerGroup = new THREE.Group();
+                innerGroup.position.set(...pos);
+
+                for (let j = 0; j < 8; j++) {
+                    const y = (j - 3.5) * 0.35;
+                    let geom;
+                    if (i === 0) geom = new THREE.ConeGeometry(0.15, 0.3, 4); // Q = arrows
+                    else if (i === 1) geom = new THREE.BoxGeometry(0.2, 0.2, 0.2); // K = grids
+                    else geom = new THREE.SphereGeometry(0.15, 8, 8); // V = spheres
+
+                    const elem = new THREE.Mesh(
+                        geom,
+                        new THREE.MeshStandardMaterial({
+                            color: chamberColors[i],
+                            emissive: chamberColors[i],
+                            emissiveIntensity: 0.5
+                        })
+                    );
+                    elem.position.set(0, y, 0);
+                    elem.name = chamberNames[i] + ' Token';
+                    innerGroup.add(elem);
+                }
+                scene.add(innerGroup);
+                chambers.push({ container: chamber, inner: innerGroup });
+            });
+
+            // Attention matrix floor
+            const matrixGeom = new THREE.PlaneGeometry(8, 8, 16, 16);
+            const matrixMat = new THREE.MeshBasicMaterial({
+                color: 0x505080,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.5
+            });
+            const matrix = new THREE.Mesh(matrixGeom, matrixMat);
+            matrix.rotation.x = -Math.PI / 2;
+            matrix.position.y = -2.5;
+            matrix.name = 'Attention Matrix';
+            scene.add(matrix);
+
+            // Attention connection lines
+            const connections = [];
+            for (let i = 0; i < 10; i++) {
+                const points = [
+                    new THREE.Vector3(-3, (Math.random() - 0.5) * 2, 0),
+                    new THREE.Vector3(0, (Math.random() - 0.5) * 2, 0),
+                    new THREE.Vector3(3, (Math.random() - 0.5) * 2, 0)
+                ];
+                const curve = new THREE.QuadraticBezierCurve3(points[0], points[1], points[2]);
+                const curvePoints = curve.getPoints(20);
+                const geom = new THREE.BufferGeometry().setFromPoints(curvePoints);
+                const line = new THREE.Line(
+                    geom,
+                    new THREE.LineBasicMaterial({
+                        color: 0xffffff,
+                        transparent: true,
+                        opacity: 0.2
+                    })
+                );
+                line.name = 'Attention Connection';
+                scene.add(line);
+                connections.push({ line, baseOpacity: 0.1 + Math.random() * 0.3 });
+            }
+
+            // HTML Overlay
+            const overlayContainer = document.createElement('div');
+            overlayContainer.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;';
+            container.appendChild(overlayContainer);
+            state.currentOverlays.push(overlayContainer);
+
+            const labels = ['Q', 'K', 'V'];
+            const labelColors = ['#00D4AA', '#ff00ff', '#ffd700'];
+            [15, 45, 75].forEach((left, i) => {
+                const label = document.createElement('div');
+                label.innerHTML = labels[i];
+                label.style.cssText = `position:absolute;top:10%;left:${left}%;font-size:24px;font-weight:bold;color:${labelColors[i]};font-family:JetBrains Mono,monospace;text-shadow:0 0 10px ${labelColors[i]};`;
+                overlayContainer.appendChild(label);
+            });
+
+            const formula = document.createElement('div');
+            formula.innerHTML = 'Attention(Q,K,V) = softmax(QK<sup>T</sup>/√d)V';
+            formula.style.cssText = 'position:absolute;bottom:12%;left:50%;transform:translateX(-50%);font-size:14px;color:#9ca3af;font-family:JetBrains Mono,monospace;';
+            overlayContainer.appendChild(formula);
+
+            // Animation
+            let time = 0;
+            function animate() {
+                state.animationId = requestAnimationFrame(animate);
+                time += 0.016;
+
+                // Rotate chamber elements
+                chambers.forEach(({ inner }, i) => {
+                    inner.children.forEach((elem, j) => {
+                        elem.rotation.y = time * (1 + i * 0.5);
+                        const pulse = 1 + 0.2 * Math.sin(time * 3 + j * 0.5 + i);
+                        elem.scale.setScalar(pulse);
+                    });
+                });
+
+                // Pulse attention connections
+                connections.forEach(({ line, baseOpacity }, i) => {
+                    line.material.opacity = baseOpacity + 0.3 * Math.abs(Math.sin(time * 2 + i * 0.5));
+                });
+
+                // Animate matrix
+                const positions = matrix.geometry.attributes.position.array;
+                for (let i = 0; i < positions.length; i += 3) {
+                    positions[i + 2] = 0.1 * Math.sin(positions[i] * 0.5 + time * 2) * Math.cos(positions[i + 1] * 0.5 + time * 2);
+                }
+                matrix.geometry.attributes.position.needsUpdate = true;
+
+                state.controls.update();
+                state.renderer.render(scene, camera);
+            }
+            animate();
+        }
+
+        // ========================================
+        // SECTION 5: Temporal Fusion
+        // ========================================
+        function loadSection5() {
+            const scene = state.scene;
+            const camera = state.camera;
+
+            camera.position.set(8, 3, 10);
+            window.initialCameraPosition = camera.position.clone();
+
+            const ambient = new THREE.AmbientLight(0x404080, 0.5);
+            scene.add(ambient);
+
+            // Timeline axis
+            const axisGeom = new THREE.CylinderGeometry(0.05, 0.05, 14, 8);
+            const axisMat = new THREE.MeshBasicMaterial({ color: 0x4a4a6a });
+            const axis = new THREE.Mesh(axisGeom, axisMat);
+            axis.rotation.z = Math.PI / 2;
+            axis.name = 'Time Axis';
+            scene.add(axis);
+
+            // Time points (t-3 to t+1)
+            const timeLabels = ['t-3', 't-2', 't-1', 't', 't+1'];
+            const timeColors = [0x3366ff, 0x4488ff, 0x66aaff, 0xffffff, 0xff8844];
+            const timePoints = [];
+
+            timeLabels.forEach((label, i) => {
+                const x = (i - 2) * 2.5;
+
+                // Fusion sphere at each time point
+                const sphere = new THREE.Mesh(
+                    new THREE.IcosahedronGeometry(0.6, 1),
+                    new THREE.MeshStandardMaterial({
+                        color: timeColors[i],
+                        emissive: timeColors[i],
+                        emissiveIntensity: i === 3 ? 0.8 : 0.3,
+                        wireframe: i !== 3
+                    })
+                );
+                sphere.position.set(x, 0, 0);
+                sphere.name = `Fusion at ${label}`;
+                scene.add(sphere);
+                timePoints.push(sphere);
+
+                // Time marker light
+                const light = new THREE.PointLight(timeColors[i], i === 3 ? 1 : 0.3, 5);
+                light.position.set(x, 1, 0);
+                scene.add(light);
+            });
+
+            // Temporal attention bridges
+            const bridges = [];
+            for (let i = 0; i < 4; i++) {
+                const startX = (i - 2) * 2.5;
+                const endX = (i - 1) * 2.5;
+                const curve = new THREE.QuadraticBezierCurve3(
+                    new THREE.Vector3(startX, 0, 0),
+                    new THREE.Vector3((startX + endX) / 2, 1.5, 0),
+                    new THREE.Vector3(endX, 0, 0)
+                );
+                const points = curve.getPoints(20);
+                const geom = new THREE.BufferGeometry().setFromPoints(points);
+                const bridge = new THREE.Line(
+                    geom,
+                    new THREE.LineBasicMaterial({
+                        color: 0x00D4AA,
+                        transparent: true,
+                        opacity: 0.4
+                    })
+                );
+                bridge.name = 'Temporal Bridge';
+                scene.add(bridge);
+                bridges.push(bridge);
+            }
+
+            // Prediction cone (future uncertainty)
+            const coneGeom = new THREE.ConeGeometry(1.5, 3, 16, 1, true);
+            const coneMat = new THREE.MeshBasicMaterial({
+                color: 0xff8844,
+                transparent: true,
+                opacity: 0.2,
+                wireframe: true,
+                side: THREE.DoubleSide
+            });
+            const cone = new THREE.Mesh(coneGeom, coneMat);
+            cone.position.set(5, 0, 0);
+            cone.rotation.z = -Math.PI / 2;
+            cone.name = 'Prediction Uncertainty Cone';
+            scene.add(cone);
+
+            // Token echo trails
+            const echoTrails = [];
+            for (let t = 0; t < 4; t++) {
+                for (let i = 0; i < 5; i++) {
+                    const x = (t - 2) * 2.5;
+                    const echo = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.15, 8, 8),
+                        new THREE.MeshBasicMaterial({
+                            color: timeColors[t],
+                            transparent: true,
+                            opacity: 0.5
+                        })
+                    );
+                    echo.position.set(x, (Math.random() - 0.5) * 1.5, (Math.random() - 0.5) * 1.5);
+                    echo.userData.baseX = x;
+                    echo.userData.offset = Math.random() * Math.PI * 2;
+                    echo.name = 'Token Echo';
+                    scene.add(echo);
+                    echoTrails.push(echo);
+                }
+            }
+
+            // HTML Overlay
+            const overlayContainer = document.createElement('div');
+            overlayContainer.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;';
+            container.appendChild(overlayContainer);
+            state.currentOverlays.push(overlayContainer);
+
+            const title = document.createElement('div');
+            title.innerHTML = '⏱️ TEMPORAL FUSION';
+            title.style.cssText = 'position:absolute;top:5%;left:50%;transform:translateX(-50%);font-size:18px;color:#00D4AA;font-family:JetBrains Mono,monospace;';
+            overlayContainer.appendChild(title);
+
+            // Time labels below
+            timeLabels.forEach((label, i) => {
+                const timeLabel = document.createElement('div');
+                timeLabel.innerHTML = label;
+                timeLabel.style.cssText = `position:absolute;bottom:20%;left:${15 + i * 17}%;font-size:14px;color:${i === 3 ? '#ffffff' : '#6a6a8a'};font-family:JetBrains Mono,monospace;`;
+                overlayContainer.appendChild(timeLabel);
+            });
+
+            // Animation
+            let time = 0;
+            function animate() {
+                state.animationId = requestAnimationFrame(animate);
+                time += 0.016;
+
+                // Pulse time points
+                timePoints.forEach((sphere, i) => {
+                    const pulse = 1 + (i === 3 ? 0.15 : 0.08) * Math.sin(time * 3 + i);
+                    sphere.scale.setScalar(pulse);
+                    sphere.rotation.y = time * 0.5;
+                });
+
+                // Pulse bridges
+                bridges.forEach((bridge, i) => {
+                    bridge.material.opacity = 0.3 + 0.3 * Math.abs(Math.sin(time * 2 + i * 0.5));
+                });
+
+                // Breathe prediction cone
+                const breathe = 1 + 0.1 * Math.sin(time * 1.5);
+                cone.scale.set(breathe, 1, breathe);
+
+                // Move echo trails
+                echoTrails.forEach(echo => {
+                    echo.position.x = echo.userData.baseX + 0.3 * Math.sin(time * 2 + echo.userData.offset);
+                    echo.material.opacity = 0.2 + 0.2 * Math.abs(Math.sin(time * 3 + echo.userData.offset));
+                });
+
+                state.controls.update();
+                state.renderer.render(scene, camera);
+            }
+            animate();
+        }
+
+        // ========================================
+        // SECTION 6: Unified Representation
+        // ========================================
+        function loadSection6() {
+            const scene = state.scene;
+            const camera = state.camera;
+
+            camera.position.set(0, 5, 12);
+            window.initialCameraPosition = camera.position.clone();
+
+            const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambient);
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            dirLight.position.set(5, 10, 5);
+            scene.add(dirLight);
+
+            // 3D voxel grid
+            const voxels = [];
+            const gridSize = 5;
+            const voxelSize = 0.5;
+            const spacing = 0.6;
+
+            for (let x = 0; x < gridSize; x++) {
+                for (let y = 0; y < 3; y++) {
+                    for (let z = 0; z < gridSize; z++) {
+                        // Random color based on semantic type
+                        const types = ['traversable', 'obstacle', 'dynamic'];
+                        const typeColors = [0x22c55e, 0xe94560, 0xffd700];
+                        const typeIdx = Math.floor(Math.random() * 3);
+
+                        const voxel = new THREE.Mesh(
+                            new THREE.BoxGeometry(voxelSize, voxelSize, voxelSize),
+                            new THREE.MeshStandardMaterial({
+                                color: typeColors[typeIdx],
+                                emissive: typeColors[typeIdx],
+                                emissiveIntensity: 0.3,
+                                transparent: true,
+                                opacity: 0.7 + Math.random() * 0.3
+                            })
+                        );
+                        voxel.position.set(
+                            (x - gridSize / 2) * spacing,
+                            y * spacing - 1,
+                            (z - gridSize / 2) * spacing
+                        );
+                        voxel.name = `${types[typeIdx]} voxel`;
+                        voxel.userData.typeIdx = typeIdx;
+                        voxel.userData.baseOpacity = 0.7 + Math.random() * 0.3;
+                        scene.add(voxel);
+                        voxels.push(voxel);
+                    }
+                }
+            }
+
+            // Uncertainty halos (for some voxels)
+            const halos = [];
+            for (let i = 0; i < 10; i++) {
+                const halo = new THREE.Mesh(
+                    new THREE.RingGeometry(0.4, 0.5, 16),
+                    new THREE.MeshBasicMaterial({
+                        color: 0xff6b6b,
+                        transparent: true,
+                        opacity: 0.3,
+                        side: THREE.DoubleSide
+                    })
+                );
+                const voxel = voxels[Math.floor(Math.random() * voxels.length)];
+                halo.position.copy(voxel.position);
+                halo.name = 'Uncertainty Halo';
+                scene.add(halo);
+                halos.push(halo);
+            }
+
+            // HTML Overlay
+            const overlayContainer = document.createElement('div');
+            overlayContainer.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;';
+            container.appendChild(overlayContainer);
+            state.currentOverlays.push(overlayContainer);
+
+            const title = document.createElement('div');
+            title.innerHTML = '🧠 UNIFIED REPRESENTATION';
+            title.style.cssText = 'position:absolute;top:5%;left:50%;transform:translateX(-50%);font-size:18px;color:#22c55e;font-family:JetBrains Mono,monospace;';
+            overlayContainer.appendChild(title);
+
+            const legend = document.createElement('div');
+            legend.innerHTML = `
+                <span style="color:#22c55e">● Traversable</span> &nbsp;
+                <span style="color:#e94560">● Obstacle</span> &nbsp;
+                <span style="color:#ffd700">● Dynamic</span>
+            `;
+            legend.style.cssText = 'position:absolute;bottom:10%;left:50%;transform:translateX(-50%);font-size:12px;font-family:JetBrains Mono,monospace;';
+            overlayContainer.appendChild(legend);
+
+            // Animation
+            let time = 0;
+            function animate() {
+                state.animationId = requestAnimationFrame(animate);
+                time += 0.016;
+
+                // Pulse voxels by type
+                voxels.forEach((voxel, i) => {
+                    const pulse = voxel.userData.baseOpacity + 0.2 * Math.sin(time * 2 + i * 0.1);
+                    voxel.material.opacity = Math.min(1, Math.max(0.3, pulse));
+                });
+
+                // Rotate halos
+                halos.forEach((halo, i) => {
+                    halo.rotation.x = time + i;
+                    halo.rotation.y = time * 0.5 + i;
+                    halo.material.opacity = 0.2 + 0.2 * Math.abs(Math.sin(time * 3 + i));
+                });
+
+                state.controls.update();
+                state.renderer.render(scene, camera);
+            }
+            animate();
+        }
+
+        // ========================================
+        // SECTION 7: Real-World Application
+        // ========================================
+        function loadSection7() {
+            const scene = state.scene;
+            const camera = state.camera;
+
+            camera.position.set(0, 8, 14);
+            window.initialCameraPosition = camera.position.clone();
+
+            const ambient = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambient);
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            dirLight.position.set(5, 10, 5);
+            scene.add(dirLight);
+
+            // Floor
+            const floor = new THREE.Mesh(
+                new THREE.PlaneGeometry(20, 20),
+                new THREE.MeshStandardMaterial({ color: 0x2a2a4a, emissive: 0x1a1a3a, emissiveIntensity: 0.3 })
+            );
+            floor.rotation.x = -Math.PI / 2;
+            floor.position.y = -2;
+            floor.name = 'Floor';
+            scene.add(floor);
+
+            // Robot (Go2-W simplified)
+            const robot = new THREE.Group();
+            const robotBody = new THREE.Mesh(
+                new THREE.BoxGeometry(1.5, 0.6, 2),
+                new THREE.MeshStandardMaterial({ color: 0x4a4a6a, emissive: 0x3a3a5a, emissiveIntensity: 0.3 })
+            );
+            robot.add(robotBody);
+
+            // Sensor glow
+            const sensorGlow = new THREE.Mesh(
+                new THREE.SphereGeometry(0.3, 16, 16),
+                new THREE.MeshBasicMaterial({ color: 0x00D4AA, transparent: true, opacity: 0.6 })
+            );
+            sensorGlow.position.set(0, 0.5, 0);
+            robot.add(sensorGlow);
+
+            robot.position.set(-4, -1.5, 0);
+            robot.name = 'Go2-W Robot';
+            scene.add(robot);
+
+            // Obstacles
+            const obstacles = [];
+            const obstacleData = [
+                { pos: [2, -1, -2], size: [1, 2, 1], name: 'Furniture' },
+                { pos: [0, -1, 3], size: [2, 2, 0.5], name: 'Glass Door' },
+                { pos: [4, -1, 1], size: [0.8, 1.5, 0.8], name: 'Dynamic Object' }
+            ];
+
+            obstacleData.forEach(({ pos, size, name }) => {
+                const obstacle = new THREE.Mesh(
+                    new THREE.BoxGeometry(...size),
+                    new THREE.MeshStandardMaterial({
+                        color: name === 'Glass Door' ? 0x66aaff : 0x6a4a4a,
+                        transparent: name === 'Glass Door',
+                        opacity: name === 'Glass Door' ? 0.3 : 1,
+                        emissive: name === 'Dynamic Object' ? 0xffd700 : 0x000000,
+                        emissiveIntensity: 0.3
+                    })
+                );
+                obstacle.position.set(...pos);
+                obstacle.name = name;
+                scene.add(obstacle);
+                obstacles.push(obstacle);
+            });
+
+            // Fusion overlay visualization (semi-transparent scan lines)
+            const scanLines = [];
+            for (let i = 0; i < 20; i++) {
+                const angle = (i / 20) * Math.PI * 2;
+                const points = [
+                    new THREE.Vector3(-4, -1, 0),
+                    new THREE.Vector3(-4 + Math.cos(angle) * 8, -1 + Math.sin(angle * 0.5), Math.sin(angle) * 8)
+                ];
+                const geom = new THREE.BufferGeometry().setFromPoints(points);
+                const line = new THREE.Line(
+                    geom,
+                    new THREE.LineBasicMaterial({
+                        color: 0x00D4AA,
+                        transparent: true,
+                        opacity: 0.2
+                    })
+                );
+                line.name = 'Sensor Scan';
+                scene.add(line);
+                scanLines.push({ line, angle });
+            }
+
+            // Decision point markers
+            const decisionPoints = [];
+            [[1, -1.5, 0], [0, -1.5, 2], [3, -1.5, 0]].forEach((pos, i) => {
+                const marker = new THREE.Mesh(
+                    new THREE.RingGeometry(0.3, 0.5, 16),
+                    new THREE.MeshBasicMaterial({
+                        color: 0xffd700,
+                        transparent: true,
+                        opacity: 0.5,
+                        side: THREE.DoubleSide
+                    })
+                );
+                marker.position.set(...pos);
+                marker.rotation.x = -Math.PI / 2;
+                marker.name = 'Decision Point';
+                scene.add(marker);
+                decisionPoints.push(marker);
+            });
+
+            // Path
+            const pathCurve = new THREE.CatmullRomCurve3([
+                new THREE.Vector3(-4, -1.8, 0),
+                new THREE.Vector3(-1, -1.8, 1),
+                new THREE.Vector3(1, -1.8, -1),
+                new THREE.Vector3(4, -1.8, 2)
+            ]);
+            const pathPoints = pathCurve.getPoints(50);
+            const pathGeom = new THREE.BufferGeometry().setFromPoints(pathPoints);
+            const path = new THREE.Line(
+                pathGeom,
+                new THREE.LineDashedMaterial({
+                    color: 0x00D4AA,
+                    dashSize: 0.3,
+                    gapSize: 0.15
+                })
+            );
+            path.computeLineDistances();
+            path.name = 'Planned Path';
+            scene.add(path);
+
+            // HTML Overlay
+            const overlayContainer = document.createElement('div');
+            overlayContainer.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;';
+            container.appendChild(overlayContainer);
+            state.currentOverlays.push(overlayContainer);
+
+            const title = document.createElement('div');
+            title.innerHTML = '🤖 REAL-WORLD APPLICATION';
+            title.style.cssText = 'position:absolute;top:5%;left:50%;transform:translateX(-50%);font-size:18px;color:#00D4AA;font-family:JetBrains Mono,monospace;';
+            overlayContainer.appendChild(title);
+
+            // Animation
+            let time = 0;
+            let robotProgress = 0;
+            function animate() {
+                state.animationId = requestAnimationFrame(animate);
+                time += 0.016;
+
+                // Move robot along path
+                robotProgress += 0.002;
+                if (robotProgress > 1) robotProgress = 0;
+                const robotPos = pathCurve.getPoint(robotProgress);
+                robot.position.x = robotPos.x;
+                robot.position.z = robotPos.z;
+
+                // Rotate robot to face direction
+                const nextPos = pathCurve.getPoint(Math.min(1, robotProgress + 0.01));
+                robot.rotation.y = Math.atan2(nextPos.x - robotPos.x, nextPos.z - robotPos.z);
+
+                // Pulse sensor glow
+                sensorGlow.scale.setScalar(1 + 0.2 * Math.sin(time * 5));
+
+                // Animate scan lines
+                scanLines.forEach(({ line, angle }, i) => {
+                    line.material.opacity = 0.1 + 0.2 * Math.abs(Math.sin(time * 3 + i * 0.3));
+                    const positions = line.geometry.attributes.position.array;
+                    positions[0] = robot.position.x;
+                    positions[2] = robot.position.z;
+                    line.geometry.attributes.position.needsUpdate = true;
+                });
+
+                // Pulse decision points
+                decisionPoints.forEach((marker, i) => {
+                    marker.material.opacity = 0.3 + 0.4 * Math.abs(Math.sin(time * 2 + i));
+                    marker.rotation.z = time;
+                });
+
+                // Pulse dynamic obstacle
+                obstacles[2].material.emissiveIntensity = 0.2 + 0.3 * Math.abs(Math.sin(time * 4));
+
+                state.controls.update();
+                state.renderer.render(scene, camera);
+            }
+            animate();
+        }
+
+        // ========================================
+        // SECTION 8: Punchline - 1202 Tokens
+        // ========================================
+        function loadSection8() {
+            const scene = state.scene;
+            const camera = state.camera;
+
+            camera.position.set(0, 0, 12);
+            window.initialCameraPosition = camera.position.clone();
+
+            const ambient = new THREE.AmbientLight(0x404080, 0.3);
+            scene.add(ambient);
+
+            // Central fusion sphere (large, bright)
+            const coreMat = new THREE.MeshStandardMaterial({
+                color: 0xffd700,
+                emissive: 0xffd700,
+                emissiveIntensity: 0.8
+            });
+            const core = new THREE.Mesh(new THREE.SphereGeometry(1.5, 32, 32), coreMat);
+            core.name = 'Understanding Core';
+            scene.add(core);
+
+            // Outer glow
+            const glow = new THREE.Mesh(
+                new THREE.SphereGeometry(2, 32, 32),
+                new THREE.MeshBasicMaterial({
+                    color: 0xffd700,
+                    transparent: true,
+                    opacity: 0.2
+                })
+            );
+            scene.add(glow);
+
+            // Golden rings
+            const rings = [];
+            for (let i = 0; i < 3; i++) {
+                const ring = new THREE.Mesh(
+                    new THREE.TorusGeometry(2.5 + i * 0.8, 0.05, 16, 64),
+                    new THREE.MeshBasicMaterial({
+                        color: 0xffd700,
+                        transparent: true,
+                        opacity: 0.5
+                    })
+                );
+                ring.rotation.x = Math.PI / 2 + i * 0.3;
+                ring.rotation.z = i * 0.5;
+                ring.name = 'Golden Ring';
+                scene.add(ring);
+                rings.push(ring);
+            }
+
+            // Celebration particles (100)
+            const particles = [];
+            const particleColors = [0xffd700, 0x00D4AA, 0x6C5CE7, 0xffffff];
+            for (let i = 0; i < 100; i++) {
+                const particle = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.15, 8, 8),
+                    new THREE.MeshBasicMaterial({
+                        color: particleColors[i % 4],
+                        transparent: true,
+                        opacity: 0.8
+                    })
+                );
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.random() * Math.PI;
+                const r = 3 + Math.random() * 3;
+                particle.position.set(
+                    r * Math.sin(phi) * Math.cos(theta),
+                    r * Math.sin(phi) * Math.sin(theta),
+                    r * Math.cos(phi)
+                );
+                particle.userData.velocity = new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.01,
+                    0.02 + Math.random() * 0.02,
+                    (Math.random() - 0.5) * 0.01
+                );
+                particle.name = 'Celebration Particle';
+                scene.add(particle);
+                particles.push(particle);
+            }
+
+            // Constellation of organized tokens (perception mandala)
+            const constellationTokens = [];
+            for (let i = 0; i < 20; i++) {
+                const angle = (i / 20) * Math.PI * 2;
+                const token = createToken(
+                    particleColors[i % 4],
+                    new THREE.Vector3(Math.cos(angle) * 5, Math.sin(angle) * 5, 0),
+                    0.15,
+                    'Constellation Token'
+                );
+                scene.add(token);
+                constellationTokens.push({ mesh: token, angle });
+            }
+
+            // HTML Overlay - The big reveal
+            const overlayContainer = document.createElement('div');
+            overlayContainer.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;';
+            container.appendChild(overlayContainer);
+            state.currentOverlays.push(overlayContainer);
+
+            // Big 1202 number
+            const bigNumber = document.createElement('div');
+            bigNumber.innerHTML = '1202';
+            bigNumber.style.cssText = 'position:absolute;top:30%;left:50%;transform:translateX(-50%);font-size:72px;font-weight:bold;color:#ffd700;font-family:Sora,sans-serif;text-shadow:0 0 30px rgba(255,215,0,0.8),0 0 60px rgba(255,215,0,0.4);opacity:0;transition:opacity 1.5s ease;';
+            overlayContainer.appendChild(bigNumber);
+
+            // Subtitle
+            const subtitle = document.createElement('div');
+            subtitle.innerHTML = 'tokens. One understanding.';
+            subtitle.style.cssText = 'position:absolute;top:50%;left:50%;transform:translateX(-50%);font-size:24px;color:#00D4AA;font-family:Sora,sans-serif;text-shadow:0 0 15px rgba(0,212,170,0.5);opacity:0;transition:opacity 1.5s ease;transition-delay:0.5s;';
+            overlayContainer.appendChild(subtitle);
+
+            // Philosophy quote
+            const quote = document.createElement('div');
+            quote.innerHTML = '"Four eyes see different parts of the elephant.<br>The transformer sees the whole."';
+            quote.style.cssText = 'position:absolute;bottom:15%;left:50%;transform:translateX(-50%);font-size:14px;color:#9ca3af;font-family:Sora,sans-serif;font-style:italic;text-align:center;opacity:0;transition:opacity 1.5s ease;transition-delay:1s;';
+            overlayContainer.appendChild(quote);
+
+            // Fade in elements
+            setTimeout(() => { bigNumber.style.opacity = '1'; }, 100);
+            setTimeout(() => { subtitle.style.opacity = '1'; }, 600);
+            setTimeout(() => { quote.style.opacity = '1'; }, 1100);
+
+            // Animation - holds for 15+ seconds
+            let time = 0;
+            function animate() {
+                state.animationId = requestAnimationFrame(animate);
+                time += 0.016;
+
+                // Pulse core
+                const corePulse = 1 + 0.1 * Math.sin(time * 2);
+                core.scale.setScalar(corePulse);
+                glow.scale.setScalar(corePulse * 1.3);
+
+                // Rotate rings
+                rings.forEach((ring, i) => {
+                    ring.rotation.z += 0.003 * (i + 1);
+                    ring.rotation.x += 0.002 * (i + 1);
+                });
+
+                // Float particles upward
+                particles.forEach(particle => {
+                    particle.position.add(particle.userData.velocity);
+                    if (particle.position.y > 6) {
+                        particle.position.y = -6;
+                    }
+                    particle.material.opacity = 0.5 + 0.3 * Math.sin(time * 3 + particle.position.x);
+                });
+
+                // Orbit constellation
+                constellationTokens.forEach(({ mesh, angle }, i) => {
+                    const newAngle = angle + time * 0.2;
+                    mesh.position.x = Math.cos(newAngle) * 5;
+                    mesh.position.y = Math.sin(newAngle) * 5;
+                    mesh.rotation.x = time;
+                    mesh.rotation.y = time * 0.5;
+                });
+
+                state.controls.update();
+                state.renderer.render(scene, camera);
+            }
+            animate();
+        }
+
+        // ========================================
+        // SECTION MANAGEMENT
+        // ========================================
+        function loadSection(sectionNum) {
+            clearScene();
+
+            switch(sectionNum) {
+                case 1: loadSection1(); break;
+                case 2: loadSection2(); break;
+                case 3: loadSection3(); break;
+                case 4: loadSection4(); break;
+                case 5: loadSection5(); break;
+                case 6: loadSection6(); break;
+                case 7: loadSection7(); break;
+                case 8: loadSection8(); break;
+            }
+
+            // Update narrative
+            const content = narrativeContent[sectionNum];
+            narrativeEl.innerHTML = `
+                <span class="emotion-badge emotion-${content.emotion}">${content.emotionLabel}</span>
+                <h3>${content.title}</h3>
+                ${content.content}
+            `;
+
+            // Update section indicator
+            sectionTitleEl.textContent = `Section ${sectionNum} of ${state.totalSections}`;
+            sectionDots.forEach((dot, i) => {
+                dot.classList.toggle('active', i + 1 === sectionNum);
+            });
+
+            // Update nav buttons
+            prevBtn.disabled = sectionNum === 1;
+            nextBtn.disabled = sectionNum === state.totalSections;
+        }
+
+        function goToSection(sectionNum) {
+            if (sectionNum >= 1 && sectionNum <= state.totalSections) {
+                state.currentSection = sectionNum;
+                loadSection(sectionNum);
+            }
+        }
+
+        // ========================================
+        // EVENT LISTENERS
+        // ========================================
+        prevBtn.addEventListener('click', () => goToSection(state.currentSection - 1));
+        nextBtn.addEventListener('click', () => goToSection(state.currentSection + 1));
+
+        sectionDots.forEach((dot, i) => {
+            dot.addEventListener('click', () => goToSection(i + 1));
+        });
+
+        resetViewBtn.addEventListener('click', () => {
+            if (window.initialCameraPosition && window.currentCamera) {
+                window.currentCamera.position.copy(window.initialCameraPosition);
+                window.currentCamera.up.set(0, 1, 0);
+                if (window.currentControls) {
+                    window.currentControls.target.set(0, 0, 0);
+                }
+            }
+        });
+
+        resetAnimationBtn.addEventListener('click', () => {
+            loadSection(state.currentSection);
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') goToSection(state.currentSection + 1);
+            if (e.key === 'ArrowLeft') goToSection(state.currentSection - 1);
+            if (e.key === 'r' || e.key === 'R') resetViewBtn.click();
+            if (e.key === 'a' || e.key === 'A') resetAnimationBtn.click();
+        });
+
+        // ========================================
+        // INITIALIZATION
+        // ========================================
+        window.addEventListener('load', () => {
+            initThreeJS();
+            loadSection(1);
+            loadingEl.style.display = 'none';
+        });
+    </script>
+</body>
+</html>

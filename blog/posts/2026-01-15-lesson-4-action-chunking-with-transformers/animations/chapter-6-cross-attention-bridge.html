@@ -1,0 +1,2092 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cross-Attention Bridge - Canvas Navigator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #0a0a1a;
+            --cyan: #00D4AA;
+            --coral: #e94560;
+            --gold: #ffd700;
+            --purple: #6C5CE7;
+            --text-light: #e4e4e7;
+            --text-muted: #9ca3af;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg-deep);
+            font-family: 'Sora', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+            color: var(--text-light);
+        }
+
+        .guided-widget {
+            width: 1200px;
+            height: 700px;
+            max-width: 1200px;
+            max-height: 100vh;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            background: var(--bg-deep);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .canvas-area {
+            width: 45%;
+            flex: 0 0 45%;
+            position: relative;
+            min-width: 0;
+            background: var(--bg-deep);
+        }
+
+        .content-panel {
+            width: 45%;
+            flex: 0 0 45%;
+            background: rgba(20, 20, 40, 0.95);
+            border-left: 1px solid rgba(99, 102, 241, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .nav-strip {
+            flex: 0 0 10%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(15, 15, 35, 0.95);
+            border-left: 1px solid rgba(99, 102, 241, 0.2);
+            padding: 10px;
+        }
+
+        .canvas-controls {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            display: flex;
+            gap: 8px;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .canvas-area:hover .canvas-controls { opacity: 1; }
+
+        .object-tooltip {
+            position: absolute;
+            background: rgba(20, 20, 40, 0.95);
+            border: 1px solid var(--cyan);
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--cyan);
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0, 212, 170, 0.2);
+        }
+
+        .canvas-controls button {
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            color: var(--text-light);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            transition: all 0.2s;
+        }
+
+        .canvas-controls button:hover {
+            background: rgba(99, 102, 241, 0.4);
+        }
+
+        .narrative-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .narrative-header h2 {
+            font-size: 18px;
+            color: var(--cyan);
+            margin-bottom: 8px;
+        }
+
+        .section-title { font-size: 14px; color: var(--text-muted); }
+
+        .narrative-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .narrative-content h3 {
+            font-size: 16px;
+            color: var(--gold);
+            margin-bottom: 12px;
+        }
+
+        .narrative-content p {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-light);
+            margin-bottom: 16px;
+        }
+
+        .narrative-content .key-point {
+            background: rgba(99, 102, 241, 0.15);
+            border-left: 3px solid var(--purple);
+            padding: 12px 16px;
+            margin: 16px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .narrative-content .key-point strong { color: var(--cyan); }
+
+        .section-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            padding: 16px;
+            border-top: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .section-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .section-dot:hover { background: rgba(255, 255, 255, 0.4); }
+
+        .section-dot.active {
+            background: var(--cyan);
+            border-color: var(--cyan);
+            box-shadow: 0 0 10px var(--cyan);
+        }
+
+        .section-dot[data-section="1"],
+        .section-dot[data-section="2"] { --dot-color: var(--cyan); }
+        .section-dot[data-section="3"],
+        .section-dot[data-section="4"] { --dot-color: var(--coral); }
+        .section-dot[data-section="5"] { --dot-color: var(--gold); }
+
+        .section-dot[data-section].active {
+            background: var(--dot-color);
+            border-color: var(--dot-color);
+            box-shadow: 0 0 10px var(--dot-color);
+        }
+
+        .nav-controls {
+            display: flex;
+            gap: 12px;
+            padding: 16px 20px;
+            border-top: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .nav-btn {
+            flex: 1;
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            color: var(--text-light);
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: rgba(99, 102, 241, 0.4);
+            border-color: rgba(99, 102, 241, 0.6);
+        }
+
+        .nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .loading {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-deep);
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            width: 40px; height: 40px;
+            border: 3px solid rgba(0, 212, 170, 0.3);
+            border-top-color: var(--cyan);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .emotion-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+
+        .emotion-mystery { background: rgba(108, 92, 231, 0.2); color: var(--purple); }
+        .emotion-curiosity { background: rgba(0, 212, 170, 0.2); color: var(--cyan); }
+        .emotion-eureka { background: rgba(233, 69, 96, 0.2); color: var(--coral); }
+        .emotion-clarity { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+        .emotion-triumph { background: rgba(255, 215, 0, 0.2); color: var(--gold); }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading">
+        <div class="loading-spinner"></div>
+        <div>Loading Cross-Attention Bridge Animation...</div>
+    </div>
+
+    <div class="guided-widget main-container">
+        <div id="canvas-container" class="canvas-area">
+            <div class="canvas-controls">
+                <button id="reset-view-btn">Reset View</button>
+                <button id="reset-animation-btn">Reset Animation</button>
+            </div>
+            <div id="object-tooltip" class="object-tooltip"></div>
+        </div>
+
+        <div class="narrative-panel content-panel">
+            <div class="narrative-header">
+                <h2>Cross-Attention Bridge</h2>
+                <div class="section-title" id="section-title">Section 1 of 5</div>
+            </div>
+
+            <div class="narrative-content" id="narrative-content"></div>
+
+            <div class="section-indicator">
+                <div class="section-dot active" data-section="1" title="Encoder Knowledge"></div>
+                <div class="section-dot" data-section="2" title="Queries Arrive"></div>
+                <div class="section-dot" data-section="3" title="Attention Lines"></div>
+                <div class="section-dot" data-section="4" title="Knowledge Flows"></div>
+                <div class="section-dot" data-section="5" title="Punchline"></div>
+            </div>
+
+            <div class="nav-controls">
+                <button class="nav-btn" id="prev-btn" disabled>← Previous</button>
+                <button class="nav-btn" id="next-btn">Next →</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TrackballControls.js"></script>
+
+    <script>
+        // ========================================
+        // NARRATIVE CONTENT FOR EACH SECTION
+        // ========================================
+        const narrativeContent = {
+            1: {
+                title: "Encoder Knowledge Floating",
+                emotion: "mystery",
+                emotionLabel: "🔮 Mystery",
+                content: `
+                    <p>In the encoder's memory, <strong>1202 librarians</strong> float in timeless suspension.</p>
+                    <div class="key-point">
+                        <strong>Each orb holds two treasures:</strong><br>
+                        • A <span style="color:#e94560">Key</span> (magenta ring) — "This is what I know about"<br>
+                        • A <span style="color:#ffd700">Value</span> (gold ring) — "This is the knowledge itself"
+                    </div>
+                    <p>Watch the 80 encoder orbs drift gently. Four modalities are represented:</p>
+                    <p>• <span style="color:#00D4AA">LiDAR</span> • <span style="color:#e94560">RGB</span> • <span style="color:#ffd700">IMU</span> • <span style="color:#6C5CE7">Proprio</span></p>
+                    <p><em>They've processed the scene. Now they wait for questions...</em></p>
+                `
+            },
+            2: {
+                title: "Queries Arrive",
+                emotion: "curiosity",
+                emotionLabel: "🎯 Curiosity",
+                content: `
+                    <p>From the decoder, <strong>6 questions emerge</strong>—each seeking answers for a different timestep.</p>
+                    <div class="key-point">
+                        <strong>Q1-Q6:</strong> Learnable queries, like DETR's object queries.<br>
+                        Each one asks: <em>"What should I do at timestep t?"</em>
+                    </div>
+                    <p>The queries (cyan orbs below) don't know the answer yet. They only know how to <strong>ask the right questions</strong>.</p>
+                    <p>Notice the dashed boundary separating:</p>
+                    <p>• <span style="color:#00D4AA">ENCODER</span> (top) — holds Keys and Values<br>
+                    • <span style="color:#ffd700">DECODER</span> (bottom) — generates Queries</p>
+                    <p><em>The bridge between them is about to form...</em></p>
+                `
+            },
+            3: {
+                title: "Attention Lines Form",
+                emotion: "eureka",
+                emotionLabel: "💡 Eureka",
+                content: `
+                    <p>Each query <strong>broadcasts simultaneously to all keys</strong>. The attention mechanism asks: "How relevant is each key to my question?"</p>
+                    <div class="key-point">
+                        <strong>Attention = softmax(QK<sup>T</sup>/√d)</strong><br>
+                        Thick lines = high relevance<br>
+                        Thin lines = low relevance
+                    </div>
+                    <p>Watch the attention matrix form on the right. Each cell shows how much Query N attends to Key M.</p>
+                    <p>The formula normalizes across all 1202 keys—so attention weights sum to 1.0 for each query.</p>
+                    <p><em>This is "voting on relevance"—the queries finding their answers in the encoder's memory.</em></p>
+                `
+            },
+            4: {
+                title: "Knowledge Flows",
+                emotion: "clarity",
+                emotionLabel: "✨ Clarity",
+                content: `
+                    <p>Attention determined <strong>where to look</strong>. Now Values flow back along those weighted paths.</p>
+                    <div class="key-point">
+                        <strong>Output = Attention × Values</strong><br>
+                        High-attention values contribute more.<br>
+                        Low-attention values contribute less.
+                    </div>
+                    <p>Watch the gold particles (Values) stream toward the query orbs. As they arrive, queries transform into <strong>answers</strong> (A1-A6).</p>
+                    <p>The answer isn't a single Value—it's a <strong>weighted blend</strong> of all relevant Values from the encoder.</p>
+                    <p><em>The queries asked. The keys matched. The values delivered.</em></p>
+                `
+            },
+            5: {
+                title: "Q asks. K answers. V delivers.",
+                emotion: "triumph",
+                emotionLabel: "🏆 Triumph",
+                content: `
+                    <div class="key-point" style="text-align:center;font-size:24px;padding:20px;">
+                        <span style="color:#00D4AA">Q asks.</span><br>
+                        <span style="color:#e94560">K answers.</span><br>
+                        <span style="color:#ffd700">V delivers.</span>
+                    </div>
+                    <p style="text-align:center;margin-top:16px;font-style:italic;color:var(--text-muted)">
+                        "Four eyes see different parts of the elephant.<br>
+                        The transformer asks the right questions to see the whole."
+                    </p>
+                    <div class="key-point" style="margin-top:20px;">
+                        <strong>Cross-Attention Bridge:</strong><br>
+                        6 queries × 1202 keys = understanding<br><br>
+                        The decoder doesn't reinvent perception.<br>
+                        It <em>queries</em> the encoder's wisdom.
+                    </div>
+                `
+            }
+        };
+
+        // ========================================
+        // STATE
+        // ========================================
+        const state = {
+            currentSection: 1,
+            totalSections: 5,
+            scene: null,
+            camera: null,
+            renderer: null,
+            controls: null,
+            animationId: null,
+            currentObjects: [],
+            currentOverlays: []
+        };
+
+        // ========================================
+        // DOM REFERENCES
+        // ========================================
+        const container = document.getElementById('canvas-container');
+        const loadingEl = document.getElementById('loading');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const resetViewBtn = document.getElementById('reset-view-btn');
+        const resetAnimationBtn = document.getElementById('reset-animation-btn');
+        const sectionDots = document.querySelectorAll('.section-dot');
+        const narrativeEl = document.getElementById('narrative-content');
+        const sectionTitleEl = document.getElementById('section-title');
+        const tooltipEl = document.getElementById('object-tooltip');
+
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        // ========================================
+        // THREE.JS SETUP
+        // ========================================
+        function initThreeJS() {
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            state.scene = new THREE.Scene();
+            state.scene.background = new THREE.Color(0x0a0a1a);
+
+            state.camera = new THREE.PerspectiveCamera(55, width / height, 0.1, 1000);
+            state.camera.position.set(0, 2, 14);
+            window.currentCamera = state.camera;
+            window.initialCameraPosition = state.camera.position.clone();
+
+            state.renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+            state.renderer.setSize(width, height);
+            state.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(state.renderer.domElement);
+
+            state.controls = new THREE.TrackballControls(state.camera, state.renderer.domElement);
+            state.controls.rotateSpeed = 2.0;
+            state.controls.zoomSpeed = 1.2;
+            state.controls.panSpeed = 0.8;
+            state.controls.dynamicDampingFactor = 0.15;
+            window.currentControls = state.controls;
+
+            window.addEventListener('resize', onResize);
+
+            container.addEventListener('mousemove', (e) => {
+                const rect = container.getBoundingClientRect();
+                mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+                raycaster.setFromCamera(mouse, state.camera);
+                const intersects = raycaster.intersectObjects(state.scene.children, true);
+
+                if (intersects.length > 0 && intersects[0].object.name) {
+                    tooltipEl.textContent = intersects[0].object.name;
+                    tooltipEl.style.left = (e.clientX - rect.left + 12) + 'px';
+                    tooltipEl.style.top = (e.clientY - rect.top - 28) + 'px';
+                    tooltipEl.style.display = 'block';
+                } else {
+                    tooltipEl.style.display = 'none';
+                }
+            });
+
+            container.addEventListener('mouseleave', () => {
+                tooltipEl.style.display = 'none';
+            });
+        }
+
+        function onResize() {
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            state.camera.aspect = width / height;
+            state.camera.updateProjectionMatrix();
+            state.renderer.setSize(width, height);
+        }
+
+        // ========================================
+        // SCENE CLEANUP
+        // ========================================
+        function clearScene() {
+            if (state.animationId) {
+                cancelAnimationFrame(state.animationId);
+                state.animationId = null;
+            }
+
+            while (state.scene.children.length > 0) {
+                const obj = state.scene.children[0];
+                state.scene.remove(obj);
+                if (obj.geometry) obj.geometry.dispose();
+                if (obj.material) {
+                    if (Array.isArray(obj.material)) {
+                        obj.material.forEach(m => m.dispose());
+                    } else {
+                        obj.material.dispose();
+                    }
+                }
+            }
+
+            state.currentOverlays.forEach(el => el.remove());
+            state.currentOverlays = [];
+        }
+
+
+        // ========================================
+        // SECTION 1
+        // ========================================
+        function loadSection1() {
+            const scene = state.scene;
+            const camera = state.camera;
+            
+            camera.position.set(0, 2, 14);
+            window.initialCameraPosition = camera.position.clone();
+            
+// Lighting
+const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+scene.add(ambientLight);
+
+const pointLight1 = new THREE.PointLight(0x00D4AA, 1, 50);
+pointLight1.position.set(5, 5, 5);
+scene.add(pointLight1);
+
+const pointLight2 = new THREE.PointLight(0xe94560, 0.8, 50);
+pointLight2.position.set(-5, 3, -3);
+scene.add(pointLight2);
+
+const pointLight3 = new THREE.PointLight(0xffd700, 0.6, 50);
+pointLight3.position.set(0, -2, 5);
+scene.add(pointLight3);
+
+// Modality colors
+const modalityColors = {
+    LiDAR: 0x00D4AA,
+    RGB: 0xe94560,
+    IMU: 0xffd700,
+    Proprio: 0x6C5CE7
+};
+
+// Create orbs array
+const orbs = [];
+const orbGroups = [];
+
+// Distribution: 25 LiDAR, 25 RGB, 15 IMU, 15 Proprio = 80 total
+const distribution = [
+    ...Array(25).fill('LiDAR'),
+    ...Array(25).fill('RGB'),
+    ...Array(15).fill('IMU'),
+    ...Array(15).fill('Proprio')
+];
+
+// Shuffle distribution
+for (let i = distribution.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [distribution[i], distribution[j]] = [distribution[j], distribution[i]];
+}
+
+// Create each orb with three concentric layers
+distribution.forEach((modality, index) => {
+    const group = new THREE.Group();
+    
+    // Random position in upper region
+    const x = (Math.random() - 0.5) * 12; // -6 to 6
+    const y = Math.random() * 4; // 0 to 4
+    const z = (Math.random() - 0.5) * 6; // -3 to 3
+    group.position.set(x, y, z);
+    
+    // Outer ring (Key - magenta)
+    const outerRingGeo = new THREE.TorusGeometry(0.35, 0.02, 8, 32);
+    const outerRingMat = new THREE.MeshStandardMaterial({
+        color: 0xe94560,
+        transparent: true,
+        opacity: 0.3,
+        emissive: 0xe94560,
+        emissiveIntensity: 0.3
+    });
+    const outerRing = new THREE.Mesh(outerRingGeo, outerRingMat);
+    outerRing.rotation.x = Math.PI / 2;
+    group.add(outerRing);
+    
+    // Middle ring (Value - gold)
+    const middleRingGeo = new THREE.TorusGeometry(0.25, 0.02, 8, 32);
+    const middleRingMat = new THREE.MeshStandardMaterial({
+        color: 0xffd700,
+        transparent: true,
+        opacity: 0.5,
+        emissive: 0xffd700,
+        emissiveIntensity: 0.4
+    });
+    const middleRing = new THREE.Mesh(middleRingGeo, middleRingMat);
+    middleRing.rotation.x = Math.PI / 2;
+    middleRing.rotation.y = Math.PI / 4;
+    group.add(middleRing);
+    
+    // Core sphere (modality color)
+    const coreGeo = new THREE.SphereGeometry(0.15, 16, 16);
+    const coreMat = new THREE.MeshStandardMaterial({
+        color: modalityColors[modality],
+        emissive: modalityColors[modality],
+        emissiveIntensity: 0.5
+    });
+    const core = new THREE.Mesh(coreGeo, coreMat);
+    core.name = `Key-Value Token #${index + 1} (${modality})`;
+    group.add(core);
+    
+    // Store reference for animation
+    orbs.push({
+        group,
+        outerRing,
+        middleRing,
+        core,
+        baseY: y,
+        baseX: x,
+        index
+    });
+    
+    orbGroups.push(group);
+    scene.add(group);
+});
+
+// Encoder region boundary (dashed rectangle)
+const boundaryPoints = [
+    new THREE.Vector3(-7, -1, 0),
+    new THREE.Vector3(7, -1, 0),
+    new THREE.Vector3(7, 5, 0),
+    new THREE.Vector3(-7, 5, 0),
+    new THREE.Vector3(-7, -1, 0)
+];
+const boundaryGeo = new THREE.BufferGeometry().setFromPoints(boundaryPoints);
+const boundaryMat = new THREE.LineDashedMaterial({
+    color: 0x00D4AA,
+    transparent: true,
+    opacity: 0.3,
+    dashSize: 0.3,
+    gapSize: 0.15
+});
+const boundary = new THREE.Line(boundaryGeo, boundaryMat);
+boundary.computeLineDistances();
+boundary.name = "Encoder Region Boundary";
+scene.add(boundary);
+
+// Subtle grid
+const grid = new THREE.GridHelper(20, 20, 0x1a1a3a, 0x1a1a3a);
+grid.position.y = -3;
+grid.material.transparent = true;
+grid.material.opacity = 0.2;
+scene.add(grid);
+
+// HTML Overlay
+const overlay = document.createElement('div');
+overlay.id = 'scene-labels';
+overlay.style.cssText = `
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    font-family: 'Courier New', monospace;
+`;
+container.style.position = 'relative';
+container.appendChild(overlay);
+state.currentOverlays.push(overlay);
+
+// Label: Top left
+const labelEncoder = document.createElement('div');
+labelEncoder.style.cssText = `
+    position: absolute;
+    top: 8%;
+    left: 5%;
+    color: #00D4AA;
+    font-size: 11px;
+    text-shadow: 0 0 10px rgba(0, 212, 170, 0.5);
+`;
+labelEncoder.textContent = 'ENCODER (Vision)';
+overlay.appendChild(labelEncoder);
+
+// Label: Top center
+const labelKeys = document.createElement('div');
+labelKeys.style.cssText = `
+    position: absolute;
+    top: 3%;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: bold;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+`;
+labelKeys.textContent = '1202 KEYS & VALUES';
+overlay.appendChild(labelKeys);
+
+// Label: Bottom center
+const labelExplain = document.createElement('div');
+labelExplain.style.cssText = `
+    position: absolute;
+    bottom: 15%;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #888888;
+    font-size: 12px;
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+`;
+labelExplain.textContent = 'Each orb: Key (magenta ring) + Value (gold ring)';
+overlay.appendChild(labelExplain);
+
+// Metaphor box
+const metaphorBox = document.createElement('div');
+metaphorBox.style.cssText = `
+    position: absolute;
+    bottom: 5%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(13, 13, 36, 0.9);
+    border: 1px solid #00D4AA;
+    border-radius: 15px;
+    padding: 12px 20px;
+    color: #ffffff;
+    font-size: 13px;
+    text-shadow: 0 0 5px rgba(0, 212, 170, 0.3);
+`;
+metaphorBox.textContent = '📚 Each orb holds: Key (what I know) + Value (the knowledge itself)';
+overlay.appendChild(metaphorBox);
+
+// Tooltip
+const tooltip = document.createElement('div');
+tooltip.style.cssText = `
+    position: absolute;
+    padding: 6px 10px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    border-radius: 4px;
+    font-size: 12px;
+    pointer-events: none;
+    display: none;
+    z-index: 1000;
+`;
+container.appendChild(tooltip);
+
+// Raycaster for hover
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+container.addEventListener('mousemove', (event) => {
+    const rect = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    
+    raycaster.setFromCamera(mouse, camera);
+    
+    // Collect all cores for intersection
+    const cores = orbs.map(o => o.core);
+    const intersects = raycaster.intersectObjects(cores);
+    
+    if (intersects.length > 0) {
+        tooltip.style.display = 'block';
+        tooltip.style.left = (event.clientX - rect.left + 15) + 'px';
+        tooltip.style.top = (event.clientY - rect.top - 10) + 'px';
+        tooltip.textContent = intersects[0].object.name;
+    } else {
+        tooltip.style.display = 'none';
+    }
+});
+
+// Animation loop
+const clock = new THREE.Clock();
+
+function animate() {
+    state.animationId = requestAnimationFrame(animate);
+    
+    const time = clock.getElapsedTime();
+    
+    // Animate each orb
+    orbs.forEach((orb, i) => {
+        // Float gently
+        orb.group.position.y = orb.baseY + 0.3 * Math.sin(time + i * 0.1);
+        
+        // Drift slightly
+        orb.group.position.x = orb.baseX + 0.2 * Math.cos(time * 0.7 + i);
+        
+        // Rotate rings
+        orb.outerRing.rotation.z += 0.01;
+        orb.middleRing.rotation.z -= 0.015;
+        
+        // Pulse core
+        const scale = 1 + 0.1 * Math.sin(time * 2 + i);
+        orb.core.scale.set(scale, scale, scale);
+    });
+    
+    state.controls.update();
+    state.renderer.render(scene, camera);
+}
+
+animate();
+        }
+
+        // ========================================
+        // SECTION 2
+        // ========================================
+        function loadSection2() {
+            const scene = state.scene;
+            const camera = state.camera;
+            
+            camera.position.set(0, 1, 14);
+            window.initialCameraPosition = camera.position.clone();
+            
+// Lights
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+scene.add(ambientLight);
+
+const pointLight1 = new THREE.PointLight(0x00D4AA, 1, 50);
+pointLight1.position.set(5, 5, 10);
+scene.add(pointLight1);
+
+const pointLight2 = new THREE.PointLight(0xffd700, 0.8, 50);
+pointLight2.position.set(-5, -3, 8);
+scene.add(pointLight2);
+
+// Encoder orbs (80 orbs)
+const encoderOrbs = [];
+for (let i = 0; i < 80; i++) {
+    const group = new THREE.Group();
+    
+    // Main sphere
+    const sphereGeo = new THREE.SphereGeometry(0.15, 16, 16);
+    const sphereMat = new THREE.MeshStandardMaterial({
+        color: 0x00D4AA,
+        emissive: 0x00D4AA,
+        emissiveIntensity: 0.3,
+        transparent: true,
+        opacity: 0.8
+    });
+    const sphere = new THREE.Mesh(sphereGeo, sphereMat);
+    group.add(sphere);
+    
+    // Key ring (outer)
+    const keyRingGeo = new THREE.TorusGeometry(0.25, 0.02, 8, 32);
+    const keyRingMat = new THREE.MeshBasicMaterial({
+        color: 0xff6b6b,
+        transparent: true,
+        opacity: 0.4
+    });
+    const keyRing = new THREE.Mesh(keyRingGeo, keyRingMat);
+    keyRing.rotation.x = Math.PI / 2;
+    group.add(keyRing);
+    
+    // Value ring (inner)
+    const valueRingGeo = new THREE.TorusGeometry(0.2, 0.015, 8, 32);
+    const valueRingMat = new THREE.MeshBasicMaterial({
+        color: 0x4ecdc4,
+        transparent: true,
+        opacity: 0.4
+    });
+    const valueRing = new THREE.Mesh(valueRingGeo, valueRingMat);
+    valueRing.rotation.x = Math.PI / 3;
+    group.add(valueRing);
+    
+    // Position in upper region
+    group.position.set(
+        (Math.random() - 0.5) * 12,
+        1 + Math.random() * 4,
+        (Math.random() - 0.5) * 6
+    );
+    
+    group.name = `Encoder Token ${i + 1} (Key/Value)`;
+    group.userData = { 
+        baseY: group.position.y,
+        phase: Math.random() * Math.PI * 2
+    };
+    
+    scene.add(group);
+    encoderOrbs.push(group);
+}
+
+// Query orbs (6 total)
+const queryPositions = [-3, -1.8, -0.6, 0.6, 1.8, 3];
+const queryOrbs = [];
+
+for (let i = 0; i < 6; i++) {
+    const group = new THREE.Group();
+    
+    // Main sphere
+    const sphereGeo = new THREE.SphereGeometry(0.3, 24, 24);
+    const sphereMat = new THREE.MeshStandardMaterial({
+        color: 0x00D4AA,
+        emissive: 0x00D4AA,
+        emissiveIntensity: 0.7,
+        transparent: true,
+        opacity: 0
+    });
+    const sphere = new THREE.Mesh(sphereGeo, sphereMat);
+    group.add(sphere);
+    
+    // Inner bright core
+    const coreGeo = new THREE.SphereGeometry(0.15, 16, 16);
+    const coreMat = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0
+    });
+    const core = new THREE.Mesh(coreGeo, coreMat);
+    group.add(core);
+    
+    // Outer glow ring
+    const glowRingGeo = new THREE.TorusGeometry(0.45, 0.03, 8, 32);
+    const glowRingMat = new THREE.MeshBasicMaterial({
+        color: 0x00D4AA,
+        transparent: true,
+        opacity: 0
+    });
+    const glowRing = new THREE.Mesh(glowRingGeo, glowRingMat);
+    group.add(glowRing);
+    
+    group.position.set(queryPositions[i], -2.5, 0);
+    group.name = `Query Q${i + 1}: Timestep ${i + 1}`;
+    group.userData = {
+        index: i,
+        baseY: -2.5,
+        sphere: sphere,
+        core: core,
+        glowRing: glowRing
+    };
+    
+    scene.add(group);
+    queryOrbs.push(group);
+}
+
+// Encoder region boundary
+const encoderBoundaryGeo = new THREE.BufferGeometry();
+const encoderPoints = [
+    new THREE.Vector3(-6.5, 0.5, 0),
+    new THREE.Vector3(6.5, 0.5, 0),
+    new THREE.Vector3(6.5, 5.5, 0),
+    new THREE.Vector3(-6.5, 5.5, 0),
+    new THREE.Vector3(-6.5, 0.5, 0)
+];
+encoderBoundaryGeo.setFromPoints(encoderPoints);
+const encoderBoundaryMat = new THREE.LineDashedMaterial({
+    color: 0x00D4AA,
+    transparent: true,
+    opacity: 0.2,
+    dashSize: 0.3,
+    gapSize: 0.15
+});
+const encoderBoundary = new THREE.Line(encoderBoundaryGeo, encoderBoundaryMat);
+encoderBoundary.computeLineDistances();
+encoderBoundary.name = "Encoder Region Boundary";
+scene.add(encoderBoundary);
+
+// Decoder region boundary
+const decoderBoundaryGeo = new THREE.BufferGeometry();
+const decoderPoints = [
+    new THREE.Vector3(-4.5, -4, 0),
+    new THREE.Vector3(4.5, -4, 0),
+    new THREE.Vector3(4.5, -1, 0),
+    new THREE.Vector3(-4.5, -1, 0),
+    new THREE.Vector3(-4.5, -4, 0)
+];
+decoderBoundaryGeo.setFromPoints(decoderPoints);
+const decoderBoundaryMat = new THREE.LineDashedMaterial({
+    color: 0xffd700,
+    transparent: true,
+    opacity: 0.3,
+    dashSize: 0.3,
+    gapSize: 0.15
+});
+const decoderBoundary = new THREE.Line(decoderBoundaryGeo, decoderBoundaryMat);
+decoderBoundary.computeLineDistances();
+decoderBoundary.name = "Decoder Region Boundary";
+scene.add(decoderBoundary);
+
+// HTML Overlay
+const labelsDiv = document.createElement('div');
+labelsDiv.id = 'scene-labels';
+labelsDiv.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;';
+container.style.position = 'relative';
+container.appendChild(labelsDiv);
+state.currentOverlays.push(labelsDiv);
+
+// Labels
+const createLabel = (text, left, top, color, fontSize, extra = '') => {
+    const label = document.createElement('div');
+    label.style.cssText = `position:absolute;left:${left};top:${top};color:${color};font-size:${fontSize};font-family:monospace;text-shadow:0 0 8px rgba(0,0,0,0.8);${extra}`;
+    label.textContent = text;
+    labelsDiv.appendChild(label);
+    return label;
+};
+
+createLabel('ENCODER (Vision)', '5%', '8%', '#00D4AA', '11px', 'opacity:0.6;');
+createLabel('DECODER (Action)', '5%', '72%', '#ffd700', '11px');
+createLabel('6 LEARNABLE QUERIES', '50%', '3%', '#ffffff', '16px', 'font-weight:bold;transform:translateX(-50%);');
+
+// Query labels
+const queryLabels = [];
+queryPositions.forEach((x, i) => {
+    const screenX = 50 + (x / 7.5) * 35;
+    const labelDiv = document.createElement('div');
+    labelDiv.style.cssText = `position:absolute;left:${screenX}%;top:78%;transform:translateX(-50%);text-align:center;color:#ffffff;font-family:monospace;opacity:0;transition:opacity 0.3s;`;
+    labelDiv.innerHTML = `<div style="font-size:11px;">Q${i + 1}</div><div style="font-size:9px;color:#00D4AA;">t${i + 1}</div>`;
+    labelsDiv.appendChild(labelDiv);
+    queryLabels.push(labelDiv);
+});
+
+// Metaphor box
+const metaphorBox = document.createElement('div');
+metaphorBox.style.cssText = 'position:absolute;bottom:8%;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.7);border:1px solid rgba(255,215,0,0.3);border-radius:8px;padding:10px 20px;color:#ffffff;font-size:12px;font-family:monospace;text-align:center;';
+metaphorBox.textContent = '❓ Queries = Questions seeking answers (one per action timestep)';
+labelsDiv.appendChild(metaphorBox);
+
+// Tooltip
+const tooltip = document.createElement('div');
+tooltip.style.cssText = 'position:absolute;padding:6px 10px;background:rgba(0,0,0,0.8);color:white;border-radius:4px;font-size:12px;pointer-events:none;display:none;z-index:100;';
+container.appendChild(tooltip);
+
+// Raycaster for hover
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+container.addEventListener('mousemove', (event) => {
+    const rect = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    
+    raycaster.setFromCamera(mouse, camera);
+    const allObjects = [...encoderOrbs, ...queryOrbs];
+    const intersects = raycaster.intersectObjects(allObjects, true);
+    
+    if (intersects.length > 0) {
+        let obj = intersects[0].object;
+        while (obj.parent && !obj.name) obj = obj.parent;
+        if (obj.name) {
+            tooltip.style.display = 'block';
+            tooltip.style.left = (event.clientX - rect.left + 15) + 'px';
+            tooltip.style.top = (event.clientY - rect.top + 15) + 'px';
+            tooltip.textContent = obj.name;
+        }
+    } else {
+        tooltip.style.display = 'none';
+    }
+});
+
+// Animation
+const startTime = Date.now();
+
+function animate() {
+    state.animationId = requestAnimationFrame(animate);
+    
+    const time = Date.now() * 0.001;
+    const elapsed = (Date.now() - startTime) / 1000;
+    
+    // Encoder orbs gentle float
+    encoderOrbs.forEach((orb, i) => {
+        orb.position.y = orb.userData.baseY + Math.sin(time * 0.5 + orb.userData.phase) * 0.1;
+        orb.children[1].rotation.z += 0.005;
+        orb.children[2].rotation.y += 0.007;
+    });
+    
+    // Query orbs animation
+    queryOrbs.forEach((group, i) => {
+        const delay = i * 0.2;
+        const fadeProgress = Math.min(1, Math.max(0, (elapsed - delay) / 0.5));
+        
+        // Fade in
+        group.userData.sphere.material.opacity = fadeProgress * 0.8;
+        group.userData.core.material.opacity = fadeProgress * 0.8;
+        group.userData.glowRing.material.opacity = fadeProgress * 0.4;
+        queryLabels[i].style.opacity = fadeProgress;
+        
+        if (fadeProgress > 0) {
+            // Pulse with potential
+            const scale = 1 + 0.15 * Math.sin(time * 1.5 + i);
+            group.scale.setScalar(scale);
+            
+            // Glow ring rotation
+            group.userData.glowRing.rotation.z += 0.02;
+            group.userData.glowRing.rotation.x = Math.sin(time + i) * 0.3;
+            
+            // Subtle upward drift
+            group.position.y = group.userData.baseY + 0.05 * Math.sin(time * 2 + i * 0.5);
+        }
+    });
+    
+    state.controls.update();
+    state.renderer.render(scene, camera);
+}
+
+animate();
+        }
+
+        // ========================================
+        // SECTION 3
+        // ========================================
+        function loadSection3() {
+            const scene = state.scene;
+            const camera = state.camera;
+            
+            camera.position.set(0, 1, 14);
+            window.initialCameraPosition = camera.position.clone();
+            
+// Lighting
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+scene.add(ambientLight);
+
+const pointLight1 = new THREE.PointLight(0x00D4AA, 1, 50);
+pointLight1.position.set(5, 5, 10);
+scene.add(pointLight1);
+
+const pointLight2 = new THREE.PointLight(0xffd700, 0.8, 50);
+pointLight2.position.set(-5, -3, 10);
+scene.add(pointLight2);
+
+// Encoder orbs (80 orbs in grid pattern at top)
+const encoderOrbs = [];
+const encoderPositions = [];
+const encoderGroup = new THREE.Group();
+encoderGroup.name = "Encoder Block";
+
+for (let i = 0; i < 80; i++) {
+    const row = Math.floor(i / 16);
+    const col = i % 16;
+    const x = (col - 7.5) * 0.8;
+    const y = 3.5 - row * 0.7;
+    const z = 0;
+    
+    // Main orb
+    const geometry = new THREE.SphereGeometry(0.18, 16, 16);
+    const material = new THREE.MeshStandardMaterial({
+        color: 0x00D4AA,
+        emissive: 0x00D4AA,
+        emissiveIntensity: 0.4,
+        metalness: 0.3,
+        roughness: 0.7
+    });
+    const orb = new THREE.Mesh(geometry, material);
+    orb.position.set(x, y, z);
+    orb.name = `Encoder Key/Value K${i + 1}`;
+    orb.userData.baseEmissive = 0.4;
+    orb.userData.index = i;
+    
+    // Key ring
+    const keyRing = new THREE.Mesh(
+        new THREE.TorusGeometry(0.25, 0.02, 8, 24),
+        new THREE.MeshStandardMaterial({ color: 0x4488ff, emissive: 0x4488ff, emissiveIntensity: 0.3 })
+    );
+    keyRing.rotation.x = Math.PI / 2;
+    orb.add(keyRing);
+    
+    // Value ring
+    const valueRing = new THREE.Mesh(
+        new THREE.TorusGeometry(0.3, 0.02, 8, 24),
+        new THREE.MeshStandardMaterial({ color: 0xff88ff, emissive: 0xff88ff, emissiveIntensity: 0.3 })
+    );
+    valueRing.rotation.y = Math.PI / 2;
+    orb.add(valueRing);
+    
+    encoderGroup.add(orb);
+    encoderOrbs.push(orb);
+    encoderPositions.push(new THREE.Vector3(x, y, z));
+}
+scene.add(encoderGroup);
+
+// Query orbs (6 orbs at bottom)
+const queryOrbs = [];
+const queryPositions = [];
+const queryGroup = new THREE.Group();
+queryGroup.name = "Decoder Queries";
+
+for (let i = 0; i < 6; i++) {
+    const x = (i - 2.5) * 1.5;
+    const y = -3.5;
+    const z = 0;
+    
+    const geometry = new THREE.SphereGeometry(0.25, 24, 24);
+    const material = new THREE.MeshStandardMaterial({
+        color: 0x00D4AA,
+        emissive: 0x00D4AA,
+        emissiveIntensity: 0.8,
+        metalness: 0.4,
+        roughness: 0.5
+    });
+    const orb = new THREE.Mesh(geometry, material);
+    orb.position.set(x, y, z);
+    orb.name = `Query Q${i + 1} - Broadcasting to all keys`;
+    orb.userData.index = i;
+    
+    // Glow effect
+    const glowGeometry = new THREE.SphereGeometry(0.35, 16, 16);
+    const glowMaterial = new THREE.MeshBasicMaterial({
+        color: 0x00D4AA,
+        transparent: true,
+        opacity: 0.3
+    });
+    const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+    orb.add(glow);
+    
+    queryGroup.add(orb);
+    queryOrbs.push(orb);
+    queryPositions.push(new THREE.Vector3(x, y, z));
+}
+scene.add(queryGroup);
+
+// Attention lines and particles
+const attentionLines = [];
+const attentionParticles = [];
+const lineGroup = new THREE.Group();
+lineGroup.name = "Attention Connections";
+
+// Generate attention weights for each query
+const attentionWeights = [];
+for (let q = 0; q < 6; q++) {
+    const weights = [];
+    for (let k = 0; k < 80; k++) {
+        weights.push(Math.random());
+    }
+    // Normalize with softmax-like effect
+    const sum = weights.reduce((a, b) => a + b, 0);
+    for (let k = 0; k < 80; k++) {
+        weights[k] = weights[k] / sum;
+    }
+    attentionWeights.push(weights);
+}
+
+// Create lines from each query to top 12 encoder orbs
+for (let q = 0; q < 6; q++) {
+    const queryPos = queryPositions[q];
+    
+    // Get top 12 keys by attention weight
+    const indexed = attentionWeights[q].map((w, i) => ({ weight: w, index: i }));
+    indexed.sort((a, b) => b.weight - a.weight);
+    const topKeys = indexed.slice(0, 12);
+    
+    topKeys.forEach((keyData, lineIdx) => {
+        const keyPos = encoderPositions[keyData.index];
+        const weight = keyData.weight * 15; // Scale for visibility
+        
+        // Create curved line using CatmullRomCurve3
+        const midPoint = new THREE.Vector3(
+            (queryPos.x + keyPos.x) / 2 + (Math.random() - 0.5) * 0.5,
+            (queryPos.y + keyPos.y) / 2,
+            1 + weight * 0.5
+        );
+        
+        const curve = new THREE.CatmullRomCurve3([
+            queryPos.clone(),
+            midPoint,
+            keyPos.clone()
+        ]);
+        
+        const points = curve.getPoints(30);
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const material = new THREE.LineBasicMaterial({
+            color: 0x00D4AA,
+            transparent: true,
+            opacity: 0.1 + weight * 0.5,
+            linewidth: 0.5 + weight * 1.5
+        });
+        
+        const line = new THREE.Line(geometry, material);
+        line.name = `Attention Q${q + 1}→K${keyData.index + 1}: ${(weight * 6.67).toFixed(2)}%`;
+        line.userData.queryIndex = q;
+        line.userData.keyIndex = keyData.index;
+        line.userData.weight = weight;
+        line.userData.curve = curve;
+        line.userData.baseOpacity = material.opacity;
+        line.userData.lineOffset = lineIdx;
+        
+        lineGroup.add(line);
+        attentionLines.push(line);
+        
+        // Update encoder orb to glow brighter based on attention
+        encoderOrbs[keyData.index].userData.baseEmissive = Math.min(0.9, encoderOrbs[keyData.index].userData.baseEmissive + weight * 0.3);
+        
+        // Create particles along line
+        if (weight > 0.3) {
+            const particleGeom = new THREE.SphereGeometry(0.08, 8, 8);
+            const particleMat = new THREE.MeshBasicMaterial({
+                color: 0x00D4AA,
+                transparent: true,
+                opacity: 0.8
+            });
+            const particle = new THREE.Mesh(particleGeom, particleMat);
+            particle.userData.curve = curve;
+            particle.userData.offset = Math.random();
+            particle.userData.speed = 0.3 + weight * 0.2;
+            particle.name = `Weight particle Q${q + 1}→K${keyData.index + 1}`;
+            scene.add(particle);
+            attentionParticles.push(particle);
+        }
+    });
+}
+scene.add(lineGroup);
+
+// HTML Overlay
+const overlay = document.createElement('div');
+overlay.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;font-family:Arial,sans-serif;';
+container.appendChild(overlay);
+state.currentOverlays.push(overlay);
+
+// Title label
+const title = document.createElement('div');
+title.style.cssText = 'position:absolute;left:40%;top:3%;color:#ffffff;font-size:14px;font-family:monospace;text-shadow:0 0 10px rgba(0,212,170,0.5);';
+title.textContent = 'ATTENTION: softmax(QKᵀ/√d)';
+overlay.appendChild(title);
+
+// Encoder label
+const encoderLabel = document.createElement('div');
+encoderLabel.style.cssText = 'position:absolute;left:5%;top:8%;color:#00D4AA;font-size:10px;opacity:0.5;';
+encoderLabel.textContent = 'ENCODER';
+overlay.appendChild(encoderLabel);
+
+// Decoder label
+const decoderLabel = document.createElement('div');
+decoderLabel.style.cssText = 'position:absolute;left:5%;top:72%;color:#ffd700;font-size:10px;opacity:0.5;';
+decoderLabel.textContent = 'DECODER';
+overlay.appendChild(decoderLabel);
+
+// Attention Matrix
+const matrix = document.createElement('div');
+matrix.style.cssText = 'position:absolute;right:5%;top:40%;background:rgba(13,13,36,0.9);border:1px solid #00D4AA;border-radius:4px;padding:8px;';
+matrix.innerHTML = `
+    <div style="color:#00D4AA;font-size:10px;margin-bottom:4px;text-align:center;">6×1202 Attention</div>
+    <div style="display:flex;flex-direction:column;gap:2px;" id="matrixGrid"></div>
+    <div style="color:#888;font-size:8px;margin-top:4px;text-align:center;">K₁...K₁₂₀₂ →</div>
+`;
+overlay.appendChild(matrix);
+
+const matrixGrid = matrix.querySelector('#matrixGrid');
+const matrixCells = [];
+for (let q = 0; q < 6; q++) {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:2px;';
+    row.innerHTML = `<span style="color:#888;font-size:8px;width:16px;">Q${q + 1}</span>`;
+    const rowCells = [];
+    for (let k = 0; k < 8; k++) {
+        const cell = document.createElement('div');
+        const weight = 0.1 + Math.random() * 0.9;
+        cell.style.cssText = `width:10px;height:10px;background:rgba(0,212,170,${weight});border-radius:1px;`;
+        cell.dataset.weight = weight;
+        row.appendChild(cell);
+        rowCells.push(cell);
+    }
+    matrixGrid.appendChild(row);
+    matrixCells.push(rowCells);
+}
+
+// Metaphor box
+const metaphor = document.createElement('div');
+metaphor.style.cssText = 'position:absolute;bottom:8%;left:50%;transform:translateX(-50%);background:rgba(13,13,36,0.8);border:1px solid #00D4AA;border-radius:4px;padding:8px 16px;color:#ffffff;font-size:12px;';
+metaphor.textContent = '🗳️ Attention = Voting on relevance (thick lines = high attention)';
+overlay.appendChild(metaphor);
+
+// Tooltip
+const tooltip = document.createElement('div');
+tooltip.style.cssText = 'position:absolute;padding:6px 10px;background:rgba(0,0,0,0.8);color:white;border-radius:4px;font-size:12px;pointer-events:none;display:none;z-index:1000;';
+container.appendChild(tooltip);
+
+// Raycaster for hover
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+container.addEventListener('mousemove', (event) => {
+    const rect = container.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / height) * 2 + 1;
+    
+    raycaster.setFromCamera(mouse, camera);
+    const allObjects = [...encoderOrbs, ...queryOrbs, ...attentionLines, ...attentionParticles];
+    const intersects = raycaster.intersectObjects(allObjects, true);
+    
+    if (intersects.length > 0) {
+        let obj = intersects[0].object;
+        while (obj && !obj.name) obj = obj.parent;
+        if (obj && obj.name) {
+            tooltip.style.display = 'block';
+            tooltip.style.left = (event.clientX - rect.left + 10) + 'px';
+            tooltip.style.top = (event.clientY - rect.top + 10) + 'px';
+            tooltip.textContent = obj.name;
+        }
+    } else {
+        tooltip.style.display = 'none';
+    }
+});
+
+// Animation loop
+const clock = new THREE.Clock();
+
+function animate() {
+    state.animationId = requestAnimationFrame(animate);
+    const time = clock.getElapsedTime();
+    
+    state.controls.update();
+    
+    // Query orbs pulse
+    queryOrbs.forEach((orb, i) => {
+        const scale = 1 + 0.1 * Math.sin(time * 2 + i * 0.5);
+        orb.scale.setScalar(scale);
+    });
+    
+    // Encoder orbs glow based on attention
+    encoderOrbs.forEach((orb, i) => {
+        const pulse = 0.1 * Math.sin(time * 1.5 + i * 0.1);
+        orb.material.emissiveIntensity = orb.userData.baseEmissive + pulse;
+    });
+    
+    // Attention lines pulse
+    attentionLines.forEach((line, i) => {
+        const pulse = 0.1 * Math.sin(time * 2 + i * 0.2);
+        line.material.opacity = Math.max(0.05, line.userData.baseOpacity + pulse);
+    });
+    
+    // Particles travel along lines
+    attentionParticles.forEach((particle) => {
+        const t = ((time * particle.userData.speed + particle.userData.offset) % 1);
+        const pos = particle.userData.curve.getPoint(t);
+        particle.position.copy(pos);
+        particle.material.opacity = 0.5 + 0.5 * Math.sin(t * Math.PI);
+    });
+    
+    // Matrix cells shimmer
+    matrixCells.forEach((row, q) => {
+        row.forEach((cell, k) => {
+            const baseWeight = parseFloat(cell.dataset.weight);
+            const shimmer = 0.1 * Math.sin(time * 3 + q + k * 0.5);
+            cell.style.background = `rgba(0,212,170,${Math.max(0.1, Math.min(1, baseWeight + shimmer))})`;
+        });
+    });
+    
+    state.renderer.render(scene, camera);
+}
+
+animate();
+        }
+
+        // ========================================
+        // SECTION 4
+        // ========================================
+        function loadSection4() {
+            const scene = state.scene;
+            const camera = state.camera;
+            
+            camera.position.set(0, 1, 15);
+            window.initialCameraPosition = camera.position.clone();
+            
+// Lighting
+const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+scene.add(ambientLight);
+
+const pointLight1 = new THREE.PointLight(0xffffff, 1, 100);
+pointLight1.position.set(10, 10, 10);
+scene.add(pointLight1);
+
+const pointLight2 = new THREE.PointLight(0x00D4AA, 0.5, 50);
+pointLight2.position.set(-10, -5, 5);
+scene.add(pointLight2);
+
+// Encoder orbs (80 orbs in grid pattern)
+const encoderOrbs = [];
+const encoderPositions = [];
+
+for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 10; col++) {
+        const x = (col - 4.5) * 1.2;
+        const y = (row - 2) * 0.8 + 2.5;
+        const z = Math.sin(col * 0.5) * 0.3;
+        
+        // Core orb
+        const coreGeo = new THREE.SphereGeometry(0.15, 16, 16);
+        const coreMat = new THREE.MeshStandardMaterial({
+            color: 0x00D4AA,
+            emissive: 0x00D4AA,
+            emissiveIntensity: 0.4
+        });
+        const core = new THREE.Mesh(coreGeo, coreMat);
+        core.position.set(x, y, z);
+        core.name = `Encoder Token ${row * 10 + col + 1}`;
+        scene.add(core);
+        
+        // Value ring (gold) - ACTIVE
+        const valueRingGeo = new THREE.TorusGeometry(0.25, 0.03, 8, 24);
+        const valueRingMat = new THREE.MeshStandardMaterial({
+            color: 0xffd700,
+            emissive: 0xffd700,
+            emissiveIntensity: 0.8
+        });
+        const valueRing = new THREE.Mesh(valueRingGeo, valueRingMat);
+        valueRing.position.copy(core.position);
+        valueRing.rotation.x = Math.PI / 2;
+        valueRing.name = `Value Ring ${row * 10 + col + 1}`;
+        scene.add(valueRing);
+        
+        // Key ring (magenta) - dimmer
+        const keyRingGeo = new THREE.TorusGeometry(0.32, 0.02, 8, 24);
+        const keyRingMat = new THREE.MeshStandardMaterial({
+            color: 0xff00ff,
+            emissive: 0xff00ff,
+            emissiveIntensity: 0.3
+        });
+        const keyRing = new THREE.Mesh(keyRingGeo, keyRingMat);
+        keyRing.position.copy(core.position);
+        keyRing.rotation.x = Math.PI / 3;
+        scene.add(keyRing);
+        
+        encoderOrbs.push({ core, valueRing, keyRing });
+        encoderPositions.push(new THREE.Vector3(x, y, z));
+    }
+}
+
+// Answer orbs (transformed from query orbs)
+const answerOrbs = [];
+const answerPositions = [];
+
+for (let i = 0; i < 6; i++) {
+    const x = (i - 2.5) * 2;
+    const y = -3.5;
+    const z = 0;
+    
+    // Inner core (white)
+    const coreGeo = new THREE.SphereGeometry(0.4, 32, 32);
+    const coreMat = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        emissive: 0xffffff,
+        emissiveIntensity: 0.6
+    });
+    const core = new THREE.Mesh(coreGeo, coreMat);
+    core.position.set(x, y, z);
+    core.name = `Answer A${i + 1}: aggregated from ${3 + Math.floor(Math.random() * 5)} values`;
+    scene.add(core);
+    
+    // Outer glow (gold)
+    const glowGeo = new THREE.SphereGeometry(0.55, 32, 32);
+    const glowMat = new THREE.MeshStandardMaterial({
+        color: 0xffd700,
+        emissive: 0xffd700,
+        emissiveIntensity: 0.4,
+        transparent: true,
+        opacity: 0.3
+    });
+    const glow = new THREE.Mesh(glowGeo, glowMat);
+    glow.position.copy(core.position);
+    scene.add(glow);
+    
+    answerOrbs.push({ core, glow, baseScale: 1 });
+    answerPositions.push(new THREE.Vector3(x, y, z));
+}
+
+// Attention connections with varying weights
+const connections = [];
+const attentionWeights = [];
+
+answerPositions.forEach((answerPos, answerIdx) => {
+    // Each answer connects to multiple encoders
+    const numConnections = 8 + Math.floor(Math.random() * 6);
+    for (let j = 0; j < numConnections; j++) {
+        const encoderIdx = Math.floor(Math.random() * encoderPositions.length);
+        const weight = 0.3 + Math.random() * 0.7;
+        
+        const points = [];
+        const start = encoderPositions[encoderIdx];
+        const end = answerPos;
+        const mid = new THREE.Vector3(
+            (start.x + end.x) / 2,
+            (start.y + end.y) / 2 + 1.5,
+            (start.z + end.z) / 2 + 0.5
+        );
+        
+        const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
+        const curvePoints = curve.getPoints(20);
+        
+        const lineGeo = new THREE.BufferGeometry().setFromPoints(curvePoints);
+        const lineMat = new THREE.LineBasicMaterial({
+            color: 0xffd700,
+            transparent: true,
+            opacity: weight * 0.4
+        });
+        const line = new THREE.Line(lineGeo, lineMat);
+        scene.add(line);
+        
+        connections.push({
+            curve,
+            answerIdx,
+            encoderIdx,
+            weight,
+            line
+        });
+        attentionWeights.push(weight);
+    }
+});
+
+// Flow particles
+const particles = [];
+const particleGeo = new THREE.SphereGeometry(0.08, 8, 8);
+
+connections.forEach((conn, connIdx) => {
+    const numParticles = Math.floor(conn.weight * 4) + 1;
+    for (let p = 0; p < numParticles; p++) {
+        const particleMat = new THREE.MeshStandardMaterial({
+            color: 0xffd700,
+            emissive: 0xffd700,
+            emissiveIntensity: 0.9,
+            transparent: true,
+            opacity: 0.9
+        });
+        const particle = new THREE.Mesh(particleGeo, particleMat);
+        particle.name = `Value Particle flowing to A${conn.answerIdx + 1}`;
+        scene.add(particle);
+        
+        particles.push({
+            mesh: particle,
+            curve: conn.curve,
+            offset: p * 0.25 + Math.random() * 0.2,
+            speed: 0.15 + conn.weight * 0.2,
+            answerIdx: conn.answerIdx,
+            weight: conn.weight
+        });
+    }
+});
+
+// Absorption rings
+const absorptionRings = [];
+const ringGeo = new THREE.RingGeometry(0.3, 0.4, 32);
+
+// Tooltip setup
+const tooltip = document.createElement('div');
+tooltip.style.cssText = 'position:absolute;padding:6px 10px;background:rgba(0,0,0,0.8);color:white;border-radius:4px;font-size:12px;pointer-events:none;display:none;z-index:1000;';
+container.appendChild(tooltip);
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+container.addEventListener('mousemove', (event) => {
+    const rect = container.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / height) * 2 + 1;
+    
+    raycaster.setFromCamera(mouse, camera);
+    const allMeshes = [];
+    scene.traverse(obj => { if (obj.isMesh && obj.name) allMeshes.push(obj); });
+    const intersects = raycaster.intersectObjects(allMeshes);
+    
+    if (intersects.length > 0 && intersects[0].object.name) {
+        tooltip.textContent = intersects[0].object.name;
+        tooltip.style.display = 'block';
+        tooltip.style.left = (event.clientX - rect.left + 15) + 'px';
+        tooltip.style.top = (event.clientY - rect.top + 15) + 'px';
+    } else {
+        tooltip.style.display = 'none';
+    }
+});
+
+// HTML Overlay
+const overlay = document.createElement('div');
+overlay.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;';
+overlay.innerHTML = `
+    <div style="position:absolute;top:3%;left:50%;transform:translateX(-50%);color:#ffd700;font-size:16px;font-weight:bold;text-shadow:0 0 10px rgba(255,215,0,0.5);">VALUES DELIVER ANSWERS</div>
+    <div style="position:absolute;top:8%;left:5%;color:#00D4AA;font-size:10px;opacity:0.4;">ENCODER</div>
+    <div style="position:absolute;top:72%;left:5%;color:#ffd700;font-size:10px;">DECODER</div>
+    <div style="position:absolute;bottom:26%;left:9%;color:#ffffff;font-size:11px;text-shadow:0 0 5px #ffd700;">A1</div>
+    <div style="position:absolute;bottom:26%;left:24%;color:#ffffff;font-size:11px;text-shadow:0 0 5px #ffd700;">A2</div>
+    <div style="position:absolute;bottom:26%;left:39%;color:#ffffff;font-size:11px;text-shadow:0 0 5px #ffd700;">A3</div>
+    <div style="position:absolute;bottom:26%;left:54%;color:#ffffff;font-size:11px;text-shadow:0 0 5px #ffd700;">A4</div>
+    <div style="position:absolute;bottom:26%;left:69%;color:#ffffff;font-size:11px;text-shadow:0 0 5px #ffd700;">A5</div>
+    <div style="position:absolute;bottom:26%;left:84%;color:#ffffff;font-size:11px;text-shadow:0 0 5px #ffd700;">A6</div>
+    <div style="position:absolute;bottom:8%;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.6);padding:8px 16px;border-radius:8px;border:1px solid rgba(255,215,0,0.3);">
+        <span style="color:#ffffff;font-size:13px;">🌊 Values flow where attention points → Answers form</span>
+    </div>
+`;
+container.appendChild(overlay);
+state.currentOverlays.push(overlay);
+
+// Animation
+let time = 0;
+
+function triggerAbsorption(answerIdx) {
+    const ringMat = new THREE.MeshBasicMaterial({
+        color: 0xffd700,
+        transparent: true,
+        opacity: 0.8,
+        side: THREE.DoubleSide
+    });
+    const ring = new THREE.Mesh(ringGeo.clone(), ringMat);
+    ring.position.copy(answerPositions[answerIdx]);
+    ring.rotation.x = -Math.PI / 2;
+    scene.add(ring);
+    absorptionRings.push({
+        mesh: ring,
+        startTime: time,
+        duration: 0.5
+    });
+}
+
+function animate() {
+    state.animationId = requestAnimationFrame(animate);
+    time += 0.016;
+    state.controls.update();
+    
+    // Animate particles
+    particles.forEach((p, idx) => {
+        const t = ((time * p.speed + p.offset) % 1);
+        const pos = p.curve.getPoint(t);
+        p.mesh.position.copy(pos);
+        p.mesh.scale.setScalar(0.6 + Math.sin(t * Math.PI) * 0.3);
+        p.mesh.material.opacity = Math.sin(t * Math.PI) * 0.9;
+        
+        // Trigger absorption when particle reaches end
+        if (t > 0.95 && t < 0.97) {
+            triggerAbsorption(p.answerIdx);
+        }
+    });
+    
+    // Animate absorption rings
+    absorptionRings.forEach((ring, idx) => {
+        const elapsed = time - ring.startTime;
+        const progress = elapsed / ring.duration;
+        
+        if (progress < 1) {
+            const scale = 0.5 + progress * 2;
+            ring.mesh.scale.set(scale, scale, scale);
+            ring.mesh.material.opacity = 0.8 * (1 - progress);
+        } else {
+            scene.remove(ring.mesh);
+            absorptionRings.splice(idx, 1);
+        }
+    });
+    
+    // Pulse answer orbs
+    answerOrbs.forEach((orb, idx) => {
+        const pulse = 1 + 0.05 * Math.sin(time * 4 + idx * 0.5);
+        orb.core.scale.setScalar(pulse);
+        orb.glow.scale.setScalar(pulse * 1.1);
+    });
+    
+    // Animate encoder value rings
+    encoderOrbs.forEach((orb, idx) => {
+        orb.valueRing.rotation.z = time * 0.5 + idx * 0.1;
+        orb.keyRing.rotation.y = time * 0.3;
+    });
+    
+    state.renderer.render(scene, camera);
+}
+
+animate();
+        }
+
+        // ========================================
+        // SECTION 5
+        // ========================================
+        function loadSection5() {
+            const scene = state.scene;
+            const camera = state.camera;
+            
+            camera.position.set(0, 0, 12);
+            window.initialCameraPosition = camera.position.clone();
+
+// Lighting
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+scene.add(ambientLight);
+
+const pointLight1 = new THREE.PointLight(0xffffff, 1, 50);
+pointLight1.position.set(5, 5, 10);
+scene.add(pointLight1);
+
+const pointLight2 = new THREE.PointLight(0x00D4AA, 0.5, 30);
+pointLight2.position.set(-5, -3, 5);
+scene.add(pointLight2);
+
+// Q-K-V Spheres
+const sphereData = [
+    { name: 'Q - Query', x: -3, color: 0x00D4AA, label: 'Q' },
+    { name: 'K - Key', x: 0, color: 0xe94560, label: 'K' },
+    { name: 'V - Value', x: 3, color: 0xffd700, label: 'V' }
+];
+
+const spheres = [];
+sphereData.forEach((data, index) => {
+    const geometry = new THREE.SphereGeometry(0.8, 32, 32);
+    const material = new THREE.MeshStandardMaterial({
+        color: data.color,
+        emissive: data.color,
+        emissiveIntensity: 0.6,
+        metalness: 0.3,
+        roughness: 0.4
+    });
+    const sphere = new THREE.Mesh(geometry, material);
+    sphere.position.set(data.x, 0, 0);
+    sphere.name = data.name;
+    sphere.userData = { index, baseScale: 1 };
+    scene.add(sphere);
+    spheres.push(sphere);
+});
+
+// Arrow connectors
+function createArrow(fromX, toX, y) {
+    const group = new THREE.Group();
+    
+    // Shaft
+    const shaftLength = Math.abs(toX - fromX) - 0.3;
+    const shaftGeom = new THREE.CylinderGeometry(0.05, 0.05, shaftLength, 8);
+    const shaftMat = new THREE.MeshStandardMaterial({ 
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.9
+    });
+    const shaft = new THREE.Mesh(shaftGeom, shaftMat);
+    shaft.rotation.z = Math.PI / 2;
+    shaft.position.set((fromX + toX) / 2, y, 0);
+    group.add(shaft);
+    
+    // Arrowhead
+    const coneGeom = new THREE.ConeGeometry(0.12, 0.3, 8);
+    const coneMat = new THREE.MeshStandardMaterial({ 
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.9
+    });
+    const cone = new THREE.Mesh(coneGeom, coneMat);
+    cone.rotation.z = -Math.PI / 2;
+    cone.position.set(toX, y, 0);
+    group.add(cone);
+    
+    group.name = 'Arrow Connector';
+    return group;
+}
+
+const arrow1 = createArrow(-2.2, -0.8, 0);
+const arrow2 = createArrow(0.8, 2.2, 0);
+scene.add(arrow1);
+scene.add(arrow2);
+const arrows = [arrow1, arrow2];
+
+// Celebration particles
+const particles = [];
+const particleColors = [0xffd700, 0x00D4AA, 0xe94560];
+for (let i = 0; i < 70; i++) {
+    const size = 0.05 + Math.random() * 0.1;
+    const geom = new THREE.SphereGeometry(size, 8, 8);
+    const color = particleColors[Math.floor(Math.random() * 3)];
+    const mat = new THREE.MeshStandardMaterial({
+        color: color,
+        emissive: color,
+        emissiveIntensity: 0.5,
+        transparent: true,
+        opacity: 0.7
+    });
+    const particle = new THREE.Mesh(geom, mat);
+    
+    // Spherical distribution
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+    const r = 4 + Math.random() * 4;
+    particle.position.set(
+        r * Math.sin(phi) * Math.cos(theta),
+        r * Math.sin(phi) * Math.sin(theta),
+        r * Math.cos(phi) - 2
+    );
+    particle.userData = { 
+        angle: theta, 
+        radius: Math.sqrt(particle.position.x ** 2 + particle.position.y ** 2),
+        baseY: particle.position.y,
+        phaseOffset: Math.random() * Math.PI * 2
+    };
+    particle.name = 'Celebration Particle';
+    scene.add(particle);
+    particles.push(particle);
+}
+
+// Outer glow rings
+const ringColors = [0xffd700, 0x00D4AA, 0xe94560];
+const rings = [];
+for (let i = 0; i < 3; i++) {
+    const ringGeom = new THREE.TorusGeometry(5 + i * 0.8, 0.03, 8, 64);
+    const ringMat = new THREE.MeshStandardMaterial({
+        color: ringColors[i],
+        emissive: ringColors[i],
+        emissiveIntensity: 0.4,
+        transparent: true,
+        opacity: 0.25
+    });
+    const ring = new THREE.Mesh(ringGeom, ringMat);
+    ring.name = `Glow Ring ${i + 1}`;
+    scene.add(ring);
+    rings.push(ring);
+}
+
+// HTML Overlay
+const overlay = document.createElement('div');
+overlay.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;';
+container.appendChild(overlay);
+state.currentOverlays.push(overlay);
+
+// Punchline text
+const punchlineContainer = document.createElement('div');
+punchlineContainer.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;';
+
+const lines = [
+    { text: 'Q asks.', color: '#ffd700' },
+    { text: 'K answers.', color: '#e94560' },
+    { text: 'V delivers.', color: '#00D4AA' }
+];
+
+const lineElements = lines.map((line, i) => {
+    const el = document.createElement('div');
+    el.textContent = line.text;
+    el.style.cssText = `color:${line.color};font-size:32px;font-weight:bold;font-family:Georgia,serif;margin:15px 0;text-shadow:0 0 20px ${line.color};opacity:0;transition:opacity 0.5s;`;
+    punchlineContainer.appendChild(el);
+    return el;
+});
+overlay.appendChild(punchlineContainer);
+
+// Philosophy quote
+const quote = document.createElement('div');
+quote.innerHTML = '<div style="margin-bottom:5px;">Four eyes see different parts of the elephant.</div><div>The transformer asks the right questions to see the whole.</div>';
+quote.style.cssText = 'position:absolute;bottom:12%;left:50%;transform:translateX(-50%);color:#9ca3af;font-size:13px;font-style:italic;text-align:center;opacity:0;transition:opacity 1s;';
+overlay.appendChild(quote);
+
+// Summary stat
+const stat = document.createElement('div');
+stat.textContent = '6 queries × 1202 keys = understanding';
+stat.style.cssText = 'position:absolute;bottom:20px;right:20px;color:#666666;font-size:11px;font-family:monospace;';
+overlay.appendChild(stat);
+
+// Tooltip
+const tooltip = document.createElement('div');
+tooltip.style.cssText = 'position:absolute;padding:6px 10px;background:rgba(0,0,0,0.8);color:white;border-radius:4px;font-size:12px;pointer-events:none;display:none;';
+container.appendChild(tooltip);
+
+// Raycaster for hover
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+container.addEventListener('mousemove', (event) => {
+    const rect = container.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / height) * 2 + 1;
+    
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(scene.children, true);
+    
+    if (intersects.length > 0 && intersects[0].object.name) {
+        tooltip.style.display = 'block';
+        tooltip.style.left = (event.clientX - rect.left + 15) + 'px';
+        tooltip.style.top = (event.clientY - rect.top + 15) + 'px';
+        tooltip.textContent = intersects[0].object.name;
+    } else {
+        tooltip.style.display = 'none';
+    }
+});
+
+// Animation
+const startTime = Date.now();
+
+function animate() {
+    state.animationId = requestAnimationFrame(animate);
+    
+    const elapsed = (Date.now() - startTime) / 1000;
+    const time = elapsed;
+    
+    // Entry animations
+    if (elapsed > 0.5) lineElements[0].style.opacity = '1';
+    if (elapsed > 1.0) lineElements[1].style.opacity = '1';
+    if (elapsed > 1.5) lineElements[2].style.opacity = '1';
+    if (elapsed > 3.0) quote.style.opacity = '1';
+    
+    // Sphere pulsing
+    spheres.forEach((sphere, i) => {
+        const scale = 1 + 0.08 * Math.sin(time * 1.5 + i);
+        sphere.scale.setScalar(scale);
+    });
+    
+    // Particle orbit and drift
+    particles.forEach((p, i) => {
+        p.userData.angle += 0.005;
+        const r = p.userData.radius;
+        p.position.x = r * Math.cos(p.userData.angle);
+        p.position.y = p.userData.baseY + 0.3 * Math.sin(time + p.userData.phaseOffset);
+    });
+    
+    // Ring rotation
+    rings[0].rotation.z += 0.003;
+    rings[1].rotation.z -= 0.002;
+    rings[2].rotation.z += 0.004;
+    rings[0].rotation.x = 0.3;
+    rings[1].rotation.x = -0.2;
+    rings[2].rotation.y = 0.15;
+    
+    // Arrow opacity pulse
+    const arrowOpacity = 0.7 + 0.2 * Math.sin(time * 2);
+    arrows.forEach(arrow => {
+        arrow.children.forEach(child => {
+            if (child.material) child.material.opacity = arrowOpacity;
+        });
+    });
+    
+    state.controls.update();
+    state.renderer.render(scene, camera);
+}
+
+animate();
+        }
+
+        // ========================================
+        // SECTION MANAGEMENT
+        // ========================================
+        function loadSection(sectionNum) {
+            clearScene();
+
+            switch(sectionNum) {
+                case 1: loadSection1(); break;
+                case 2: loadSection2(); break;
+                case 3: loadSection3(); break;
+                case 4: loadSection4(); break;
+                case 5: loadSection5(); break;
+            }
+
+            // Update narrative
+            const content = narrativeContent[sectionNum];
+            narrativeEl.innerHTML = `
+                <span class="emotion-badge emotion-${content.emotion}">${content.emotionLabel}</span>
+                <h3>${content.title}</h3>
+                ${content.content}
+            `;
+
+            // Update section indicator
+            sectionTitleEl.textContent = `Section ${sectionNum} of ${state.totalSections}`;
+            sectionDots.forEach((dot, i) => {
+                dot.classList.toggle('active', i + 1 === sectionNum);
+            });
+
+            // Update nav buttons
+            prevBtn.disabled = sectionNum === 1;
+            nextBtn.disabled = sectionNum === state.totalSections;
+        }
+
+        function goToSection(sectionNum) {
+            if (sectionNum >= 1 && sectionNum <= state.totalSections) {
+                state.currentSection = sectionNum;
+                loadSection(sectionNum);
+            }
+        }
+
+        // ========================================
+        // EVENT LISTENERS
+        // ========================================
+        prevBtn.addEventListener('click', () => goToSection(state.currentSection - 1));
+        nextBtn.addEventListener('click', () => goToSection(state.currentSection + 1));
+
+        sectionDots.forEach((dot, i) => {
+            dot.addEventListener('click', () => goToSection(i + 1));
+        });
+
+        resetViewBtn.addEventListener('click', () => {
+            if (window.initialCameraPosition && window.currentCamera) {
+                window.currentCamera.position.copy(window.initialCameraPosition);
+                window.currentCamera.up.set(0, 1, 0);
+                if (window.currentControls) {
+                    window.currentControls.target.set(0, 0, 0);
+                }
+            }
+        });
+
+        resetAnimationBtn.addEventListener('click', () => {
+            loadSection(state.currentSection);
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') goToSection(state.currentSection + 1);
+            if (e.key === 'ArrowLeft') goToSection(state.currentSection - 1);
+            if (e.key === 'r' || e.key === 'R') resetViewBtn.click();
+            if (e.key === 'a' || e.key === 'A') resetAnimationBtn.click();
+        });
+
+        // ========================================
+        // INITIALIZATION
+        // ========================================
+        window.addEventListener('load', () => {
+            initThreeJS();
+            loadSection(1);
+            loadingEl.style.display = 'none';
+        });
+    </script>
+</body>
+</html>
