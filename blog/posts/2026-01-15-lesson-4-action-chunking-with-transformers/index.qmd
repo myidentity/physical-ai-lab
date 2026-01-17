@@ -4,12 +4,12 @@ subtitle: "The Architecture That Made Imitation Learning Work"
 author: "Rajesh"
 date: "2026-01-15"
 categories: [robot-learning, imitation-learning, transformers, act-policy, bootcamp]
-image: images/thumbnail.png
+image: thumbnail.jpg
 toc: true
 toc-depth: 2
 ---
 
-![](images/thumbnail.png){.hero-image fig-align="center" width="100%"}
+![](thumbnail.jpg){.hero-image fig-align="center" width="100%"}
 
 *In this lesson, we decode ACT (Action Chunking with Transformers) - the policy that proved imitation learning can work on low-cost hardware. By the end, you'll understand how VAEs and Transformers combine to make robots move smoothly.*
 

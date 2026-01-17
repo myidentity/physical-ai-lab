@@ -759,7 +759,11 @@ input[type="submit"] {
 }
 
 .sidebar-item a[href*="lesson-3-the-transformer-revolution"]::before {
-  background-image: url('/posts/2026-01-11-lesson-3-the-transformer-revolution/images/thumbnail.png');
+  background-image: url('/posts/2026-01-11-lesson-3-the-transformer-revolution/thumbnail.jpg');
+}
+
+.sidebar-item a[href*="lesson-4-action-chunking-with-transformers"]::before {
+  background-image: url('/posts/2026-01-15-lesson-4-action-chunking-with-transformers/thumbnail.jpg');
 }
 
 /* Go2-W Training Workshop Series */
@@ -839,8 +843,8 @@ input[type="submit"] {
 /* Hero image - full width with rounded corners */
 .hero-image {
   width: 100%;
-  max-height: 400px;
-  object-fit: cover;
+  height: auto;
+  object-fit: contain;
   border-radius: 12px;
   margin-bottom: 1.5rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
