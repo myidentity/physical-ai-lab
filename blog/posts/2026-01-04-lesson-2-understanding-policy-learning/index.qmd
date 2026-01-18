@@ -208,7 +208,7 @@ So every handwriting sample can be described by a "secret recipe" of these hidde
 ## Dr. Nova Brooks
 I love that analogy! Yes, think of it like a machine with hidden knobs:
 
-![[8] The "secret recipe machine" - turn the knobs (latent variables) and the machine produces handwriting that matches those settings.](images/chapter-4-secret-machine.jpg)
+![[8] The "secret recipe machine" - turn the knobs (latent variables) and the machine produces handwriting that matches those settings.](images/chapter-4-hidden-recipe-machine.jpg)
 
 If I know Rohan writes with:
 - Slant: slightly right
