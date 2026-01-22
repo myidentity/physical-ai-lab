@@ -9,6 +9,14 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Touch-friendly base styles */
+        button, .nav-btn, .loop-btn, .progress-segment, .chapter-select {
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         body {
@@ -158,21 +166,25 @@
         /* Progress bar with segment markers */
         .progress-container {
             width: 100%;
-            height: 24px;
+            min-height: 44px;
+            height: 44px;
             background: #1a1a25;
-            border-radius: 6px;
+            border-radius: 8px;
             margin-bottom: 20px;
             cursor: pointer;
             position: relative;
             overflow: visible; /* Allow tooltips to show above segments */
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
         }
 
         .progress-segments {
             position: absolute;
-            top: 0;
+            top: 8px;
             left: 0;
             width: 100%;
-            height: 100%;
+            height: calc(100% - 16px);
             display: flex;
             overflow: hidden; /* Clip segment content but allow tooltip overflow */
             border-radius: 6px;
@@ -193,6 +205,11 @@
         .progress-segment:hover {
             filter: brightness(1.3);
             z-index: 5;
+        }
+
+        .progress-segment:active {
+            filter: brightness(1.5);
+            transform: scaleY(1.1);
         }
 
         .progress-segment.lecture {
@@ -297,6 +314,29 @@
             pointer-events: none;
         }
 
+        /* Hide keyboard controls on touch devices */
+        @media (pointer: coarse) {
+            .controls-overlay.keyboard-controls {
+                display: none;
+            }
+            .controls-overlay.touch-controls {
+                display: block;
+            }
+        }
+
+        @media (pointer: fine) {
+            .controls-overlay.touch-controls {
+                display: none;
+            }
+        }
+
+        /* Touch controls panel specific styles */
+        .controls-overlay.touch-controls {
+            width: 90%;
+            max-width: 400px;
+            padding: 20px;
+        }
+
         .controls-overlay h3 {
             color: #00d9ff;
             margin-bottom: 10px;
@@ -334,6 +374,136 @@
             grid-column: span 2;
         }
 
+        /* Touch Controls Panel Styles */
+        .touch-controls-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding: 10px 0;
+        }
+
+        .touch-control-row {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .touch-control-label {
+            color: #888;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .touch-control-buttons {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .touch-ctrl-btn {
+            background: #1a1a25;
+            border: 1px solid #333;
+            color: #00d9ff;
+            padding: 10px 16px;
+            min-width: 48px;
+            min-height: 48px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.15s ease;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .touch-ctrl-btn:active {
+            background: #00d9ff;
+            color: #0a0a0f;
+            transform: scale(0.95);
+        }
+
+        .touch-ctrl-reset {
+            background: #252530;
+            color: #888;
+            font-size: 0.8rem;
+            padding: 10px 12px;
+        }
+
+        .touch-ctrl-reset:active {
+            background: #00ff88;
+            color: #0a0a0f;
+        }
+
+        .touch-speed-display {
+            color: #00ff88;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            font-weight: 600;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .touch-skip-btn {
+            padding: 10px 12px;
+            font-size: 0.85rem;
+        }
+
+        .touch-play-row {
+            margin-top: 8px;
+        }
+
+        .touch-play-btn {
+            background: linear-gradient(135deg, #00d9ff 0%, #00ff88 100%);
+            border: none;
+            color: #0a0a0f;
+            padding: 14px 32px;
+            min-height: 56px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 20px rgba(0, 217, 255, 0.3);
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .touch-play-btn:active {
+            transform: scale(0.95);
+        }
+
+        .touch-play-btn.playing {
+            background: linear-gradient(135deg, #ffa500 0%, #ff6b6b 100%);
+            box-shadow: 0 4px 20px rgba(255, 165, 0, 0.3);
+        }
+
+        .touch-hints {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+            color: #555;
+            font-size: 0.7rem;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .touch-hints span:nth-child(2) {
+            color: #333;
+        }
+
         /* Feedback indicator */
         .feedback {
             position: fixed;
@@ -365,13 +535,16 @@
             background: #1a1a25;
             border: 1px solid #333;
             color: #888;
-            padding: 10px 18px;
+            padding: 12px 20px;
+            min-height: 44px;
+            min-width: 44px;
             border-radius: 8px;
             cursor: pointer;
             font-size: 0.85rem;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 6px;
         }
 
@@ -379,6 +552,11 @@
             border-color: #00d9ff;
             color: #00d9ff;
             background: #1a1a30;
+        }
+
+        .nav-btn:active:not(:disabled) {
+            transform: scale(0.95);
+            opacity: 0.8;
         }
 
         .nav-btn:disabled {
@@ -394,7 +572,8 @@
             background: #1a1a25;
             border: 1px solid #444;
             color: #00d9ff;
-            padding: 10px 15px;
+            padding: 12px 15px;
+            min-height: 44px;
             border-radius: 8px;
             font-size: 0.9rem;
             cursor: pointer;
@@ -472,19 +651,26 @@
             background: #1a1a25;
             border: 1px solid #333;
             color: #666;
-            padding: 6px 12px;
+            padding: 10px 16px;
+            min-height: 44px;
             border-radius: 6px;
             cursor: pointer;
             font-size: 0.75rem;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 5px;
         }
 
         .loop-btn:hover {
             border-color: #555;
             color: #888;
+        }
+
+        .loop-btn:active {
+            transform: scale(0.95);
+            opacity: 0.8;
         }
 
         .loop-btn.active {
@@ -503,6 +689,90 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
+
+        /* Play/Pause Button (touch-friendly) */
+        .play-pause-btn {
+            background: linear-gradient(135deg, #00d9ff 0%, #00ff88 100%);
+            border: none;
+            color: #0a0a0f;
+            width: 64px;
+            height: 64px;
+            min-width: 64px;
+            min-height: 64px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 20px rgba(0, 217, 255, 0.3);
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .play-pause-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 25px rgba(0, 217, 255, 0.4);
+        }
+
+        .play-pause-btn:active {
+            transform: scale(0.95);
+        }
+
+        .play-pause-btn.playing {
+            background: linear-gradient(135deg, #ffa500 0%, #ff6b6b 100%);
+            box-shadow: 0 4px 20px rgba(255, 165, 0, 0.3);
+        }
+
+        .play-pause-btn.playing:hover {
+            box-shadow: 0 6px 25px rgba(255, 165, 0, 0.4);
+        }
+
+        /* Playback controls row */
+        .playback-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        /* Controls toggle button (settings gear) */
+        .controls-toggle-btn {
+            background: #1a1a25;
+            border: 1px solid #333;
+            color: #888;
+            width: 48px;
+            height: 48px;
+            min-width: 48px;
+            min-height: 48px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .controls-toggle-btn:hover {
+            background: #252530;
+            color: #00d9ff;
+            border-color: #00d9ff;
+        }
+
+        .controls-toggle-btn:active {
+            transform: scale(0.95);
+            background: #00d9ff;
+            color: #0a0a0f;
+        }
     </style>
 </head>
 <body>
@@ -517,8 +787,8 @@
                 <span class="nav-label">Prev</span>
             </button>
             <select id="chapterSelect" class="chapter-select" onchange="goToChapter(this.value)">
-                                <option value="0">0. Chapter 0</option>
-                <option value="1" selected>1. The Multimodal Problem</option>
+                                <option value="0" selected>0. Chapter 0</option>
+                <option value="1">1. The Multimodal Problem</option>
                 <option value="2">2. Thinking in Distributions</option>
                 <option value="3">3. KL Divergence Demystified</option>
                 <option value="4">4. The Secret Recipe (Latent Variables)</option>
@@ -547,6 +817,16 @@
             </button>
         </div>
 
+        <!-- Playback Controls -->
+        <div class="playback-controls">
+            <button class="play-pause-btn" id="playPauseBtn" onclick="togglePlayPause()">
+                <span id="playPauseIcon">▶</span>
+            </button>
+            <button class="controls-toggle-btn" onclick="toggleControls()" title="Speed & Skip Controls">
+                <span class="controls-toggle-icon">⚙</span>
+            </button>
+        </div>
+
         <div class="status-row">
             <div class="status" id="status">PAUSED</div>
             <div class="time-display">
@@ -555,7 +835,7 @@
             <div class="speed-display">Speed: <span id="speedDisplay">1.0x</span></div>
         </div>
 
-        <div class="chapter-display" id="chapterDisplay">Chapter 1: The Multimodal Problem</div>
+        <div class="chapter-display" id="chapterDisplay">Chapter 0: Chapter 0</div>
 
         <div class="progress-container" id="progressContainer">
             <div class="progress-segments" id="progressSegments"></div>
@@ -575,7 +855,7 @@
         </div>
     </div>
 
-    <div class="controls-overlay" id="controlsOverlay">
+    <div class="controls-overlay keyboard-controls" id="controlsOverlay">
         <h3>Keyboard Controls</h3>
         <div class="controls-grid">
             <div class="control-row">
@@ -610,10 +890,50 @@
         </div>
     </div>
 
+    <div class="controls-overlay touch-controls hidden" id="touchControlsOverlay">
+        <h3>Playback Controls</h3>
+        <div class="touch-controls-grid">
+            <!-- Speed Controls Row -->
+            <div class="touch-control-row">
+                <span class="touch-control-label">Speed</span>
+                <div class="touch-control-buttons">
+                    <button class="touch-ctrl-btn" onclick="changeSpeed(-0.1); event.stopPropagation();">−</button>
+                    <span class="touch-speed-display" id="touchSpeedDisplay">1.0×</span>
+                    <button class="touch-ctrl-btn" onclick="changeSpeed(0.1); event.stopPropagation();">+</button>
+                    <button class="touch-ctrl-btn touch-ctrl-reset" onclick="resetSpeed(); event.stopPropagation();">Reset</button>
+                </div>
+            </div>
+            <!-- Skip Controls Row -->
+            <div class="touch-control-row">
+                <span class="touch-control-label">Skip</span>
+                <div class="touch-control-buttons">
+                    <button class="touch-ctrl-btn touch-skip-btn" onclick="skip(-30); event.stopPropagation();">−30s</button>
+                    <button class="touch-ctrl-btn touch-skip-btn" onclick="skip(-10); event.stopPropagation();">−10s</button>
+                    <button class="touch-ctrl-btn touch-skip-btn" onclick="skip(10); event.stopPropagation();">+10s</button>
+                    <button class="touch-ctrl-btn touch-skip-btn" onclick="skip(30); event.stopPropagation();">+30s</button>
+                </div>
+            </div>
+            <!-- Play/Pause Row -->
+            <div class="touch-control-row touch-play-row">
+                <button class="touch-play-btn" id="touchPlayBtn" onclick="togglePlayPause(); event.stopPropagation();">
+                    <span id="touchPlayIcon">▶</span>
+                    <span id="touchPlayText">Play</span>
+                </button>
+            </div>
+            <!-- Hints -->
+            <div class="touch-hints">
+                <span>Swipe ←→ to change chapter</span>
+                <span>•</span>
+                <span>Tap progress bar to seek</span>
+            </div>
+        </div>
+        <p class="hide-hint">Tap outside to close</p>
+    </div>
+
     <div class="feedback" id="feedback"></div>
 
     <audio id="audio" preload="auto">
-        <source src="audio/lesson-2-chapter-1.mp3" type="audio/mpeg">
+        <source src="audio/lesson-2-chapter-0.mp3" type="audio/mpeg">
     </audio>
 
     <script>
@@ -621,10 +941,10 @@
         // Chapter Configuration
         // ═══════════════════════════════════════════════════════════════════
 
-        const CHAPTERS = [{"id": 0, "title": "Chapter 0", "available": false}, {"id": 1, "title": "The Multimodal Problem", "available": true}, {"id": 2, "title": "Thinking in Distributions", "available": true}, {"id": 3, "title": "KL Divergence Demystified", "available": true}, {"id": 4, "title": "The Secret Recipe (Latent Variables)", "available": true}, {"id": 5, "title": "The Encoder - Compressing Reality", "available": true}, {"id": 6, "title": "The Decoder - Reconstructing the World", "available": true}, {"id": 7, "title": "Why Variational - The Distribution Trick", "available": true}, {"id": 8, "title": "Training VAEs - The ELBO", "available": true}, {"id": 9, "title": "From Digits to Robots", "available": true}];
+        const CHAPTERS = [{"id": 0, "title": "Chapter 0", "available": true}, {"id": 1, "title": "The Multimodal Problem", "available": true}, {"id": 2, "title": "Thinking in Distributions", "available": true}, {"id": 3, "title": "KL Divergence Demystified", "available": true}, {"id": 4, "title": "The Secret Recipe (Latent Variables)", "available": true}, {"id": 5, "title": "The Encoder - Compressing Reality", "available": true}, {"id": 6, "title": "The Decoder - Reconstructing the World", "available": true}, {"id": 7, "title": "Why Variational - The Distribution Trick", "available": true}, {"id": 8, "title": "Training VAEs - The ELBO", "available": true}, {"id": 9, "title": "From Digits to Robots", "available": true}];
 
         const LESSON_SLUG = 'lesson-2';
-        let currentChapter = 1;
+        let currentChapter = 0;
 
         function getChapterAudioPath(chapterId) {
             return `audio/${LESSON_SLUG}-chapter-${chapterId}.mp3`;
@@ -1173,12 +1493,34 @@
         }
 
         function updateStatus() {
+            const playPauseBtn = document.getElementById('playPauseBtn');
+            const playPauseIcon = document.getElementById('playPauseIcon');
+            const touchPlayBtn = document.getElementById('touchPlayBtn');
+            const touchPlayIcon = document.getElementById('touchPlayIcon');
+            const touchPlayText = document.getElementById('touchPlayText');
+
             if (audio.paused) {
                 statusEl.textContent = 'PAUSED';
                 statusEl.classList.add('paused');
+                playPauseBtn.classList.remove('playing');
+                playPauseIcon.textContent = '▶';
+                // Sync touch play button
+                if (touchPlayBtn) {
+                    touchPlayBtn.classList.remove('playing');
+                    touchPlayIcon.textContent = '▶';
+                    touchPlayText.textContent = 'Play';
+                }
             } else {
                 statusEl.textContent = 'PLAYING';
                 statusEl.classList.remove('paused');
+                playPauseBtn.classList.add('playing');
+                playPauseIcon.textContent = '⏸';
+                // Sync touch play button
+                if (touchPlayBtn) {
+                    touchPlayBtn.classList.add('playing');
+                    touchPlayIcon.textContent = '⏸';
+                    touchPlayText.textContent = 'Pause';
+                }
             }
         }
 
@@ -1327,6 +1669,11 @@
             speed = Math.max(0.5, Math.min(2.0, speed + delta));
             audio.playbackRate = speed;
             speedEl.textContent = `${speed.toFixed(2)}x`;
+            // Sync touch speed display
+            const touchSpeedDisplay = document.getElementById('touchSpeedDisplay');
+            if (touchSpeedDisplay) {
+                touchSpeedDisplay.textContent = `${speed.toFixed(1)}×`;
+            }
 
             if (delta > 0) {
                 playSpeedUpSound();
@@ -1340,13 +1687,26 @@
             speed = 1.0;
             audio.playbackRate = speed;
             speedEl.textContent = '1.00x';
+            // Sync touch speed display
+            const touchSpeedDisplay = document.getElementById('touchSpeedDisplay');
+            if (touchSpeedDisplay) {
+                touchSpeedDisplay.textContent = '1.0×';
+            }
             playTone(500, 0.2);
             showFeedback('1.0x');
         }
 
         function toggleControls() {
             controlsVisible = !controlsVisible;
-            controlsEl.classList.toggle('hidden', !controlsVisible);
+            // Toggle the appropriate controls based on device type
+            if (isTouchDevice) {
+                const touchControlsOverlay = document.getElementById('touchControlsOverlay');
+                if (touchControlsOverlay) {
+                    touchControlsOverlay.classList.toggle('hidden', !controlsVisible);
+                }
+            } else {
+                controlsEl.classList.toggle('hidden', !controlsVisible);
+            }
             playTone(controlsVisible ? 600 : 400, 0.1);
         }
 
@@ -1687,6 +2047,139 @@
 
         // Prevent context menu
         document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+        // ═══════════════════════════════════════════════════════════════════
+        // Touch Support
+        // ═══════════════════════════════════════════════════════════════════
+
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+        // Handle touch controls overlay visibility
+        const touchControlsOverlay = document.getElementById('touchControlsOverlay');
+        if (isTouchDevice && touchControlsOverlay) {
+            // Tap anywhere (except on the overlay or controls button) to hide touch controls
+            document.addEventListener('touchstart', (e) => {
+                if (!e.target.closest('.touch-controls') && !e.target.closest('.controls-toggle-btn')) {
+                    touchControlsOverlay.classList.add('hidden');
+                    controlsVisible = false;
+                }
+            }, { passive: true });
+        }
+
+        // Swipe gestures for chapter navigation on the player container
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchEndX = 0;
+        let touchEndY = 0;
+
+        const playerContainer = document.querySelector('.player-container');
+
+        playerContainer.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+            touchStartY = e.changedTouches[0].screenY;
+        }, { passive: true });
+
+        playerContainer.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            touchEndY = e.changedTouches[0].screenY;
+            handleSwipeGesture();
+        }, { passive: true });
+
+        function handleSwipeGesture() {
+            const swipeThreshold = 80;  // Minimum swipe distance
+            const verticalThreshold = 50;  // Max vertical movement to count as horizontal swipe
+
+            const deltaX = touchEndX - touchStartX;
+            const deltaY = Math.abs(touchEndY - touchStartY);
+
+            // Only trigger if horizontal swipe is dominant
+            if (Math.abs(deltaX) > swipeThreshold && deltaY < verticalThreshold) {
+                if (deltaX < 0) {
+                    // Swipe left → next chapter
+                    goToNextChapter();
+                } else {
+                    // Swipe right → previous chapter
+                    goToPreviousChapter();
+                }
+            }
+        }
+
+        // Tap-to-show tooltips for progress bar (replace hover on touch devices)
+        if (isTouchDevice) {
+            let tooltipVisible = false;
+
+            progressContainer.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const rect = progressContainer.getBoundingClientRect();
+                const x = touch.clientX - rect.left;
+                const percent = x / rect.width;
+                const timeSeconds = percent * audio.duration;
+                const timeMs = timeSeconds * 1000;
+
+                // Find the segment being touched
+                let touchedSegment = null;
+                for (const seg of builtSegments) {
+                    if (timeMs >= seg.startMs && timeMs < seg.endMs) {
+                        touchedSegment = seg;
+                        break;
+                    }
+                }
+
+                // Build tooltip content
+                let tooltipHTML = `<div class="tooltip-time">${formatTime(timeSeconds)}</div>`;
+                if (touchedSegment) {
+                    const typeLabel = touchedSegment.type === 'question' ? 'Q&A' : 'Lecture';
+                    const preview = touchedSegment.label.substring(0, 100) + (touchedSegment.label.length > 100 ? '...' : '');
+                    tooltipHTML += `<span class="tooltip-type ${touchedSegment.type}">${typeLabel}</span>`;
+                    tooltipHTML += `<div class="tooltip-text">${preview}</div>`;
+                }
+                progressTooltip.innerHTML = tooltipHTML;
+
+                // Position tooltip
+                const tooltipRect = progressTooltip.getBoundingClientRect();
+                let tooltipX = touch.clientX - (tooltipRect.width / 2);
+                const tooltipY = rect.top - 10;
+
+                // Keep within viewport
+                if (tooltipX < 10) tooltipX = 10;
+                if (tooltipX + tooltipRect.width > window.innerWidth - 10) {
+                    tooltipX = window.innerWidth - tooltipRect.width - 10;
+                }
+
+                progressTooltip.style.left = `${tooltipX}px`;
+                progressTooltip.style.top = `${tooltipY}px`;
+                progressTooltip.style.transform = 'translateY(-100%)';
+                progressTooltip.style.opacity = '1';
+                tooltipVisible = true;
+            }, { passive: false });
+
+            // Hide tooltip when tapping elsewhere
+            document.addEventListener('touchstart', (e) => {
+                if (!e.target.closest('.progress-container') && tooltipVisible) {
+                    progressTooltip.style.opacity = '0';
+                    tooltipVisible = false;
+                }
+            }, { passive: true });
+
+            // Tap on progress bar to seek (after brief delay to allow tooltip display)
+            progressContainer.addEventListener('touchend', (e) => {
+                const touch = e.changedTouches[0];
+                const rect = progressContainer.getBoundingClientRect();
+                const x = touch.clientX - rect.left;
+                const percent = x / rect.width;
+
+                if (audio.duration && percent >= 0 && percent <= 1) {
+                    audio.currentTime = percent * audio.duration;
+                    playScrubSound();
+                    updateTextDisplay();
+                    updatePlayhead();
+                }
+            }, { passive: true });
+        }
+
+        // Allow native scroll on touch devices (don't block with wheel handler)
+        // The existing wheel handler is only used for desktop scroll-to-scrub
 
         // ═══════════════════════════════════════════════════════════════════
         // Initialize
