@@ -3,6 +3,7 @@ project:
   output-dir: ../_site
   resources:
     - "lessons/**"
+    - "studio-showcase/**"
 
 website:
   title: "Physical AI Laboratory"
