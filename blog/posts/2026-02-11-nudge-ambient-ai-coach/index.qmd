@@ -6,6 +6,7 @@ date: "2026-02-11"
 categories: [AI, Hackathon, Wearable, Omi, FastAPI, Claude, Real-Time]
 image: images/hero.jpg
 toc: false
+sidebar: false
 ---
 
 ```{=html}
