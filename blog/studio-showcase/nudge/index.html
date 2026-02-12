@@ -1,0 +1,1778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nudge — Presentation</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: #0a0a0a;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: rgba(255, 245, 230, 0.88);
+  }
+
+  /* ── Slide Engine ── */
+  .deck {
+    width: 100vw; height: 100vh;
+    position: relative;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.6s ease;
+  }
+  .slide.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* ── Backgrounds ── */
+  .slide::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+  .slide--opening::before {
+    background: radial-gradient(ellipse at center 40%, #1a1005 0%, #0d0d0d 60%, #060a0d 100%);
+  }
+  .slide--restaurant::before {
+    background: radial-gradient(ellipse at center, #1a1208 0%, #0d0d0d 70%);
+  }
+  .slide--individual::before,
+  .slide--manager::before,
+  .slide--kiosk::before {
+    background: radial-gradient(ellipse at center, #0a1015 0%, #0a0a0a 70%);
+  }
+
+  /* ── Shared elements ── */
+  .slide-title {
+    position: relative; z-index: 1;
+    font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    margin-top: 3vh;
+    margin-bottom: 0.8rem;
+    text-align: center;
+  }
+  .slide-title em {
+    font-style: normal;
+    color: #e8c370;
+    font-weight: 400;
+  }
+  .slide-subtitle {
+    position: relative; z-index: 1;
+    font-size: clamp(0.9rem, 1.6vw, 1.15rem);
+    font-weight: 300;
+    color: rgba(255, 245, 230, 0.6);
+    text-align: center;
+    max-width: 700px;
+    line-height: 1.6;
+    margin-bottom: 2.5vh;
+  }
+
+  /* ── Slide nav dots ── */
+  .nav-dots {
+    position: fixed;
+    bottom: 2vh;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    display: flex;
+    gap: 10px;
+  }
+  .nav-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .nav-dot.active {
+    background: #e8c370;
+    transform: scale(1.3);
+  }
+
+  /* ── Slide counter ── */
+  .slide-counter {
+    position: fixed;
+    top: 2vh; right: 3vw;
+    z-index: 100;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.25);
+  }
+
+  /* ════════════════════════════════════════
+     SLIDE 1 — Opening
+     ════════════════════════════════════════ */
+  .hero-image {
+    position: relative; z-index: 1;
+    width: 72vw;
+    max-width: 1100px;
+    border-radius: 16px;
+    box-shadow: 0 0 80px rgba(200,150,50,0.15), 0 0 200px rgba(200,150,50,0.05);
+  }
+  .tagline {
+    position: relative; z-index: 1;
+    margin-top: 2.5vh;
+    max-width: 800px;
+    padding: 0 2rem;
+    text-align: center;
+    font-size: clamp(1rem, 1.8vw, 1.3rem);
+    font-weight: 300;
+    line-height: 1.7;
+    color: rgba(255,245,230,0.85);
+  }
+  .tagline em { font-style: normal; color: #e8c370; font-weight: 400; }
+
+  /* ════════════════════════════════════════
+     SLIDE 2 — Restaurant Scene
+     ════════════════════════════════════════ */
+  .restaurant-scene {
+    position: relative; z-index: 1;
+    width: 62vw;
+    max-width: 950px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 0 80px rgba(200,150,50,0.15), 0 0 200px rgba(200,150,50,0.05);
+  }
+  .restaurant-scene img {
+    width: 100%;
+    display: block;
+  }
+  .use-case-points {
+    position: relative; z-index: 1;
+    display: flex;
+    gap: 3vw;
+    margin-top: 3vh;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 0 2rem;
+  }
+  .use-case-point {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    max-width: 280px;
+  }
+  .use-case-point .icon {
+    font-size: 1.4rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .use-case-point .text {
+    font-size: clamp(0.8rem, 1.2vw, 0.95rem);
+    font-weight: 300;
+    line-height: 1.5;
+    color: rgba(255,245,230,0.75);
+  }
+  .use-case-point .text strong {
+    color: #e8c370;
+    font-weight: 500;
+  }
+
+  /* ════════════════════════════════════════
+     SLIDE 3 — Staff Dashboard Screenshot
+     ════════════════════════════════════════ */
+  .dashboard-scene {
+    position: relative; z-index: 1;
+    width: 62vw;
+    max-width: 950px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 0 80px rgba(200,150,50,0.15), 0 0 200px rgba(200,150,50,0.05);
+  }
+  .dashboard-scene img {
+    width: 100%;
+    display: block;
+  }
+
+  /* ── Manager cards (slide 4) ── */
+  .cards-row {
+    position: relative; z-index: 1;
+    display: flex;
+    gap: 2.5vw;
+    justify-content: center;
+    align-items: stretch;
+    padding: 0 3vw;
+    flex-wrap: wrap;
+  }
+  .feature-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 1.2rem;
+    width: 28vw;
+    max-width: 380px;
+    min-width: 260px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.8rem;
+    transition: transform 0.3s, border-color 0.3s;
+  }
+  .feature-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(232,195,112,0.2);
+  }
+  .feature-card img {
+    width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
+  .feature-card h3 {
+    font-size: clamp(0.95rem, 1.4vw, 1.15rem);
+    font-weight: 500;
+    color: #e8c370;
+    text-align: center;
+  }
+  .feature-card p {
+    font-size: clamp(0.78rem, 1.1vw, 0.9rem);
+    font-weight: 300;
+    color: rgba(255,245,230,0.6);
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  /* ════════════════════════════════════════
+     SLIDE 5 — Kiosk
+     ════════════════════════════════════════ */
+  .kiosk-showcase {
+    position: relative; z-index: 1;
+    display: flex;
+    gap: 2.5vw;
+    align-items: center;
+    justify-content: center;
+    padding: 0 3vw;
+  }
+  .kiosk-card {
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .kiosk-card img {
+    width: 34vw;
+    max-width: 520px;
+    display: block;
+  }
+  .kiosk-label {
+    text-align: center;
+    padding: 0.6rem;
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: rgba(255,245,230,0.5);
+    background: rgba(255,255,255,0.03);
+    letter-spacing: 0.05em;
+  }
+  .kiosk-description {
+    position: relative; z-index: 1;
+    margin-top: 2.5vh;
+    max-width: 600px;
+    text-align: center;
+    font-size: clamp(0.85rem, 1.3vw, 1rem);
+    font-weight: 300;
+    color: rgba(255,245,230,0.55);
+    line-height: 1.6;
+  }
+
+  /* ════════════════════════════════════════
+     3D Cube for Kiosk Slide
+     ════════════════════════════════════════ */
+  .cube-viewport {
+    position: relative; z-index: 1;
+    width: 52vw;
+    max-width: 780px;
+    aspect-ratio: 16 / 10;
+    perspective: 1200px;
+  }
+  .cube {
+    width: 100%; height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    animation: prismRotate 16s ease-in-out infinite;
+  }
+  .cube-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+  }
+  .cube-face img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  /* Triangular prism: 3 faces at 120deg apart.
+     translateZ = width / (2 * tan(60deg)) ≈ width * 0.289 */
+  .cube-face--a {
+    transform: rotateY(0deg) translateZ(calc(52vw * 0.289));
+  }
+  .cube-face--b {
+    transform: rotateY(120deg) translateZ(calc(52vw * 0.289));
+  }
+  .cube-face--c {
+    transform: rotateY(240deg) translateZ(calc(52vw * 0.289));
+  }
+  @keyframes prismRotate {
+    0%, 20%    { transform: rotateY(0deg); }
+    30%, 53%   { transform: rotateY(-120deg); }
+    63%, 86%   { transform: rotateY(-240deg); }
+    96%, 100%  { transform: rotateY(-360deg); }
+  }
+
+  /* ── Report cards grid ── */
+  .report-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.2rem;
+    max-width: 54vw;
+    margin: 2.5vh auto 2vh;
+  }
+  .report-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 1.4rem 1rem;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    text-decoration: none;
+    color: #e4e7f0;
+    transition: all 0.25s ease;
+    cursor: pointer;
+  }
+  .report-card:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(108,99,255,0.4);
+    transform: translateY(-3px);
+  }
+  .report-card--team {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, rgba(108,99,255,0.08), rgba(167,139,250,0.04));
+    border-color: rgba(108,99,255,0.2);
+  }
+  .report-avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .report-name {
+    font-size: clamp(0.85rem, 1.2vw, 1rem);
+    font-weight: 600;
+  }
+  .report-tag {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.3px;
+  }
+  .tag-shining {
+    background: rgba(34,197,94,0.1);
+    color: #22c55e;
+    border: 1px solid rgba(34,197,94,0.2);
+  }
+  .tag-steady {
+    background: rgba(245,158,11,0.1);
+    color: #f59e0b;
+    border: 1px solid rgba(245,158,11,0.2);
+  }
+  .tag-warming {
+    background: rgba(245,158,11,0.1);
+    color: #f59e0b;
+    border: 1px solid rgba(245,158,11,0.2);
+  }
+
+  /* ── Analytics slide ── */
+  .timeframe-pills {
+    display: flex;
+    gap: 0.6rem;
+    justify-content: center;
+    margin: 1.5vh 0 1vh;
+  }
+  .pill {
+    padding: 0.3rem 1rem;
+    border-radius: 20px;
+    font-size: clamp(0.65rem, 1vw, 0.8rem);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.4);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .pill--active {
+    background: rgba(108,99,255,0.15);
+    color: #6c63ff;
+    border-color: rgba(108,99,255,0.3);
+  }
+  .analytics-main {
+    max-width: 54vw;
+    margin: 0 auto;
+  }
+  .trend-card--restaurant {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 1rem 1.2rem 0.6rem;
+    margin-bottom: 1rem;
+  }
+  .trend-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+  .trend-label {
+    font-size: clamp(0.75rem, 1.1vw, 0.95rem);
+    font-weight: 600;
+    color: rgba(255,255,255,0.8);
+  }
+  .trend-value {
+    font-size: clamp(1.2rem, 2vw, 1.6rem);
+    font-weight: 800;
+    color: #6c63ff;
+  }
+  .trend-delta {
+    font-size: 0.6em;
+    color: #22c55e;
+    margin-left: 0.3rem;
+    font-weight: 600;
+  }
+  .trend-chart {
+    width: 100%;
+    height: 60px;
+    display: block;
+  }
+  .trend-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: clamp(0.55rem, 0.8vw, 0.7rem);
+    color: rgba(255,255,255,0.35);
+    padding: 0.3rem 0 0;
+  }
+
+  .staff-trends {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .spark-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.45rem 0.8rem;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+  .spark-row--highlight {
+    background: rgba(255,165,2,0.06);
+    border-color: rgba(255,165,2,0.15);
+  }
+  .spark-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .spark-name {
+    font-size: clamp(0.7rem, 1vw, 0.85rem);
+    font-weight: 600;
+    width: 4rem;
+    flex-shrink: 0;
+  }
+  .sparkline {
+    flex: 1;
+    height: 24px;
+    min-width: 60px;
+  }
+  .spark-score {
+    font-size: clamp(0.75rem, 1vw, 0.9rem);
+    font-weight: 800;
+    width: 2.5rem;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .spark-badge {
+    font-size: clamp(0.5rem, 0.7vw, 0.65rem);
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .spark-badge--star {
+    background: rgba(34,197,94,0.1);
+    color: #22c55e;
+  }
+  .spark-badge--up {
+    background: rgba(34,197,94,0.1);
+    color: #22c55e;
+  }
+  .spark-badge--mvp {
+    background: rgba(255,165,2,0.12);
+    color: #ffa502;
+  }
+
+  /* ── Family domain showcase ── */
+  .family-showcase {
+    max-width: 72vw;
+    margin: 2vh auto 0;
+  }
+  .family-screens {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  .family-screen {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .family-screen img {
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.12);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+  }
+  .family-screen-label {
+    font-size: clamp(0.55rem, 0.9vw, 0.75rem);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    text-align: center;
+  }
+  .family-highlights {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 2.5vh;
+  }
+  .family-highlight {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: clamp(0.6rem, 1vw, 0.85rem);
+    color: rgba(255,255,255,0.7);
+  }
+  .fh-icon {
+    font-size: clamp(0.9rem, 1.4vw, 1.2rem);
+  }
+  .fh-text strong {
+    color: #f472b6;
+  }
+
+  /* ── Pentagonal prism: 5 faces for family kiosk ── */
+  .penta {
+    width: 100%; height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    animation: pentaRotate 25s ease-in-out infinite;
+  }
+  .penta-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+  }
+  .penta-face img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  /* 5 faces at 72deg apart. translateZ = width / (2 * tan(36deg)) ≈ width * 0.688 */
+  .penta-face--a { transform: rotateY(0deg)    translateZ(calc(52vw * 0.688)); }
+  .penta-face--b { transform: rotateY(72deg)   translateZ(calc(52vw * 0.688)); }
+  .penta-face--c { transform: rotateY(144deg)  translateZ(calc(52vw * 0.688)); }
+  .penta-face--d { transform: rotateY(216deg)  translateZ(calc(52vw * 0.688)); }
+  .penta-face--e { transform: rotateY(288deg)  translateZ(calc(52vw * 0.688)); }
+  @keyframes pentaRotate {
+    0%,  10%  { transform: rotateY(0deg); }
+    16%, 26%  { transform: rotateY(-72deg); }
+    32%, 42%  { transform: rotateY(-144deg); }
+    48%, 58%  { transform: rotateY(-216deg); }
+    64%, 74%  { transform: rotateY(-288deg); }
+    84%, 100% { transform: rotateY(-360deg); }
+  }
+
+  /* ── Skins showcase grid ── */
+  .skins-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.8rem;
+    max-width: 72vw;
+    margin: 2vh auto 0;
+  }
+  .skin-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .skin-cell img {
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .skin-cell:hover img {
+    transform: scale(1.05);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+  }
+  .skin-label {
+    font-size: clamp(0.5rem, 0.8vw, 0.7rem);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: rgba(255,255,255,0.45);
+    text-transform: uppercase;
+  }
+
+  /* ── Flow diagram (Device to Dashboard) ── */
+  .arch-flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin: 3vh auto 2vh;
+    max-width: 80vw;
+  }
+  .arch-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 1.2rem 1.5rem;
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--node-color) 8%, transparent);
+    border: 2px solid color-mix(in srgb, var(--node-color) 30%, transparent);
+    min-width: 10vw;
+  }
+  .arch-emoji {
+    font-size: clamp(2rem, 3.5vw, 3rem);
+  }
+  .arch-label {
+    font-size: clamp(0.85rem, 1.3vw, 1.1rem);
+    font-weight: 700;
+    color: #e4e7f0;
+  }
+  .arch-sub {
+    font-size: clamp(0.6rem, 0.9vw, 0.8rem);
+    color: rgba(255,255,255,0.4);
+    text-align: center;
+  }
+  .arch-arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0 0.8rem;
+  }
+  .arch-arrow-line {
+    display: block;
+    width: clamp(2rem, 4vw, 4rem);
+    height: 2px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.15), rgba(255,255,255,0.4), rgba(255,255,255,0.15));
+    position: relative;
+  }
+  .arch-arrow-line::after {
+    content: '▶';
+    position: absolute;
+    right: -0.6rem;
+    top: -0.55rem;
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.5);
+  }
+  .arch-arrow-tag {
+    font-size: clamp(0.6rem, 0.85vw, 0.75rem);
+    color: rgba(255,255,255,0.7);
+    letter-spacing: 0.5px;
+    font-weight: 600;
+  }
+
+  /* ── Pipeline diagram ── */
+  .pipe-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 2vh auto 1vh;
+    max-width: 70vw;
+  }
+  .pipe-center {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  .pipe-box {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.8rem 1.4rem;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--pipe-color) 8%, transparent);
+    border: 1.5px solid color-mix(in srgb, var(--pipe-color) 25%, transparent);
+    position: relative;
+  }
+  .pipe-icon {
+    font-size: clamp(1.3rem, 2vw, 1.8rem);
+    flex-shrink: 0;
+  }
+  .pipe-text {
+    display: flex;
+    flex-direction: column;
+  }
+  .pipe-text strong {
+    font-size: clamp(0.8rem, 1.2vw, 1rem);
+    color: #e4e7f0;
+  }
+  .pipe-text span {
+    font-size: clamp(0.6rem, 0.85vw, 0.75rem);
+    color: rgba(255,255,255,0.4);
+  }
+  .pipe-num {
+    position: absolute;
+    top: -0.5rem;
+    right: -0.5rem;
+    width: 1.4rem;
+    height: 1.4rem;
+    border-radius: 50%;
+    background: var(--pipe-color);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .pipe-arrow-down {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.45);
+    line-height: 1;
+  }
+  .pipe-parallel-label {
+    font-size: clamp(0.65rem, 0.85vw, 0.75rem);
+    color: rgba(255,255,255,0.6);
+    font-style: italic;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  .pipe-parallel {
+    display: flex;
+    gap: 1.5rem;
+  }
+  .pipe-stores {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin-left: 0.5rem;
+  }
+  .pipe-store {
+    font-size: clamp(0.55rem, 0.75vw, 0.7rem);
+    font-weight: 600;
+    padding: 0.25rem 0.7rem;
+    border-radius: 6px;
+    border: 1px solid;
+    background: rgba(255,255,255,0.02);
+  }
+
+  /* ── Domain extensibility ── */
+  .domains-strip {
+    display: flex;
+    justify-content: center;
+    gap: clamp(0.6rem, 1.2vw, 1.2rem);
+    margin: 1vh auto 0;
+    flex-wrap: wrap;
+  }
+  .domain-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    font-size: clamp(0.55rem, 0.8vw, 0.7rem);
+    font-weight: 600;
+    color: rgba(255,255,255,0.7);
+    white-space: nowrap;
+  }
+  .domain-chip--active {
+    background: rgba(108,99,255,0.12);
+    border-color: rgba(108,99,255,0.35);
+    color: rgba(255,255,255,0.9);
+  }
+  .domain-chip .d-icon { font-size: 0.9rem; }
+
+  .schema-diagram {
+    max-width: 52vw;
+    margin: 1.5vh auto 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .schema-file-tab {
+    display: inline-flex;
+    align-self: flex-start;
+    background: rgba(34,197,94,0.1);
+    border: 1px solid rgba(34,197,94,0.2);
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    padding: 0.25rem 0.8rem;
+    font-size: clamp(0.5rem, 0.75vw, 0.65rem);
+    font-weight: 600;
+    color: #22c55e;
+    margin-bottom: -0.4rem;
+  }
+  .schema-layers {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border-radius: 0 10px 10px 10px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .schema-layer {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.55rem 1rem;
+    background: rgba(255,255,255,0.02);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .schema-layer:last-child { border-bottom: none; }
+  .schema-layer:nth-child(odd) { background: rgba(255,255,255,0.035); }
+  .schema-layer-icon {
+    font-size: 1rem;
+    flex-shrink: 0;
+    width: 1.6rem;
+    text-align: center;
+  }
+  .schema-layer-name {
+    font-size: clamp(0.6rem, 0.85vw, 0.75rem);
+    font-weight: 700;
+    color: #a78bfa;
+    min-width: 7rem;
+    flex-shrink: 0;
+  }
+  .schema-layer-detail {
+    font-size: clamp(0.5rem, 0.75vw, 0.65rem);
+    color: rgba(255,255,255,0.45);
+    line-height: 1.4;
+  }
+  .schema-layer-detail span { color: #22c55e; }
+
+  /* ════════════════════════════════════════
+     SLIDE 14 — Connect / Closing
+     ════════════════════════════════════════ */
+  .slide--connect::before {
+    background: radial-gradient(ellipse at center 40%, #1a1005 0%, #0d0d0d 60%, #060a0d 100%);
+  }
+  .connect-card {
+    position: relative; z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5vh;
+  }
+  .connect-photo {
+    width: clamp(100px, 14vw, 160px);
+    height: clamp(100px, 14vw, 160px);
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid rgba(232,195,112,0.4);
+    box-shadow: 0 0 40px rgba(232,195,112,0.15), 0 0 80px rgba(232,195,112,0.05);
+  }
+  .connect-name {
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 300;
+    letter-spacing: 0.06em;
+    color: rgba(255,245,230,0.92);
+  }
+  .connect-title {
+    font-size: clamp(0.85rem, 1.4vw, 1.05rem);
+    font-weight: 300;
+    color: #e8c370;
+    letter-spacing: 0.04em;
+  }
+  .connect-location {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: clamp(0.7rem, 1.1vw, 0.85rem);
+    color: rgba(255,245,230,0.45);
+  }
+  .connect-location svg {
+    width: 14px; height: 14px;
+    fill: rgba(255,245,230,0.35);
+  }
+  .connect-qr-row {
+    display: flex;
+    gap: clamp(2rem, 5vw, 4rem);
+    margin-top: 1.5vh;
+  }
+  .connect-qr {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .connect-qr-box {
+    background: #fff;
+    border-radius: 12px;
+    padding: clamp(8px, 1.2vw, 14px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  .connect-qr-box svg {
+    width: clamp(100px, 12vw, 140px);
+    height: clamp(100px, 12vw, 140px);
+    display: block;
+  }
+  .connect-qr-label {
+    font-size: clamp(0.6rem, 0.9vw, 0.78rem);
+    font-weight: 500;
+    color: rgba(255,245,230,0.5);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .connect-links {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 0.5vh;
+  }
+  .connect-link {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: clamp(0.65rem, 1vw, 0.8rem);
+    color: rgba(255,245,230,0.4);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .connect-link:hover { color: #e8c370; }
+  .connect-link svg {
+    width: 16px; height: 16px;
+    fill: currentColor;
+  }
+  .connect-thankyou {
+    position: relative; z-index: 1;
+    margin-top: 2.5vh;
+    font-size: clamp(0.75rem, 1.2vw, 0.95rem);
+    font-weight: 300;
+    color: rgba(255,245,230,0.3);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  /* ── Lightbox ── */
+  .lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(8px);
+    align-items: center;
+    justify-content: center;
+    cursor: zoom-out;
+  }
+  .lightbox.open {
+    display: flex;
+  }
+  .lightbox img {
+    max-height: 90vh;
+    max-width: 40vw;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    animation: lbZoom 0.25s ease-out;
+  }
+  .lightbox .lb-label {
+    position: absolute;
+    bottom: 3vh;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.6);
+  }
+  @keyframes lbZoom {
+    from { transform: scale(0.7); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+
+  /* ── Animations for active slide children ── */
+  .slide.active .anim-up {
+    animation: fadeInUp 0.8s ease-out both;
+  }
+  .slide.active .anim-up-d1 { animation-delay: 0.15s; }
+  .slide.active .anim-up-d2 { animation-delay: 0.3s; }
+  .slide.active .anim-up-d3 { animation-delay: 0.45s; }
+  .slide.active .anim-up-d4 { animation-delay: 0.6s; }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Credit ── */
+  .credit {
+    position: fixed;
+    bottom: 1.5vh; left: 3vw;
+    z-index: 100;
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.15);
+  }
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+  <!-- ═══ SLIDE 1: Opening ═══ -->
+  <div class="slide slide--opening active" data-slide="0">
+    <img class="hero-image anim-up" src="assets/nudge-hero.jpg"
+         alt="Nudge — AI wearable coaching every human interaction">
+    <p class="tagline anim-up anim-up-d1">
+      Exploring the possibility of an <em>ambient AI coach</em> &mdash;
+      a gentle <em>nudge</em> to make every human interaction a little better,
+      at work, at home, everywhere the wearable goes.
+    </p>
+  </div>
+
+  <!-- ═══ SLIDE 2: Restaurant Focus ═══ -->
+  <div class="slide slide--restaurant" data-slide="1">
+    <h2 class="slide-title anim-up">Let's start with <em>restaurants</em></h2>
+    <p class="slide-subtitle anim-up anim-up-d1">
+      The wearable listens to every interaction and coaches staff in real time
+    </p>
+    <div class="restaurant-scene anim-up anim-up-d2">
+      <img src="assets/restaurant-scene.jpg" alt="Waiter with AI wearable coaching in restaurant">
+    </div>
+    <div class="use-case-points anim-up anim-up-d3">
+      <div class="use-case-point">
+        <span class="icon">🎙</span>
+        <div class="text"><strong>Wearable records</strong> every waiter-customer conversation automatically</div>
+      </div>
+      <div class="use-case-point">
+        <span class="icon">🧠</span>
+        <div class="text"><strong>AI analyzes</strong> against restaurant SOPs — greeting, upselling, allergy checks</div>
+      </div>
+      <div class="use-case-point">
+        <span class="icon">💡</span>
+        <div class="text"><strong>Instant coaching</strong> — each staff member gets personalized tips after every table</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 3: Device to Dashboard ═══ -->
+  <div class="slide slide--device-flow" data-slide="2">
+    <h2 class="slide-title anim-up">From <em>Device</em> to Dashboard</h2>
+    <p class="slide-subtitle anim-up anim-up-d1" style="margin-top: 2vh;">
+      One wearable, one webhook, real-time insights
+    </p>
+    <div class="arch-flow anim-up anim-up-d2">
+      <div class="arch-node" style="--node-color: #6c63ff;">
+        <span class="arch-emoji">📱</span>
+        <span class="arch-label">Omi Wearable</span>
+        <span class="arch-sub">Records audio continuously</span>
+      </div>
+      <div class="arch-arrow">
+        <span class="arch-arrow-line"></span>
+        <span class="arch-arrow-tag">audio</span>
+      </div>
+      <div class="arch-node" style="--node-color: #22c55e;">
+        <span class="arch-emoji">☁️</span>
+        <span class="arch-label">Omi Cloud</span>
+        <span class="arch-sub">Transcription &amp; memory</span>
+      </div>
+      <div class="arch-arrow">
+        <span class="arch-arrow-line"></span>
+        <span class="arch-arrow-tag">webhook</span>
+      </div>
+      <div class="arch-node" style="--node-color: #f59e0b;">
+        <span class="arch-emoji">🧠</span>
+        <span class="arch-label">AI Pipeline</span>
+        <span class="arch-sub">4-stage · Claude + SOPs</span>
+      </div>
+      <div class="arch-arrow">
+        <span class="arch-arrow-line"></span>
+        <span class="arch-arrow-tag">SSE</span>
+      </div>
+      <div class="arch-node" style="--node-color: #a78bfa;">
+        <span class="arch-emoji">📊</span>
+        <span class="arch-label">Live Dashboard</span>
+        <span class="arch-sub">Scores, coaching, reports</span>
+      </div>
+    </div>
+    <div class="use-case-points anim-up anim-up-d3">
+      <div class="use-case-point">
+        <span class="icon">🔗</span>
+        <div class="text"><strong>One Webhook</strong> Omi sends transcripts to our backend — zero setup on our side</div>
+      </div>
+      <div class="use-case-point">
+        <span class="icon">⚡</span>
+        <div class="text"><strong>Real-Time</strong> Server-Sent Events push results to every screen instantly</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 4: AI Pipeline ═══ -->
+  <div class="slide slide--pipeline" data-slide="3">
+    <h2 class="slide-title anim-up">The <em>AI Pipeline</em></h2>
+    <p class="slide-subtitle anim-up anim-up-d1" style="margin-top: 2vh;">
+      4 stages — each conversation analyzed against your SOPs
+    </p>
+    <div class="pipe-layout anim-up anim-up-d2">
+      <!-- Stage 1 -->
+      <div class="pipe-stage pipe-center">
+        <div class="pipe-box" style="--pipe-color: #6c63ff;">
+          <span class="pipe-icon">🔍</span>
+          <div class="pipe-text">
+            <strong>Boundary Detection</strong>
+            <span>New customer? Split the conversation</span>
+          </div>
+          <span class="pipe-num">1</span>
+        </div>
+      </div>
+      <div class="pipe-arrow-down">▼</div>
+      <!-- Parallel fork label -->
+      <div class="pipe-parallel-label">⚡ parallel</div>
+      <!-- Stage 2 + 3 side by side -->
+      <div class="pipe-parallel">
+        <div class="pipe-box" style="--pipe-color: #ef4444;">
+          <span class="pipe-icon">⚠️</span>
+          <div class="pipe-text">
+            <strong>SOP Violations</strong>
+            <span>Check against 13 rules</span>
+          </div>
+          <span class="pipe-num">2</span>
+        </div>
+        <div class="pipe-box" style="--pipe-color: #22c55e;">
+          <span class="pipe-icon">💚</span>
+          <div class="pipe-text">
+            <strong>Sentiment Analysis</strong>
+            <span>How warm was the interaction?</span>
+          </div>
+          <span class="pipe-num">3</span>
+        </div>
+      </div>
+      <div class="pipe-arrow-down">▼</div>
+      <!-- Stage 4 -->
+      <div class="pipe-stage pipe-center">
+        <div class="pipe-box" style="--pipe-color: #f59e0b;">
+          <span class="pipe-icon">💡</span>
+          <div class="pipe-text">
+            <strong>Coaching Tips</strong>
+            <span>"Here's what to say next time"</span>
+          </div>
+          <span class="pipe-num">4</span>
+        </div>
+        <!-- Data stores -->
+        <div class="pipe-stores">
+          <span class="pipe-store" style="color: #3b82f6; border-color: rgba(59,130,246,0.3);">PostgreSQL</span>
+          <span class="pipe-store" style="color: #ef4444; border-color: rgba(239,68,68,0.3);">Redis · SSE</span>
+        </div>
+      </div>
+    </div>
+    <div class="use-case-points anim-up anim-up-d3">
+      <div class="use-case-point">
+        <span class="icon">🔄</span>
+        <div class="text"><strong>Per-Interaction</strong> Each customer conversation analyzed in isolation — no data leaks</div>
+      </div>
+      <div class="use-case-point">
+        <span class="icon">🤖</span>
+        <div class="text"><strong>Claude-Powered</strong> LLM analyzes transcripts against domain SOPs in under 3 seconds</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 5: Individual View ═══ -->
+  <div class="slide slide--individual" data-slide="4">
+    <h2 class="slide-title anim-up">How <em>each staff member</em> sees Nudge</h2>
+    <p class="slide-subtitle anim-up anim-up-d1">
+      Real-time conversation feed with AI coaching after every interaction
+    </p>
+    <div class="dashboard-scene anim-up anim-up-d2">
+      <img src="assets/dashboard-annotated.png?v=3" alt="Staff dashboard">
+    </div>
+    <div class="use-case-points anim-up anim-up-d3">
+      <div class="use-case-point">
+        <span class="icon">📊</span>
+        <div class="text"><strong>Live Scores</strong> Compliance &amp; warmth gauges update after every conversation</div>
+      </div>
+      <div class="use-case-point">
+        <span class="icon">💡</span>
+        <div class="text"><strong>AI Coaching Tip</strong> Instant suggestion on what to say differently next time</div>
+      </div>
+      <div class="use-case-point" style="margin-top: -1.5rem;">
+        <span class="icon">🎯</span>
+        <div class="text"><strong>Smart Filters</strong> Toggle between all tips, smart highlights, or critical-only</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 4: Manager View ═══ -->
+  <div class="slide slide--manager" data-slide="5">
+    <h2 class="slide-title anim-up">How the <em>manager</em> stays in control</h2>
+    <p class="slide-subtitle anim-up anim-up-d1">
+      Full team overview, live alerts, and shift-level analytics
+    </p>
+    <div class="dashboard-scene anim-up anim-up-d2">
+      <img src="assets/manager-annotated.png" alt="Manager console">
+    </div>
+    <div class="use-case-points anim-up anim-up-d3">
+      <div class="use-case-point">
+        <span class="icon">👥</span>
+        <div class="text"><strong>Team at a Glance</strong> Every staff member's compliance, sentiment, and interaction count</div>
+      </div>
+      <div class="use-case-point">
+        <span class="icon">🚨</span>
+        <div class="text"><strong>Live Alerts</strong> Violations surface in real-time &mdash; missed checks, tone issues, skipped greetings</div>
+      </div>
+      <div class="use-case-point" style="margin-top: -1.5rem;">
+        <span class="icon">📋</span>
+        <div class="text"><strong>Shift Reports</strong> End-of-shift summary with coaching recommendations per staff member</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 5: Kiosk ═══ -->
+  <div class="slide slide--kiosk" data-slide="6">
+    <h2 class="slide-title anim-up">The <em>Kitchen Pulse</em></h2>
+    <p class="slide-subtitle anim-up anim-up-d1" style="margin-bottom: 3vh;">
+      Mount a TV in the kitchen for a live team scoreboard
+    </p>
+    <div class="cube-viewport anim-up anim-up-d2">
+      <div class="cube" id="kioskCube">
+        <div class="cube-face cube-face--a">
+          <img src="assets/kiosk-compliance.png" alt="Organization compliance gauge">
+        </div>
+        <div class="cube-face cube-face--b">
+          <img src="assets/kiosk-leaderboard.png" alt="Staff leaderboard">
+        </div>
+        <div class="cube-face cube-face--c">
+          <img src="assets/kiosk-coaching.png" alt="Coaching focus">
+        </div>
+      </div>
+    </div>
+    <div class="use-case-points anim-up anim-up-d3">
+      <div class="use-case-point">
+        <span class="icon">📺</span>
+        <div class="text"><strong>Auto-Rotating</strong> Cycles through team aggregate, individual spotlights, and coaching nudges</div>
+      </div>
+      <div class="use-case-point">
+        <span class="icon">💪</span>
+        <div class="text"><strong>Team Motivation</strong> Staff see their own scores and celebrate great shifts together</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 6: Reports ═══ -->
+  <div class="slide slide--reports" data-slide="7">
+    <h2 class="slide-title anim-up">Shift-End <em>Reports</em></h2>
+    <p class="slide-subtitle anim-up anim-up-d1" style="margin-top: 3vh;">
+      Every team member gets a personal, empathetic report — no scores, just encouragement
+    </p>
+    <div class="report-grid anim-up anim-up-d2">
+      <a href="/reports/daily/restaurant/team.html" target="_blank" class="report-card report-card--team">
+        <span class="report-avatar" style="background: rgba(108,99,255,0.15); color: #6c63ff;">📊</span>
+        <span class="report-name">Manager Briefing</span>
+        <span class="report-tag" style="background: rgba(108,99,255,0.12); color: #6c63ff;">Team View</span>
+      </a>
+      <a href="/reports/daily/restaurant/priya.html" target="_blank" class="report-card">
+        <span class="report-avatar" style="background: rgba(255,107,107,0.15); color: #ff6b6b;">P</span>
+        <span class="report-name">Priya</span>
+        <span class="report-tag tag-shining">Shining</span>
+      </a>
+      <a href="/reports/daily/restaurant/meera.html" target="_blank" class="report-card">
+        <span class="report-avatar" style="background: rgba(167,139,250,0.15); color: #a78bfa;">M</span>
+        <span class="report-name">Meera</span>
+        <span class="report-tag tag-shining">Shining</span>
+      </a>
+      <a href="/reports/daily/restaurant/diya.html" target="_blank" class="report-card">
+        <span class="report-avatar" style="background: rgba(72,219,251,0.15); color: #48dbfb;">D</span>
+        <span class="report-name">Diya</span>
+        <span class="report-tag tag-steady">Steady</span>
+      </a>
+      <a href="/reports/daily/restaurant/arjun.html" target="_blank" class="report-card">
+        <span class="report-avatar" style="background: rgba(255,165,2,0.15); color: #ffa502;">A</span>
+        <span class="report-name">Arjun</span>
+        <span class="report-tag tag-warming">Warming Up</span>
+      </a>
+      <a href="/reports/daily/restaurant/vikram.html" target="_blank" class="report-card">
+        <span class="report-avatar" style="background: rgba(0,255,200,0.15); color: #00ffc8;">V</span>
+        <span class="report-name">Vikram</span>
+        <span class="report-tag tag-warming">Warming Up</span>
+      </a>
+    </div>
+    <div class="use-case-points anim-up anim-up-d3">
+      <div class="use-case-point">
+        <span class="icon">💌</span>
+        <div class="text"><strong>Empathetic Tone</strong> Every report leads with a win — growth areas framed as opportunities</div>
+      </div>
+      <div class="use-case-point">
+        <span class="icon">🔒</span>
+        <div class="text"><strong>Private &amp; Personal</strong> Each person sees only their own reflection — managers get the team view</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 7: Performance Analytics ═══ -->
+  <div class="slide slide--analytics" data-slide="8">
+    <h2 class="slide-title anim-up">Track <em>Growth Over Time</em></h2>
+    <p class="slide-subtitle anim-up anim-up-d1" style="margin-top: 2vh;">
+      From daily nudges to quarterly appraisals — every interaction builds the bigger picture
+    </p>
+
+    <!-- Timeframe pills -->
+    <div class="timeframe-pills anim-up anim-up-d1">
+      <span class="pill">Weekly</span>
+      <span class="pill">Monthly</span>
+      <span class="pill pill--active">Quarterly</span>
+      <span class="pill">Yearly</span>
+    </div>
+
+    <!-- Restaurant-level trend -->
+    <div class="analytics-main anim-up anim-up-d2">
+      <div class="trend-card trend-card--restaurant">
+        <div class="trend-header">
+          <span class="trend-label">🍽️ Spice Garden — Overall</span>
+          <span class="trend-value trend-up">91%<span class="trend-delta">+25</span></span>
+        </div>
+        <svg class="trend-chart" viewBox="0 0 400 80" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="grdMain" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#6c63ff" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="#6c63ff" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <!-- Area fill -->
+          <path d="M0,58 C50,52 80,42 133,35 C186,28 220,18 266,14 C312,10 360,6 400,4 L400,80 L0,80 Z" fill="url(#grdMain)"/>
+          <!-- Line -->
+          <path d="M0,58 C50,52 80,42 133,35 C186,28 220,18 266,14 C312,10 360,6 400,4" fill="none" stroke="#6c63ff" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- Quarter dots -->
+          <circle cx="0" cy="58" r="4" fill="#6c63ff"/>
+          <circle cx="133" cy="35" r="4" fill="#6c63ff"/>
+          <circle cx="266" cy="14" r="4" fill="#6c63ff"/>
+          <circle cx="400" cy="4" r="4" fill="#6c63ff"/>
+        </svg>
+        <div class="trend-labels">
+          <span>Q1 · 66%</span><span>Q2 · 75%</span><span>Q3 · 85%</span><span>Q4 · 91%</span>
+        </div>
+      </div>
+
+      <!-- Individual staff sparklines -->
+      <div class="staff-trends">
+        <div class="spark-row">
+          <span class="spark-avatar" style="color: #ff6b6b;">P</span>
+          <span class="spark-name">Priya</span>
+          <svg class="sparkline" viewBox="0 0 120 30">
+            <polyline points="0,12 40,9 80,5 120,2" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span class="spark-score" style="color:#22c55e;">98%</span>
+          <span class="spark-badge spark-badge--star">★ Star</span>
+        </div>
+        <div class="spark-row">
+          <span class="spark-avatar" style="color: #a78bfa;">M</span>
+          <span class="spark-name">Meera</span>
+          <svg class="sparkline" viewBox="0 0 120 30">
+            <polyline points="0,22 40,14 80,8 120,4" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span class="spark-score" style="color:#22c55e;">92%</span>
+          <span class="spark-badge spark-badge--up">↑ +22</span>
+        </div>
+        <div class="spark-row">
+          <span class="spark-avatar" style="color: #48dbfb;">D</span>
+          <span class="spark-name">Diya</span>
+          <svg class="sparkline" viewBox="0 0 120 30">
+            <polyline points="0,18 40,16 80,10 120,6" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span class="spark-score" style="color:#f59e0b;">90%</span>
+          <span class="spark-badge spark-badge--up">↑ +15</span>
+        </div>
+        <div class="spark-row spark-row--highlight">
+          <span class="spark-avatar" style="color: #ffa502;">A</span>
+          <span class="spark-name">Arjun</span>
+          <svg class="sparkline" viewBox="0 0 120 30">
+            <polyline points="0,28 40,22 80,14 120,8" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+          <span class="spark-score" style="color:#22c55e;">85%</span>
+          <span class="spark-badge spark-badge--mvp">🏆 +40 Most Improved</span>
+        </div>
+        <div class="spark-row">
+          <span class="spark-avatar" style="color: #00ffc8;">V</span>
+          <span class="spark-name">Vikram</span>
+          <svg class="sparkline" viewBox="0 0 120 30">
+            <polyline points="0,26 40,20 80,12 120,7" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span class="spark-score" style="color:#22c55e;">88%</span>
+          <span class="spark-badge spark-badge--up">↑ +33</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="use-case-points anim-up anim-up-d3">
+      <div class="use-case-point">
+        <span class="icon">📈</span>
+        <div class="text"><strong>Appraisal-Ready</strong> Each person's growth arc — backed by real conversations, not memory</div>
+      </div>
+      <div class="use-case-point">
+        <span class="icon">🏆</span>
+        <div class="text"><strong>Reward the Team</strong> Aggregate performance drives bonuses, recognition, and promotions</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 10: Family Domain ═══ -->
+  <div class="slide slide--family" data-slide="9">
+    <h2 class="slide-title anim-up">Now take it <em>home</em></h2>
+    <p class="slide-subtitle anim-up anim-up-d1" style="margin-top: 2vh;">
+      Same engine, same wearable — coaching a family on listening, respect, and gratitude
+    </p>
+    <div class="family-showcase anim-up anim-up-d2">
+      <div class="family-screens">
+        <div class="family-screen family-screen--dashboard">
+          <span class="family-screen-label">Family Dashboard</span>
+          <img src="assets/family-dashboard.png" alt="Nudge family domain dashboard">
+        </div>
+        <div class="family-screen family-screen--manager">
+          <span class="family-screen-label">Family Manager</span>
+          <img src="assets/family-manager.png" alt="Nudge family domain manager">
+        </div>
+      </div>
+    </div>
+    <div class="family-highlights anim-up anim-up-d3">
+      <div class="family-highlight">
+        <span class="fh-icon">🏠</span>
+        <span class="fh-text"><strong>Family Harmony</strong> score instead of compliance</span>
+      </div>
+      <div class="family-highlight">
+        <span class="fh-icon">💛</span>
+        <span class="fh-text"><strong>Warmth &amp; Respect</strong> instead of customer satisfaction</span>
+      </div>
+      <div class="family-highlight">
+        <span class="fh-icon">🔄</span>
+        <span class="fh-text"><strong>Same pipeline</strong> — just a different JSON file</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 11: Family Kiosk ═══ -->
+  <div class="slide slide--family-kiosk" data-slide="10">
+    <h2 class="slide-title anim-up">The <em>Family Pulse</em></h2>
+    <p class="slide-subtitle anim-up anim-up-d1" style="margin-bottom: 3vh;">
+      Mount a tablet in the living room — how warm is our home today?
+    </p>
+    <div class="cube-viewport anim-up anim-up-d2">
+      <div class="penta" id="familyPenta">
+        <div class="penta-face penta-face--a">
+          <img src="assets/kiosk-family-warmth.png" alt="Family Warmth aggregate">
+        </div>
+        <div class="penta-face penta-face--b">
+          <img src="assets/kiosk-family-rajesh.png" alt="Rajesh's Warmth">
+        </div>
+        <div class="penta-face penta-face--c">
+          <img src="assets/kiosk-family-roshni.png" alt="Roshni's Warmth">
+        </div>
+        <div class="penta-face penta-face--d">
+          <img src="assets/kiosk-family-reethi.png" alt="Reethi's Warmth">
+        </div>
+        <div class="penta-face penta-face--e">
+          <img src="assets/kiosk-family-roshan.png" alt="Roshan's Warmth">
+        </div>
+      </div>
+    </div>
+    <div class="use-case-points anim-up anim-up-d3">
+      <div class="use-case-point">
+        <span class="icon">💛</span>
+        <div class="text"><strong>Family Warmth</strong> instead of compliance — same kiosk engine, different vocabulary</div>
+      </div>
+      <div class="use-case-point">
+        <span class="icon">👨‍👩‍👧‍👦</span>
+        <div class="text"><strong>Every Member</strong> Rajesh, Roshni, Reethi, and Roshan each get their own warmth spotlight</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 12: Skins Showcase ═══ -->
+  <div class="slide slide--skins" data-slide="11">
+    <h2 class="slide-title anim-up"><em>12 Skins</em> — One Dashboard</h2>
+    <p class="slide-subtitle anim-up anim-up-d1" style="margin-top: 1.5vh;">
+      Every business gets a look that feels like theirs
+    </p>
+    <div class="skins-grid anim-up anim-up-d2">
+      <div class="skin-cell">
+        <img src="assets/mobile-priya-tuscan.png" alt="Tuscan">
+        <span class="skin-label">Tuscan</span>
+      </div>
+      <div class="skin-cell">
+        <img src="assets/mobile-priya-clean.png" alt="Clean">
+        <span class="skin-label">Clean</span>
+      </div>
+      <div class="skin-cell">
+        <img src="assets/mobile-priya-terminal.png" alt="Terminal">
+        <span class="skin-label">Terminal</span>
+      </div>
+      <div class="skin-cell">
+        <img src="assets/mobile-priya-cafe.png" alt="Café">
+        <span class="skin-label">Café</span>
+      </div>
+      <div class="skin-cell">
+        <img src="assets/mobile-priya-glass.png" alt="Glass">
+        <span class="skin-label">Glass</span>
+      </div>
+      <div class="skin-cell">
+        <img src="assets/mobile-priya-porsche.png" alt="Porsche">
+        <span class="skin-label">Porsche</span>
+      </div>
+      <div class="skin-cell">
+        <img src="assets/mobile-priya-zen.png" alt="Zen">
+        <span class="skin-label">Zen</span>
+      </div>
+      <div class="skin-cell">
+        <img src="assets/mobile-priya-light.png" alt="Light">
+        <span class="skin-label">Light</span>
+      </div>
+      <div class="skin-cell">
+        <img src="assets/mobile-priya-traffic.png" alt="Traffic">
+        <span class="skin-label">Traffic</span>
+      </div>
+      <div class="skin-cell">
+        <img src="assets/mobile-priya-contrast.png" alt="Contrast">
+        <span class="skin-label">Contrast</span>
+      </div>
+      <div class="skin-cell">
+        <img src="assets/mobile-priya-amazon.png" alt="Amazon">
+        <span class="skin-label">Amazon</span>
+      </div>
+      <div class="skin-cell">
+        <img src="assets/mobile-priya-avocado.png" alt="Avocado">
+        <span class="skin-label">Avocado</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 13: Domain Extensibility ═══ -->
+  <div class="slide slide--domains" data-slide="12">
+    <h2 class="slide-title anim-up"><em>8 Domains</em> — One Engine</h2>
+    <p class="slide-subtitle anim-up anim-up-d1" style="margin-top: 2vh;">
+      Add a new domain by dropping a single JSON file — the pipeline does the rest
+    </p>
+    <div class="domains-strip anim-up anim-up-d2">
+      <div class="domain-chip domain-chip--active"><span class="d-icon">🍽️</span> Restaurant</div>
+      <div class="domain-chip"><span class="d-icon">💼</span> Sales</div>
+      <div class="domain-chip"><span class="d-icon">🎧</span> Support</div>
+      <div class="domain-chip"><span class="d-icon">🏠</span> Family</div>
+      <div class="domain-chip"><span class="d-icon">🗣</span> Communication</div>
+      <div class="domain-chip"><span class="d-icon">👔</span> Management</div>
+      <div class="domain-chip"><span class="d-icon">🚗</span> Drive-Through</div>
+      <div class="domain-chip"><span class="d-icon">📋</span> Onboarding</div>
+    </div>
+    <div class="schema-diagram anim-up anim-up-d3">
+      <div class="schema-file-tab">📄 domains/restaurant.json</div>
+      <div class="schema-layers">
+        <div class="schema-layer">
+          <span class="schema-layer-icon">🏷️</span>
+          <span class="schema-layer-name">Identity</span>
+          <span class="schema-layer-detail"><span>id</span>, <span>name</span>, <span>description</span> — what domain is this?</span>
+        </div>
+        <div class="schema-layer">
+          <span class="schema-layer-icon">👥</span>
+          <span class="schema-layer-name">Roles</span>
+          <span class="schema-layer-detail">Who participates? <span>staff/customer</span>, <span>parent/child</span>, <span>agent/caller</span> — icons, colors, labels</span>
+        </div>
+        <div class="schema-layer">
+          <span class="schema-layer-icon">🧠</span>
+          <span class="schema-layer-name">Prompts</span>
+          <span class="schema-layer-detail">LLM instructions per stage — <span>boundary detection</span>, <span>violation rules</span>, <span>sentiment framing</span>, <span>coaching persona</span></span>
+        </div>
+        <div class="schema-layer">
+          <span class="schema-layer-icon">📊</span>
+          <span class="schema-layer-name">Metrics & Scoring</span>
+          <span class="schema-layer-detail">What to measure — <span>customer service</span>, <span>family harmony</span>, <span>sales effectiveness</span> — category-to-metric mapping</span>
+        </div>
+        <div class="schema-layer">
+          <span class="schema-layer-icon">📋</span>
+          <span class="schema-layer-name">SOPs</span>
+          <span class="schema-layer-detail">The actual rules to enforce — <span>category</span>, <span>severity</span>, <span>description</span>, <span>relationship-specific triggers</span></span>
+        </div>
+      </div>
+    </div>
+    <div class="use-case-points anim-up anim-up-d4">
+      <div class="use-case-point">
+        <span class="icon">📝</span>
+        <div class="text"><strong>Just JSON</strong> Define SOPs, roles, and prompts — no code changes needed</div>
+      </div>
+      <div class="use-case-point">
+        <span class="icon">♾️</span>
+        <div class="text"><strong>Any Conversation</strong> Anywhere humans talk and quality matters, Nudge can coach</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══ SLIDE 14: Connect ═══ -->
+  <div class="slide slide--connect" data-slide="13">
+    <div class="connect-card anim-up">
+      <img class="connect-photo" src="assets/rajesh-profile.jpg" alt="Rajesh">
+      <div class="connect-name">Rajesh</div>
+      <div class="connect-title">Robotics &amp; AI Enthusiast</div>
+      <div class="connect-location">
+        <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+        Bengaluru, India
+      </div>
+    </div>
+    <div class="connect-qr-row anim-up anim-up-d1">
+      <div class="connect-qr">
+        <div class="connect-qr-box">
+          <svg width="120" height="120" viewBox="0 0 33 33" xmlns="http://www.w3.org/2000/svg"><path d="M2,2H3V3H2zM3,2H4V3H3zM4,2H5V3H4zM5,2H6V3H5zM6,2H7V3H6zM7,2H8V3H7zM8,2H9V3H8zM10,2H11V3H10zM11,2H12V3H11zM12,2H13V3H12zM14,2H15V3H14zM16,2H17V3H16zM17,2H18V3H17zM18,2H19V3H18zM19,2H20V3H19zM20,2H21V3H20zM24,2H25V3H24zM25,2H26V3H25zM26,2H27V3H26zM27,2H28V3H27zM28,2H29V3H28zM29,2H30V3H29zM30,2H31V3H30zM2,3H3V4H2zM8,3H9V4H8zM10,3H11V4H10zM11,3H12V4H11zM12,3H13V4H12zM19,3H20V4H19zM21,3H22V4H21zM24,3H25V4H24zM30,3H31V4H30zM2,4H3V5H2zM4,4H5V5H4zM5,4H6V5H5zM6,4H7V5H6zM8,4H9V5H8zM10,4H11V5H10zM12,4H13V5H12zM13,4H14V5H13zM19,4H20V5H19zM20,4H21V5H20zM21,4H22V5H21zM24,4H25V5H24zM26,4H27V5H26zM27,4H28V5H27zM28,4H29V5H28zM30,4H31V5H30zM2,5H3V6H2zM4,5H5V6H4zM5,5H6V6H5zM6,5H7V6H6zM8,5H9V6H8zM10,5H11V6H10zM11,5H12V6H11zM13,5H14V6H13zM15,5H16V6H15zM16,5H17V6H16zM18,5H19V6H18zM20,5H21V6H20zM24,5H25V6H24zM26,5H27V6H26zM27,5H28V6H27zM28,5H29V6H28zM30,5H31V6H30zM2,6H3V7H2zM4,6H5V7H4zM5,6H6V7H5zM6,6H7V7H6zM8,6H9V7H8zM15,6H16V7H15zM16,6H17V7H16zM17,6H18V7H17zM18,6H19V7H18zM19,6H20V7H19zM20,6H21V7H20zM24,6H25V7H24zM26,6H27V7H26zM27,6H28V7H27zM28,6H29V7H28zM30,6H31V7H30zM2,7H3V8H2zM8,7H9V8H8zM10,7H11V8H10zM13,7H14V8H13zM14,7H15V8H14zM15,7H16V8H15zM18,7H19V8H18zM21,7H22V8H21zM22,7H23V8H22zM24,7H25V8H24zM30,7H31V8H30zM2,8H3V9H2zM3,8H4V9H3zM4,8H5V9H4zM5,8H6V9H5zM6,8H7V9H6zM7,8H8V9H7zM8,8H9V9H8zM10,8H11V9H10zM12,8H13V9H12zM14,8H15V9H14zM16,8H17V9H16zM18,8H19V9H18zM20,8H21V9H20zM22,8H23V9H22zM24,8H25V9H24zM25,8H26V9H25zM26,8H27V9H26zM27,8H28V9H27zM28,8H29V9H28zM29,8H30V9H29zM30,8H31V9H30zM11,9H12V10H11zM14,9H15V10H14zM16,9H17V10H16zM17,9H18V10H17zM18,9H19V10H18zM19,9H20V10H19zM20,9H21V10H20zM21,9H22V10H21zM22,9H23V10H22zM2,10H3V11H2zM3,10H4V11H3zM6,10H7V11H6zM7,10H8V11H7zM8,10H9V11H8zM13,10H14V11H13zM19,10H20V11H19zM20,10H21V11H20zM22,10H23V11H22zM25,10H26V11H25zM27,10H28V11H27zM28,10H29V11H28zM29,10H30V11H29zM30,10H31V11H30zM2,11H3V12H2zM3,11H4V12H3zM4,11H5V12H4zM5,11H6V12H5zM9,11H10V12H9zM11,11H12V12H11zM12,11H13V12H12zM14,11H15V12H14zM15,11H16V12H15zM17,11H18V12H17zM18,11H19V12H18zM19,11H20V12H19zM20,11H21V12H20zM22,11H23V12H22zM24,11H25V12H24zM25,11H26V12H25zM26,11H27V12H26zM27,11H28V12H27zM28,11H29V12H28zM29,11H30V12H29zM30,11H31V12H30zM4,12H5V13H4zM6,12H7V13H6zM7,12H8V13H7zM8,12H9V13H8zM10,12H11V13H10zM13,12H14V13H13zM14,12H15V13H14zM15,12H16V13H15zM17,12H18V13H17zM18,12H19V13H18zM20,12H21V13H20zM25,12H26V13H25zM26,12H27V13H26zM30,12H31V13H30zM4,13H5V14H4zM7,13H8V14H7zM12,13H13V14H12zM13,13H14V14H13zM16,13H17V14H16zM17,13H18V14H17zM18,13H19V14H18zM19,13H20V14H19zM20,13H21V14H20zM21,13H22V14H21zM22,13H23V14H22zM23,13H24V14H23zM24,13H25V14H24zM26,13H27V14H26zM27,13H28V14H27zM29,13H30V14H29zM30,13H31V14H30zM2,14H3V15H2zM3,14H4V15H3zM7,14H8V15H7zM8,14H9V15H8zM9,14H10V15H9zM12,14H13V15H12zM14,14H15V15H14zM17,14H18V15H17zM19,14H20V15H19zM22,14H23V15H22zM23,14H24V15H23zM29,14H30V15H29zM3,15H4V16H3zM10,15H11V16H10zM15,15H16V16H15zM17,15H18V16H17zM18,15H19V16H18zM19,15H20V16H19zM20,15H21V16H20zM24,15H25V16H24zM26,15H27V16H26zM27,15H28V16H27zM28,15H29V16H28zM29,15H30V16H29zM30,15H31V16H30zM2,16H3V17H2zM3,16H4V17H3zM5,16H6V17H5zM8,16H9V17H8zM11,16H12V17H11zM12,16H13V17H12zM15,16H16V17H15zM16,16H17V17H16zM17,16H18V17H17zM19,16H20V17H19zM22,16H23V17H22zM23,16H24V17H23zM26,16H27V17H26zM27,16H28V17H27zM28,16H29V17H28zM30,16H31V17H30zM4,17H5V18H4zM5,17H6V18H5zM7,17H8V18H7zM9,17H10V18H9zM12,17H13V18H12zM14,17H15V18H14zM16,17H17V18H16zM18,17H19V18H18zM19,17H20V18H19zM20,17H21V18H20zM24,17H25V18H24zM29,17H30V18H29zM30,17H31V18H30zM2,18H3V19H2zM5,18H6V19H5zM8,18H9V19H8zM12,18H13V19H12zM13,18H14V19H13zM18,18H19V19H18zM19,18H20V19H19zM22,18H23V19H22zM23,18H24V19H23zM25,18H26V19H25zM29,18H30V19H29zM2,19H3V20H2zM7,19H8V20H7zM9,19H10V20H9zM11,19H12V20H11zM14,19H15V20H14zM15,19H16V20H15zM16,19H17V20H16zM17,19H18V20H17zM18,19H19V20H18zM19,19H20V20H19zM20,19H21V20H20zM24,19H25V20H24zM25,19H26V20H25zM26,19H27V20H26zM27,19H28V20H27zM29,19H30V20H29zM30,19H31V20H30zM5,20H6V21H5zM8,20H9V21H8zM10,20H11V21H10zM11,20H12V21H11zM13,20H14V21H13zM14,20H15V21H14zM17,20H18V21H17zM20,20H21V21H20zM26,20H27V21H26zM28,20H29V21H28zM30,20H31V21H30zM4,21H5V22H4zM5,21H6V22H5zM7,21H8V22H7zM9,21H10V22H9zM10,21H11V22H10zM11,21H12V22H11zM13,21H14V22H13zM16,21H17V22H16zM17,21H18V22H17zM19,21H20V22H19zM22,21H23V22H22zM23,21H24V22H23zM29,21H30V22H29zM30,21H31V22H30zM2,22H3V23H2zM3,22H4V23H3zM5,22H6V23H5zM7,22H8V23H7zM8,22H9V23H8zM10,22H11V23H10zM12,22H13V23H12zM14,22H15V23H14zM19,22H20V23H19zM20,22H21V23H20zM21,22H22V23H21zM22,22H23V23H22zM23,22H24V23H23zM24,22H25V23H24zM25,22H26V23H25zM26,22H27V23H26zM27,22H28V23H27zM30,22H31V23H30zM10,23H11V24H10zM11,23H12V24H11zM16,23H17V24H16zM17,23H18V24H17zM18,23H19V24H18zM19,23H20V24H19zM20,23H21V24H20zM21,23H22V24H21zM22,23H23V24H22zM26,23H27V24H26zM30,23H31V24H30zM2,24H3V25H2zM3,24H4V25H3zM4,24H5V25H4zM5,24H6V25H5zM6,24H7V25H6zM7,24H8V25H7zM8,24H9V25H8zM11,24H12V25H11zM12,24H13V25H12zM16,24H17V25H16zM17,24H18V25H17zM18,24H19V25H18zM20,24H21V25H20zM21,24H22V25H21zM22,24H23V25H22zM24,24H25V25H24zM26,24H27V25H26zM27,24H28V25H27zM28,24H29V25H28zM30,24H31V25H30zM2,25H3V26H2zM8,25H9V26H8zM10,25H11V26H10zM11,25H12V26H11zM12,25H13V26H12zM14,25H15V26H14zM16,25H17V26H16zM18,25H19V26H18zM19,25H20V26H19zM20,25H21V26H20zM21,25H22V26H21zM22,25H23V26H22zM26,25H27V26H26zM29,25H30V26H29zM30,25H31V26H30zM2,26H3V27H2zM4,26H5V27H4zM5,26H6V27H5zM6,26H7V27H6zM8,26H9V27H8zM10,26H11V27H10zM12,26H13V27H12zM13,26H14V27H13zM14,26H15V27H14zM17,26H18V27H17zM19,26H20V27H19zM21,26H22V27H21zM22,26H23V27H22zM23,26H24V27H23zM24,26H25V27H24zM25,26H26V27H25zM26,26H27V27H26zM27,26H28V27H27zM29,26H30V27H29zM30,26H31V27H30zM2,27H3V28H2zM4,27H5V28H4zM5,27H6V28H5zM6,27H7V28H6zM8,27H9V28H8zM11,27H12V28H11zM12,27H13V28H12zM14,27H15V28H14zM17,27H18V28H17zM18,27H19V28H18zM22,27H23V28H22zM23,27H24V28H23zM25,27H26V28H25zM30,27H31V28H30zM2,28H3V29H2zM4,28H5V29H4zM5,28H6V29H5zM6,28H7V29H6zM8,28H9V29H8zM11,28H12V29H11zM13,28H14V29H13zM14,28H15V29H14zM17,28H18V29H17zM21,28H22V29H21zM23,28H24V29H23zM27,28H28V29H27zM28,28H29V29H28zM29,28H30V29H29zM30,28H31V29H30zM2,29H3V30H2zM8,29H9V30H8zM10,29H11V30H10zM11,29H12V30H11zM14,29H15V30H14zM16,29H17V30H16zM17,29H18V30H17zM18,29H19V30H18zM19,29H20V30H19zM22,29H23V30H22zM23,29H24V30H23zM26,29H27V30H26zM27,29H28V30H27zM29,29H30V30H29zM30,29H31V30H30zM2,30H3V31H2zM3,30H4V31H3zM4,30H5V31H4zM5,30H6V31H5zM6,30H7V31H6zM7,30H8V31H7zM8,30H9V31H8zM10,30H11V31H10zM13,30H14V31H13zM14,30H15V31H14zM16,30H17V31H16zM19,30H20V31H19zM22,30H23V31H22zM23,30H24V31H23zM24,30H25V31H24zM25,30H26V31H25zM26,30H27V31H26zM29,30H30V31H29z" fill="#000000"/></svg>
+        </div>
+        <div class="connect-qr-label">LinkedIn</div>
+      </div>
+      <div class="connect-qr">
+        <div class="connect-qr-box">
+          <svg width="120" height="120" viewBox="0 0 33 33" xmlns="http://www.w3.org/2000/svg"><path d="M2,2H3V3H2zM3,2H4V3H3zM4,2H5V3H4zM5,2H6V3H5zM6,2H7V3H6zM7,2H8V3H7zM8,2H9V3H8zM12,2H13V3H12zM15,2H16V3H15zM16,2H17V3H16zM17,2H18V3H17zM19,2H20V3H19zM20,2H21V3H20zM21,2H22V3H21zM24,2H25V3H24zM25,2H26V3H25zM26,2H27V3H26zM27,2H28V3H27zM28,2H29V3H28zM29,2H30V3H29zM30,2H31V3H30zM2,3H3V4H2zM8,3H9V4H8zM11,3H12V4H11zM15,3H16V4H15zM16,3H17V4H16zM17,3H18V4H17zM18,3H19V4H18zM19,3H20V4H19zM21,3H22V4H21zM24,3H25V4H24zM30,3H31V4H30zM2,4H3V5H2zM4,4H5V5H4zM5,4H6V5H5zM6,4H7V5H6zM8,4H9V5H8zM10,4H11V5H10zM13,4H14V5H13zM16,4H17V5H16zM18,4H19V5H18zM20,4H21V5H20zM24,4H25V5H24zM26,4H27V5H26zM27,4H28V5H27zM28,4H29V5H28zM30,4H31V5H30zM2,5H3V6H2zM4,5H5V6H4zM5,5H6V6H5zM6,5H7V6H6zM8,5H9V6H8zM11,5H12V6H11zM14,5H15V6H14zM17,5H18V6H17zM20,5H21V6H20zM21,5H22V6H21zM22,5H23V6H22zM24,5H25V6H24zM26,5H27V6H26zM27,5H28V6H27zM28,5H29V6H28zM30,5H31V6H30zM2,6H3V7H2zM4,6H5V7H4zM5,6H6V7H5zM6,6H7V7H6zM8,6H9V7H8zM11,6H12V7H11zM14,6H15V7H14zM15,6H16V7H15zM16,6H17V7H16zM17,6H18V7H17zM21,6H22V7H21zM24,6H25V7H24zM26,6H27V7H26zM27,6H28V7H27zM28,6H29V7H28zM30,6H31V7H30zM2,7H3V8H2zM8,7H9V8H8zM12,7H13V8H12zM13,7H14V8H13zM14,7H15V8H14zM15,7H16V8H15zM16,7H17V8H16zM17,7H18V8H17zM18,7H19V8H18zM19,7H20V8H19zM20,7H21V8H20zM21,7H22V8H21zM22,7H23V8H22zM24,7H25V8H24zM30,7H31V8H30zM2,8H3V9H2zM3,8H4V9H3zM4,8H5V9H4zM5,8H6V9H5zM6,8H7V9H6zM7,8H8V9H7zM8,8H9V9H8zM10,8H11V9H10zM12,8H13V9H12zM14,8H15V9H14zM16,8H17V9H16zM18,8H19V9H18zM20,8H21V9H20zM22,8H23V9H22zM24,8H25V9H24zM25,8H26V9H25zM26,8H27V9H26zM27,8H28V9H27zM28,8H29V9H28zM29,8H30V9H29zM30,8H31V9H30zM10,9H11V10H10zM13,9H14V10H13zM15,9H16V10H15zM16,9H17V10H16zM19,9H20V10H19zM20,9H21V10H20zM21,9H22V10H21zM2,10H3V11H2zM3,10H4V11H3zM4,10H5V11H4zM6,10H7V11H6zM7,10H8V11H7zM8,10H9V11H8zM9,10H10V11H9zM10,10H11V11H10zM14,10H15V11H14zM15,10H16V11H15zM18,10H19V11H18zM19,10H20V11H19zM21,10H22V11H21zM22,10H23V11H22zM23,10H24V11H23zM24,10H25V11H24zM28,10H29V11H28zM3,11H4V12H3zM4,11H5V12H4zM11,11H12V12H11zM13,11H14V12H13zM14,11H15V12H14zM15,11H16V12H15zM18,11H19V12H18zM19,11H20V12H19zM22,11H23V12H22zM23,11H24V12H23zM24,11H25V12H24zM27,11H28V12H27zM30,11H31V12H30zM2,12H3V13H2zM4,12H5V13H4zM6,12H7V13H6zM7,12H8V13H7zM8,12H9V13H8zM9,12H10V13H9zM12,12H13V13H12zM13,12H14V13H13zM14,12H15V13H14zM16,12H17V13H16zM19,12H20V13H19zM20,12H21V13H20zM23,12H24V13H23zM24,12H25V13H24zM26,12H27V13H26zM28,12H29V13H28zM29,12H30V13H29zM30,12H31V13H30zM2,13H3V14H2zM3,13H4V14H3zM5,13H6V14H5zM6,13H7V14H6zM7,13H8V14H7zM9,13H10V14H9zM10,13H11V14H10zM11,13H12V14H11zM12,13H14V14H12zM14,13H15V14H14zM15,13H16V14H15zM16,13H17V14H16zM17,13H18V14H17zM19,13H20V14H19zM22,13H23V14H22zM29,13H30V14H29zM3,14H4V15H3zM5,14H6V15H5zM7,14H8V15H7zM8,14H9V15H8zM9,14H10V15H9zM12,14H13V15H12zM13,14H14V15H13zM15,14H16V15H15zM17,14H18V15H17zM18,14H19V15H18zM19,14H20V15H19zM20,14H21V15H20zM22,14H23V15H22zM23,14H24V15H23zM24,14H25V15H24zM27,14H28V15H27zM29,14H30V15H29zM30,14H31V15H30zM2,15H3V16H2zM3,15H4V16H3zM5,15H6V16H5zM6,15H7V16H6zM10,15H11V16H10zM12,15H13V16H12zM13,15H14V16H13zM18,15H19V16H18zM22,15H23V16H22zM23,15H24V16H23zM24,15H25V16H24zM27,15H28V16H27zM30,15H31V16H30zM2,16H3V17H2zM5,16H6V17H5zM6,16H7V17H6zM8,16H9V17H8zM9,16H10V17H9zM10,16H11V17H10zM11,16H12V17H11zM12,16H13V17H12zM16,16H17V17H16zM19,16H20V17H19zM22,16H23V17H22zM23,16H24V17H23zM25,16H26V17H25zM26,16H27V17H26zM27,16H28V17H27zM29,16H30V17H29zM30,16H31V17H30zM4,17H5V18H4zM9,17H10V18H9zM10,17H11V18H10zM12,17H13V18H12zM13,17H14V18H13zM15,17H16V18H15zM16,17H17V18H16zM19,17H20V18H19zM22,17H23V18H22zM23,17H24V18H23zM24,17H25V18H24zM25,17H26V18H25zM26,17H27V18H26zM27,17H28V18H27zM29,17H30V18H29zM3,18H4V19H3zM4,18H5V19H4zM6,18H7V19H6zM8,18H9V19H8zM9,18H10V19H9zM10,18H11V19H10zM11,18H12V19H11zM12,18H13V19H12zM14,18H15V19H14zM15,18H16V19H15zM16,18H17V19H16zM19,18H20V19H19zM21,18H22V19H21zM22,18H23V19H22zM23,18H24V19H23zM24,18H25V19H24zM27,18H28V19H27zM29,18H30V19H29zM30,18H31V19H30zM5,19H6V20H5zM7,19H8V20H7zM9,19H10V20H9zM13,19H14V20H13zM14,19H15V20H14zM18,19H19V20H18zM24,19H25V20H24zM27,19H28V20H27zM28,19H29V20H28zM30,19H31V20H30zM2,20H3V21H2zM4,20H5V21H4zM5,20H6V21H5zM7,20H8V21H7zM8,20H9V21H8zM9,20H10V21H9zM11,20H12V21H11zM13,20H14V21H13zM14,20H15V21H14zM20,20H21V21H20zM23,20H24V21H23zM24,20H25V21H24zM25,20H26V21H25zM26,20H27V21H26zM29,20H30V21H29zM30,20H31V21H30zM3,21H4V22H3zM4,21H5V22H4zM5,21H6V22H5zM6,21H7V22H6zM7,21H8V22H7zM14,21H15V22H14zM15,21H16V22H15zM16,21H17V22H16zM17,21H18V22H17zM19,21H20V22H19zM20,21H21V22H20zM21,21H22V22H21zM23,21H24V22H23zM25,21H26V22H25zM26,21H27V22H26zM27,21H28V22H27zM29,21H30V22H29zM2,22H3V23H2zM4,22H5V23H4zM5,22H6V23H5zM6,22H7V23H6zM7,22H8V23H7zM8,22H9V23H8zM9,22H10V23H9zM10,22H11V23H10zM13,22H14V23H13zM14,22H15V23H14zM15,22H16V23H15zM17,22H18V23H17zM19,22H20V23H19zM21,22H22V23H21zM22,22H23V23H22zM23,22H24V23H23zM24,22H25V23H24zM25,22H26V23H25zM26,22H27V23H26zM10,23H11V24H10zM11,23H12V24H11zM13,23H14V24H13zM18,23H19V24H18zM22,23H23V24H22zM26,23H27V24H26zM28,23H29V24H28zM29,23H30V24H29zM30,23H31V24H30zM2,24H3V25H2zM3,24H4V25H3zM4,24H5V25H4zM5,24H6V25H5zM6,24H7V25H6zM7,24H8V25H7zM8,24H9V25H8zM10,24H11V25H10zM18,24H19V25H18zM19,24H20V25H19zM21,24H22V25H21zM22,24H23V25H22zM24,24H25V25H24zM26,24H27V25H26zM27,24H28V25H27zM29,24H30V25H29zM30,24H31V25H30zM2,25H3V26H2zM8,25H9V26H8zM10,25H11V26H10zM11,25H12V26H11zM12,25H13V26H12zM14,25H15V26H14zM15,25H16V26H15zM17,25H18V26H17zM19,25H20V26H19zM20,25H21V26H20zM22,25H23V26H22zM26,25H27V26H26zM27,25H28V26H27zM2,26H3V27H2zM4,26H5V27H4zM5,26H6V27H5zM6,26H7V27H6zM8,26H9V27H8zM10,26H11V27H10zM11,26H12V27H11zM12,26H13V27H12zM13,26H14V27H13zM14,26H15V27H14zM15,26H16V27H15zM17,26H18V27H17zM18,26H19V27H18zM19,26H20V27H19zM20,26H21V27H20zM22,26H23V27H22zM23,26H24V27H23zM24,26H25V27H24zM25,26H26V27H25zM26,26H27V27H26zM29,26H30V27H29zM2,27H3V28H2zM4,27H5V28H4zM5,27H6V28H5zM6,27H7V28H6zM8,27H9V28H8zM15,27H16V28H15zM18,27H19V28H18zM21,27H22V28H21zM26,27H27V28H26zM28,27H29V28H28zM29,27H30V28H29zM30,27H31V28H30zM2,28H3V29H2zM4,28H5V29H4zM5,28H6V29H5zM6,28H7V29H6zM8,28H9V29H8zM10,28H11V29H10zM11,28H12V29H11zM14,28H15V29H14zM16,28H17V29H16zM18,28H19V29H18zM19,28H20V29H19zM21,28H22V29H21zM22,28H23V29H22zM25,28H26V29H25zM26,28H27V29H26zM27,28H28V29H27zM30,28H31V29H30zM2,29H3V30H2zM8,29H9V30H8zM10,29H11V30H10zM12,29H13V30H12zM15,29H16V30H15zM16,29H17V30H16zM17,29H18V30H17zM19,29H20V30H19zM20,29H21V30H20zM22,29H23V30H22zM23,29H24V30H23zM24,29H25V30H24zM29,29H30V30H29zM2,30H3V31H2zM3,30H4V31H3zM4,30H5V31H4zM5,30H6V31H5zM6,30H7V31H6zM7,30H8V31H7zM8,30H9V31H8zM10,30H11V31H10zM14,30H15V31H14zM15,30H16V31H15zM19,30H20V31H19zM21,30H22V31H21zM22,30H23V31H22zM23,30H24V31H23zM24,30H25V31H24zM25,30H26V31H25zM29,30H30V31H29zM30,30H31V31H30z" fill="#000000"/></svg>
+        </div>
+        <div class="connect-qr-label">Physical AI Lab</div>
+      </div>
+    </div>
+    <div class="connect-links anim-up anim-up-d2">
+      <a href="https://www.linkedin.com/in/rajeshanneswamy/" target="_blank" class="connect-link">
+        <svg viewBox="0 0 24 24"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/></svg>
+        linkedin.com/in/rajeshanneswamy
+      </a>
+      <a href="https://myidentity.github.io/physical-ai-lab/" target="_blank" class="connect-link">
+        <svg viewBox="0 0 24 24"><path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+        Physical AI Lab Blog
+      </a>
+    </div>
+    <div class="connect-thankyou anim-up anim-up-d3">Thank you</div>
+  </div>
+
+
+</div>
+
+<!-- ── Lightbox ── -->
+<div class="lightbox" id="lightbox">
+  <img id="lbImg" src="" alt="">
+  <span class="lb-label" id="lbLabel"></span>
+</div>
+
+<!-- ── Nav Dots ── -->
+<div class="nav-dots" id="navDots"></div>
+<div class="slide-counter" id="counter"></div>
+<div class="credit">Nudge &mdash; Omi Hackathon BLR 2026</div>
+
+<script>
+  const deck = document.getElementById('deck');
+  const slides = deck.querySelectorAll('.slide');
+  const dotsContainer = document.getElementById('navDots');
+  const counter = document.getElementById('counter');
+  let current = 0;
+
+  // Build dots
+  slides.forEach((_, i) => {
+    const dot = document.createElement('button');
+    dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+    dot.onclick = () => goTo(i);
+    dotsContainer.appendChild(dot);
+  });
+
+  function goTo(n) {
+    if (n < 0 || n >= slides.length) return;
+    slides[current].classList.remove('active');
+    dotsContainer.children[current].classList.remove('active');
+    current = n;
+    slides[current].classList.add('active');
+    dotsContainer.children[current].classList.add('active');
+    counter.textContent = (current + 1) + ' / ' + slides.length;
+  }
+
+  // Keyboard nav
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); goTo(current + 1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(current - 1); }
+    if (e.key === 'Home') goTo(0);
+    if (e.key === 'End') goTo(slides.length - 1);
+  });
+
+  // Click sides to navigate
+  deck.addEventListener('click', e => {
+    const x = e.clientX / window.innerWidth;
+    if (x > 0.75) goTo(current + 1);
+    else if (x < 0.25) goTo(current - 1);
+  });
+
+  // Init counter
+  counter.textContent = '1 / ' + slides.length;
+
+  // ── Lightbox for skin screenshots ──
+  const lb = document.getElementById('lightbox');
+  const lbImg = document.getElementById('lbImg');
+  const lbLabel = document.getElementById('lbLabel');
+
+  document.querySelectorAll('.skin-cell').forEach(cell => {
+    cell.style.cursor = 'zoom-in';
+    cell.addEventListener('click', e => {
+      e.stopPropagation();
+      const img = cell.querySelector('img');
+      const label = cell.querySelector('.skin-label');
+      lbImg.src = img.src;
+      lbLabel.textContent = label ? label.textContent : '';
+      lb.classList.add('open');
+    });
+  });
+
+  lb.addEventListener('click', () => lb.classList.remove('open'));
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && lb.classList.contains('open')) {
+      lb.classList.remove('open');
+    }
+  });
+</script>
+
+</body>
+</html>

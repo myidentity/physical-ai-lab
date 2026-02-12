@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Nudge — Team Daily Briefing</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --card: #222633;
+    --border: #2d3344;
+    --text: #e4e7f0;
+    --muted: #8b90a0;
+    --accent: #6c63ff;
+    --accent2: #00d4aa;
+    --green: #22c55e;
+    --green-soft: #166534;
+    --amber: #f59e0b;
+    --amber-soft: #78350f;
+    --purple: #a78bfa;
+    --purple-soft: #3b0764;
+    --blue: #3b82f6;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 0 16px 48px;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    padding: 40px 16px 32px;
+    position: relative;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -40px; left: 50%; transform: translateX(-50%);
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(108,99,255,0.12) 0%, transparent 70%);
+    border-radius: 50%; pointer-events: none;
+  }
+  .day-emoji { font-size: 48px; margin-bottom: 12px; display: block; }
+  .headline { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 4px; }
+  .date-line { font-size: 14px; color: var(--muted); }
+
+  /* ── Team win ── */
+  .team-win {
+    background: linear-gradient(135deg, var(--green-soft), rgba(34,197,94,0.08));
+    border: 1px solid rgba(34,197,94,0.2);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin: 24px 0;
+  }
+  .team-win h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--green); margin-bottom: 8px; }
+  .team-win p { font-size: 16px; line-height: 1.5; }
+
+  /* ── Glance stats ── */
+  .glance {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin: 24px 0;
+  }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+  }
+  .stat-value { font-size: 26px; font-weight: 700; display: block; }
+  .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+
+  .energy-card {
+    grid-column: 1 / -1;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 20px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .energy-label { font-size: 14px; font-weight: 600; color: #f59e0b; }
+  .energy-hearts { display: flex; gap: 4px; }
+  .heart { font-size: 18px; line-height: 1; }
+  .heart.filled { color: #ef4444; }
+  .heart.empty { color: #2d3344; }
+
+  /* ── Section headers ── */
+  .section { margin: 32px 0; }
+  .section h2 { font-size: 18px; font-weight: 600; margin-bottom: 16px; letter-spacing: -0.3px; }
+
+  /* ── Stars ── */
+  .star-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--green);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex; gap: 14px; align-items: flex-start;
+    margin-bottom: 10px;
+  }
+  .star-emoji { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+  .star-name { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+  .star-why { font-size: 14px; color: var(--muted); line-height: 1.5; }
+
+  /* ── Growth opportunities ── */
+  .growth-opp-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--amber);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex; gap: 14px; align-items: flex-start;
+    margin-bottom: 10px;
+  }
+  .growth-emoji { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+  .growth-name { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+  .growth-context { font-size: 14px; color: var(--muted); line-height: 1.5; margin-bottom: 8px; }
+  .growth-quote {
+    font-size: 13px; font-style: italic; color: var(--muted);
+    padding: 8px 12px;
+    background: rgba(245,158,11,0.06);
+    border-left: 2px solid rgba(245,158,11,0.3);
+    border-radius: 4px;
+    margin-bottom: 10px;
+  }
+  .growth-suggestion { font-size: 14px; line-height: 1.5; }
+
+  /* ── Team pattern ── */
+  .pattern-card {
+    background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(59,130,246,0.03));
+    border: 1px solid rgba(59,130,246,0.15);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin: 24px 0;
+  }
+  .pattern-card h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--blue); margin-bottom: 8px; }
+  .pattern-card p { font-size: 15px; line-height: 1.5; }
+
+  /* ── Coaching priorities ── */
+  .coaching-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex; gap: 16px; align-items: flex-start;
+    margin-bottom: 10px;
+  }
+  .coaching-number {
+    width: 32px; height: 32px;
+    background: rgba(108,99,255,0.15);
+    color: var(--accent);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px; flex-shrink: 0;
+  }
+  .coaching-label { font-weight: 600; font-size: 15px; margin-bottom: 2px; }
+  .coaching-who { font-size: 12px; color: var(--accent); margin-bottom: 6px; }
+  .coaching-action { font-size: 14px; color: var(--muted); line-height: 1.5; }
+
+  /* ── Tomorrow focus ── */
+  .focus-card {
+    background: linear-gradient(135deg, var(--purple-soft), rgba(167,139,250,0.08));
+    border: 1px solid rgba(167,139,250,0.2);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin: 28px 0;
+  }
+  .focus-card h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--purple); margin-bottom: 8px; }
+  .focus-card p { font-size: 16px; line-height: 1.5; }
+
+  /* ── Staff overview ── */
+  .staff-overview { margin: 32px 0; }
+  .staff-overview h2 { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
+  .staff-mini-card {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    text-decoration: none; color: var(--text);
+    transition: all 0.2s ease; cursor: pointer;
+  }
+  .staff-mini-card:hover { border-color: var(--accent); background: #262a38; }
+  .mini-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--surface); display: flex; align-items: center;
+    justify-content: center; font-weight: 700; font-size: 15px; flex-shrink: 0;
+  }
+  .mini-info { flex: 1; min-width: 0; }
+  .mini-name { font-weight: 600; font-size: 14px; }
+  .mini-stats { font-size: 12px; color: var(--muted); }
+  .mini-badge { flex-shrink: 0; }
+  .mini-violations { font-size: 11px; color: var(--amber); background: rgba(245,158,11,0.1); padding: 2px 8px; border-radius: 10px; }
+  .mini-clean { font-size: 11px; color: var(--green); background: rgba(34,197,94,0.1); padding: 2px 8px; border-radius: 10px; }
+  .mini-arrow { color: var(--muted); font-size: 16px; flex-shrink: 0; }
+
+  /* ── Responsive — report inside narrow iframe/mobile ── */
+  @media (max-width: 400px) {
+    body { padding: 0 8px 32px; }
+    .header, .section, .stats-bar, .staff-overview, .closing { padding: 14px 10px; }
+    .header h1 { font-size: 18px; }
+    .staff-mini-card { gap: 8px; padding: 10px; flex-wrap: wrap; }
+    .mini-avatar { width: 28px; height: 28px; font-size: 12px; }
+    .mini-info { min-width: calc(100% - 48px); }
+    .mini-name { font-size: 13px; }
+    .mini-stats { font-size: 11px; }
+    .mini-badge { order: 4; margin-top: 2px; }
+    .mini-arrow { display: none; }
+  }
+
+  /* ── Closing ── */
+  .closing {
+    text-align: center;
+    padding: 32px 16px;
+    margin-top: 32px;
+    border-top: 1px solid var(--border);
+  }
+  .closing-note { font-size: 16px; font-style: italic; color: var(--muted); }
+
+  .footer {
+    text-align: center; padding: 24px 0;
+    font-size: 12px; color: var(--border);
+  }
+
+  @media (max-width: 420px) {
+    .glance { grid-template-columns: 1fr 1fr; }
+    .headline { font-size: 20px; }
+    .growth-opp-card, .star-card { flex-direction: column; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+
+  <header class="header">
+    <span class="day-emoji">🌓</span>
+    <h1 class="headline">A tale of two teams today — our stars shined bright while some teammates need support finding their footing.</h1>
+    <p class="date-line">Wednesday, February 11, 2026 &middot; Restaurant &middot; 5 team members</p>
+  </header>
+
+  <div class="team-win">
+    <h2>🏆 Team Win</h2>
+    <p>Priya and Meera absolutely crushed it today with genuine warmth and proactive care. Priya caught a peanut allergy before the customer even mentioned it and steered them to safe options. Meera turned around a frustrated customer who'd had a bad experience last week — she owned it, got a manager involved, and made them feel heard. This is the hospitality we're building.</p>
+  </div>
+
+  <div class="glance">
+    <div class="stat-card">
+      <span class="stat-value">5</span>
+      <span class="stat-label">Team Members</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-value">10</span>
+      <span class="stat-label">Conversations</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-value">16</span>
+      <span class="stat-label">Growth Moments</span>
+    </div>
+    <div class="energy-card">
+      <span class="energy-label">Team Energy: Building</span>
+      <div class="energy-hearts"><span class="heart filled">&#10084;</span><span class="heart filled">&#10084;</span><span class="heart empty">&#10084;</span><span class="heart empty">&#10084;</span><span class="heart empty">&#10084;</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>⭐ Today's Stars</h2>
+    
+        <div class="star-card">
+          <span class="star-emoji">⭐</span>
+          <div class="star-content">
+            <div class="star-name">Priya</div>
+            <p class="star-why">Proactively asked about allergies unprompted and offered thoughtful alternatives when she learned about a peanut allergy. Her greeting was warm and professional every time.</p>
+          </div>
+        </div>
+        <div class="star-card">
+          <span class="star-emoji">💎</span>
+          <div class="star-content">
+            <div class="star-name">Meera</div>
+            <p class="star-why">Handled a service recovery beautifully — listened to a frustrated guest, apologized sincerely, brought in management, and personally ensured their order was prioritized. She made them feel genuinely cared for.</p>
+          </div>
+        </div>
+  </div>
+
+  <div class="section">
+    <h2>🌱 Coaching Opportunities</h2>
+    
+        <div class="growth-opp-card">
+          <span class="growth-emoji">🌱</span>
+          <div class="growth-content">
+            <div class="growth-name">Arjun</div>
+            <p class="growth-context">Struggled with warmth and got defensive when a customer asked about their food taking longer than expected.</p>
+            <div class="growth-quote">"Yeah the kitchen is backed up today. It's not my fault."</div>
+            <p class="growth-suggestion">💡 Pull him aside tomorrow and role-play handling wait time questions. Practice the phrase: 'I completely understand — let me check on that for you right now.' Help him see that owning the experience doesn't mean accepting blame.</p>
+          </div>
+        </div>
+        <div class="growth-opp-card">
+          <span class="growth-emoji">🌱</span>
+          <div class="growth-content">
+            <div class="growth-name">Vikram</div>
+            <p class="growth-context">Multiple interactions showed frustration with guests, including a dismissive response to a family with children.</p>
+            <div class="growth-quote">"Look, we're busy. What do you want?"</div>
+            <p class="growth-suggestion">💡 Have a one-on-one about treating busy shifts as opportunities to shine, not reasons to snap. Practice reframing: 'Thank you for your patience' instead of 'We're busy.' This is a mindset shift he needs coaching on.</p>
+          </div>
+        </div>
+        <div class="growth-opp-card">
+          <span class="growth-emoji">🌱</span>
+          <div class="growth-content">
+            <div class="growth-name">Diya</div>
+            <p class="growth-context">Solid service overall but used casual language when handling a spill at the table.</p>
+            <div class="growth-quote">"Oh crap, that's a mess. Let me grab some towels real quick."</div>
+            <p class="growth-suggestion">💡 Quick coaching moment: when something goes wrong, pause and use professional language even under pressure. 'I apologize for the spill — let me get that cleaned up right away' keeps guests confident in our professionalism.</p>
+          </div>
+        </div>
+  </div>
+
+  <div class="pattern-card">
+    <h2>📊 Today's Pattern</h2>
+    <p>We have a clear split between team members who lean into hospitality naturally and those who default to transactional, sometimes defensive service when the pressure is on. The warmth gap is our biggest opportunity.</p>
+  </div>
+
+  <div class="section">
+    <h2>🎯 Coaching Priorities</h2>
+    
+        <div class="coaching-card">
+          <div class="coaching-number">1</div>
+          <div class="coaching-content">
+            <div class="coaching-label">Greeting warmth</div>
+            <div class="coaching-who">Arjun, Vikram</div>
+            <p class="coaching-action">Tomorrow's pre-shift: practice proper greetings together. Everyone says their version out loud, then we role-play with a 'distracted server' scenario to show the difference warmth makes.</p>
+          </div>
+        </div>
+        <div class="coaching-card">
+          <div class="coaching-number">2</div>
+          <div class="coaching-content">
+            <div class="coaching-label">Handling delays positively</div>
+            <div class="coaching-who">Arjun, Vikram</div>
+            <p class="coaching-action">Create a simple script for wait time questions: 'I understand — let me check on that for you.' Post it in the server station. Practice once in the shift huddle.</p>
+          </div>
+        </div>
+        <div class="coaching-card">
+          <div class="coaching-number">3</div>
+          <div class="coaching-content">
+            <div class="coaching-label">Professional language under pressure</div>
+            <div class="coaching-who">Diya, Vikram</div>
+            <p class="coaching-action">Remind the team: when something goes wrong, that's when our language matters most. No casual phrases like 'crap' or 'look, we're busy' — those kill trust instantly.</p>
+          </div>
+        </div>
+  </div>
+
+  <div class="focus-card">
+    <h2>📋 Tomorrow's Game Plan</h2>
+    <p>Let's focus on greetings and first impressions. Every guest should hear a warm welcome with our name and the restaurant name within 10 seconds of contact. We'll practice this in pre-shift.</p>
+  </div>
+
+  <div class="staff-overview">
+    <h2>👥 Individual Reports</h2>
+    
+        <a href="priya.html" class="staff-mini-card">
+          <div class="mini-avatar" style="color: #22c55e;">P</div>
+          <div class="mini-info">
+            <div class="mini-name">Priya</div>
+            <div class="mini-stats">2 conversations &middot; <span style="color:#22c55e">Shining</span></div>
+          </div>
+          <div class="mini-badge"><span class="mini-clean">Clean shift</span></div>
+          <span class="mini-arrow">&#8250;</span>
+        </a>
+        <a href="arjun.html" class="staff-mini-card">
+          <div class="mini-avatar" style="color: #f59e0b;">A</div>
+          <div class="mini-info">
+            <div class="mini-name">Arjun</div>
+            <div class="mini-stats">2 conversations &middot; <span style="color:#f59e0b">Warming Up</span></div>
+          </div>
+          <div class="mini-badge"><span class="mini-violations">7 growth moments</span></div>
+          <span class="mini-arrow">&#8250;</span>
+        </a>
+        <a href="vikram.html" class="staff-mini-card">
+          <div class="mini-avatar" style="color: #f59e0b;">V</div>
+          <div class="mini-info">
+            <div class="mini-name">Vikram</div>
+            <div class="mini-stats">2 conversations &middot; <span style="color:#f59e0b">Warming Up</span></div>
+          </div>
+          <div class="mini-badge"><span class="mini-violations">9 growth moments</span></div>
+          <span class="mini-arrow">&#8250;</span>
+        </a>
+        <a href="meera.html" class="staff-mini-card">
+          <div class="mini-avatar" style="color: #22c55e;">M</div>
+          <div class="mini-info">
+            <div class="mini-name">Meera</div>
+            <div class="mini-stats">2 conversations &middot; <span style="color:#22c55e">Shining</span></div>
+          </div>
+          <div class="mini-badge"><span class="mini-clean">Clean shift</span></div>
+          <span class="mini-arrow">&#8250;</span>
+        </a>
+        <a href="diya.html" class="staff-mini-card">
+          <div class="mini-avatar" style="color: #f59e0b;">D</div>
+          <div class="mini-info">
+            <div class="mini-name">Diya</div>
+            <div class="mini-stats">2 conversations &middot; <span style="color:#f59e0b">Steady</span></div>
+          </div>
+          <div class="mini-badge"><span class="mini-clean">Clean shift</span></div>
+          <span class="mini-arrow">&#8250;</span>
+        </a>
+  </div>
+
+  <div class="closing">
+    <p class="closing-note">Priya and Meera are modeling exactly what hospitality looks like — warmth, proactivity, ownership. The rest of the team has the talent to get there. Let's invest the coaching time to close the gap, because this crew has real potential.</p>
+  </div>
+
+  <footer class="footer">
+    
+    &middot; Nudge &middot; Manager Briefing &middot; Generated 2026-02-11 16:11
+  </footer>
+
+</body>
+</html>
