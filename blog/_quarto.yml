@@ -76,6 +76,10 @@ website:
             href: posts/2025-12-16-workshop3-zenoh-performance/index.qmd
           - text: "Part 3: Web Dashboard"
             href: posts/2025-12-16-workshop3-zenoh-dashboard/index.qmd
+      - section: "Hackathon Projects"
+        contents:
+          - text: "Nudge: Ambient AI Coach"
+            href: posts/2026-02-11-nudge-ambient-ai-coach/index.qmd
       - section: "Other Posts"
         contents:
           - posts/2025-12-15-roscon-india-workshop-docker-infrastructure/index.qmd
