@@ -836,6 +836,11 @@ input[type="submit"] {
   background-image: url('/posts/2025-12-06-isaac-sim-assets-and-robots/thumbnail.jpg');
 }
 
+/* Hackathon Projects */
+.sidebar-item a[href*="nudge-ambient-ai-coach"]::before {
+  background-image: url('/posts/2026-02-11-nudge-ambient-ai-coach/images/hero.jpg');
+}
+
 /* ═══════════════════════════════════════════════════════════════
    Course Lesson Stub Posts - Hero Image + CTA Styling
    ═══════════════════════════════════════════════════════════════ */
