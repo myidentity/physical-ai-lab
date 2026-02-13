@@ -901,7 +901,239 @@
   .schema-layer-detail span { color: #22c55e; }
 
   /* ════════════════════════════════════════
-     SLIDE 14 — Connect / Closing
+     SLIDE 14 — Omi Mentor vs Nudge
+     ════════════════════════════════════════ */
+  .slide--vs::before {
+    background: radial-gradient(ellipse at 30% 40%, #1a0a1a 0%, #0d0d0d 60%, #060a0d 100%);
+  }
+  .vs-layout {
+    position: relative; z-index: 1;
+    display: flex;
+    gap: 1.5rem;
+    align-items: stretch;
+    width: min(90vw, 860px);
+    margin-top: 2.5vh;
+  }
+  .vs-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: clamp(0.58rem, 0.85vw, 0.72rem);
+    flex: 2;
+  }
+  .vs-table th {
+    padding: 0.45rem 1rem;
+    font-weight: 600;
+    text-align: center;
+    color: rgba(255,245,230,0.5);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .vs-table th:first-child {
+    text-align: left;
+    color: rgba(255,245,230,0.35);
+    font-weight: 400;
+  }
+  .vs-table th.vs-th-mentor { color: #a78bfa; }
+  .vs-table th.vs-th-nudge { color: #e8c370; }
+  .vs-table td {
+    padding: 0.4rem 1rem;
+    text-align: center;
+    color: rgba(255,245,230,0.65);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-weight: 300;
+  }
+  .vs-table td:first-child {
+    text-align: left;
+    color: rgba(255,245,230,0.5);
+    font-weight: 400;
+  }
+  .vs-table .vs-mentor-val { color: #a78bfa; font-weight: 400; }
+  .vs-table .vs-nudge-val { color: #e8c370; font-weight: 400; }
+  .vs-table td.vs-col-nudge {
+    background: rgba(232,195,112,0.03);
+  }
+  .vs-punchline {
+    flex: 0 0 auto;
+    width: clamp(170px, 20vw, 240px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(0.8rem, 1.2vw, 1rem);
+    border: 1px solid rgba(232,195,112,0.2);
+    border-radius: 10px;
+    background: rgba(232,195,112,0.04);
+    text-align: center;
+  }
+  .vs-punchline-text {
+    font-size: clamp(0.6rem, 0.9vw, 0.78rem);
+    font-weight: 300;
+    color: rgba(255,245,230,0.7);
+    text-align: center;
+    line-height: 1.7;
+  }
+  .vs-punchline-text em {
+    font-style: normal;
+    color: #e8c370;
+    font-weight: 500;
+  }
+
+  /* ════════════════════════════════════════
+     SLIDE 15 — App Store Landscape
+     ════════════════════════════════════════ */
+  .slide--landscape::before {
+    background: radial-gradient(ellipse at 70% 40%, #0a1a12 0%, #0d0d0d 60%, #060a0d 100%);
+  }
+  .store-hero {
+    position: relative; z-index: 1;
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin-top: 2vh;
+  }
+  .store-big-num {
+    font-size: clamp(3.5rem, 8vw, 6rem);
+    font-weight: 200;
+    color: #22c55e;
+    line-height: 1;
+  }
+  .store-big-label {
+    font-size: clamp(1rem, 1.8vw, 1.3rem);
+    font-weight: 300;
+    color: rgba(255,245,230,0.5);
+  }
+  .store-cats {
+    position: relative; z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    max-width: min(85vw, 800px);
+    justify-content: center;
+    margin-top: 2.5vh;
+  }
+  .store-cat {
+    padding: 0.3rem 0.7rem;
+    border-radius: 20px;
+    font-size: clamp(0.5rem, 0.75vw, 0.65rem);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,245,230,0.55);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .store-cat--none {
+    background: rgba(232,195,112,0.1);
+    color: #e8c370;
+    border-color: rgba(232,195,112,0.25);
+  }
+  .store-compare {
+    position: relative; z-index: 1;
+    margin-top: 2.5vh;
+    width: min(90vw, 820px);
+  }
+  .store-quotes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+    margin-bottom: 2vh;
+  }
+  .store-quote-card {
+    padding: 0.7rem 1rem;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .store-quote-name {
+    font-size: clamp(0.6rem, 0.9vw, 0.75rem);
+    font-weight: 600;
+    color: rgba(255,245,230,0.85);
+    margin-bottom: 0.3rem;
+  }
+  .store-quote-installs {
+    font-size: clamp(0.45rem, 0.65vw, 0.55rem);
+    color: rgba(255,245,230,0.35);
+    margin-bottom: 0.5rem;
+  }
+  .store-quote-text {
+    font-size: clamp(0.48rem, 0.72vw, 0.6rem);
+    font-style: italic;
+    font-weight: 300;
+    color: rgba(255,245,230,0.5);
+    line-height: 1.5;
+  }
+  .store-bottom {
+    display: flex;
+    gap: 1.5rem;
+    align-items: stretch;
+    margin-top: 1.5vh;
+    position: relative; z-index: 1;
+  }
+  .store-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: clamp(0.58rem, 0.85vw, 0.72rem);
+    flex: 2;
+  }
+  .store-table th {
+    padding: 0.4rem 1rem;
+    font-weight: 600;
+    text-align: center;
+    color: rgba(255,245,230,0.6);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .store-table th:first-child {
+    text-align: left;
+    color: rgba(255,245,230,0.4);
+    font-weight: 400;
+  }
+  .store-table th.store-col-nudge {
+    color: #22c55e;
+  }
+  .store-table td {
+    padding: 0.4rem 1rem;
+    text-align: center;
+    color: rgba(255,245,230,0.4);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .store-table td:first-child {
+    text-align: left;
+    color: rgba(255,245,230,0.65);
+    font-weight: 400;
+  }
+  .store-table .store-yes {
+    color: #22c55e;
+    font-weight: 500;
+  }
+  .store-table .store-no {
+    color: rgba(255,255,255,0.15);
+  }
+  .store-table td.store-col-nudge {
+    background: rgba(34,197,94,0.04);
+  }
+  .store-punchline {
+    flex: 0 0 auto;
+    width: clamp(160px, 18vw, 220px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(0.8rem, 1.2vw, 1rem);
+    border: 1px solid rgba(34,197,94,0.2);
+    border-radius: 10px;
+    background: rgba(34,197,94,0.04);
+    text-align: center;
+  }
+  .store-punchline-text {
+    font-size: clamp(0.6rem, 0.9vw, 0.78rem);
+    font-weight: 300;
+    color: rgba(255,245,230,0.75);
+    line-height: 1.6;
+  }
+  .store-punchline-text em {
+    font-style: normal;
+    color: #22c55e;
+    font-weight: 500;
+  }
+
+  /* ════════════════════════════════════════
+     SLIDE 16 — Connect / Closing
      ════════════════════════════════════════ */
   .slide--connect::before {
     background: radial-gradient(ellipse at center 40%, #1a1005 0%, #0d0d0d 60%, #060a0d 100%);
@@ -1072,7 +1304,7 @@
 
   <!-- ═══ SLIDE 1: Opening ═══ -->
   <div class="slide slide--opening active" data-slide="0">
-    <img class="hero-image anim-up" src="assets/nudge-hero.jpg"
+    <img class="hero-image anim-up" src="assets/nudge-hero.png"
          alt="Nudge — AI wearable coaching every human interaction">
     <p class="tagline anim-up anim-up-d1">
       Exploring the possibility of an <em>ambient AI coach</em> &mdash;
@@ -1088,7 +1320,7 @@
       The wearable listens to every interaction and coaches staff in real time
     </p>
     <div class="restaurant-scene anim-up anim-up-d2">
-      <img src="assets/restaurant-scene.jpg" alt="Waiter with AI wearable coaching in restaurant">
+      <img src="assets/restaurant-scene.png" alt="Waiter with AI wearable coaching in restaurant">
     </div>
     <div class="use-case-points anim-up anim-up-d3">
       <div class="use-case-point">
@@ -1514,13 +1746,13 @@
           <img src="assets/kiosk-family-rajesh.png" alt="Rajesh's Warmth">
         </div>
         <div class="penta-face penta-face--c">
-          <img src="assets/kiosk-family-roshni.png" alt="Roshni's Warmth">
+          <img src="assets/kiosk-family-rose.png" alt="Rose's Warmth">
         </div>
         <div class="penta-face penta-face--d">
-          <img src="assets/kiosk-family-reethi.png" alt="Reethi's Warmth">
+          <img src="assets/kiosk-family-riti.png" alt="Riti's Warmth">
         </div>
         <div class="penta-face penta-face--e">
-          <img src="assets/kiosk-family-roshan.png" alt="Roshan's Warmth">
+          <img src="assets/kiosk-family-rohan.png" alt="Rohan's Warmth">
         </div>
       </div>
     </div>
@@ -1531,7 +1763,7 @@
       </div>
       <div class="use-case-point">
         <span class="icon">👨‍👩‍👧‍👦</span>
-        <div class="text"><strong>Every Member</strong> Rajesh, Roshni, Reethi, and Roshan each get their own warmth spotlight</div>
+        <div class="text"><strong>Every Member</strong> Rajesh, Rose, Riti, and Rohan each get their own warmth spotlight</div>
       </div>
     </div>
   </div>
@@ -1653,8 +1885,168 @@
   </div>
 
 
-  <!-- ═══ SLIDE 14: Connect ═══ -->
-  <div class="slide slide--connect" data-slide="13">
+  <!-- ═══ SLIDE 14: Omi Mentor vs Nudge ═══ -->
+  <div class="slide slide--vs" data-slide="13">
+    <h2 class="slide-title anim-up"><em>Omi Mentor</em> vs <em>Nudge</em></h2>
+    <p class="slide-subtitle anim-up anim-up-d1">
+      Omi built a personal coach. We built a professional one.
+    </p>
+    <div class="vs-layout anim-up anim-up-d2">
+      <table class="vs-table">
+        <tr>
+          <th></th>
+          <th class="vs-th-mentor">🧘 Omi Mentor</th>
+          <th class="vs-th-nudge">📊 Nudge</th>
+        </tr>
+        <tr>
+          <td>Buyer</td>
+          <td class="vs-mentor-val">Individual wearing device</td>
+          <td class="vs-col-nudge vs-nudge-val">Manager, parent, team lead</td>
+        </tr>
+        <tr>
+          <td>Analyzes</td>
+          <td class="vs-mentor-val">Arguments, emotions, goals</td>
+          <td class="vs-col-nudge vs-nudge-val">SOP violations, sentiment, quality</td>
+        </tr>
+        <tr>
+          <td>Output</td>
+          <td class="vs-mentor-val">1 push notification</td>
+          <td class="vs-col-nudge vs-nudge-val">Live dashboard + coaching</td>
+        </tr>
+        <tr>
+          <td>Scope</td>
+          <td class="vs-mentor-val">1 person</td>
+          <td class="vs-col-nudge vs-nudge-val">Entire team (5+ staff)</td>
+        </tr>
+        <tr>
+          <td>Domain rules</td>
+          <td class="vs-mentor-val">None &mdash; generic</td>
+          <td class="vs-col-nudge vs-nudge-val">116 SOPs across 8 domains</td>
+        </tr>
+        <tr>
+          <td>Accountability</td>
+          <td class="vs-mentor-val">Private to wearer</td>
+          <td class="vs-col-nudge vs-nudge-val">Manager sees everyone</td>
+        </tr>
+        <tr>
+          <td>Frequency</td>
+          <td class="vs-mentor-val">1 per 5 minutes max</td>
+          <td class="vs-col-nudge vs-nudge-val">Continuous real-time</td>
+        </tr>
+      </table>
+      <div class="vs-punchline">
+        <div class="vs-punchline-text">
+          Same device.<br>Same transcription pipeline.<br><br>
+          <em>Completely different product.</em><br><br>
+          Mentor helps you be better.<br>Nudge makes every <em>interaction</em> a little better.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 15: App Store Landscape ═══ -->
+  <div class="slide slide--landscape" data-slide="14">
+    <h2 class="slide-title anim-up"><em>648 Apps</em> in the Omi Store</h2>
+    <p class="slide-subtitle anim-up anim-up-d1">
+      We searched every single one. Here's what exists.
+    </p>
+    <div class="store-cats anim-up anim-up-d2">
+      <span class="store-cat">Conversation Analysis</span>
+      <span class="store-cat">Emotional Support</span>
+      <span class="store-cat">Entertainment</span>
+      <span class="store-cat">Education</span>
+      <span class="store-cat">Productivity</span>
+      <span class="store-cat">Health &amp; Wellness</span>
+      <span class="store-cat">Social &amp; Relationships</span>
+      <span class="store-cat">Personality Emulation</span>
+      <span class="store-cat">Finance</span>
+      <span class="store-cat">News</span>
+      <span class="store-cat">Travel</span>
+      <span class="store-cat">Utilities</span>
+      <span class="store-cat store-cat--none">Workplace Compliance? &mdash; None.</span>
+    </div>
+    <div class="store-compare anim-up anim-up-d3">
+      <div class="store-quotes">
+        <div class="store-quote-card">
+          <div class="store-quote-name">"waiter"</div>
+          <div class="store-quote-installs">26 installs &middot; 0 reviews</div>
+          <div class="store-quote-text">"app to be use by waiters at restaurants"</div>
+        </div>
+        <div class="store-quote-card">
+          <div class="store-quote-name">Service Manager Pro</div>
+          <div class="store-quote-installs">2 installs &middot; 0 reviews</div>
+          <div class="store-quote-text">"Service Manager Pro empowers leaders in the service industry&mdash;restaurants, hotels, retail, and more&mdash;to drive team performance and streamline operations. Managers can receive actionable summaries from daily discussions, extract staff feedback, and track recurring issues."</div>
+        </div>
+      </div>
+      <div class="store-bottom">
+        <table class="store-table">
+          <tr>
+            <th></th>
+            <th>"waiter"</th>
+            <th>Svc Mgr Pro</th>
+            <th class="store-col-nudge">Nudge</th>
+          </tr>
+          <tr>
+            <td>Real-time streaming</td>
+            <td class="store-no">&mdash;</td>
+            <td class="store-no">&mdash;</td>
+            <td class="store-col-nudge store-yes">&#10003;</td>
+          </tr>
+          <tr>
+            <td>SOP compliance rules</td>
+            <td class="store-no">&mdash;</td>
+            <td class="store-no">&mdash;</td>
+            <td class="store-col-nudge store-yes">&#10003;</td>
+          </tr>
+          <tr>
+            <td>Multi-staff dashboard</td>
+            <td class="store-no">&mdash;</td>
+            <td class="store-no">&mdash;</td>
+            <td class="store-col-nudge store-yes">&#10003;</td>
+          </tr>
+          <tr>
+            <td>Violation tracking</td>
+            <td class="store-no">&mdash;</td>
+            <td class="store-no">&mdash;</td>
+            <td class="store-col-nudge store-yes">&#10003;</td>
+          </tr>
+          <tr>
+            <td>Coaching tips</td>
+            <td class="store-no">&mdash;</td>
+            <td class="store-no">&mdash;</td>
+            <td class="store-col-nudge store-yes">&#10003;</td>
+          </tr>
+          <tr>
+            <td>Sentiment analysis</td>
+            <td class="store-no">&mdash;</td>
+            <td class="store-no">&mdash;</td>
+            <td class="store-col-nudge store-yes">&#10003;</td>
+          </tr>
+          <tr>
+            <td>Post-hoc summaries</td>
+            <td class="store-no">&mdash;</td>
+            <td class="store-yes">&#10003;</td>
+            <td class="store-col-nudge store-yes">&#10003;</td>
+          </tr>
+          <tr>
+            <td>Chat interface</td>
+            <td class="store-yes">&#10003;</td>
+            <td class="store-yes">&#10003;</td>
+            <td class="store-col-nudge store-no">&mdash;</td>
+          </tr>
+        </table>
+        <div class="store-punchline">
+          <div class="store-punchline-text">
+            648 apps.<br>Zero do real-time SOP compliance.<br><br>
+            Nudge isn't app #649 &mdash;<br>it's <em>an entirely new category</em>.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 16: Connect ═══ -->
+  <div class="slide slide--connect" data-slide="15">
     <div class="connect-card anim-up">
       <img class="connect-photo" src="assets/rajesh-profile.jpg" alt="Rajesh">
       <div class="connect-name">Rajesh</div>
@@ -1721,7 +2113,8 @@
   });
 
   function goTo(n) {
-    if (n < 0 || n >= slides.length) return;
+    if (n < 0) n = slides.length - 1;
+    else if (n >= slides.length) n = 0;
     slides[current].classList.remove('active');
     dotsContainer.children[current].classList.remove('active');
     current = n;
