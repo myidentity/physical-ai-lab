@@ -19,6 +19,18 @@ sidebar: false
 
 ![](images/hero.jpg){fig-align="center" width="100%"}
 
+```{=html}
+<div style="margin: 1.5rem 0; border: 2px solid #f5a623; border-radius: 12px; overflow: hidden; background: linear-gradient(135deg, #fef9e7 0%, #fff8e1 100%);">
+  <a href="https://www.linkedin.com/feed/update/urn:li:share:7428869520821260289/" target="_blank" rel="noopener" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; text-decoration: none; color: inherit;">
+    <img src="images/hackathon-winners.jpg" alt="Omi Hackathon Bangalore Winners" style="width: 160px; height: 90px; object-fit: cover; border-radius: 8px; flex-shrink: 0;">
+    <div>
+      <div style="font-size: 1.1rem; font-weight: 700; color: #b8860b;">🏆 Winner — Omi Hackathon Bengaluru</div>
+      <div style="font-size: 0.9rem; color: #555; margin-top: 0.25rem;">Nudge was selected as one of three winning projects out of 20+ submissions by 60+ builders. Judged for "execution and vision for the future of ambient AI."</div>
+    </div>
+  </a>
+</div>
+```
+
 *What if every human interaction could be a little better? Not through surveillance — through a gentle nudge.*
 
 *[Try the interactive presentation →](/studio-showcase/nudge/)*
