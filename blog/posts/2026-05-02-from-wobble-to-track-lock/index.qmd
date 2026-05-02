@@ -89,7 +89,7 @@ The key files in the repo:
 ```{=html}
 <div class="callout-tip" style="margin: 1.5rem 0; padding: 1rem 1.25rem; border-left: 4px solid #2780e3; background: #f0f7ff; border-radius: 6px;">
 <strong>★ Insight — Why ~60K parameters and not more?</strong><br>
-The eventual deployment target is a Raspberry Pi 4 driving an actual TurboPi, not a desktop GPU. A 60K-param CNN inferences in well under 10 ms on CPU and fits in a few hundred KB on disk — the trained checkpoint here ends up at <strong>251 KB</strong>. Tiny models force the architecture honest: every conv channel earns its keep. The capacity claim that comes out of this post is exactly what a small model can do once the data is right.
+The eventual deployment target is a Raspberry Pi 5 driving an actual TurboPi, not a desktop GPU. A 60K-param CNN inferences in well under 10 ms on CPU and fits in a few hundred KB on disk — the trained checkpoint here ends up at <strong>251 KB</strong>. Tiny models force the architecture honest: every conv channel earns its keep. The capacity claim that comes out of this post is exactly what a small model can do once the data is right.
 </div>
 ```
 
@@ -230,7 +230,7 @@ The slowness is an **inference-time tuning artifact**, not a property of the tra
 | `--min_vx 0.20` | Clamps the policy's forward-speed prediction to a minimum. CNN outputs near zero get floored. |
 | `--smoothing 0.35` | Shifts the EMA blend toward the policy (default is more conservative). Less inertia, faster response. |
 
-I rendered V2 without either flag — that's the whole reason the clip looks slow. Re-rendering with both flags applied recovers V1-comparable speed while still keeping the heading locked on the centerline. The video here is the unfiltered raw policy output, shown for transparency. A V3 render with the flags applied is the next post.
+I rendered V2 without either flag — that's the whole reason the clip looks slow. Re-rendering with both flags applied recovers V1-comparable speed while still keeping the heading locked on the centerline. The video here is the unfiltered raw policy output, shown for transparency.
 
 The point: V2's path-following is a **policy-quality result**. V2's speed is a **render-time knob**. Don't conflate them.
 
@@ -244,11 +244,9 @@ The architecture didn't change between V1 and V2. The training recipe didn't cha
 - **Balanced both rotational directions** (CCW + CW)
 - **Held-out validation set** (8 episodes the trainer never saw, taken from the V1 collection)
 
-That was enough to take a 63K-parameter CNN from "orbits near the path" to "locked onto the centerline through every corner." For a model that has to fit on a Raspberry Pi 4 in eventual deployment, that's a useful capacity claim:
+That was enough to take a 63K-parameter CNN from "orbits near the path" to "locked onto the centerline through every corner." For a model that has to fit on a Raspberry Pi 5 in eventual deployment, that's a useful capacity claim:
 
 > The architecture isn't the limit. The data is.
-
-What's next: a V3 render with `--min_vx 0.20 --smoothing 0.35` applied, to confirm the policy can drive at speed *and* stay on the line. After that, the procedural Red Bull Ring scene I built last week as a stretch goal — same architecture, much harder track, real F1 survey centerline.
 
 ---
 
