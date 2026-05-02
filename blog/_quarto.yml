@@ -82,6 +82,7 @@ website:
             href: posts/2026-02-11-nudge-ambient-ai-coach/index.qmd
       - section: "Other Posts"
         contents:
+          - posts/2026-05-02-from-wobble-to-track-lock/index.qmd
           - posts/2025-12-15-roscon-india-workshop-docker-infrastructure/index.qmd
           - posts/2025-12-15-linux-lid-close-delayed-shutdown/index.qmd
           - posts/2025-12-12-operationalizing-the-lab/index.qmd

@@ -841,6 +841,11 @@ input[type="submit"] {
   background-image: url('/posts/2026-02-11-nudge-ambient-ai-coach/images/hero.jpg');
 }
 
+/* TurboPi Imitation Learning */
+.sidebar-item a[href*="from-wobble-to-track-lock"]::before {
+  background-image: url('/posts/2026-05-02-from-wobble-to-track-lock/thumbnail.jpg');
+}
+
 /* ═══════════════════════════════════════════════════════════════
    Course Lesson Stub Posts - Hero Image + CTA Styling
    ═══════════════════════════════════════════════════════════════ */
