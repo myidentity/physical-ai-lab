@@ -1,5 +1,5 @@
 ---
-title: "Algorithm or learning? Two stacks, one robot, two arenas"
+title: "Part 2 — Algorithm or Learning? Two Stacks, One Robot, Two Arenas"
 subtitle: "A pure-pursuit controller starts driving the moment you hand it a path. A CNN vision policy needs hours of demonstrations before it does anything at all. Both work — but they break in completely different layers."
 author: "Rajesh"
 date: "2026-05-03"

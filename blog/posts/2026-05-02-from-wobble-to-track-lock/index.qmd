@@ -1,5 +1,5 @@
 ---
-title: "From Wobble to Track-Lock"
+title: "Part 1 — From Wobble to Track-Lock"
 subtitle: "How 50 balanced demonstrations got my TurboPi to actually follow a square track — V1 orbited near the path, V2 locks on"
 author: "Rajesh"
 date: "2026-05-02"
