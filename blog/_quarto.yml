@@ -30,6 +30,8 @@ website:
     contents:
       - section: "2026"
         contents:
+          - text: "Algorithm or Learning? Two Stacks, One Robot, Two Arenas"
+            href: posts/2026-05-03-algorithm-or-learning-two-stacks/index.qmd
           - text: "From Wobble to Track-Lock"
             href: posts/2026-05-02-from-wobble-to-track-lock/index.qmd
           - text: "Nudge: Ambient AI Coach"

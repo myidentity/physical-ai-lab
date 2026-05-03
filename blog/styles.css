@@ -846,6 +846,10 @@ input[type="submit"] {
   background-image: url('/posts/2026-05-02-from-wobble-to-track-lock/thumbnail.jpg');
 }
 
+.sidebar-item a[href*="algorithm-or-learning-two-stacks"]::before {
+  background-image: url('/posts/2026-05-03-algorithm-or-learning-two-stacks/thumbnail.jpg');
+}
+
 /* ═══════════════════════════════════════════════════════════════
    Course Lesson Stub Posts - Hero Image + CTA Styling
    ═══════════════════════════════════════════════════════════════ */
