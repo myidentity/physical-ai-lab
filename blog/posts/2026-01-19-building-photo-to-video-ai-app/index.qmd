@@ -1,0 +1,463 @@
+---
+title: "Building a Photo-to-Video AI App: Pre-Workshop Deep Dive"
+subtitle: "Understanding the architecture before we build"
+author: "Rajesh"
+date: "2026-01-19"
+categories: [AI Apps, Video Generation, Google Veo, Supabase, Workshop Prep]
+image: "images/architecture-diagram.png"
+toc: true
+toc-depth: 3
+draft: true
+---
+
+## Introduction {#introduction}
+
+I'm preparing for a hands-on workshop where we'll build a **Photo-to-Video AI App** from scratch. Before diving into code, I wanted to understand the architecture deeply. This post documents my research and preparation.
+
+::: {.callout-note}
+## What We're Building
+A web app where users:
+
+1. Paste a product URL
+2. App scrapes images & product context automatically
+3. AI generates short promo videos using Google Veo
+4. Users can sign in with Google and save videos to Drive
+:::
+
+## The Tech Stack {#tech-stack}
+
+| Component | Technology | Purpose |
+|-----------|------------|---------|
+| Frontend | Next.js | React-based UI with App Router |
+| Backend | Supabase | Database, Auth, Edge Functions |
+| AI Video | Google Veo 3.1 | Image-to-video generation |
+| Deployment | Vercel | Serverless hosting |
+| Development | Google Antigravity | AI-assisted development |
+| Auth | Google OAuth | Sign-in + Drive access |
+
+## Chapter 1: Understanding Google Veo 3.1 {#chapter-1}
+
+Google Veo 3.1 is the star of this application. It generates high-fidelity 8-second videos from images and text prompts.
+
+### Key Capabilities
+
+- **Portrait videos**: Choose between 16:9 and 9:16 aspect ratios
+- **Video extension**: Extend previously generated videos
+- **Frame-specific generation**: Specify first and/or last frames
+- **Image-based direction**: Use up to 3 reference images
+- **Native audio**: Generates synchronized sound effects and conversations
+
+### API Structure
+
+The Veo API uses a **long-running operations** pattern:
+
+```
+Endpoint: https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-generate-preview:predictLongRunning
+Method: POST
+Auth: x-goog-api-key header
+```
+
+### Required Parameters
+
+| Parameter | Type | Notes |
+|-----------|------|-------|
+| `prompt` | string | Text description (supports audio cues) |
+| `image` | Image object | Initial frame for animation |
+| `aspectRatio` | string | "16:9" (default) or "9:16" |
+| `resolution` | string | "720p", "1080p", or "4k" |
+| `durationSeconds` | string | "4", "6", or "8" |
+
+### Python Example
+
+```python
+import time
+from google import genai
+from google.genai import types
+
+client = genai.Client()
+
+# Generate video from an image
+operation = client.models.generate_videos(
+    model="veo-3.1-generate-preview",
+    prompt="A sleek product rotating slowly with soft lighting",
+    image=product_image,
+    config=types.GenerateVideosConfig(
+        aspect_ratio="16:9",
+        resolution="1080p",
+        duration_seconds="8"
+    )
+)
+
+# Poll for completion (can take up to 6 minutes)
+while not operation.done:
+    time.sleep(10)
+    operation = client.operations.get(operation)
+
+# Get the generated video
+video = operation.result.generated_videos[0]
+```
+
+### JavaScript/Node.js Example
+
+```javascript
+import { GoogleGenAI } from "@google/genai";
+
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+let operation = await ai.models.generateVideos({
+    model: "veo-3.1-generate-preview",
+    prompt: "Product showcase with dynamic camera movement",
+    image: imageData,
+    config: {
+        aspectRatio: "16:9",
+        resolution: "1080p"
+    }
+});
+
+// Poll until done
+while (!operation.done) {
+    await new Promise(r => setTimeout(r, 10000));
+    operation = await ai.operations.getVideosOperation({ operation });
+}
+
+const videoUrl = operation.result.generatedVideos[0].video.uri;
+```
+
+::: {.callout-important}
+## Veo Limitations to Know
+
+- **Latency**: 11 seconds minimum, up to 6 minutes during peak
+- **Video retention**: Generated videos stored for **2 days only**
+- **Watermarking**: All videos watermarked with SynthID
+- **Resolution for extension**: Video extension limited to 720p
+- **Reference images**: Maximum 3 images, 16:9 aspect ratio only
+- **Pricing**: $0.75 per second of video output (paid tier required)
+:::
+
+## Chapter 2: Web Scraping Product Pages {#chapter-2}
+
+To extract product images and context from URLs, we have two main options:
+
+### Playwright vs Puppeteer
+
+| Feature | Playwright | Puppeteer |
+|---------|------------|-----------|
+| Browser Support | Chromium, Firefox, WebKit | Chromium (limited Firefox) |
+| Success Rate | ~96% on 1000+ pages | ~75% after 500 pages |
+| Anti-bot evasion | Good, needs configuration | Better with stealth plugins |
+| Best for | Dynamic/high-volume | Stable content, lightweight |
+
+### Basic Scraping Pattern
+
+```javascript
+import { chromium } from 'playwright';
+
+async function scrapeProductPage(url) {
+    const browser = await chromium.launch();
+    const page = await browser.newPage();
+
+    await page.goto(url, { waitUntil: 'networkidle' });
+
+    // Extract product images
+    const images = await page.$$eval('img', imgs =>
+        imgs.map(img => ({
+            src: img.src,
+            alt: img.alt
+        })).filter(img =>
+            img.src.includes('product') ||
+            img.alt.toLowerCase().includes('product')
+        )
+    );
+
+    // Extract product title
+    const title = await page.$eval('h1', el => el.textContent);
+
+    // Extract description
+    const description = await page.$eval(
+        '[class*="description"], [id*="description"]',
+        el => el.textContent
+    ).catch(() => '');
+
+    await browser.close();
+
+    return { images, title, description };
+}
+```
+
+::: {.callout-tip}
+## Anti-Bot Considerations
+
+Modern e-commerce sites use sophisticated detection. For production:
+
+- Use `puppeteer-extra-plugin-stealth`
+- Randomize user agents and fingerprints
+- Add realistic delays between actions
+- Consider using a proxy service for scale
+:::
+
+## Chapter 3: Supabase as Your Backend {#chapter-3}
+
+Supabase provides everything we need: database, authentication, and edge functions.
+
+### Why Supabase for AI Apps?
+
+- **Vector storage**: Built-in pgvector for embeddings
+- **Edge Functions**: Run AI logic close to users
+- **Real-time**: Live updates for video generation status
+- **Auth**: Built-in Google OAuth integration
+
+### Database Schema for Video Generation
+
+```sql
+-- Users table (managed by Supabase Auth)
+-- Videos table
+CREATE TABLE videos (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id),
+    product_url TEXT NOT NULL,
+    product_title TEXT,
+    product_images JSONB,
+    video_url TEXT,
+    status TEXT DEFAULT 'pending', -- pending, generating, completed, failed
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable Row Level Security
+ALTER TABLE videos ENABLE ROW LEVEL SECURITY;
+
+-- Users can only see their own videos
+CREATE POLICY "Users can view own videos"
+    ON videos FOR SELECT
+    USING (auth.uid() = user_id);
+```
+
+### Edge Function for Video Generation
+
+```typescript
+// supabase/functions/generate-video/index.ts
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { GoogleGenerativeAI } from "@google/generative-ai"
+
+serve(async (req) => {
+    const { imageUrl, prompt } = await req.json()
+
+    const genAI = new GoogleGenerativeAI(Deno.env.get("GEMINI_API_KEY")!)
+
+    // Start video generation
+    const operation = await genAI.models.generateVideos({
+        model: "veo-3.1-generate-preview",
+        prompt,
+        image: { uri: imageUrl }
+    })
+
+    return new Response(JSON.stringify({
+        operationId: operation.name
+    }))
+})
+```
+
+## Chapter 4: Google OAuth Done Right {#chapter-4}
+
+The workshop emphasizes **incremental permissions** - a best practice that improves user trust.
+
+### The Principle
+
+Don't ask for all permissions upfront. Instead:
+
+1. **Sign-in**: Request basic profile only (`openid`, `email`, `profile`)
+2. **When saving to Drive**: Request `drive.file` scope
+3. **When picking folders**: Use Google Picker API
+
+### Implementation Pattern
+
+```javascript
+// Initial sign-in - minimal scopes
+const authorizationUrl = oauth2Client.generateAuthUrl({
+    access_type: 'offline',
+    scope: ['openid', 'email', 'profile'],
+    include_granted_scopes: true  // Enable incremental auth
+});
+
+// Later, when user wants to save to Drive
+const driveAuthUrl = oauth2Client.generateAuthUrl({
+    access_type: 'offline',
+    scope: ['https://www.googleapis.com/auth/drive.file'],
+    include_granted_scopes: true
+});
+```
+
+::: {.callout-note}
+## Why `drive.file` Instead of Full Drive Access?
+
+The `drive.file` scope is **non-sensitive** and:
+
+- Only accesses files your app creates or user explicitly selects
+- Streamlines Google verification process
+- Builds user trust
+- Works perfectly with Google Picker API
+:::
+
+### Google Picker Integration
+
+```javascript
+// Load the Google Picker API
+function loadPicker() {
+    gapi.load('picker', { callback: createPicker });
+}
+
+function createPicker() {
+    const picker = new google.picker.PickerBuilder()
+        .addView(google.picker.ViewId.FOLDERS)
+        .setOAuthToken(accessToken)
+        .setCallback(pickerCallback)
+        .build();
+    picker.setVisible(true);
+}
+
+function pickerCallback(data) {
+    if (data.action === google.picker.Action.PICKED) {
+        const folderId = data.docs[0].id;
+        // Save video to this folder
+    }
+}
+```
+
+## Chapter 5: Deploying on Vercel {#chapter-5}
+
+Vercel makes deployment straightforward, but there are AI-specific considerations.
+
+### Environment Variables Setup
+
+```bash
+# .env.local (never commit this!)
+GEMINI_API_KEY=your_gemini_api_key
+SUPABASE_URL=https://yourproject.supabase.co
+SUPABASE_ANON_KEY=your_anon_key
+GOOGLE_CLIENT_ID=your_oauth_client_id
+GOOGLE_CLIENT_SECRET=your_oauth_client_secret
+```
+
+On Vercel:
+1. Go to Settings > Environment Variables
+2. Add each variable for Production/Preview/Development
+3. Use `vercel env pull .env.local` to sync locally
+
+### Function Duration for AI
+
+Video generation can take minutes. Configure longer timeouts:
+
+```typescript
+// app/api/generate-video/route.ts
+export const maxDuration = 60; // seconds (max on Hobby tier)
+
+export async function POST(req: Request) {
+    // Video generation logic
+}
+```
+
+::: {.callout-warning}
+## Rate Limiting is Essential
+
+AI APIs are expensive. Implement rate limiting:
+
+```typescript
+import { Ratelimit } from "@upstash/ratelimit";
+
+const ratelimit = new Ratelimit({
+    redis: Redis.fromEnv(),
+    limiter: Ratelimit.slidingWindow(5, "1 h"), // 5 requests per hour
+});
+```
+:::
+
+## Chapter 6: Google Antigravity for Development {#chapter-6}
+
+The workshop uses **Google Antigravity**, an AI-powered development platform.
+
+### What Makes It Different
+
+- **Agent-first**: AI agents autonomously plan, execute, and verify tasks
+- **Two interfaces**:
+  - Editor View (traditional IDE with AI completions)
+  - Manager Surface (spawn and observe multiple agents)
+- **Artifacts**: Visual proof of work (screenshots, recordings, plans)
+- **Knowledge base**: Agents retain context for better future performance
+
+### Supported Models
+
+- Gemini 3 Pro (default)
+- Claude Sonnet 4.5
+- GPT-OSS
+
+### Getting Started
+
+1. Download from `antigravity.google/download`
+2. Available for macOS, Windows, Linux
+3. Free during public preview
+
+## The Architecture Diagram {#architecture}
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         USER BROWSER                             │
+├─────────────────────────────────────────────────────────────────┤
+│  1. Paste URL  │  2. View Status  │  3. Download/Save to Drive  │
+└────────┬───────┴────────┬─────────┴──────────┬──────────────────┘
+         │                │                    │
+         ▼                ▼                    ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    NEXT.JS ON VERCEL                             │
+├─────────────────────────────────────────────────────────────────┤
+│  /api/scrape      │  /api/generate   │  /api/save-to-drive      │
+│  Playwright       │  Veo API call    │  Google Drive API        │
+└────────┬──────────┴────────┬─────────┴──────────┬───────────────┘
+         │                   │                    │
+         ▼                   ▼                    ▼
+┌─────────────────┐  ┌───────────────┐  ┌────────────────────────┐
+│   SUPABASE      │  │  GOOGLE VEO   │  │    GOOGLE DRIVE        │
+│   - PostgreSQL  │  │  3.1 API      │  │    (User's account)    │
+│   - Auth        │  │               │  │                        │
+│   - Storage     │  │  $0.75/sec    │  │    OAuth + Picker      │
+└─────────────────┘  └───────────────┘  └────────────────────────┘
+```
+
+## Pre-Workshop Checklist {#checklist}
+
+Before the workshop, ensure you have:
+
+- [ ] Google account
+- [ ] Vercel account (free tier)
+- [ ] Supabase account (free tier)
+- [ ] Chrome browser
+- [ ] Laptop with Node.js 18+ installed
+- [ ] Google Antigravity downloaded (optional, for following along)
+
+## What's Next {#next-steps}
+
+In the workshop, we'll:
+
+1. Build the app skeleton with Antigravity
+2. Implement product page scraping
+3. Integrate Google Veo for video generation
+4. Add Google OAuth with incremental permissions
+5. Deploy to Vercel
+6. Debug and ship!
+
+I'll update this post after the workshop with lessons learned and the complete working code.
+
+---
+
+## Resources {#resources}
+
+### Official Documentation
+- [Google Veo API Docs](https://ai.google.dev/gemini-api/docs/video)
+- [Supabase AI Guide](https://supabase.com/docs/guides/ai)
+- [Vercel AI SDK Deployment](https://ai-sdk.dev/docs/advanced/vercel-deployment-guide)
+- [Google OAuth Incremental Auth](https://developers.google.com/identity/sign-in/web/incremental-auth)
+- [Google Antigravity](https://antigravityai.org/)
+
+### Tutorials & Guides
+- [Playwright Web Scraping Tutorial](https://oxylabs.io/blog/playwright-web-scraping)
+- [Google Drive OAuth Scopes Guide](https://developers.google.com/workspace/drive/api/guides/api-specific-auth)
+- [Vercel Environment Variables](https://vercel.com/docs/environment-variables)
