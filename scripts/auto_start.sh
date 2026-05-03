@@ -13,8 +13,9 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # Script version (for documentation reference)
+# 2.4.0 - Auto-commit on hibernate/destroy + Lab save flow + 60-col UI polish
 # 2.3.0 - Added Newton Physics Engine + robot_lab to Dockerfile.base
-SCRIPT_VERSION="2.3.0"
+SCRIPT_VERSION="2.4.0"
 
 # Official NVIDIA Isaac Sim paths
 ISAAC_HOME="${HOME}/docker/isaac-sim"
@@ -54,6 +55,55 @@ print_error() {
 
 print_important() {
     echo -e "${CYAN}★${NC} $1"
+}
+
+print_next() {
+    # Bold yellow NEXT prefix for actionable hints (separates "what is" from "what to do")
+    echo -e "  ${YELLOW}NEXT${NC} → $1"
+}
+
+# UI width target — emoji counts as 2 terminal cells, ASCII as 1
+UI_WIDTH=60
+
+hr_double() {
+    # 60 ═ characters
+    printf '%*s\n' "$UI_WIDTH" '' | tr ' ' '='  | sed 's/=/═/g'
+}
+
+hr_thin() {
+    printf '%*s\n' "$UI_WIDTH" '' | tr ' ' '-' | sed 's/-/─/g'
+}
+
+hr_section() {
+    # hr_section "🎮" "ISAAC SIM (Standalone Simulation)"
+    # Pre-budget: 11 leading + 1 space + emoji(2) + 1 space + label + 1 space = trail
+    local emoji="$1"
+    local label="$2"
+    local label_len=${#label}
+    local trail=$(( UI_WIDTH - 11 - 1 - 2 - 1 - label_len - 1 ))
+    [ "$trail" -lt 3 ] && trail=3
+    local lead trail_str
+    lead=$(printf '%*s' 11 '' | tr ' ' '-' | sed 's/-/─/g')
+    trail_str=$(printf '%*s' "$trail" '' | tr ' ' '-' | sed 's/-/─/g')
+    echo "$lead $emoji $label $trail_str"
+}
+
+# Status badge formatter: prints "  Label       Value          [STATUS]"
+# Right-aligns the bracketed status to UI_WIDTH columns for at-a-glance scanning
+status_row() {
+    local label="$1"      # e.g. "Isaac Sim"
+    local value="$2"      # e.g. "Container running"
+    local badge="$3"      # e.g. "RUNNING"
+    local color="$4"      # e.g. "$GREEN"
+    # Layout: 2sp + label(11) + value + filler + [BADGE](color) + 2sp
+    local left
+    left=$(printf "  %-11s %s" "$label" "$value")
+    local plain_len=${#left}
+    local badge_text="[${badge}]"
+    local badge_len=${#badge_text}
+    local pad=$(( UI_WIDTH - plain_len - badge_len - 2 ))
+    [ "$pad" -lt 1 ] && pad=1
+    printf "%s%*s${color}%s${NC}\n" "$left" "$pad" '' "$badge_text"
 }
 
 # Function to create helper script for container
@@ -194,9 +244,9 @@ check_prerequisites() {
 # Function to show system info
 show_system_info() {
     clear
-    echo "═══════════════════════════════════════════════════════"
+    hr_double
     echo "           Isaac Sim 5.1.0 - System Information"
-    echo "═══════════════════════════════════════════════════════"
+    hr_double
     echo ""
 
     print_info "GPU Information:"
@@ -242,12 +292,12 @@ show_system_info() {
 # Function to save container changes
 save_container_changes() {
     clear
-    echo "═══════════════════════════════════════════════════════"
+    hr_double
     echo "    Isaac Sim: Save Container Changes (Commit Image)"
-    echo "═══════════════════════════════════════════════════════"
+    hr_double
     echo ""
     print_important "NOTE: This is for Isaac Sim containers ONLY"
-    print_info "Isaac Lab uses volumes - changes persist automatically"
+    print_info "For Isaac Lab, use Option 'v' (separate save flow)"
     echo ""
 
     # Check if container is running
@@ -294,12 +344,121 @@ save_container_changes() {
     read -p "Press Enter to continue..."
 }
 
+# Helper: offers to commit isaac-lab-base before a stop/destroy operation.
+# Default Yes — capturing writable layer (apt/pip/~/.claude) is almost always wanted.
+# Creates a dated backup tag before overwriting :latest so rollback is always possible.
+# Returns 0 unconditionally (caller proceeds with stop/destroy regardless).
+prompt_save_lab_state() {
+    local context="$1"   # "hibernating" or "destroying"
+
+    # Nothing to save if the container doesn't exist
+    if ! docker ps -a --format '{{.Names}}' | grep -q "^isaac-lab-base$"; then
+        return 0
+    fi
+
+    local change_count
+    change_count=$(docker diff isaac-lab-base 2>/dev/null | wc -l)
+
+    echo ""
+    hr_thin
+    print_important "💾 Save container state before ${context}?"
+    if [ "$change_count" -gt 0 ]; then
+        print_info "${change_count} uncommitted changes detected (apt / pip / configs)"
+    else
+        print_info "No uncommitted changes — committing is a harmless no-op"
+    fi
+    print_info "Skip only if you don't care about losing this session's installs"
+    hr_thin
+
+    read -p "Save now? [Y/n]: " save_choice
+    save_choice=${save_choice:-Y}
+
+    if [ "$save_choice" = "y" ] || [ "$save_choice" = "Y" ]; then
+        local backup_tag="isaac-lab-base:backup-$(date +%Y-%m-%d-%H%M)"
+        if docker image inspect isaac-lab-base:latest >/dev/null 2>&1; then
+            docker tag isaac-lab-base:latest "$backup_tag" >/dev/null 2>&1
+            print_success "Previous state tagged: ${backup_tag}"
+        fi
+        print_info "Committing..."
+        if docker commit isaac-lab-base isaac-lab-base:latest >/dev/null; then
+            print_success "Saved as isaac-lab-base:latest"
+        else
+            print_error "Commit failed — proceeding with ${context} anyway"
+        fi
+    else
+        print_warning "Skipping save — apt/pip installs will be lost on container removal"
+    fi
+    echo ""
+    return 0
+}
+
+# Function to save Isaac Lab container changes (commit writable layer to image)
+save_lab_container_changes() {
+    clear
+    hr_double
+    echo "    Isaac Lab: Save Container State (Commit Image)"
+    hr_double
+    echo ""
+    print_important "Snapshots writable layer: apt / pip / ~/.claude / configs"
+    print_info "Volumes (logs, source/, scripts/) persist automatically — separate"
+    echo ""
+
+    if ! docker ps -a --format '{{.Names}}' | grep -q "^isaac-lab-base$"; then
+        print_error "No Isaac Lab container found"
+        echo ""
+        print_info "Use Option 8 to create one first"
+        echo ""
+        read -p "Press Enter to continue..."
+        return
+    fi
+
+    local change_count
+    change_count=$(docker diff isaac-lab-base 2>/dev/null | wc -l)
+    if [ "$change_count" -eq 0 ]; then
+        print_info "No changes since last commit — nothing to save"
+        echo ""
+        read -p "Press Enter to continue..."
+        return
+    fi
+
+    print_info "Container has ${change_count} uncommitted changes"
+    print_info "Will save as:    isaac-lab-base:latest"
+    print_info "Backup tag:      isaac-lab-base:backup-$(date +%Y-%m-%d-%H%M)"
+    echo ""
+
+    read -p "Continue? [Y/n]: " confirm
+    confirm=${confirm:-Y}
+    if [ "$confirm" != "y" ] && [ "$confirm" != "Y" ]; then
+        print_info "Operation cancelled"
+        echo ""
+        read -p "Press Enter to continue..."
+        return
+    fi
+
+    local backup_tag="isaac-lab-base:backup-$(date +%Y-%m-%d-%H%M)"
+    if docker image inspect isaac-lab-base:latest >/dev/null 2>&1; then
+        docker tag isaac-lab-base:latest "$backup_tag"
+        print_success "Previous state tagged: ${backup_tag}"
+    fi
+
+    print_info "Committing container changes..."
+    if docker commit isaac-lab-base isaac-lab-base:latest >/dev/null; then
+        print_success "Saved isaac-lab-base:latest"
+        print_info "Container additions are now permanent"
+    else
+        print_error "Failed to commit container"
+    fi
+
+    echo ""
+    read -p "Press Enter to continue..."
+}
+
 # Function to manage Python packages
 manage_packages() {
     clear
-    echo "═══════════════════════════════════════════════════════"
+    hr_double
     echo "           Python Package Management Guide"
-    echo "═══════════════════════════════════════════════════════"
+    hr_double
     echo ""
 
     print_info "Current Image: ${ISAAC_IMAGE}"
@@ -319,7 +478,7 @@ manage_packages() {
     echo "5. Exit container"
     echo "   Next run will use your custom image with packages"
     echo ""
-    echo "═══════════════════════════════════════════════════════"
+    hr_double
     echo ""
     echo "💡 ALTERNATIVE: Use requirements.txt (Advanced)"
     echo ""
@@ -339,7 +498,7 @@ manage_packages() {
         echo ""
     fi
 
-    echo "═══════════════════════════════════════════════════════"
+    hr_double
     echo ""
     read -p "Press Enter to continue..."
 }
@@ -349,9 +508,9 @@ manage_packages() {
 # Function to login to NGC
 ngc_login() {
     clear
-    echo "═══════════════════════════════════════════════════════"
+    hr_double
     echo "              NGC Login (NVIDIA GPU Cloud)"
-    echo "═══════════════════════════════════════════════════════"
+    hr_double
     echo ""
     print_info "NGC login is required to pull NVIDIA container images"
     echo ""
@@ -363,7 +522,7 @@ ngc_login() {
     echo "  4. Click 'Generate API Key'"
     echo "  5. Copy the key (starts with 'nvapi-...')"
     echo ""
-    echo "═══════════════════════════════════════════════════════"
+    hr_double
     echo ""
     read -p "Press Enter when you have your API key ready..."
     echo ""
@@ -388,9 +547,9 @@ ngc_login() {
 # Function to pull Isaac Sim image
 pull_isaac_sim_image() {
     clear
-    echo "═══════════════════════════════════════════════════════"
+    hr_double
     echo "         Pull Isaac Sim 5.1.0 Docker Image"
-    echo "═══════════════════════════════════════════════════════"
+    hr_double
     echo ""
 
     # Check if already exists
@@ -441,9 +600,9 @@ pull_isaac_sim_image() {
 # Function to clone Isaac Lab
 clone_isaac_lab() {
     clear
-    echo "═══════════════════════════════════════════════════════"
+    hr_double
     echo "            Clone Isaac Lab Repository"
-    echo "═══════════════════════════════════════════════════════"
+    hr_double
     echo ""
 
     # Check if already exists
@@ -526,9 +685,9 @@ RUN --mount=type=cache,target=${DOCKER_USER_HOME}/.cache/pip \\\
 # Function to run with GUI
 run_with_gui() {
     clear
-    echo "═══════════════════════════════════════════════════════"
+    hr_double
     echo "     Isaac Sim 5.1.0 - GUI Mode (Official NVIDIA)"
-    echo "═══════════════════════════════════════════════════════"
+    hr_double
     echo ""
 
     # Check if image is available
@@ -598,9 +757,9 @@ run_with_gui() {
 # Function to run headless
 run_headless() {
     clear
-    echo "═══════════════════════════════════════════════════════"
+    hr_double
     echo "   Isaac Sim 5.1.0 - Headless Mode (Official NVIDIA)"
-    echo "═══════════════════════════════════════════════════════"
+    hr_double
     echo ""
 
     # Check if image is available
@@ -647,10 +806,10 @@ run_headless() {
 # Function to run Isaac Lab (Official NVIDIA Method)
 run_isaac_lab_official() {
     clear
-    echo "═══════════════════════════════════════════════════════"
+    hr_double
     echo "   Isaac Lab - Official NVIDIA Docker Container"
     echo "   (Includes Isaac Sim 5.1.0 + Isaac Lab)"
-    echo "═══════════════════════════════════════════════════════"
+    hr_double
     echo ""
 
     # Check if Isaac Lab directory exists
@@ -693,6 +852,14 @@ run_isaac_lab_official() {
         echo ""
         print_info "Entering container..."
         echo ""
+        # Ensure first-time container entry lands you in the turbopi-research workspace:
+        #   - bash drops into the bind-mounted /workspace/turbopi_standalone/
+        #   - git safe.directory is whitelisted
+        # Especially important here — the container is fresh, .bashrc has no customizations yet.
+        docker exec isaac-lab-base bash -c '
+            grep -qF "cd /workspace/turbopi_standalone" /root/.bashrc || echo "cd /workspace/turbopi_standalone" >> /root/.bashrc
+            git config --global --get-all safe.directory 2>/dev/null | grep -qF "/workspace/turbopi_standalone" || git config --global --add safe.directory /workspace/turbopi_standalone
+        ' 2>/dev/null
         python3 docker/container.py enter 2>&1 | tee -a "${LOG_FILE}"
     else
         echo ""
@@ -701,9 +868,9 @@ run_isaac_lab_official() {
         print_warning "Check logs at: ${LOG_FILE}"
         echo ""
         print_info "Last 20 lines of log:"
-        echo "─────────────────────────────────────────────────────"
+        hr_thin
         tail -20 "${LOG_FILE}"
-        echo "─────────────────────────────────────────────────────"
+        hr_thin
         echo ""
         read -p "Press Enter to continue..."
     fi
@@ -715,9 +882,9 @@ run_isaac_lab_official() {
 # Compatibility check function
 run_compatibility_check() {
     clear
-    echo "═══════════════════════════════════════════════════════"
+    hr_double
     echo "      Isaac Sim 5.1.0 - Compatibility Check"
-    echo "═══════════════════════════════════════════════════════"
+    hr_double
     echo ""
 
     # Check if image is available
@@ -781,9 +948,9 @@ check_isaac_lab_status() {
 # Toggle display driver
 toggle_display_driver() {
     clear
-    echo "═══════════════════════════════════════════════════════"
+    hr_double
     echo "          Display Driver Configuration"
-    echo "═══════════════════════════════════════════════════════"
+    hr_double
     echo ""
 
     CURRENT_DRIVER=$(check_display_driver)
@@ -811,7 +978,7 @@ toggle_display_driver() {
         echo ""
     fi
 
-    echo "═══════════════════════════════════════════════════════"
+    hr_double
     echo ""
 
     if [ "$CURRENT_DRIVER" = "dummy" ]; then
@@ -885,9 +1052,9 @@ EOF
 # Function to quickly enter Isaac Lab container
 enter_isaac_lab() {
     clear
-    echo "═══════════════════════════════════════════════════════"
+    hr_double
     echo "   Isaac Lab - Quick Access"
-    echo "═══════════════════════════════════════════════════════"
+    hr_double
     echo ""
 
     LAB_STATUS=$(check_isaac_lab_status)
@@ -898,6 +1065,14 @@ enter_isaac_lab() {
         print_info "Entering container..."
         echo ""
         cd "${HOME}/docker/isaac-lab/IsaacLab"
+        # Ensure container entry lands you in the turbopi-research workspace:
+        #   - bash drops into the bind-mounted /workspace/turbopi_standalone/
+        #   - git safe.directory is whitelisted (re-added if container was recreated)
+        # Idempotent — safe to run on every entry.
+        docker exec isaac-lab-base bash -c '
+            grep -qF "cd /workspace/turbopi_standalone" /root/.bashrc || echo "cd /workspace/turbopi_standalone" >> /root/.bashrc
+            git config --global --get-all safe.directory 2>/dev/null | grep -qF "/workspace/turbopi_standalone" || git config --global --add safe.directory /workspace/turbopi_standalone
+        ' 2>/dev/null
         python3 docker/container.py enter
         cd - > /dev/null
     elif [ "$LAB_STATUS" = "stopped" ]; then
@@ -916,6 +1091,14 @@ enter_isaac_lab() {
             print_info "Entering container..."
             echo ""
             cd "${HOME}/docker/isaac-lab/IsaacLab"
+            # Ensure container entry lands you in the turbopi-research workspace:
+            #   - bash drops into the bind-mounted /workspace/turbopi_standalone/
+            #   - git safe.directory is whitelisted (re-added if container was recreated)
+            # Idempotent — safe to run on every entry.
+            docker exec isaac-lab-base bash -c '
+                grep -qF "cd /workspace/turbopi_standalone" /root/.bashrc || echo "cd /workspace/turbopi_standalone" >> /root/.bashrc
+                git config --global --get-all safe.directory 2>/dev/null | grep -qF "/workspace/turbopi_standalone" || git config --global --add safe.directory /workspace/turbopi_standalone
+            ' 2>/dev/null
             python3 docker/container.py enter
             cd - > /dev/null
         else
@@ -936,9 +1119,9 @@ enter_isaac_lab() {
 # Function to hibernate Isaac Lab container (safe for shutdown)
 hibernate_isaac_lab() {
     clear
-    echo "═══════════════════════════════════════════════════════"
-    echo "   Isaac Lab - Hibernate Container (Safe Shutdown)"
-    echo "═══════════════════════════════════════════════════════"
+    hr_double
+    echo "   Isaac Lab — Hibernate Container (Safe Shutdown)"
+    hr_double
     echo ""
 
     LAB_STATUS=$(check_isaac_lab_status)
@@ -946,11 +1129,16 @@ hibernate_isaac_lab() {
     if [ "$LAB_STATUS" = "running" ]; then
         print_info "Hibernating Isaac Lab container..."
         echo ""
-        print_success "This is SAFE - everything is preserved:"
-        echo "  ✓ Training logs"
-        echo "  ✓ Installed packages"
-        echo "  ✓ All container state"
+        print_success "This is SAFE — everything is preserved:"
+        echo "    ✓ Training logs (in volume)"
+        echo "    ✓ Source / scripts edits (bind-mounted to host)"
+        echo "    ✓ All container state (writable layer kept on docker stop)"
         echo ""
+
+        # Offer to commit writable layer to image before stopping.
+        # docker stop alone keeps the writable layer, but baking it into the image
+        # protects against any future docker rm.
+        prompt_save_lab_state "hibernating"
 
         docker stop isaac-lab-base
 
@@ -978,9 +1166,9 @@ hibernate_isaac_lab() {
 # Function to stop Isaac Lab container (DESTRUCTIVE - deletes everything!)
 stop_isaac_lab() {
     clear
-    echo "═══════════════════════════════════════════════════════"
-    echo "   Isaac Lab - DESTRUCTIVE Stop (Delete Everything)"
-    echo "═══════════════════════════════════════════════════════"
+    hr_double
+    echo "   Isaac Lab — DESTRUCTIVE Stop (Delete Everything)"
+    hr_double
     echo ""
 
     LAB_STATUS=$(check_isaac_lab_status)
@@ -996,10 +1184,15 @@ stop_isaac_lab() {
         print_warning "If you just want to shut down your computer safely,"
         print_warning "use Option 'h' (Hibernate) instead!"
         echo ""
-        echo "─────────────────────────────────────────────────────"
+        hr_thin
         read -p "Type 'DELETE' to confirm destruction: " confirm
 
         if [ "$confirm" = "DELETE" ]; then
+            # Last-chance save: commit writable layer to image before destroying.
+            # The container itself is about to be deleted, but the IMAGE survives,
+            # so apt/pip/configs can still be recovered into a fresh container later.
+            prompt_save_lab_state "destroying"
+
             print_warning "Destroying Isaac Lab container and volumes..."
             echo ""
             cd "${HOME}/docker/isaac-lab/IsaacLab"
@@ -1027,10 +1220,11 @@ stop_isaac_lab() {
 main_menu() {
     while true; do
         clear
-        echo "═══════════════════════════════════════════════════════"
-        echo "     Isaac Sim 5.1.0 & Isaac Lab Launcher v${SCRIPT_VERSION}"
-        echo "           (Official NVIDIA Commands)"
-        echo "═══════════════════════════════════════════════════════"
+        hr_double
+        printf "  Isaac Sim 5.1.0 & Isaac Lab Launcher%*sv%s\n" \
+            $(( UI_WIDTH - 38 - ${#SCRIPT_VERSION} - 1 )) '' "${SCRIPT_VERSION}"
+        echo "  (Official NVIDIA Commands)"
+        hr_double
         echo ""
 
         # Check system status
@@ -1038,74 +1232,77 @@ main_menu() {
         SIM_STATUS=$(check_isaac_sim_status)
         LAB_STATUS=$(check_isaac_lab_status)
 
-        # Display mode status
+        # ---- Consolidated STATUS block (one line per subsystem, right-aligned badges) ----
+        echo "  STATUS"
+        hr_thin
+
         if [ "$CURRENT_DRIVER" = "dummy" ]; then
-            print_warning "Display Mode: DUMMY (Headless) - No HDMI output"
+            status_row "Display"   "Dummy (headless, no HDMI)"     "DUMMY"      "$YELLOW"
         else
-            print_success "Display Mode: NVIDIA (Hardware) - HDMI active"
+            status_row "Display"   "NVIDIA (HDMI active)"          "ACTIVE"     "$GREEN"
         fi
 
-        # Isaac Sim status
         if [ "$USING_CUSTOM" = true ]; then
-            print_success "Isaac Sim: CUSTOM image (with your packages)"
+            status_row "Sim image" "Custom (your packages baked)"  "CUSTOM"     "$GREEN"
         else
-            print_info "Isaac Sim: OFFICIAL image (packages are temporary)"
-        fi
-        if [ "$SIM_STATUS" = "running" ]; then
-            echo -e "${GREEN}✓${NC} Isaac Sim: Container ${GREEN}RUNNING${NC}"
-        else
-            echo -e "${BLUE}ℹ${NC} Isaac Sim: Container ${YELLOW}HIBERNATED${NC}"
+            status_row "Sim image" "Official (packages temporary)" "STOCK"      "$BLUE"
         fi
 
-        # Isaac Lab container status
-        if [ "$LAB_STATUS" = "running" ]; then
-            echo -e "${GREEN}✓${NC} Isaac Lab: Container ${GREEN}RUNNING${NC}"
-        elif [ "$LAB_STATUS" = "stopped" ]; then
-            echo -e "${YELLOW}⚠${NC} Isaac Lab: Container ${YELLOW}HIBERNATED${NC}"
+        if [ "$SIM_STATUS" = "running" ]; then
+            status_row "Isaac Sim" "Container running"             "RUNNING"    "$GREEN"
         else
-            echo -e "${BLUE}ℹ${NC} Isaac Lab: Container ${BLUE}not created yet${NC}"
+            status_row "Isaac Sim" "Container stopped"             "STOPPED"    "$YELLOW"
+        fi
+
+        if [ "$LAB_STATUS" = "running" ]; then
+            status_row "Isaac Lab" "Container running"             "RUNNING"    "$GREEN"
+        elif [ "$LAB_STATUS" = "stopped" ]; then
+            status_row "Isaac Lab" "Container hibernated"          "HIBERNATED" "$YELLOW"
+        else
+            status_row "Isaac Lab" "No container yet"              "EMPTY"      "$BLUE"
         fi
         echo ""
 
-        # Quick workflow hints based on status
+        # ---- Actionable hints (NEXT prefix = call-to-action, distinct from decoration) ----
         if [ "$LAB_STATUS" = "running" ]; then
-            print_important "→ Option 9 to enter, Option h to hibernate before shutdown"
+            print_next "Option 9 to enter Lab, 'h' to hibernate before shutdown"
         elif [ "$LAB_STATUS" = "stopped" ]; then
-            print_important "→ Option 9 to resume hibernated container"
+            print_next "Option 9 to resume hibernated Lab container"
         fi
         if [ "$SIM_STATUS" = "running" ]; then
-            print_important "→ Option 7 to save installed packages before exiting"
+            print_next "Option 7 to save Sim packages before exit"
         fi
         echo ""
 
-        # Show setup section if things are missing
-        echo "─────────── SETUP (First Time) ─────────────────────────"
-        echo -n "s) NGC Login (for pulling images)        "
-        echo -e "${YELLOW}[manual check]${NC}"
+        # ---- SETUP (First Time) — keep right-aligned [FOUND]/[NOT FOUND] badges ----
+        hr_section "📋" "SETUP (First Time)"
+        echo -n "  s) NGC Login (for pulling images)              "
+        echo -e "${YELLOW}[manual]${NC}"
 
-        echo -n "p) Pull Isaac Sim 5.1.0 Image (~15GB)    "
+        echo -n "  p) Pull Isaac Sim 5.1.0 Image (~15GB)          "
         if [ "$IMAGE_AVAILABLE" = true ]; then
             echo -e "${GREEN}[FOUND]${NC}"
         else
-            echo -e "${RED}[NOT FOUND]${NC}"
+            echo -e "${RED}[MISSING]${NC}"
         fi
 
-        echo -n "c) Clone Isaac Lab Repository            "
+        echo -n "  c) Clone Isaac Lab Repository                  "
         if [ "$ISAAC_LAB_AVAILABLE" = true ]; then
             echo -e "${GREEN}[FOUND]${NC}"
         else
-            echo -e "${RED}[NOT FOUND]${NC}"
+            echo -e "${RED}[MISSING]${NC}"
         fi
         echo ""
-        echo "─────────── 🎮 ISAAC SIM (Standalone Simulation) ─────────"
-        echo ""
+
+        # ---- ISAAC SIM ----
+        hr_section "🎮" "ISAAC SIM (Standalone Simulation)"
         echo "  Start Simulator:"
         if [ "$SIM_STATUS" = "running" ]; then
-            echo -e "    1) With GUI (Desktop Mode) - ${GREEN}RUNNING${NC}"
-            echo -e "    2) Headless (No Display)   - ${GREEN}RUNNING${NC}"
+            echo -e "    1) With GUI (Desktop Mode)               ${GREEN}[RUNNING]${NC}"
+            echo -e "    2) Headless (No Display)                 ${GREEN}[RUNNING]${NC}"
         else
-            echo "    1) With GUI (Desktop Mode)"
-            echo "    2) Headless (No Display)"
+            echo     "    1) With GUI (Desktop Mode)"
+            echo     "    2) Headless (No Display)"
         fi
         echo ""
         echo "  Maintenance:"
@@ -1116,52 +1313,66 @@ main_menu() {
         echo ""
         echo "  💾 Save Your Work:"
         if [ "$SIM_STATUS" = "running" ]; then
-            echo -e "    7) Save Installed Packages ⭐ - ${GREEN}Container Running - Ready to Save!${NC}"
+            echo -e "    7) Save Installed Packages ⭐            ${GREEN}[READY]${NC}"
         else
-            echo -e "    7) Save Installed Packages - ${YELLOW}Start container first (Option 1 or 2)${NC}"
+            echo -e "    7) Save Installed Packages               ${YELLOW}[needs container]${NC}"
         fi
-        echo -e "       ${CYAN}(Packages you pip install are lost on exit unless you save here)${NC}"
+        echo -e "       ${CYAN}(pip installs are lost on exit unless saved)${NC}"
         echo ""
-        echo "─────────── 🤖 ISAAC LAB (RL Training Environment) ───────"
-        echo ""
+
+        # ---- ISAAC LAB ----
+        hr_section "🤖" "ISAAC LAB (RL Training Environment)"
         echo "  Start & Access:"
         if [ "$LAB_STATUS" = "running" ]; then
-            echo -e "    8) Start/Build Container - ${GREEN}RUNNING${NC}"
-            echo -e "    9) Enter Container ⭐     - ${GREEN}Ready to Enter${NC}"
+            echo -e "    8) Start/Build Container                 ${GREEN}[RUNNING]${NC}"
+            echo -e "    9) Enter Container ⭐                    ${GREEN}[READY]${NC}"
         elif [ "$LAB_STATUS" = "stopped" ]; then
-            echo -e "    8) Start/Build Container - ${YELLOW}HIBERNATED${NC}"
-            echo -e "    9) Resume Container ⭐    - ${YELLOW}Will wake up hibernated container${NC}"
+            echo -e "    8) Start/Build Container                 ${YELLOW}[HIBERNATED]${NC}"
+            echo -e "    9) Resume Container ⭐                   ${YELLOW}[wake up]${NC}"
         else
             echo     "    8) Start/Build Container ⭐ (First time: ~10-15 min)"
-            echo -e "    9) Enter Container       - ${BLUE}Use Option 8 first${NC}"
+            echo -e "    9) Enter Container                       ${BLUE}[run 8 first]${NC}"
         fi
+        echo ""
+        echo "  💾 Save Your Work:"
+        if [ "$LAB_STATUS" = "running" ]; then
+            echo -e "    v) Save Container State                  ${GREEN}[READY]${NC}"
+        elif [ "$LAB_STATUS" = "stopped" ]; then
+            echo -e "    v) Save Container State                  ${YELLOW}[wake first]${NC}"
+        else
+            echo -e "    v) Save Container State                  ${BLUE}[no container]${NC}"
+        fi
+        echo -e "       ${CYAN}(snapshots writable layer: apt / pip / configs)${NC}"
         echo ""
         echo "  🛑 Shutdown Options:"
         if [ "$LAB_STATUS" = "running" ]; then
-            echo -e "    h) ${GREEN}Hibernate (Safe)${NC} ⭐        - Preserves everything, safe for reboot"
+            echo -e "    h) Hibernate (Safe) ⭐                   ${GREEN}[recommended]${NC}"
         elif [ "$LAB_STATUS" = "stopped" ]; then
-            echo -e "    h) Hibernate (Safe)          - ${YELLOW}Already hibernated${NC}"
+            echo -e "    h) Hibernate (Safe)                      ${YELLOW}[already hibernated]${NC}"
         else
-            echo -e "    h) Hibernate (Safe)          - ${BLUE}No container to hibernate${NC}"
+            echo -e "    h) Hibernate (Safe)                      ${BLUE}[no container]${NC}"
         fi
-        echo ""
         if [ "$LAB_STATUS" = "running" ] || [ "$LAB_STATUS" = "stopped" ]; then
-            echo -e "    a) ${RED}DELETE Everything${NC} ⚠️        - Destroys container + training logs"
+            echo -e "    a) ${RED}DELETE Everything${NC} ⚠️                  ${RED}[destructive]${NC}"
         else
-            echo -e "    a) DELETE Everything         - ${BLUE}Nothing to delete${NC}"
+            echo -e "    a) DELETE Everything                     ${BLUE}[nothing to delete]${NC}"
         fi
-        echo -e "       ${CYAN}(Only use to free disk space or start fresh)${NC}"
+        echo -e "       ${CYAN}(only use to free disk space or start fresh)${NC}"
         echo ""
-        echo "─────────── ⚙️  UTILITIES ─────────────────────────────────"
+
+        # ---- UTILITIES ----
+        hr_section "⚙️ " "UTILITIES"
         echo "    0) Toggle Display Driver (Dummy ↔ NVIDIA)"
         echo "    b) Python Package Management Guide"
         echo ""
-        echo "─────────── 🚪 EXIT ───────────────────────────────────────"
+
+        # ---- EXIT ----
+        hr_section "🚪" "EXIT"
         echo "    x) Exit Launcher"
         echo ""
-        echo "═══════════════════════════════════════════════════════"
+        hr_double
         echo ""
-        read -p "Select option [s,p,c,0-9,a,b,h,x,q]: " choice
+        read -p "Select option [s p c 0-9 a b h v x]: " choice
 
         case $choice in
             s|S)
@@ -1210,6 +1421,9 @@ main_menu() {
                 ;;
             a|A)
                 stop_isaac_lab
+                ;;
+            v|V)
+                save_lab_container_changes
                 ;;
             b|B)
                 manage_packages
