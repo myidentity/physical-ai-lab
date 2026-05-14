@@ -33,6 +33,9 @@ jobs:
           cd blog
           quarto render
 
+      - name: Write CNAME for custom domain
+        run: echo "isprout.com" > _site/CNAME
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
