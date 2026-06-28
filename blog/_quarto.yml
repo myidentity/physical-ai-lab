@@ -4,6 +4,7 @@ project:
   resources:
     - "lessons/**"
     - "studio-showcase/**"
+    - "whoop-privacy.html"
 
 website:
   title: "Physical AI Laboratory"
